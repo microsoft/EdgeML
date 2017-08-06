@@ -1,1 +1,1 @@
-## The Edge of Machine Learning
+## Edge Machine Learning
