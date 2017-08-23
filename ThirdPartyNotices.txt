@@ -1,0 +1,4 @@
+This Microsoft Edge Machine Learning project is based on or incorporates materials and code from the projects listed below (collectively, “Third Party Code”).
+
+(c) The Eigen Project.  Benoît Jacob (founder), Gaël Guennebaud (guru) and other contributors.
+Mozilla Public License, version 2.0.  https://opensource.org/licenses/MPL-2.0 
