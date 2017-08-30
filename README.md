@@ -17,6 +17,16 @@ Typically, MKL_PATH = /opt/intel/mkl/lib/intel64_lin/, and EDGEML_ROOT is '.'.
 
 This will build two executables _Bonsai_ and _ProtoNN_. 
 
+### Makefile flags
+You could change the behavior of the code by setting these flags in `config.mk` and rebuilding with `make -Bj`. 
+
+SINGLE
+TIMER
+LOGGER
+LIGHT_LOGGER
+VERBOSE
+MKL_PAR/SEQ
+
 ### Microsoft Open Source Code of Conduct
 This project has adopted the [Microsoft Open Source Code of
 Conduct](https://opensource.microsoft.com/codeofconduct/).
