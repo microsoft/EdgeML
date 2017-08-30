@@ -30,7 +30,7 @@ mv usps train.txt
 mv usps.t test.txt
 cd <EDGEML_ROOT>
 ```
-This will create a sample test set. You can now train and test Bonsai and ProtoNN algorithms on this datasets.
+This will create a sample test set. You can now train and test Bonsai and ProtoNN algorithms on this dataset.
 For detailed instructions, see [Bonsai Readme](README_BONSAI_OSS.md) and [ProtoNN Readme](README_PROTONN_OSS.md).
 
 ### Makefile flags
