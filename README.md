@@ -17,6 +17,21 @@ Typically, MKL_PATH = /opt/intel/mkl/lib/intel64_lin/, and EDGEML_ROOT is '.'.
 
 This will build two executables _Bonsai_ and _ProtoNN_. 
 
+### Download a sample dataset
+
+```bash
+mkdir usps10
+cd usps10
+wget http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.bz2
+wget http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.t.bz2
+bzip2 -d usps.bz2
+bzip2 -d usps.t.bz2
+mv usps train.txt
+mv usps.t test.txt
+```
+This will create a sample test set. You can now train and test Bonsai and ProtoNN algorithms on this datasets.
+For detailed instructions, see [Bonsai Readme](README_BONSAI_OSS.md) and [ProtoNN Readme](README_PROTONN_OSS.md).
+
 ### Makefile flags
 You could change the behavior of the code by setting these flags in `config.mk` and rebuilding with `make -Bj`. 
 
