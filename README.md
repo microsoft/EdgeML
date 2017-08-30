@@ -6,7 +6,7 @@ Currently, this repository implements [Bonsai](publications/Bonsai.pdf) and [Pro
 
 *Contributors*: The first version of the code was written by Chirag Gupta, Aditya Kusupati, Ashish Kumar, and [Harsha Vardhan Simhadri](github.com/harsha-simhadri).
 
-We welcome contributions, comments and criticism. For questions, please send and [email](mailto:harshasi@microsoft.com).
+We welcome contributions, comments and criticism. For questions, please send an [email](mailto:harshasi@microsoft.com).
 
 ### Requirements
 - Linux. We developed the code on Ubuntu 16.04LTS.
