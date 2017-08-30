@@ -28,6 +28,7 @@ bzip2 -d usps.bz2
 bzip2 -d usps.t.bz2
 mv usps train.txt
 mv usps.t test.txt
+cd <EDGEML_ROOT>
 ```
 This will create a sample test set. You can now train and test Bonsai and ProtoNN algorithms on this datasets.
 For detailed instructions, see [Bonsai Readme](README_BONSAI_OSS.md) and [ProtoNN Readme](README_PROTONN_OSS.md).
