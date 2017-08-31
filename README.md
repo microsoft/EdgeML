@@ -10,7 +10,7 @@ For technical details, please see the ICML'17 publications on [Bonsai](publicati
 
 Contributors: First version of this code was written by Chirag Gupta, [Aditya Kusupati](https://adityakusupati.github.io/), Ashish Kumar, and [Harsha Vardhan Simhadri](http://harsha-simhadri.org).
 
-We welcome contributions, comments and criticism. For questions, please send an [email](mailto:harshasi@microsoft.com).
+We welcome contributions, comments and criticism. For questions, please [email Harsha](mailto:harshasi@microsoft.com).
 
 ### Requirements
 - Linux. We developed the code on Ubuntu 16.04LTS.
