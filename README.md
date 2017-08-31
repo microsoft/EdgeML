@@ -1,14 +1,14 @@
 ## Edge Machine Learning
 
-This repository provides code for machine learning algorithms for edge devices developed at the [Microsoft Research India Lab](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/). 
+This repository provides code for machine learning algorithms for edge devices developed at [Microsoft Research India](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/). 
 
-Machine learning models need to have a small footprint in terms of battery, storage and latency to  be deployed on edge devices. One example of a ubiquitous real-world application where such models are desirable is resource-scarce devices and sensors in the Internet of Things (IoT) setting. To make real-time predictions locally on IoT devices without connecting to the cloud, we need models that fit in a few kilobytes.
+Machine learning models need to have a small footprint in terms of battery, storage and latency to be deployed on edge devices. One example of a ubiquitous real-world application where such models are desirable is resource-scarce devices and sensors in the Internet of Things (IoT) setting. To make real-time predictions locally on IoT devices without connecting to the cloud, we need models that fit in a few kilobytes.
 
 This repository contains two such algorithms **Bonsai** and **ProtoNN** that shine in this setting. These algorithms can train models for classical supervised learning problems with memory requirements that are orders of magnitude lower than other modern ML algorithms. The trained models can be loaded onto on edge and IoT devices/sensors, and used to make fast, precise, and accurate predictions completely offline.
 
 For technical details, please see the ICML'17 publications on [Bonsai](publications/Bonsai.pdf) and [ProtoNN](publications/ProtoNN.pdf) algorithms.
 
-Contributors: Initial contributions were written by Chirag Gupta, [Aditya Kusupati](https://adityakusupati.github.io/), Ashish Kumar, and [Harsha Vardhan Simhadri](http://harsha-simhadri.org).
+Contributors: First version of this code was written by Chirag Gupta, [Aditya Kusupati](https://adityakusupati.github.io/), Ashish Kumar, and [Harsha Vardhan Simhadri](http://harsha-simhadri.org).
 
 We welcome contributions, comments and criticism. For questions, please send an [email](mailto:harshasi@microsoft.com).
 
