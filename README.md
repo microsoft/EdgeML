@@ -1,13 +1,30 @@
 ## Edge Machine Learning
 
+This repository provides code for machine learning algorithms for edge devices developed at the [Microsoft Research India Lab](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/). 
+
+Machine learning models need to have a small footprint in terms of battery, storage and latency to  be deployed on edge devices. One example of a ubiquitous real-world application where such models are desirable is resource-scarce devices and sensors in the Internet of Things (IoT) setting. To make real-time predictions locally on IoT devices without connecting to the cloud, we need models that fit in a few kilobytes.
+
+This repository contains two such algorithms **Bonsai** and **ProtoNN** that shine in this setting. These algorithms can train models for classical supervised learning problems with memory requirements that are orders of magnitude lower than other modern ML algorithms. The trained models can be loaded onto on edge and IoT devices/sensors, and used to make fast, precise, and accurate predictions completely offline.
+
+For technical details, please see the ICML'17 publications on [Bonsai](publications/Bonsai.pdf) and [ProtoNN](publications/ProtoNN.pdf) algorithms.
+
+Contributors: Initial contributions were written by Chirag Gupta, [Aditya Kusupati](https://adityakusupati.github.io/), Ashish Kumar, and [Harsha Vardhan Simhadri](http://harsha-simhadri.org).
+
+We welcome contributions, comments and criticism. For questions, please send an [email](mailto:harshasi@microsoft.com).
+
 ### Requirements
 - Linux. We developed the code on Ubuntu 16.04LTS.
-  The code can also compiled in Windows with Visual Studio 2015, but this release does not include makefile. 
+  For Windows 10 Anniversary Update or later, one can also use the Windows Subsystem for Linux. 
+  The code can also be compiled in Windows with Visual Studio,
+  but this release does not include necessary makefiles yet. 
 - gcc version 5.4. Other gcc versions above 5.0 could also work.
-- [Intel(R) Math Kernel Library](https://software.intel.com/en-us/mkl). We use BLAS, sparseBLAS and VML routines. 
+- An implementation of BLAS, sparseBLAS and vector math calls.
+  We link with the implementation provided by the [Intel(R) Math Kernel Library](https://software.intel.com/en-us/mkl).
+  Please download later versions (2017v3+) of MKL as far as possible.
+  The code can be made to work with other math libraries with a few modifications.
 
 ### Building
-After cloning this reposirory, do:
+After cloning this reposirory, set compiler and flags appropriately in `config.mk` and do:
 
 ```bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<MKL_PATH>:<EDGEML_ROOT>
@@ -15,7 +32,8 @@ make -j
 ```
 Typically, MKL_PATH = /opt/intel/mkl/lib/intel64_lin/, and EDGEML_ROOT is '.'.
 
-This will build two executables _Bonsai_ and _ProtoNN_. 
+This will build two executables _Bonsai_ and _ProtoNN_.
+Sample data to try these executables is not included in this repository. 
 
 ### Download a sample dataset
 
@@ -30,7 +48,8 @@ mv usps train.txt
 mv usps.t test.txt
 cd <EDGEML_ROOT>
 ```
-This will create a sample test set. You can now train and test Bonsai and ProtoNN algorithms on this dataset.
+This will create a sample train and test dataset, on which
+you can  train and test Bonsai and ProtoNN algorithms.
 For detailed instructions, see [Bonsai Readme](README_BONSAI_OSS.md) and [ProtoNN Readme](README_PROTONN_OSS.md).
 
 ### Makefile flags
@@ -43,10 +62,10 @@ LIGHT_LOGGER
 VERBOSE
 MKL_PAR/SEQ
 
+Currently, MKL_SEQ_LDFLAGS is default for _Bonsai_, one can enable Parallel flag
+for MKL using MKL_PAR_LDFLAGS in main Makefile.  Also, float is SINGLE
+precision but can be changed to DOUBLE in config.mk.
+
+
 ### Microsoft Open Source Code of Conduct
-This project has adopted the [Microsoft Open Source Code of
-Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct
-FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com)
-with any additional questions or comments.
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
