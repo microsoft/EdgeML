@@ -2,13 +2,13 @@
 
 This repository provides code for machine learning algorithms for edge devices developed at [Microsoft Research India](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/). 
 
-Machine learning models need to have a small footprint in terms of battery, storage and latency to be deployed on edge devices. One example of a ubiquitous real-world application where such models are desirable is resource-scarce devices and sensors in the Internet of Things (IoT) setting. To make real-time predictions locally on IoT devices without connecting to the cloud, we need models that fit in a few kilobytes.
+Machine learning models need to have a small footprint in terms of battery, storage and latency to  be deployed on edge devices. One example of a ubiquitous real-world application where such models are desirable is resource-scarce devices and sensors in the Internet of Things (IoT) setting. To make real-time predictions locally on IoT devices without connecting to the cloud, we need models that fit in a few kilobytes.
 
 This repository contains two such algorithms **Bonsai** and **ProtoNN** that shine in this setting. These algorithms can train models for classical supervised learning problems with memory requirements that are orders of magnitude lower than other modern ML algorithms. The trained models can be loaded onto on edge and IoT devices/sensors, and used to make fast, precise, and accurate predictions completely offline.
 
-For technical details, please see the ICML'17 publications on [Bonsai](publications/Bonsai.pdf) and [ProtoNN](publications/ProtoNN.pdf) algorithms.
+For details, please see the ICML'17 publications on [Bonsai](publications/Bonsai.pdf) and [ProtoNN](publications/ProtoNN.pdf) algorithms.
 
-Contributors: First version of this code was written by Chirag Gupta, [Aditya Kusupati](https://adityakusupati.github.io/), Ashish Kumar, and [Harsha Vardhan Simhadri](http://harsha-simhadri.org).
+Initial Contributors: Chirag Gupta, [Aditya Kusupati](https://adityakusupati.github.io/), [Ashish Kumar](https://ashishkumar1993.github.io/), and [Harsha Vardhan Simhadri](http://harsha-simhadri.org).
 
 We welcome contributions, comments and criticism. For questions, please [email Harsha](mailto:harshasi@microsoft.com).
 
@@ -53,18 +53,25 @@ you can  train and test Bonsai and ProtoNN algorithms.
 For detailed instructions, see [Bonsai Readme](README_BONSAI_OSS.md) and [ProtoNN Readme](README_PROTONN_OSS.md).
 
 ### Makefile flags
-You could change the behavior of the code by setting these flags in `config.mk` and rebuilding with `make -Bj`. 
+You could change the behavior of the code by setting these flags in `config.mk` and rebuilding with `make -Bj`. All these flags can be set for both ProtoNN and Bonsai.
+The following are supported currently by both ProtoNN and Bonsai. 
 
-SINGLE
-TIMER
-LOGGER
-LIGHT_LOGGER
-VERBOSE
-MKL_PAR/SEQ
+    SINGLE/DOUBLE:  Single/double floating-point precision.
+    ZERO_BASED_IO:  Enable to perform I/O with labels and indices being 0-based instead of 1-based. 
+    TIMER:          Timer logs. Print running time of various calls.
+    CONCISE:        To be used with TIMER to print limited time information.
 
-Currently, MKL_SEQ_LDFLAGS is default for _Bonsai_, one can enable Parallel flag
-for MKL using MKL_PAR_LDFLAGS in main Makefile.  Also, float is SINGLE
-precision but can be changed to DOUBLE in config.mk.
+The following are supported only by ProtoNN, but one can write corresponding code for Bonsai. 
+ 
+    LOGGER:         Debugging logs. Currently prints min, max and norm of matrices.
+    LIGHT_LOGGER:   Less verbose version of LOGGER. Can be used to track call flow. 
+    XML:            Enable to train with extreme multilabel learning datasets. This is in beta.
+    VERBOSE:        Print additional informative output to stdout.
+    
+Additionally, there is one of two flags that has to be set in the Makefile: 
+    
+    MKL_PAR_LDFLAGS: Linking with parallel version of MKL
+    MKL_SEQ_LDFLAGS: Linking with sequential version of MKL
 
 
 ### Microsoft Open Source Code of Conduct
