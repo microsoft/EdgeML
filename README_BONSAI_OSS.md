@@ -50,16 +50,16 @@ When given an input feature vector X, Bonsai gives the prediction as follows :
     -D   : [Optional] Depth of the Bonsai tree. (Default: 3 Try: [2, 4, 5])
     -S   : [Optional] sigma = parameter for sigmoid sharpness  (Default: 1.0 Try: [3.0, 0.05, 0.005] ).
 
-    -lW  : [Optional] lW = regularizer for classifier parameter W  (Default: 0.0001 Try: [0.01, 0.001, 0.00001]).
-    -lT  : [Optional] lTheta = regularizer for kernel parameter Theta  (Default: 0.0001 Try: [0.01, 0.001, 0.00001]).
-    -lV  : [Optional] lV = regularizer for kernel parameters V  (Default: 0.0001 Try: [0.01, 0.001, 0.00001]).
-    -lZ  : [Optional] lZ = regularizer for kernel parameters Z  (Default: 0.00001 Try: [0.001, 0.0001, 0.000001]).
+    -lW  : [Optional] lW = regularizer for predictor parameter W  (Default: 0.0001 Try: [0.01, 0.001, 0.00001]).
+    -lT  : [Optional] lTheta = regularizer for branching parameter Theta  (Default: 0.0001 Try: [0.01, 0.001, 0.00001]).
+    -lV  : [Optional] lV = regularizer for predictor parameter V  (Default: 0.0001 Try: [0.01, 0.001, 0.00001]).
+    -lZ  : [Optional] lZ = regularizer for projection parameter Z  (Default: 0.00001 Try: [0.001, 0.0001, 0.000001]).
 
     Use Sparsity Params to vary your model size for a given tree depth and projection dimension
-    -sW  : [Optional] lambdaW = sparsity for classifier parameter W  (Default: For Binaay 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
-    -sT  : [Optional] lambdaTheta = sparsity for kernel parameter Theta  (Default: For Binary 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
-    -sV  : [Optional] lambdaV = sparsity for kernel parameters V  (Default: For Binary 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
-    -sZ  : [Optional] lambdaZ = sparsity for kernel parameters Z  (Default: 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
+    -sW  : [Optional] lambdaW = sparsity for predictor parameter W  (Default: For Binaay 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
+    -sT  : [Optional] lambdaTheta = sparsity for branching parameter Theta  (Default: For Binary 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
+    -sV  : [Optional] lambdaV = sparsity for predictor parameters V  (Default: For Binary 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
+    -sZ  : [Optional] lambdaZ = sparsity for projection parameters Z  (Default: 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
 
     -I   : [Optional] [Default: 42 Try: [100, 30, 60]] Number of passes through the dataset.
 	-B   : [Optional] Batch Factor [Default: 1 Try: [2.5, 10, 100]] Float Factor to multiply with sqrt(ntrain) to make the batch_size = min(max(100, B*sqrt(nT)), nT).

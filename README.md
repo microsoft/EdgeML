@@ -4,7 +4,7 @@ This repository provides code for machine learning algorithms for edge devices d
 
 Machine learning models for edge devices need to have a small footprint in terms of storage, prediction latency and energy. One example of a ubiquitous real-world application where such models are desirable is resource-scarce devices and sensors in the Internet of Things (IoT) setting. Making real-time predictions locally on IoT devices without connecting to the cloud requires models that fit in a few kilobytes.
 
-This repository contains two such algorithms **Bonsai** and **ProtoNN** that shine in this setting. These algorithms can train models for classical supervised learning problems with memory requirements that are orders of magnitude lower than other modern ML algorithms. The trained models can be loaded onto edge devices such as IoT devices/sensors, and used to make fast, precise and accurate predictions completely offline.
+This repository contains two such algorithms **Bonsai** and **ProtoNN** that shine in this setting. These algorithms can train models for classical supervised learning problems with memory requirements that are orders of magnitude lower than other modern ML algorithms. The trained models can be loaded onto edge devices such as IoT devices/sensors, and used to make fast and accurate predictions completely offline.
 
 For details, please see the ICML'17 publications on [Bonsai](publications/Bonsai.pdf) and [ProtoNN](publications/ProtoNN.pdf) algorithms.
 
@@ -67,6 +67,8 @@ The following are supported only by ProtoNN, but one can write corresponding cod
     LIGHT_LOGGER:   Less verbose version of LOGGER. Can be used to track call flow. 
     XML:            Enable to train with extreme multilabel learning datasets. This is in beta.
     VERBOSE:        Print additional informative output to stdout.
+    DUMP:           Dump models after each optimization iteration instead of just in the end.
+    VERIFY:         Legacy verification code for comparison with Matlab version .
     
 Additionally, there is one of two flags that has to be set in the Makefile: 
     
