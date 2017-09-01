@@ -74,3 +74,6 @@ Additionally, there is one of two flags that has to be set in the Makefile:
     
     MKL_PAR_LDFLAGS: Linking with parallel version of MKL
     MKL_SEQ_LDFLAGS: Linking with sequential version of MKL
+
+### Microsoft Open Source Code of Conduct
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
