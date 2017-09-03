@@ -56,24 +56,24 @@ For detailed instructions, see [Bonsai Readme](README_BONSAI_OSS.md) and [ProtoN
 You could change the behavior of the code by setting these flags in `config.mk` and rebuilding with `make -Bj`. All these flags can be set for both ProtoNN and Bonsai.
 The following are supported currently by both ProtoNN and Bonsai. 
 
-    SINGLE/DOUBLE:  Single/double floating-point precision.
-    ZERO_BASED_IO:  Enable to perform I/O with labels and indices being 0-based instead of 1-based. 
+    SINGLE/DOUBLE:  Single/Double precision floating-point. Single is most often sufficient. Double might help with reproducibility.
+    ZERO_BASED_IO:  Read datasets with 0-based labels and indices instead of the default 1-based. 
     TIMER:          Timer logs. Print running time of various calls.
-    CONCISE:        To be used with TIMER to print limited time information.
+    CONCISE:        To be used with TIMER to limit the information printed to those deltas above a threshold.
 
-The following are supported only by ProtoNN, but one can write corresponding code for Bonsai. 
+The following currently only change the behavior of ProtoNN, but one can write corresponding code for Bonsai. 
  
     LOGGER:         Debugging logs. Currently prints min, max and norm of matrices.
     LIGHT_LOGGER:   Less verbose version of LOGGER. Can be used to track call flow. 
-    XML:            Enable to train with extreme multilabel learning datasets. This is in beta.
+    XML:            Enable training with large sparse datasets with many labels. This is in beta.
     VERBOSE:        Print additional informative output to stdout.
     DUMP:           Dump models after each optimization iteration instead of just in the end.
-    VERIFY:         Legacy verification code for comparison with Matlab version .
+    VERIFY:         Legacy verification code for comparison with Matlab version.
     
 Additionally, there is one of two flags that has to be set in the Makefile: 
     
-    MKL_PAR_LDFLAGS: Linking with parallel version of MKL
-    MKL_SEQ_LDFLAGS: Linking with sequential version of MKL
+    MKL_PAR_LDFLAGS: Linking with parallel version of MKL.
+    MKL_SEQ_LDFLAGS: Linking with sequential version of MKL.
 
 ### Microsoft Open Source Code of Conduct
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
