@@ -8,7 +8,7 @@ This repository contains two such algorithms **Bonsai** and **ProtoNN** that shi
 
 For details, please see the ICML'17 publications on [Bonsai](publications/Bonsai.pdf) and [ProtoNN](publications/ProtoNN.pdf) algorithms.
 
-Initial Contributors: Chirag Gupta, [Aditya Kusupati](https://adityakusupati.github.io/), [Ashish Kumar](https://ashishkumar1993.github.io/), and [Harsha Vardhan Simhadri](http://harsha-simhadri.org).
+Initial Contributors: [Chirag Gupta](https://github.com/AIgen), [Aditya Kusupati](https://adityakusupati.github.io/), [Ashish Kumar](https://ashishkumar1993.github.io/), and [Harsha Vardhan Simhadri](http://harsha-simhadri.org).
 
 We welcome contributions, comments and criticism. For questions, please [email Harsha](mailto:harshasi@microsoft.com).
 
