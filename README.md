@@ -12,7 +12,7 @@ Initial Code Contributors: [Chirag Gupta](https://github.com/AIgen), [Aditya Kus
 
 We welcome contributions, comments and criticism. For questions, please [email Harsha](mailto:harshasi@microsoft.com).
 
-[People](http://harsha-simhadri.org/EdgeML/People/) who have contributed to this project.
+[People](http://harsha-simhadri.org/EdgeML/People/) who have contributed to this [project](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
 
 ### Requirements
 - Linux. We developed the code on Ubuntu 16.04LTS.
