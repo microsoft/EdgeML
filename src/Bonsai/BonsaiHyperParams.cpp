@@ -93,7 +93,7 @@ void BonsaiModel::BonsaiHyperParams::finalizeHyperParams()
 {
 
   assert(treeDepth >= 0);
-  assert(internalNodes >= 1);
+  assert(internalNodes >= 0);
   assert(totalNodes >= 1);
   assert(batchSize >= 1);
   assert(iters >= 1);
