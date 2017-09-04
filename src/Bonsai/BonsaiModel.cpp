@@ -83,7 +83,10 @@ void BonsaiModel::updateSigmaI(
     if (hyperParams.sigma_i > (FP_TYPE)1000) hyperParams.sigma_i = (FP_TYPE)1000;
   }
   sum_tr /= 100.0;
-  hyperParams.sigma_i = (FP_TYPE)0.1 / sum_tr;
+  if(sum_tr != 0.0)
+    hyperParams.sigma_i = (FP_TYPE)0.1 / sum_tr;
+  else
+    hyperParams.sigma_i = (FP_TYPE)0.1;
   hyperParams.sigma_i *= (FP_TYPE)pow(2.0, exp_fac);
   if (hyperParams.sigma_i > (FP_TYPE)1000) hyperParams.sigma_i = (FP_TYPE)1000;
 }
