@@ -72,15 +72,21 @@ void BonsaiModel::updateSigmaI(
 
   for (int f = 0; f < numTrials; f++)
   {
-    int theta_i = rand() % params.Theta.rows();
+    int theta_i = rand() % std::max(1, (int)params.Theta.rows());
     int x_i = rand() % ZX.cols();
     MatrixXuf ThetaZX(1, 1);
-    mm(ThetaZX, MatrixXuf(params.Theta).row(theta_i), CblasNoTrans, ZX.col(x_i), CblasNoTrans, 1.0, 0.0L);
+    if(params.Theta.rows() > 0)
+      mm(ThetaZX, MatrixXuf(params.Theta).row(theta_i), CblasNoTrans, ZX.col(x_i), CblasNoTrans, 1.0, 0.0L);
+    else
+      ThetaZX(0, 0) = 0;
     sum_tr += fabs(ThetaZX(0, 0));
     if (hyperParams.sigma_i > (FP_TYPE)1000) hyperParams.sigma_i = (FP_TYPE)1000;
   }
   sum_tr /= 100.0;
-  hyperParams.sigma_i = (FP_TYPE)0.1 / sum_tr;
+  if(sum_tr != 0.0)
+    hyperParams.sigma_i = (FP_TYPE)0.1 / sum_tr;
+  else
+    hyperParams.sigma_i = (FP_TYPE)0.1;
   hyperParams.sigma_i *= (FP_TYPE)pow(2.0, exp_fac);
   if (hyperParams.sigma_i > (FP_TYPE)1000) hyperParams.sigma_i = (FP_TYPE)1000;
 }
