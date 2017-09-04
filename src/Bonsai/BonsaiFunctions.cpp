@@ -624,7 +624,7 @@ void Bonsai::hardThrsd(MatrixXuf& mat, FP_TYPE sparsity)
 {
   Timer timer("hardThrsd");
   assert(sparsity >= (FP_TYPE)0.0 && sparsity <= (FP_TYPE)1.0);
-  if (sparsity >= (FP_TYPE)0.999)
+  if (sparsity >= (FP_TYPE)0.999 || (mat.rows()*mat.cols() == 0))
 	return;
   else;
 
