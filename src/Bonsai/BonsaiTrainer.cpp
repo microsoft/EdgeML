@@ -477,7 +477,8 @@ void BonsaiTrainer::TreeCache::fillNodeProbability(
   tanhThetaXCache = MatrixXuf::Zero(model.hyperParams.internalNodes, Xdata.cols());
   nodeProbability = MatrixXuf::Ones(model.hyperParams.totalNodes, Xdata.cols());
 
-  mm(tanhThetaXCache, Thetamat, CblasNoTrans, Xdata, CblasNoTrans, (FP_TYPE)1.0, (FP_TYPE)0.0L);
+  if(model.hyperParams.internalNodes > 0)
+    mm(tanhThetaXCache, Thetamat, CblasNoTrans, Xdata, CblasNoTrans, (FP_TYPE)1.0, (FP_TYPE)0.0L);
   // Scale VXClassIDScratch by scalar sigma_i
   scal(tanhThetaXCache.rows()*tanhThetaXCache.cols(), model.hyperParams.sigma_i, tanhThetaXCache.data(), 1);
   // compute tanh in place using vector ops  

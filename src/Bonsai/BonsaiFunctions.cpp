@@ -140,7 +140,8 @@ void Bonsai::gradYhatTheta(MatrixXuf& gradOut,
   MatrixXuf CoeffMat = MatrixXuf::Zero(trainer.model.hyperParams.internalNodes, ZX.cols());
   gradThetaCoeff(CoeffMat, ZX, trainer, classLst, margin);
 
-  mm(gradOut, CoeffMat, CblasNoTrans, ZX, CblasTrans, (FP_TYPE)1.0, (FP_TYPE)0.0);
+  if(trainer.model.hyperParams.internalNodes > 0)
+    mm(gradOut, CoeffMat, CblasNoTrans, ZX, CblasTrans, (FP_TYPE)1.0, (FP_TYPE)0.0);
 };
 
 
@@ -178,8 +179,9 @@ void Bonsai::gradYhatZ(
 	trainer.treeCache.partialZGradient.col(n) = partialZGradientColN;
   }
 
-  mm(trainer.treeCache.partialZGradient, trainer.model.params.Theta, CblasTrans,
-	CoeffMatTheta, CblasNoTrans, (FP_TYPE)1.0, (FP_TYPE)1.0);
+  if(trainer.model.hyperParams.internalNodes > 0)
+    mm(trainer.treeCache.partialZGradient, trainer.model.params.Theta, CblasTrans,
+  	CoeffMatTheta, CblasNoTrans, (FP_TYPE)1.0, (FP_TYPE)1.0);
 
   mm(gradOut, trainer.treeCache.partialZGradient, CblasNoTrans, X, CblasTrans, (FP_TYPE)1.0, (FP_TYPE)0.0L);
 };
