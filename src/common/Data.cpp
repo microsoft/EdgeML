@@ -129,12 +129,24 @@ void Data::finalizeData()
     assert(sparseDataHolder.size() == 0 && denseDataHolder.size() == 0);
 
   else if (ingestType == InterfaceIngest) {
-    assert(!(sparseDataHolder.size() != 0 && denseDataHolder.size() != 0));
+    //assert(!(sparseDataHolder.size() != 0 && denseDataHolder.size() != 0));
+    assert(sparseDataHolder.size() > 0 || denseDataHolder.size() >0);
 
     formatParams.numTrainPoints = numPointsIngested;
     formatParams.numTestPoints = 0;
 
     if (sparseDataHolder.size() != 0) {
+      if (denseDataHolder.size() != 0) {
+        dataCount_t numDensePointsIngested = (dataCount_t)(denseDataHolder.size() / formatParams.dimension);
+        dataCount_t numSparsePointsIngested = numPointsIngested - numDensePointsIngested;
+        for (dataCount_t densePt = 0; densePt < numDensePointsIngested; ++densePt)
+          for (featureCount_t dim = 0; dim < formatParams.dimension; ++dim)
+            sparseDataHolder.push_back(Trip(dim,
+                                            numSparsePointsIngested + densePt,
+                                            denseDataHolder[densePt*formatParams.dimension + dim]));
+        denseDataHolder.resize(0);
+        denseDataHolder.shrink_to_fit();
+      }
       Xtrain = SparseMatrixuf(formatParams.dimension, numPointsIngested);
       Xtrain.setFromTriplets(sparseDataHolder.begin(), sparseDataHolder.end());
       sparseDataHolder.resize(0);
@@ -156,6 +168,7 @@ void Data::finalizeData()
       sparseLabelHolder.resize(0);
       sparseLabelHolder.shrink_to_fit();
     }
+    else assert(false);
   }
 
   //
