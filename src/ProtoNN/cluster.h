@@ -14,20 +14,24 @@ namespace EdgeML
     int numClusters);
 
   void kmeansLabelwise(
-    const LabelMatType& Y, const MatrixXuf& WX,
-    MatrixXuf& B, MatrixXuf& Z,
-    const int K_per_class);
+    const LabelMatType& Y,
+    const MatrixXuf& WX,
+    MatrixXuf& B,
+    MatrixXuf& Z,
+    const int KPerClass);
 
   void kmeansOverall(
     const LabelMatType& Y,
-    const MatrixXuf& WX, MatrixXuf& B, MatrixXuf& Z);
+    const MatrixXuf& WX,
+    MatrixXuf& B,
+    MatrixXuf& Z);
 
 
   namespace sparsekmeans
   {
     void computePointsL2Sq(
       const SparseMatrixuf& pointsMatrix,
-      FP_TYPE *const points_l2sq);
+      FP_TYPE *const pointsL2Sq);
 
     inline FP_TYPE distSqDocToPt(
       const SparseMatrixuf& pointsMatrix,
@@ -36,39 +40,39 @@ namespace EdgeML
 
     void distsqAllpointsToCenters(
       const SparseMatrixuf& pointsMatrix,
-      const FP_TYPE *const points_l2sq,
-      dataCount_t num_centers,
-      FP_TYPE *const centers_coords,
-      const FP_TYPE *const centers_l2sq,
-      FP_TYPE *const dist_matrix);
+      const FP_TYPE *const pointsL2Sq,
+      dataCount_t numCenters,
+      FP_TYPE *const centersCoords,
+      const FP_TYPE *const centersL2Sq,
+      FP_TYPE *const distMatrix);
 
     void computeClosestCenters(
       const SparseMatrixuf& pointsMatrix,
-      const FP_TYPE *const points_l2sq,
-      const dataCount_t num_centers,
+      const FP_TYPE *const pointsL2Sq,
+      const dataCount_t numCenters,
       MatrixXuf& centersMatrix,
-      dataCount_t *closest_center,
-      FP_TYPE *const dist_matrix);
+      dataCount_t *closestCenter,
+      FP_TYPE *const distMatrix);
 
     FP_TYPE lloydsIter(
       const SparseMatrixuf& pointsMatrix,
-      const dataCount_t num_centers,
-      const FP_TYPE *const points_l2sq,
+      const dataCount_t numCenters,
+      const FP_TYPE *const pointsL2Sq,
       MatrixXuf& centersMatrix,
-      dataCount_t *const closest_center,
+      dataCount_t *const closestCenter,
       const bool compute_residual);
 
     void updateMinDistSqToCenters(
       const SparseMatrixuf& pointsMatrix,
-      const FP_TYPE *const points_l2sq,
-      const dataCount_t num_new_centers,
+      const FP_TYPE *const pointsL2Sq,
+      const dataCount_t numNewCenters,
       FP_TYPE *const centers,
-      FP_TYPE *const min_dist,
-      FP_TYPE *const dist_scratch);
+      FP_TYPE *const minDist,
+      FP_TYPE *const distScratch);
 
     FP_TYPE kmeanspp(
       const SparseMatrixuf& pointsMatrix,
-      const FP_TYPE *const points_l2sq,
+      const FP_TYPE *const pointsL2Sq,
       MatrixXuf& centersMatrix);
 
     // data is CSC with each column being a point
@@ -76,8 +80,8 @@ namespace EdgeML
     FP_TYPE kmeans(
       const SparseMatrixuf& pointsMatrix,
       MatrixXuf& centersMatrix,
-      const int num_iterations,
-      dataCount_t *const closest_center);
+      const int numIterations,
+      dataCount_t *const closestCenter);
   };
 
 
@@ -86,54 +90,54 @@ namespace EdgeML
 
     void distsqAllpointsToCenters(
       const MatrixXuf& pointsMatrix,
-      const FP_TYPE *const points_l2sq,
-      const dataCount_t num_centers,
+      const FP_TYPE *const pointsL2Sq,
+      const dataCount_t numCenters,
       const FP_TYPE *const centers,
-      const FP_TYPE *const centers_l2sq,
-      FP_TYPE *const dist_matrix);
+      const FP_TYPE *const centersL2Sq,
+      FP_TYPE *const distMatrix);
 
     void computeClosestCenters(
       const MatrixXuf& pointsMatrix,
-      const FP_TYPE *const points_l2sq,
-      const MKL_INT num_centers,
+      const FP_TYPE *const pointsL2Sq,
+      const MKL_INT numCenters,
       FP_TYPE *const centers,
-      dataCount_t *closest_center,
-      FP_TYPE *const dist_matrix);
+      dataCount_t *closestCenter,
+      FP_TYPE *const distMatrix);
 
     void computePointsL2Sq(
       const MatrixXuf& pointsMatrix,
-      FP_TYPE *const points_l2sq);
+      FP_TYPE *const pointsL2Sq);
 
     FP_TYPE lloydsIter(
       const MatrixXuf& pointsMatrix,
-      const FP_TYPE *const points_l2sq,
+      const FP_TYPE *const pointsL2Sq,
       MatrixXuf& centersMatrix,
-      dataCount_t *const closest_center,
+      dataCount_t *const closestCenter,
       const bool compute_residual);
 
     void updateMinDistSqToCenters(
       const MatrixXuf& pointsMatrix,
-      const FP_TYPE *const points_l2sq,
-      const dataCount_t num_new_centers,
+      const FP_TYPE *const pointsL2Sq,
+      const dataCount_t numNewCenters,
       const FP_TYPE *const centers,
-      FP_TYPE *const min_dist,
-      FP_TYPE *const dist_scratch);
+      FP_TYPE *const minDist,
+      FP_TYPE *const distScratch);
 
     FP_TYPE distsq(
-      const FP_TYPE *const p1_coords,
-      const FP_TYPE *const p2_coords,
+      const FP_TYPE *const p1Coords,
+      const FP_TYPE *const p2Coords,
       const MKL_INT dim);
 
     FP_TYPE kmeanspp(
       const MatrixXuf& pointsMatrix,
-      const FP_TYPE *const points_l2sq,
+      const FP_TYPE *const pointsL2Sq,
       MatrixXuf& centersMatrix);
 
     FP_TYPE kmeans(
       const MatrixXuf& pointsMatrix,
       MatrixXuf& centersMatrix,
-      const int num_iterations,
-      dataCount_t *const closest_center);
+      const int numIterations,
+      dataCount_t *const closestCenter);
   };
 };
 #endif
