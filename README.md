@@ -52,7 +52,7 @@ cd <EDGEML_ROOT>
 ```
 This will create a sample train and test dataset, on which
 you can  train and test Bonsai and ProtoNN algorithms.
-For detailed instructions, see [Bonsai Readme](README_BONSAI_OSS.md) and [ProtoNN Readme](README_PROTONN_OSS.ipynb).
+For detailed instructions, see [Bonsai Readme](docs/README_BONSAI_OSS.md) and [ProtoNN Readme](docs/README_PROTONN_OSS.ipynb).
 
 ### Makefile flags
 You could change the behavior of the code by setting these flags in `config.mk` and rebuilding with `make -Bj`. All these flags can be set for both ProtoNN and Bonsai.
