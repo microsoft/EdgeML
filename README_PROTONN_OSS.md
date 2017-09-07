@@ -5,7 +5,7 @@ ProtoNN is an algorithm developed for binary, multiclass and multilabel supervis
 Suppose a single data-point has **dimension** $$D$$. Suppose also that the total number of **classes** is $$L$$. For the most basic version of ProtoNN, there are 2 more user-defined hyper-parameters: the **projection dimension** $$d$$ and the **number of prototypes** $$m$$. 
 
 - ProtoNN learns 3 parameter matrices:
-    - A **projection matrix** $$W$$ of dimension $$(d,\space D)$$ that projects the datapoints to a small dimension $$d$$.
+    - A **projection matrix** $W$ of dimension $$(d,\space D)$$ that projects the datapoints to a small dimension $$d$$.
     - A **prototypes matrix** $$B$$ that learns $$m$$ prototypes in the projected space, each $$d$$-dimensional. $$B = [B_1,\space B_2, ... \space B_m]$$.
     - A **prototype labels matrix** $$Z$$ that learns $$m$$ label vectors for each of the prototypes to allow a single prototype to represent multiple labels. Each prototype label is $$L$$-dimensional. $$Z = [Z_1,\space Z_2, ... \space Z_m]$$.
 
