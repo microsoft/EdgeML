@@ -1,5 +1,6 @@
 # ProtoNN: Compressed and accurate KNN for resource-constrained devices ([paper](publications/ProtoNN.pdf))
-ProtoNN is an algorithm developed for binary, multiclass and multilabel supervised learning. ProtoNN models are time and memory efficient and are thus ideal for resource-constrained scenarios like Internet of Things (IoT). 
+ProtoNN is an algorithm developed for binary, multiclass and multilabel supervised learning. ProtoNN models are time and memory efficient and are thus ideal for resource-constrained scenarios like Internet of Things (IoT).
+This file uses a lot of math which does not render in `.md` format. The version at [ProtoNN Readme](README_PROTONN_OSS.ipynb) may be preferable. 
 
 ## Overview of algorithm
 Suppose a single data-point has **dimension** $$D$$. Suppose also that the total number of **classes** is $$L$$. For the most basic version of ProtoNN, there are 2 more user-defined hyper-parameters: the **projection dimension** $$d$$ and the **number of prototypes** $$m$$. 
@@ -141,7 +142,7 @@ The factor of 2 is for storing the index of a sparse matrix, apart from the valu
 Suppose each value is a single-precision floating point (4 bytes), then the total space required by ProtoNN is $$4\cdot(S_W + S_B + S_Z)$$. This value is computed and output to screen on running ProtoNN. 
 
 ##### Pointers on choosing hyperparameters
-Choosing the right hyperparameters may seem to be a daunting task in the beginning but becomes much easier with a little bit of thought. To get an idea of default parameters on some sample datasets, see the ([paper](publications/protonn.pdf)). Few rules of thumb:
+Choosing the right hyperparameters may seem to be a daunting task in the beginning but becomes much easier with a little bit of thought. To get an idea of default parameters on some sample datasets, see the ([paper](publications/ProtoNN.pdf)). Few rules of thumb:
 -- $$S_B$$ is typically small, and hence $$\lambda_B \approx 1.0$$. 
 -- One can set $$m$$ to $$min(10\cdot L, 0.01\cdot numTrainingPoints)$$, and $$d$$ to $$15$$ for an initial experiment. Typically, you want to cross-validate for $$m$$ and $$d$$. 
 -- Depending on $$L$$ and $$D$$, $$S_W$$ or $$S_Z$$ is the biggest contributors to model size. $$\lambda_W$$ and $$\lambda_Z$$ can be adjusted accordingly or cross-validated for. 
@@ -161,3 +162,4 @@ While training, we are presented with training examples $$X_1, X_2, ... X_n$$ al
 We optimize the $$l_2$$-square loss over all training points as follows:  $$\sum_{i=0}^{n} = ||Y_i-\sum_{j=0}^{m}\space \left(exp\left[-\gamma^2||W\cdot X_i - B_j||^2\right]\cdot Z_j\right)||_2^2$$. 
 While performing stochastic gradient descent, we hard threshold after each gradient update step to ensure that the three memory constraints (one each for $$\lambda_W, \lambda_B, \lambda_Z$$) are satisfied by the matrices $$W$$, $$B$$ and $$Z$$. 
 
+>>>>>>> 78edf9b87fc09dd4eee9d91ac6264f2a01439e5a:docs/README_PROTONN_OSS.md
