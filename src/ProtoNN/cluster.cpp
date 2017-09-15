@@ -513,7 +513,7 @@ FP_TYPE densekmeans::kmeanspp(
       distCumul[point + 1] = distCumul[point] + minDist[point];
     for (auto iter = centers.begin(); iter != centers.end(); ++iter) {
       // Disance from center to its closest center == 0
-      assert(abs(distCumul[(*iter) + 1] - distCumul[*iter]) < 1e-5 * distCumul[*iter]);
+        assert(abs(distCumul[(*iter) + 1] - distCumul[*iter]) < 1e-2 *distCumul[numPoints]/numPoints);
       // Center is not replicated
       assert(std::find(centers.begin(), centers.end(), *iter) == iter);
       assert(std::find(iter + 1, centers.end(), *iter) == centers.end());
