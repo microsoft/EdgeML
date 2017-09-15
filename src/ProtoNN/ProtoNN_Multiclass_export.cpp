@@ -245,7 +245,7 @@ namespace EdgeML
     EXPORT_API(void) DestroyPredictor(
       ProtoNNPredictor* predictor)
     {
-      delete predictor;
+       delete predictor;
     }
   }
 }

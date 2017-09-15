@@ -79,8 +79,8 @@ namespace EdgeML
 
     void loadDataFromFile(
       DataFormat format,
-      std::string infile,
-      std::string outfile);
+      std::string trainFile,
+      std::string testFile);
 
     Data(DataIngestType dataIngestType,
       DataFormatParams formatParams);
