@@ -1038,10 +1038,10 @@ void EdgeML::accProxSGD(std::function<FP_TYPE(const ParamType&,
   Timer timer("accProxSGD");
   Logger logger("accProxSGD ");
 
-  ParamType paramTailAverage = ParamType(param.rows(), param.cols());          // Stores the tail averaged gradient that is finally returned 
+  ParamType paramTailAverage = param;                              // Stores the tail averaged gradient that is finally returned 
   MatrixXuf temp = MatrixXuf::Zero(param.rows(), param.cols());    // A dense matrix to hold intermediate param-sized matrices
-  ParamType param0_;                                                           // A sparse matrix to hold intermediate values for param0 matrix (below)
-  ParamType param0 = param;                                          // Stores momentum term for accProxSGD
+  ParamType param0_;                                               // A sparse matrix to hold intermediate values for param0 matrix (below)
+  ParamType param0 = param;                                        // Stores momentum term for accProxSGD
 
   int burnPeriod = 50;
   FP_TYPE gamma0 = 1;
@@ -1056,7 +1056,7 @@ void EdgeML::accProxSGD(std::function<FP_TYPE(const ParamType&,
   assert(iters_ < 0x7fffffff);
   auto iters = iters_;
 
-  for (uint64_t i = 0; i < iters; ++i) {
+  for (int i = 0; i < iters; ++i) {
     Eigen::Index idx1 = (i*(Eigen::Index)bs) % n;
     Eigen::Index idx2 = ((i + 1)*(Eigen::Index)bs) % n;
     if (idx2 <= idx1) idx2 = n;
