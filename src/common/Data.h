@@ -77,6 +77,8 @@ namespace EdgeML
     SparseMatrixuf Xtrain, Ytrain;
     SparseMatrixuf Xtest, Ytest;
 
+    MatrixXuf mean, variance;
+
     void loadDataFromFile(
       DataFormat format,
       std::string trainFile,
@@ -95,6 +97,7 @@ namespace EdgeML
 
   void minMaxNormalize(SparseMatrixuf& dataMatrix, SparseMatrixuf& valMatrix);
   void l2Normalize(SparseMatrixuf& dataMatrix);
-  void meanVarNormalize(SparseMatrixuf& dataMatrix, MatrixXuf& mean, MatrixXuf& variance);
+  void computeMeanVar(const SparseMatrixuf& dataMatrix, MatrixXuf& mean, MatrixXuf& variance);
+  void meanVarNormalize(SparseMatrixuf& dataMatrix, const MatrixXuf& mean, const MatrixXuf& variance);
 }
 #endif

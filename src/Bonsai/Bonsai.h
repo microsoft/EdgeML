@@ -265,9 +265,6 @@ namespace EdgeML
       FP_TYPE* feedDataValBuffer; ///< Buffer to hold incoming Data values
       featureCount_t* feedDataFeatureBuffer; ///< Buffer to hold incoming Label values
 
-      MatrixXuf mean; ///< Object to hold the mean of the train data
-      MatrixXuf variance; ///< Object to hold variance of the train data
-
       ///
       /// Function to support various normalisations
       ///

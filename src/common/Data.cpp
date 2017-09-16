@@ -198,6 +198,9 @@ void Data::finalizeData()
     trainLabel.resize(0, 0);
   }
 
+  mean = MatrixXuf::Zero(formatParams.dimension, 1);
+  variance = MatrixXuf::Ones(formatParams.dimension, 1);
+
   /*
   if(Xtest.cols() == 0){
     Xtest = Xtrain;
@@ -316,16 +319,12 @@ void EdgeML::l2Normalize(SparseMatrixuf& dataMatrix)
   }
 }
 
-void EdgeML::meanVarNormalize(
-  SparseMatrixuf& dataMatrix,     //< 
-  MatrixXuf& mean,                //< Initialize to vector of size numFeatures
-  MatrixXuf& variance)            //< Initialize to vector of size numFeatures
+void EdgeML::computeMeanVar(const SparseMatrixuf& dataMatrix, MatrixXuf& mean, MatrixXuf& variance)
 {
   MatrixXuf denseDataMatrix = MatrixXuf(dataMatrix);
   const Eigen::Index numDataPoints = denseDataMatrix.cols();
   const Eigen::Index numFeatures = denseDataMatrix.rows();
 
-  // std::cout<<denseDataMatrix<<std::endl<<std::endl;
   const MatrixXuf onesVec = MatrixXuf::Ones(numDataPoints, 1);
 
   mm(mean, denseDataMatrix, CblasNoTrans, onesVec, CblasNoTrans, (FP_TYPE)1.0 / numDataPoints, (FP_TYPE)0.0);
@@ -339,12 +338,25 @@ void EdgeML::meanVarNormalize(
       denseDataMatrix.data() + f*numDataPoints, 1)
       / numDataPoints);
 
-    if (!(fabs(variance(f, 0)) < (FP_TYPE)1e-7)) {
-      scal(numDataPoints, (FP_TYPE)1.0 / variance(f, 0), denseDataMatrix.data() + f*numDataPoints, 1);
-    }
-    else {
+    if (fabs(variance(f, 0)) < (FP_TYPE)1e-7) {
       variance(f, 0) = (FP_TYPE)1.0;
     }
+  }
+}
+
+void EdgeML::meanVarNormalize(SparseMatrixuf& dataMatrix, const MatrixXuf& mean, const MatrixXuf& variance)
+{
+  MatrixXuf denseDataMatrix = MatrixXuf(dataMatrix);
+  const Eigen::Index numDataPoints = denseDataMatrix.cols();
+  const Eigen::Index numFeatures = denseDataMatrix.rows();
+
+  const MatrixXuf onesVec = MatrixXuf::Ones(numDataPoints, 1);
+
+  mm(denseDataMatrix, mean, CblasNoTrans, onesVec, CblasTrans, (FP_TYPE)-1.0, (FP_TYPE)1.0);
+  denseDataMatrix.transposeInPlace();
+
+  for (Eigen::Index f = 0; f < numFeatures; f++) {
+    scal(numDataPoints, (FP_TYPE)1.0 / variance(f, 0), denseDataMatrix.data() + f*numDataPoints, 1);
   }
 
   for (Eigen::Index d = 0; d < numDataPoints; d++) {
