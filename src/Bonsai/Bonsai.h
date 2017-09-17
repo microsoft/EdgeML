@@ -523,6 +523,18 @@ namespace EdgeML
       size_t sizeForExportThetaDense();
       void exportThetaDense(int bufferSize, char *const buf);
 
+      size_t sizeForExportVASCII();
+      void exportVASCII(int bufferSize, char *const buf);
+
+      size_t sizeForExportWASCII();
+      void exportWASCII(int bufferSize, char *const buf);
+
+      size_t sizeForExportZASCII();
+      void exportZASCII(int bufferSize, char *const buf);
+
+      size_t sizeForExportThetaASCII();
+      void exportThetaASCII(int bufferSize, char *const buf);
+
       ///
       /// Function to Dump Readable Mean, Variance and Model 
       ///

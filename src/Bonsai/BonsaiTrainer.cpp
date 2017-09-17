@@ -611,16 +611,50 @@ void BonsaiTrainer::exportThetaDense(int bufferSize, char *const buf)
   exportDenseMatrix(model.params.Theta, bufferSize, buf);
 }
 
+
+size_t BonsaiTrainer::sizeForExportVASCII()
+{
+    return sizeofMatrixInASCII(model.params.V);
+}
+void BonsaiTrainer::exportVASCII(int bufferSize, char *const buf)
+{
+    writeMatrixInASCII(model.params.V, bufferSize, buf);
+}
+size_t BonsaiTrainer::sizeForExportWASCII()
+{
+    return sizeofMatrixInASCII(model.params.W);
+}
+void BonsaiTrainer::exportWASCII(int bufferSize, char *const buf)
+{
+    writeMatrixInASCII(model.params.W, bufferSize, buf);
+}
+size_t BonsaiTrainer::sizeForExportZASCII()
+{
+    return sizeofMatrixInASCII(model.params.Z);
+}
+void BonsaiTrainer::exportZASCII(int bufferSize, char *const buf)
+{
+    writeMatrixInASCII(model.params.Z, bufferSize, buf);
+}
+size_t BonsaiTrainer::sizeForExportThetaASCII()
+{
+    return sizeofMatrixInASCII(model.params.Theta);
+}
+void BonsaiTrainer::exportThetaASCII(int bufferSize, char *const buf)
+{
+    writeMatrixInASCII(model.params.Theta, bufferSize, buf);
+}
+
 void BonsaiTrainer::dumpModelMeanVar(const std::string& currResultsPath)
 {
   std::string params_path = currResultsPath + "/Params";
-  writeMatrixInASCII(MatrixXuf(model.params.Z), params_path, "Z");
-  writeMatrixInASCII(MatrixXuf(model.params.W), params_path, "W");
-  writeMatrixInASCII(MatrixXuf(model.params.V), params_path, "V");
-  writeMatrixInASCII(MatrixXuf(model.params.Theta), params_path, "Theta");
+  writeMatrixInASCIIToFile(MatrixXuf(model.params.Z), params_path, "Z");
+  writeMatrixInASCIIToFile(MatrixXuf(model.params.W), params_path, "W");
+  writeMatrixInASCIIToFile(MatrixXuf(model.params.V), params_path, "V");
+  writeMatrixInASCIIToFile(MatrixXuf(model.params.Theta), params_path, "Theta");
 
-  writeMatrixInASCII(mean, params_path, "Mean");
-  writeMatrixInASCII(variance, params_path, "Variance");
+  writeMatrixInASCIIToFile(mean, params_path, "Mean");
+  writeMatrixInASCIIToFile(variance, params_path, "Variance");
 }
 
 size_t BonsaiTrainer::totalNonZeros()

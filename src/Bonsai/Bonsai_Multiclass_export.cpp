@@ -55,6 +55,7 @@ namespace EdgeML
       // Number of iterations, equally divided between three training phases of the algorithm
       int iterations,					// Hyperparam [default: 20, 10, 30, 50]
       int seed = 42,					// Hyperparam [default: 42, any random seed]
+      float batchFactor = 1,            // Hyperparam [default: 1, decides the size of SGD batch]
       ChannelFunc trace_print_func = NULL,
       ChannelFunc info_print_func = NULL,
       ChannelFunc warning_print_func = NULL,
@@ -69,7 +70,7 @@ namespace EdgeML
       hyperParam.normalizationType = normalize;
 
       hyperParam.seed = seed;
-      hyperParam.batchSize = 1;
+      hyperParam.batchFactor = batchFactor;
       hyperParam.iters = iterations;
 
       hyperParam.Sigma = sigma;
@@ -267,6 +268,46 @@ namespace EdgeML
       BonsaiTrainer* trainer, int bufferSize, char *const buf)
     {
       trainer->exportThetaDense(bufferSize, buf);
+    }
+
+    //************************************************
+    // Export model in human readable ASCII
+    //************************************************
+    EXPORT_API(int) sizeForExportVASCII(BonsaiTrainer* trainer)
+    {
+        return (int)trainer->sizeForExportVASCII();
+    }
+    EXPORT_API(void) exportVASCII(
+        BonsaiTrainer* trainer, int bufferSize, char *const buf)
+    {
+        trainer->exportVASCII(bufferSize, buf);
+    }
+    EXPORT_API(int) sizeForExportWASCII(BonsaiTrainer* trainer)
+    {
+        return (int)trainer->sizeForExportWASCII();
+    }
+    EXPORT_API(void) exportWASCII(
+        BonsaiTrainer* trainer, int bufferSize, char *const buf)
+    {
+        trainer->exportWASCII(bufferSize, buf);
+    }
+    EXPORT_API(int) sizeForExportZASCII(BonsaiTrainer* trainer)
+    {
+        return (int)trainer->sizeForExportZASCII();
+    }
+    EXPORT_API(void) exportZASCII(
+        BonsaiTrainer* trainer, int bufferSize, char *const buf)
+    {
+        trainer->exportZASCII(bufferSize, buf);
+    }
+    EXPORT_API(int) sizeForExportThetaASCII(BonsaiTrainer* trainer)
+    {
+        return (int)trainer->sizeForExportThetaASCII();
+    }
+    EXPORT_API(void) exportThetaASCII(
+        BonsaiTrainer* trainer, int bufferSize, char *const buf)
+    {
+        trainer->exportThetaASCII(bufferSize, buf);
     }
 
 

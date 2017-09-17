@@ -168,12 +168,12 @@ void ProtoNNTrainer::train()
   FP_TYPE* stats = new FP_TYPE[model.hyperParams.iters * 9 + 3]; // store output of this run
   altMinSGD(data, model, stats, outdir);
 
-  writeMatrixInASCII(model.params.W, outdir, "W");
-  writeMatrixInASCII(model.params.B, outdir, "B");
-  writeMatrixInASCII(model.params.Z, outdir, "Z");
+  writeMatrixInASCIIToFile(model.params.W, outdir, "W");
+  writeMatrixInASCIIToFile(model.params.B, outdir, "B");
+  writeMatrixInASCIIToFile(model.params.Z, outdir, "Z");
   MatrixXuf gammaMat(1, 1);
   gammaMat(0, 0) = model.hyperParams.gamma;
-  writeMatrixInASCII(gammaMat, outdir, "gamma");
+  writeMatrixInASCIIToFile(gammaMat, outdir, "gamma");
 
   std::string outFile = outdir + "/runInfo";
   storeParams(commandLine, stats, outFile);
@@ -250,6 +250,38 @@ void ProtoNNTrainer::exportZDense(int bufferSize, char *const buf)
   exportDenseMatrix(model.params.Z, bufferSize, buf);
 }
 
+
+size_t ProtoNNTrainer::sizeForExportBASCII()
+{
+    return sizeofMatrixInASCII(model.params.B);
+}
+void ProtoNNTrainer::exportBASCII(int bufferSize, char *const buf)
+{
+    writeMatrixInASCII(model.params.B, bufferSize, buf);
+}
+
+size_t ProtoNNTrainer::sizeForExportWASCII()
+{
+    return sizeofMatrixInASCII(model.params.W);
+}
+void ProtoNNTrainer::exportWASCII(int bufferSize, char *const buf)
+{
+    writeMatrixInASCII(model.params.W, bufferSize, buf);
+}
+
+size_t ProtoNNTrainer::sizeForExportZASCII()
+{
+    return sizeofMatrixInASCII(model.params.Z);
+}
+void ProtoNNTrainer::exportZASCII(int bufferSize, char *const buf)
+{
+    writeMatrixInASCII(model.params.Z, bufferSize, buf);
+}
+
+FP_TYPE ProtoNNTrainer::getGamma()
+{
+    return model.hyperParams.gamma;
+}
 
 void ProtoNNTrainer::normalize()
 {

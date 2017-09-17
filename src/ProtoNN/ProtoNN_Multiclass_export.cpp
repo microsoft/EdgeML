@@ -210,6 +210,41 @@ namespace EdgeML
       trainer->exportZDense(bufferSize, buf);
     }
 
+    //************************************************
+    // Export model in human readable ASCII
+    //************************************************
+    EXPORT_API(int) sizeForExportBASCII(ProtoNNTrainer* trainer)
+    {
+        return (int)trainer->sizeForExportBASCII();
+    }
+    EXPORT_API(void) exportBASCII(
+        ProtoNNTrainer* trainer, int bufferSize, char *const buf)
+    {
+        trainer->exportBASCII(bufferSize, buf);
+    }
+    EXPORT_API(int) sizeForExportWASCII(ProtoNNTrainer* trainer)
+    {
+        return (int)trainer->sizeForExportWASCII();
+    }
+    EXPORT_API(void) exportWASCII(
+        ProtoNNTrainer* trainer, int bufferSize, char *const buf)
+    {
+        trainer->exportWASCII(bufferSize, buf);
+    }
+    EXPORT_API(int) sizeForExportZASCII(ProtoNNTrainer* trainer)
+    {
+        return (int)trainer->sizeForExportZASCII();
+    }
+    EXPORT_API(void) exportZASCII(
+        ProtoNNTrainer* trainer, int bufferSize, char *const buf)
+    {
+        trainer->exportZASCII(bufferSize, buf);
+    }
+
+    EXPORT_API(float) getGamma(ProtoNNTrainer* trainer)
+    {
+        return trainer->getGamma();
+    }
 
 
     //***********************************************

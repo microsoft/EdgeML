@@ -358,7 +358,28 @@ size_t EdgeML::importDenseMatrix(
   return offset;
 }
 
+size_t EdgeML::sizeofMatrixInASCII(const MatrixXuf& mat)
+{
+    std::ostringstream stream;
+    stream << mat.format(eigen_tsv);
+    stream.seekp(0, std::ios::end);
+    return stream.tellp();
+}
+
 void EdgeML::writeMatrixInASCII(
+    const MatrixXuf& mat,
+    const int bufferSize,
+    char *const buf)
+{
+    std::ostringstream stream;
+    stream << mat.format(eigen_tsv);
+    stream.seekp(0, std::ios::end);
+    assert(bufferSize == stream.tellp());
+    stream.seekp(0, std::ios::beg);
+    strncpy_s(buf, bufferSize, stream.str().c_str(), bufferSize);
+}
+
+void EdgeML::writeMatrixInASCIIToFile(
   const MatrixXuf& mat,
   const std::string& outdir,
   const std::string& fileName)
@@ -369,10 +390,10 @@ void EdgeML::writeMatrixInASCII(
   f.close();
 }
 
-void EdgeML::writeSparseMatrixInASCII(
+void EdgeML::writeSparseMatrixInASCIIToFile(
   const SparseMatrixuf& mat,
   const std::string& outdir,
   const std::string& fileName)
 {
-  writeMatrixInASCII(MatrixXuf(mat), outdir, fileName);
+  writeMatrixInASCIIToFile(MatrixXuf(mat), outdir, fileName);
 }

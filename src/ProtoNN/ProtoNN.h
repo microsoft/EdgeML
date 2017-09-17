@@ -197,6 +197,17 @@ namespace EdgeML
 
       size_t sizeForExportZDense();
       void exportZDense(int bufferSize, char *const buf);
+
+      size_t sizeForExportBASCII();
+      void exportBASCII(int bufferSize, char *const buf);
+
+      size_t sizeForExportWASCII();
+      void exportWASCII(int bufferSize, char *const buf);
+
+      size_t sizeForExportZASCII();
+      void exportZASCII(int bufferSize, char *const buf);
+
+      FP_TYPE getGamma();
     };
 
     class ProtoNNPredictor
