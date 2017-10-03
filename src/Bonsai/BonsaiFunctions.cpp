@@ -661,6 +661,7 @@ void Bonsai::hardThrsd(MatrixXuf& mat, FP_TYPE sparsity)
   //sampleSort<FP_TYPE, std::greater<FP_TYPE>, size_t> (data, mat_size, std::greater<FP_TYPE>());
   //FP_TYPE thresh = std::abs (data[(size_t)((sparsity*mat_size) - 1)]);
   size_t order = (size_t)std::round((1.0 - sparsity)*((FP_TYPE)sample_size)) + (size_t)1;
+  if (order > sample_size) order = sample_size;
   FP_TYPE thresh = sequentialQuickSelect(data, sample_size, order);
 
   if (thresh <= eps)thresh = eps;
