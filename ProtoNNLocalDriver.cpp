@@ -24,6 +24,6 @@ int main(int argc, char **argv)
 					  argc, (const char**)argv);
   
   trainer.train();
-  
+
   return 0;
 }

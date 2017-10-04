@@ -3,16 +3,17 @@
 
 # Have a look at README.md and README_PROTONN_OSS.md for details on how to setup the data directory to run this script.
 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/intel/mkl/lib/intel64_lin/:./
 
 ########################################################
 # Input-output parameters
 ########################################################
 
 predefined_model="-P 0"
-problem_format="-C 1"
-train_file="-I usps10/train.txt"
-validation_file="-V usps10/test.txt"
-output_dir="-O usps10/ProtoNNResults"
+problem_format="-C 2"
+train_file="-I Data/Wiki10/train.txt"
+validation_file="-V Data/Wiki10/test.txt"
+output_dir="-O Data/Wiki10/ProtoNNResults"
 input_format="-F 0"
 
 
@@ -21,10 +22,10 @@ input_format="-F 0"
 # Data-dependent parameters
 ########################################################
 
-ntrain="-r 7291"
-nvalidation="-e 2007"
-original_dimension="-D 256"
-num_labels="-l 10" 
+ntrain="-r 14146"
+nvalidation="-e 6616"
+original_dimension="-D 101938"
+num_labels="-l 30938" 
 
 
 
@@ -32,9 +33,9 @@ num_labels="-l 10"
 # ProtoNN hyper-parameters (required)
 ########################################################
 
-projection_dimension="-d 15"
+projection_dimension="-d 200"
 #prototypes="-k 20"
-prototypes="-m 200"
+prototypes="-m 2000"
 
 
 
@@ -42,11 +43,11 @@ prototypes="-m 200"
 # ProtoNN hyper-parameters (optional)
 ########################################################
 
-lambda_W="-W 1.0"
-lambda_Z="-Z 1.0"
-lambda_B="-B 1.0"
+lambda_W="-W 0.4"
+lambda_Z="-Z 0.005"
+lambda_B="-B 0.4"
 gammaNumerator="-g 1.0"
-normalization="-N 0"
+normalization="-N 2"
 seed="-R 42"
 
 
@@ -56,8 +57,8 @@ seed="-R 42"
 ########################################################
 
 batch_size="-b 1024"
-iters="-T 20"
-epochs="-E 20"
+iters="-T 100"
+epochs="-E 1"
 
 
 

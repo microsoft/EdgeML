@@ -130,6 +130,7 @@ Data::Data(
   NUM_COLS = _NUM_COLS;
   NUM_FEATURES = _NUM_FEATURES;
   NUM_LABELS = _NUM_LABELS;
+  if (filename.empty()) { data = SparseMatrixuf(0, 0); label = SparseMatrixuf(0, 0); return;  }
 
 #ifdef LINUX 
   if (formatType != EdgeML::libsvmFormat) {

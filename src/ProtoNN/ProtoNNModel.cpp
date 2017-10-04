@@ -7,6 +7,30 @@ using namespace EdgeML;
 using namespace EdgeML::ProtoNN;
 
 ProtoNNModel::ProtoNNModel(
+  std::string modelFile)
+{
+  std::ifstream infile(modelFile, std::ios::in|std::ios::binary);
+  assert(infile.is_open());
+  
+  // Read the size of the model
+  size_t modelSize;
+  infile.read((char*)&modelSize, sizeof(modelSize));
+
+  // Allocate buffer
+  char* buff[modelSize];
+
+  //Load model from model file
+  infile.read((char*)buff, modelSize);
+  infile.close();
+ 
+  importModel(modelSize, (char *const) buff);
+}
+
+ProtoNNModel::ProtoNNModel()
+{
+}
+
+ProtoNNModel::ProtoNNModel(
   const size_t numBytes,
   const char *const fromModel)
 {
@@ -97,7 +121,6 @@ void ProtoNNModel::importModel(const size_t numBytes, const char *const fromMode
 
   memcpy((void *)&hyperParams, fromModel + offset, sizeof(hyperParams));
   offset += sizeof(hyperParams);
-
   params.resizeParamsFromHyperParams(hyperParams, false); // No need to set to zero.
 
   bool isZSparse(true);
