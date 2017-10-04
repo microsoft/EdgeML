@@ -92,6 +92,70 @@ FP_TYPE EdgeML::medianHeuristic(
 
 FP_TYPE EdgeML::batchEvaluate(
   const ZMatType& Z,
+  const LabelMatType& Y,
+  const BMatType& B,
+  const MatrixXuf& WX,
+  const FP_TYPE& gamma,
+  const EdgeML::ProblemFormat& problemType,
+  EdgeML::ProtoNN::ProtoNNPredictor::ResultStruct& res,
+  FP_TYPE* const stats)
+{
+  Timer timer("batchEvaluate");
+
+  FP_TYPE objective = 0.0;
+
+  dataCount_t n = WX.cols();
+  const size_t maxMem = 0x200000000ULL; // Use a maximum of 8 GiGs memory
+  dataCount_t maxBatch = 10000;
+  if (maxBatch > n) maxBatch = n;
+
+  dataCount_t bs = maxBatch;
+  dataCount_t batches = (n + bs - 1) / bs; //taking ceil
+
+  // Clear the res variable before starting 
+  res = EdgeML::ProtoNN::ProtoNNPredictor::ResultStruct();
+
+  res.problemType = problemType;
+  for (dataCount_t i = 0; i < batches; ++i) {
+    Eigen::Index idx1 = (i*(Eigen::Index)bs) % n;
+    Eigen::Index idx2 = ((i + 1)*(Eigen::Index)bs) % n;
+    if (idx2 <= idx1) idx2 = n;
+
+    assert(idx1 < idx2);
+    assert(idx2 <= idx1 + (Eigen::Index)maxBatch);
+
+    MatrixXuf D = gaussianKernel(B, WX, gamma, idx1, idx2);
+    assert(idx2 <= Y.cols());
+    LabelMatType YBatch = Y.middleCols(idx1, idx2 - idx1);
+    objective += (idx2 - idx1) * L(Z, YBatch, D);
+    if (problemType == EdgeML::ProblemFormat::binary || problemType == EdgeML::ProblemFormat::multiclass)
+      accuracy(Z, YBatch, D, problemType, res);
+    else if (problemType == EdgeML::ProblemFormat::multilabel)
+      accuracy(Z, YBatch, D, problemType, res);
+  }
+
+  LOG_INFO("Objective: " + std::to_string(objective));
+  stats[0] = objective;
+  if (problemType == EdgeML::ProblemFormat::binary || problemType == EdgeML::ProblemFormat::multiclass) {
+    res.accuracy /= n;
+    LOG_INFO("Accuracy: " + std::to_string(res.accuracy));
+    stats[1] = res.accuracy;
+  }
+  else if (problemType == EdgeML::ProblemFormat::multilabel) {
+    res.precision1 /= n;
+    res.precision3 /= n;
+    res.precision5 /= n;
+    stats[1] = res.precision1;
+
+    LOG_INFO("Prec@1: " + std::to_string(res.precision1));
+    LOG_INFO("Prec@3: " + std::to_string(res.precision3));
+    LOG_INFO("Prec@5: " + std::to_string(res.precision5));
+  }
+  return objective;
+}
+
+FP_TYPE EdgeML::batchEvaluate(
+  const ZMatType& Z,
   const LabelMatType& Y, const LabelMatType& Yval,
   const BMatType& B,
   const MatrixXuf& WX, const MatrixXuf& WXval,
@@ -109,23 +173,23 @@ FP_TYPE EdgeML::batchEvaluate(
   FP_TYPE objective = 0.0;
 
   dataCount_t n = WX.cols();
-  dataCount_t ntest = WXval.cols();
+  dataCount_t nvalid = WXval.cols();
   const size_t maxMem = 0x200000000ULL; // Use a maximum of 8 GiGs memory
   //size_t maxBatch = maxMem/(8LL*B.rows());
   dataCount_t maxBatch = 10000;
   if (maxBatch > n) maxBatch = n;
-  if (ntest > 0) {
-    if (maxBatch > ntest) maxBatch = ntest;
+  if (nvalid > 0) {
+    if (maxBatch > nvalid) maxBatch = nvalid;
   }
 
   dataCount_t bs = maxBatch;
   dataCount_t trainBatches = (n + bs - 1) / bs; //taking ceil
-  dataCount_t testBatches;
-  if (ntest > 0) {
-    testBatches = (ntest + bs - 1) / bs; //taking ceil
+  dataCount_t validationBatches;
+  if (nvalid > 0) {
+    validationBatches = (nvalid + bs - 1) / bs; //taking ceil
   }
   FP_TYPE accuracyTrain = 0.0;
-  FP_TYPE accuracyTest = 0.0;
+  FP_TYPE accuracyValidation = 0.0;
 
   for (dataCount_t i = 0; i < trainBatches; ++i) {
     Eigen::Index idx1 = (i*(Eigen::Index)bs) % n;
@@ -156,11 +220,11 @@ FP_TYPE EdgeML::batchEvaluate(
     LOG_INFO("Training prec@1: " + std::to_string(accuracyTrain / n));
     stats[1] = accuracyTrain / n;
   }
-  if (ntest > 0) {
-    for (dataCount_t i = 0; i < testBatches; ++i) {
-      Eigen::Index idx1 = (i*(Eigen::Index)bs) % ntest;
-      Eigen::Index idx2 = ((i + 1)*(Eigen::Index)bs) % ntest;
-      if (idx2 <= idx1) idx2 = ntest;
+  if (nvalid > 0) {
+    for (dataCount_t i = 0; i < validationBatches; ++i) {
+      Eigen::Index idx1 = (i*(Eigen::Index)bs) % nvalid;
+      Eigen::Index idx2 = ((i + 1)*(Eigen::Index)bs) % nvalid;
+      if (idx2 <= idx1) idx2 = nvalid;
 
       assert(idx1 < idx2);
       assert(idx2 <= idx1 + (Eigen::Index)maxBatch);
@@ -170,17 +234,17 @@ FP_TYPE EdgeML::batchEvaluate(
       assert(idx2 <= Y.cols());
       LabelMatType YBatch = Yval.middleCols(idx1, idx2 - idx1);
       if (problemType == EdgeML::ProblemFormat::binary || problemType == EdgeML::ProblemFormat::multiclass)
-        accuracyTest += (idx2 - idx1) * accuracy(Z, YBatch, D, problemType);
+        accuracyValidation += (idx2 - idx1) * accuracy(Z, YBatch, D, problemType);
       else if (problemType == EdgeML::ProblemFormat::multilabel)
-        accuracyTest += (idx2 - idx1) * accuracy(Z, YBatch, D, problemType);
+        accuracyValidation += (idx2 - idx1) * accuracy(Z, YBatch, D, problemType);
     }
     if (problemType == EdgeML::ProblemFormat::binary || problemType == EdgeML::ProblemFormat::multiclass) {
-      LOG_INFO("Testing accuracy: " + std::to_string(accuracyTest / ntest));
-      stats[2] = accuracyTest / ntest;
+      LOG_INFO("Validation accuracy: " + std::to_string(accuracyValidation / nvalid));
+      stats[2] = accuracyValidation / nvalid;
     }
     else if (problemType == EdgeML::ProblemFormat::multilabel) {
-      LOG_INFO("Testing prec@1: " + std::to_string(accuracyTest / ntest));
-      stats[2] = accuracyTest / ntest;
+      LOG_INFO("Validation prec@1: " + std::to_string(accuracyValidation / nvalid));
+      stats[2] = accuracyValidation / nvalid;
     }
   }
   else {
@@ -619,9 +683,9 @@ void EdgeML::altMinSGD(
   MatrixXuf WX(model.params.W.rows(), data.Xtrain.cols());
   mm(WX, model.params.W, CblasNoTrans, data.Xtrain, CblasNoTrans, 1.0, 0.0L);
 
-  MatrixXuf WXtest(model.params.W.rows(), data.Xtest.cols());
-  if (data.Xtest.cols() > 0) {
-    mm(WXtest, model.params.W, CblasNoTrans, data.Xtest, CblasNoTrans, 1.0, 0.0L);
+  MatrixXuf WXvalidation(model.params.W.rows(), data.Xvalidation.cols());
+  if (data.Xvalidation.cols() > 0) {
+    mm(WXvalidation, model.params.W, CblasNoTrans, data.Xvalidation, CblasNoTrans, 1.0, 0.0L);
   }
 
 #ifdef XML
@@ -634,14 +698,14 @@ void EdgeML::altMinSGD(
 
   mm(WX_sub, model.params.W, CblasNoTrans, X_sub, CblasNoTrans, 1.0, 0.0L);
 
-  dataCount_t numEvalTest = std::min((dataCount_t)10000, (dataCount_t)data.Xtest.cols());
-  MatrixXuf WXtest_sub(WX.rows(), numEvalTest);
-  SparseMatrixuf Ytest_sub(data.Ytest.rows(), numEvalTest);
-  SparseMatrixuf Xtest_sub(data.Xtest.rows(), numEvalTest);
-  if (data.Xtest.cols() > 0) {
-    randPick(data.Xtest, Xtest_sub);
-    randPick(data.Ytest, Ytest_sub);
-    mm(WXtest_sub, model.params.W, CblasNoTrans, Xtest_sub, CblasNoTrans, 1.0, 0.0L);
+  dataCount_t numEvalValidation= std::min((dataCount_t)10000, (dataCount_t)data.Xvalidation.cols());
+  MatrixXuf WXvalidation_sub(WX.rows(), numEvalValidation);
+  SparseMatrixuf Yvalidation_sub(data.Yvalidation.rows(), numEvalValidation);
+  SparseMatrixuf Xvalidation_sub(data.Xvalidation.rows(), numEvalValidation);
+  if (data.Xvalidation.cols() > 0) {
+    randPick(data.Xvalidation, Xvalidation_sub);
+    randPick(data.Yvalidation, Yvalidation_sub);
+    mm(WXvalidation_sub, model.params.W, CblasNoTrans, Xvalidation_sub, CblasNoTrans, 1.0, 0.0L);
   }
 #endif
 
@@ -650,9 +714,9 @@ void EdgeML::altMinSGD(
 
   LOG_INFO("\nInitial stats...");
 #ifdef XML
-  fNew = batchEvaluate(model.params.Z, Y_sub, Ytest_sub, model.params.B, WX_sub, WXtest_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats);
+  fNew = batchEvaluate(model.params.Z, Y_sub, Yvalidation_sub, model.params.B, WX_sub, WXvalidation_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats);
 #else 
-  fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Ytest, model.params.B, WX, WXtest, model.hyperParams.gamma, model.hyperParams.problemType, stats);
+  fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Yvalidation, model.params.B, WX, WXvalidation, model.hyperParams.gamma, model.hyperParams.problemType, stats);
 #endif 
   timer.nextTime("evaluating");
 
@@ -745,19 +809,19 @@ void EdgeML::altMinSGD(
     //LOG_INFO("Final step-length for gradW = " + std::to_string(eta_));
 
     mm(WX, model.params.W, CblasNoTrans, data.Xtrain, CblasNoTrans, 1.0, 0.0L);
-    if (data.Xtest.cols() > 0) {
-      mm(WXtest, model.params.W, CblasNoTrans, data.Xtest, CblasNoTrans, 1.0, 0.0L);
+    if (data.Xvalidation.cols() > 0) {
+      mm(WXvalidation, model.params.W, CblasNoTrans, data.Xvalidation, CblasNoTrans, 1.0, 0.0L);
     }
 
     fOld = fNew;
 #ifdef XML
     mm(WX_sub, model.params.W, CblasNoTrans, X_sub, CblasNoTrans, 1.0, 0.0L);
     if (data.Xtest.cols() > 0) {
-      mm(WXtest_sub, model.params.W, CblasNoTrans, Xtest_sub, CblasNoTrans, 1.0, 0.0L);
+      mm(WXvalidation_sub, model.params.W, CblasNoTrans, Xvalidation_sub, CblasNoTrans, 1.0, 0.0L);
     }
-    fNew = batchEvaluate(model.params.Z, Y_sub, Ytest_sub, model.params.B, WX_sub, WXtest_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 3);
+    fNew = batchEvaluate(model.params.Z, Y_sub, Yvalidation_sub, model.params.B, WX_sub, WXvalidation_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 3);
 #else 
-    fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Ytest, model.params.B, WX, WXtest, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 3);
+    fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Yvalidation, model.params.B, WX, WXvalidation, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 3);
 #endif 
 
     if (fNew >= fOld * (1 + safeDiv(sgdTol*(FP_TYPE)log(3), (FP_TYPE)log(2 + i))))
@@ -833,9 +897,9 @@ void EdgeML::altMinSGD(
 
     fOld = fNew;
 #ifdef XML
-    fNew = batchEvaluate(model.params.Z, Y_sub, Ytest_sub, model.params.B, WX_sub, WXtest_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 6);
+    fNew = batchEvaluate(model.params.Z, Y_sub, Yvalidation_sub, model.params.B, WX_sub, WXvalidation_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 6);
 #else 
-    fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Ytest, model.params.B, WX, WXtest, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 6);
+    fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Yvalidation, model.params.B, WX, WXvalidation, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 6);
 #endif
 
     if (fNew >= fOld * (1 + safeDiv(sgdTol*(FP_TYPE)log(3), (FP_TYPE)log(2 + i))))
@@ -909,9 +973,9 @@ void EdgeML::altMinSGD(
 
     fOld = fNew;
 #ifdef XML
-    fNew = batchEvaluate(model.params.Z, Y_sub, Ytest_sub, model.params.B, WX_sub, WXtest_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 9);
+    fNew = batchEvaluate(model.params.Z, Y_sub, Yvalidation_sub, model.params.B, WX_sub, WXvalidation_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 9);
 #else 
-    fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Ytest, model.params.B, WX, WXtest, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 9);
+    fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Yvalidation, model.params.B, WX, WXvalidation, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 9);
 #endif
 
     if (fNew >= fOld * (1 + safeDiv(sgdTol*(FP_TYPE)log(3), (FP_TYPE)log(2 + i))))
@@ -1021,6 +1085,88 @@ FP_TYPE EdgeML::accuracy(
 
   return ret;
 }
+
+void EdgeML::accuracy(
+  const ZMatType& Z, const LabelMatType& Y, const MatrixXuf& D,
+  const EdgeML::ProblemFormat& problemType, 
+  EdgeML::ProtoNN::ProtoNNPredictor::ResultStruct& res)
+{
+  Timer timer("accuracy");
+  assert(Y.cols() == D.rows());
+  //Ypred = Z*D';
+  MatrixXuf Ytrue(Y);
+  MatrixXuf Yscore(Ytrue.rows(), Ytrue.cols());
+  mm(Yscore, Z, CblasNoTrans, D, CblasTrans, 1.0, 0.0L);
+  timer.nextTime("computing Yscore");
+
+  if (problemType == EdgeML::ProblemFormat::binary || problemType == EdgeML::ProblemFormat::multiclass) {
+    //[~,Ytrue] = max(Ytrue);
+    //[~,Ypred] = max(Ypred);
+    dataCount_t Ytrue_, Ypred_;
+
+    //v = numel(find(Ypred == Ytrue))/numel(Ypred);
+    for (Eigen::Index i = 0; i < Ytrue.cols(); ++i) {
+      Ytrue.col(i).maxCoeff(&Ytrue_);
+      Yscore.col(i).maxCoeff(&Ypred_);
+
+      if (Ytrue_ == Ypred_)
+        res.accuracy += 1;
+    }
+  }
+  else if (problemType == EdgeML::ProblemFormat::multilabel) {
+    const labelCount_t k = 5;
+    FP_TYPE prec1(0), prec3(0), prec5(0);
+
+
+    assert(k * Yscore.cols() < 3e9);
+    std::vector<labelCount_t> topInd(k * Yscore.cols());
+    pfor(Eigen::Index i = 0; i < Ytrue.cols(); ++i) {
+      for (Eigen::Index j = 0; j < Ytrue.rows(); ++j) {
+        FP_TYPE val = Yscore(j, i);
+        if (j >= k && (val < Yscore(topInd[i*k + (k - 1)], i)))
+          continue;
+        size_t top = std::min(j, (Eigen::Index)k - 1);
+        while (top > 0 && (Yscore(topInd[i*k + (top - 1)], i) < val)) {
+          topInd[i*k + (top)] = topInd[i*k + (top - 1)];
+          top--;
+        }
+        topInd[i*k + top] = j;
+      }
+    }
+
+    timer.nextTime("finding max values");
+
+    assert(k >= 5);
+    for (Eigen::Index i = 0; i < Ytrue.cols(); ++i) {
+      for (labelCount_t j = 0; j < 1; ++j) {
+        if (Ytrue(topInd[i*k + j], i) == 1)
+          prec1++;
+      }
+      for (labelCount_t j = 0; j < 3; ++j) {
+        if (Ytrue(topInd[i*k + j], i) == 1)
+          prec3++;
+      }
+      for (labelCount_t j = 0; j < 5; ++j) {
+        if (Ytrue(topInd[i*k + j], i) == 1)
+          prec5++;
+      }
+    }
+
+    timer.nextTime("precision computation");
+
+    dataCount_t totLabel = Y.cols();
+    assert(totLabel != 0);
+    res.precision1 = prec1;
+    res.precision3 = prec3/(FP_TYPE)3;
+    res.precision5 = prec5/(FP_TYPE)5;
+
+    /*LOG_INFO("prec@1: " + std::to_string(safeDiv(prec1, (FP_TYPE) totLabel))
+      + "  prec@3: " + std::to_string(safeDiv(prec3, 3 * (FP_TYPE)totLabel))
+      + "  prec@5: " + std::to_string(safeDiv(prec5, 5 * (FP_TYPE)totLabel)));
+    */
+  }
+}
+
 
 template<class ParamType>
 void EdgeML::accProxSGD(std::function<FP_TYPE(const ParamType&,

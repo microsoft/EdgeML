@@ -18,6 +18,7 @@ ProtoNNModel::ProtoNNHyperParams::ProtoNNHyperParams()
   seed = 42;
 
   ntrain = 0;
+  nvalidation = 0;
   ntest = 0;
 
   iters = 20;
@@ -150,7 +151,7 @@ void ProtoNNModel::ProtoNNHyperParams::setHyperParamsFromArgs(const int argc, co
         ntrain = strtol(argv[i], NULL, 0);
         break;
       case 'e':
-        ntest = std::stoi(argv[i], NULL);
+        nvalidation = std::stoi(argv[i], NULL);
         break;
       case 'D':
         D = strtol(argv[i], NULL, 0);
@@ -204,6 +205,8 @@ void ProtoNNModel::ProtoNNHyperParams::setHyperParamsFromArgs(const int argc, co
         break;
 
       case 'I':
+      case 'V':
+      case 'O':
       case 'F':
         break;
 

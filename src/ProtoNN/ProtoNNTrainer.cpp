@@ -16,7 +16,8 @@ ProtoNNTrainer::ProtoNNTrainer(
   data(dataIngestType,
     DataFormatParams{
       model.hyperParams.ntrain,
-      model.hyperParams.ntest,
+      model.hyperParams.nvalidation,
+      0, // Set the number of test points to zero
       model.hyperParams.l,
       model.hyperParams.D }),
       dataformatType(DataFormat::undefinedData)
@@ -38,21 +39,28 @@ ProtoNNTrainer::ProtoNNTrainer(
   OPEN_DIAGNOSTIC_LOGFILE(outdir);
 #endif
 
-  std::string trainFile = indir + "/train.txt";
-  std::string testFile = indir + "/test.txt";
+  //Assert that the trainFile is properly assigned
+  assert((!trainFile.empty()) && (model.hyperParams.ntrain > 0)); 
+
+  // Pass an empty string as test file, unless it will try to load the test data also
+  std::string testFile = ""; 
   data.loadDataFromFile(dataformatType,
     trainFile,
+    validationFile,
     testFile);
+ 
   finalizeData();
+  normalize();
 }
 
 void ProtoNNTrainer::createOutputDirs()
 {
   std::string subdirName = model.hyperParams.subdirName();
-  outdir = indir + "/ProtoNNResults/" + subdirName;
+  outdir = resdir + "/ProtoNNTrainer_" + subdirName;
+
   try {
-    std::string testcommand1 = "test -d " + indir + "/ProtoNNResults";
-    std::string command1 = "mkdir " + indir + "/ProtoNNResults";
+    std::string testcommand1 = "test -d " + resdir;
+    std::string command1 = "mkdir " + resdir;
     std::string testcommand2 = "test -d " + outdir;
     std::string command2 = "mkdir " + outdir;
 
@@ -155,6 +163,7 @@ void ProtoNNTrainer::finalizeData()
   // does not give us number of training points before-hand!
   assert(model.hyperParams.ntrain > 0);
   assert(model.hyperParams.m <= model.hyperParams.ntrain);
+
 }
 
 void ProtoNNTrainer::train()
@@ -162,18 +171,28 @@ void ProtoNNTrainer::train()
   assert(data.isDataLoaded == true);
   assert(model.hyperParams.isHyperParamInitialized == true);
 
-  normalize();
   initializeModel();
 
   FP_TYPE* stats = new FP_TYPE[model.hyperParams.iters * 9 + 3]; // store output of this run
   altMinSGD(data, model, stats, outdir);
 
+  // Save the parameters of the model in seprate files
   writeMatrixInASCII(model.params.W, outdir, "W");
   writeMatrixInASCII(model.params.B, outdir, "B");
   writeMatrixInASCII(model.params.Z, outdir, "Z");
   MatrixXuf gammaMat(1, 1);
   gammaMat(0, 0) = model.hyperParams.gamma;
   writeMatrixInASCII(gammaMat, outdir, "gamma");
+
+  // Save the model in a single file
+  size_t modelSize = getModelSize();
+  char *buffer[modelSize];
+  exportModel( (const size_t)modelSize, (char *const)buffer);
+  std::ofstream fout(outdir+"/model", std::ios::out|std::ios::binary);
+  assert(fout.is_open());
+  fout.write((char *const)&modelSize, sizeof(modelSize));
+  fout.write((char *const)buffer, modelSize);
+  fout.close();
 
   std::string outFile = outdir + "/runInfo";
   storeParams(commandLine, stats, outFile);
@@ -250,22 +269,35 @@ void ProtoNNTrainer::exportZDense(int bufferSize, char *const buf)
   exportDenseMatrix(model.params.Z, bufferSize, buf);
 }
 
-
 void ProtoNNTrainer::normalize()
 {
-  if (model.hyperParams.normalizationType == minMax) {
-    minMaxNormalize(data.Xtrain, data.Xtest);
-    LOG_INFO("Completed min-max normalization of data");
-  }
-  else if (model.hyperParams.normalizationType == l2) {
-    l2Normalize(data.Xtrain);
-    l2Normalize(data.Xtest);
-    LOG_INFO("Completed L2 normalization of data");
-  }
-  else {
-    // Uncomment if TLC forgets to normalize
-    // l2_normalize(data.Xtrain);
-    //l2_normalize(data.Xtest);
+  NormalizationFormat normalizationType = model.hyperParams.normalizationType;
+
+  switch (normalizationType) {
+    case minMax: 
+    {
+      std::string minMaxFile = resdir + "/min_max_param.txt";
+      computeMinMax(data.Xtrain, data.min, data.max);
+      saveMinMax(data.min, data.max, minMaxFile);
+      minMaxNormalize(data.Xtrain, data.min, data.max);
+      if (data.Xvalidation.cols() > 0)
+        minMaxNormalize(data.Xvalidation, data.min, data.max);
+      LOG_INFO("Completed min-max normalization of data");
+      break;
+    }
+
+    case l2:
+      l2Normalize(data.Xtrain);
+      if (data.Xvalidation.cols() > 0)
+        l2Normalize(data.Xvalidation);
+      LOG_INFO("Completed l2 normalization of data");
+      break;
+
+    case none:
+      break;
+
+    default:
+      assert(false);
   }
 }
 
@@ -274,27 +306,27 @@ void ProtoNNTrainer::initializeModel()
   LOG_INFO("    ");
 
   if (model.hyperParams.initializationType == predefined) {
-    LOG_INFO("Loading predefined input files from directory " + indir);
+    LOG_INFO("Loading predefined input files from predefined folder " + resdir);
 
     MatrixXuf voidMat;
     DataFormat format = tsvFormat;
 
-    std::string infile = indir + "/W";
+    std::string infile = resdir + "/W";
     FileIO::Data W_(infile,
       model.params.W, voidMat, model.hyperParams.d, -1, 0,
       model.hyperParams.D, model.hyperParams.D, 0, format);
 
-    infile = indir + "/Z";
+    infile = resdir + "/Z";
     FileIO::Data Z_(infile,
       model.params.Z, voidMat, model.hyperParams.l, -1, 0,
       model.hyperParams.m, model.hyperParams.m, 0, format);
 
-    infile = indir + "/B";
+    infile = resdir + "/B";
     FileIO::Data B_(infile,
       model.params.B, voidMat, model.hyperParams.d, -1, 0,
       model.hyperParams.m, model.hyperParams.m, 0, format);
 
-    infile = indir + "/gamma";
+    infile = resdir + "/gamma";
     MatrixXuf gammaMat;
     FileIO::Data Gamma_(infile,
       gammaMat, voidMat, 1, -1, 0,
@@ -413,7 +445,15 @@ void ProtoNNTrainer::setFromArgs(const int argc, const char** argv)
     else {
       switch (argv[i - 1][1]) {
       case 'I':
-        indir = argv[i];
+        trainFile = argv[i];
+        break;
+
+      case 'V':
+        validationFile = argv[i];
+        break;
+
+      case 'O':
+        resdir = argv[i];
         break;
 
       case 'F':

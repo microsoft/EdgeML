@@ -36,6 +36,7 @@ namespace EdgeML
   struct DataFormatParams
   {
     dataCount_t numTrainPoints;
+    dataCount_t numValidationPoints;
     dataCount_t numTestPoints;
     labelCount_t numLabels;
     featureCount_t dimension;
@@ -71,19 +72,30 @@ namespace EdgeML
   public:
     bool isDataLoaded;
 
+    //NormalizationFormat normalizationType;
+
     MatrixXuf trainData, trainLabel;
+    MatrixXuf validationData, validationLabel;
     MatrixXuf testData, testLabel;
 
     SparseMatrixuf Xtrain, Ytrain;
+    SparseMatrixuf Xvalidation, Yvalidation;
     SparseMatrixuf Xtest, Ytest;
+
+    MatrixXuf mean, variance;
+    MatrixXuf min, max;
 
     void loadDataFromFile(
       DataFormat format,
       std::string trainFile,
+      std::string validationFile,
       std::string testFile);
+
+    Data() {};
 
     Data(DataIngestType dataIngestType,
       DataFormatParams formatParams);
+
     ~Data() {};
 
     void feedSparseData(const SparseDataPoint& point);
@@ -91,10 +103,14 @@ namespace EdgeML
     void finalizeData();
 
     inline DataIngestType getIngestType() { return ingestType; }
-  };
+ };
 
   void minMaxNormalize(SparseMatrixuf& dataMatrix, SparseMatrixuf& valMatrix);
+  void computeMinMax(const SparseMatrixuf& dataMatrix, MatrixXuf& min, MatrixXuf& max);
+  void minMaxNormalize(SparseMatrixuf& dataMatrix, const MatrixXuf& min, const MatrixXuf& max);
   void l2Normalize(SparseMatrixuf& dataMatrix);
   void meanVarNormalize(SparseMatrixuf& dataMatrix, MatrixXuf& mean, MatrixXuf& variance);
+  void saveMinMax(const MatrixXuf& min, const MatrixXuf& max, std::string fileName);
+  void loadMinMax(MatrixXuf& min, MatrixXuf& max, int dim, std::string fileName);
 }
 #endif

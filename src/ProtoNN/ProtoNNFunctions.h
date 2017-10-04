@@ -28,6 +28,16 @@ namespace EdgeML
     const EdgeML::ProblemFormat & problemType,
     FP_TYPE * const stats);
 
+  FP_TYPE batchEvaluate(
+    const ZMatType& Z,
+    const LabelMatType& Y,
+    const BMatType& B,
+    const MatrixXuf& WX,
+    const FP_TYPE& gamma,
+    const EdgeML::ProblemFormat& problemType,
+    EdgeML::ProtoNN::ProtoNNPredictor::ResultStruct& res,
+    FP_TYPE* const stats);
+
   //
   // Returns accuracy with respect to current parameters
   // Input: @Z: sparse, @Y: sparse, @D: dense
@@ -37,6 +47,12 @@ namespace EdgeML
     const LabelMatType& Y,
     const MatrixXuf& D,
     const EdgeML::ProblemFormat& problem);
+
+  void accuracy(
+    const ZMatType& Z, const LabelMatType& Y, const MatrixXuf& D,
+    const EdgeML::ProblemFormat& problemType, 
+    EdgeML::ProtoNN::ProtoNNPredictor::ResultStruct& res);
+
 
   //
   // Returns loss with respect to current parameters

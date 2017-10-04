@@ -13,6 +13,7 @@ namespace EdgeML
     //
     // Should the model parameters and labels be represented as sparse or dense?
     //
+
 #ifdef SPARSE_Z
 #define ZMatType SparseMatrixuf
 #else
@@ -49,8 +50,8 @@ namespace EdgeML
       {
         int seed;
 
-        dataCount_t ntrain, ntest, batchSize;
-        int iters, epochs;
+        dataCount_t ntrain, ntest, nvalidation, batchSize;
+        int epochs, iters;
 
         featureCount_t D, d;
         labelCount_t m, k, l;
@@ -101,6 +102,9 @@ namespace EdgeML
       void exportModel(const size_t modelSize, char *const toModel);
       void importModel(const size_t numBytes, const char *const fromModel);
 
+
+      ProtoNNModel();
+      ProtoNNModel(std::string fromModelFile);
       ProtoNNModel(const size_t numBytes, const char *const fromModel);
       ProtoNNModel(const int argc, const char** argv);
       ProtoNNModel(const ProtoNNHyperParams& hyperParams_);
@@ -117,7 +121,9 @@ namespace EdgeML
       ////////////////////////////////////////////////////////
 
       DataFormat dataformatType;
-      std::string indir;
+      std::string trainFile;
+      std::string validationFile;
+      std::string resdir;
       std::string outdir;
       std::string commandLine;
 
@@ -207,6 +213,17 @@ namespace EdgeML
       MatrixXuf BColSum, BAccumulator, B_B, gammaSqRow, gammaSqCol; // Constants set in constructor
       FP_TYPE gammaSq;
 
+      std::string testFile;
+      std::string modelFile;
+      std::string normParamFile;
+      std::string commandLine;
+      std::string outdir;
+      int ntest;
+      int batchSize;
+      EdgeML::NormalizationFormat normalizationType;
+
+      DataFormat dataformatType;
+      Data testData;
       FP_TYPE* data;	// for scoreSparseDataPoint
 
 #ifdef SPARSE_Z
@@ -220,11 +237,27 @@ namespace EdgeML
 
       void RBF();
 
+      void setFromArgs(const int argc, const char** argv);
+  
+      void createOutputDirs();
+
     public:
+      struct ResultStruct {
+        ProblemFormat problemType;
+        FP_TYPE accuracy;
+        FP_TYPE precision1;
+        FP_TYPE precision3;
+        FP_TYPE precision5;
+      };
 
       ProtoNNPredictor(
         const size_t numBytes,
         const char *const fromModel);
+
+      ProtoNNPredictor(
+        const DataIngestType& dataIngestType,
+        const int& argc,
+        const char ** argv);
 
       ~ProtoNNPredictor();
 
@@ -247,6 +280,9 @@ namespace EdgeML
         const featureCount_t *indices,
         const featureCount_t numIndices);
 
+      ResultStruct evaluateScores();
+
+      void normalize();
     };
   }
 }
