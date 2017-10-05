@@ -27,7 +27,7 @@ endif()
 #define variables for mkl include directories
 set(MKL_INCLUDE_DIR $ENV{MKLROOT}/include)
 include_directories(${MKL_INCLUDE_DIR})
-#link_directories($ENV{MKLROOT}/lib/intel64)
+link_directories($ENV{MKLROOT}/lib/intel64)
 
 # add debug definitions to compiler flags
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DLIGHT_LOGGER")  #-DLOGGER #-DTIMER -DCONCISE #-DSTDERR_ONSCREEN #-DLIGHT_LOGGER -DVERBOSE #-DDUMP #-DVERIFY
@@ -51,6 +51,9 @@ if(MSVC)
 endif()
 
 MESSAGE(STATUS "CMAKE_CXX_FLAGS:" ${CMAKE_CXX_FLAGS})
+MESSAGE(STATUS "CMAKE_CXX_FLAGS_DEBUG:" ${CMAKE_CXX_FLAGS_DEBUG})
 
 # Include project directories
 add_subdirectory(src)
+#add_subdirectory(BonsaiTest)
+add_subdirectory(ProtoNNTest)
