@@ -51,7 +51,8 @@ int main()
   {
     BonsaiTrainer trainer(DataIngestType::InterfaceIngest, hyperParam);
 
-    std::ifstream ifs("/home/t-vekusu/ICMLDatasets/multiclass/mnist/train");
+    string inputFilePath;
+    std::ifstream ifs(inputFilePath);
     FP_TYPE *trainvals = new FP_TYPE[hyperParam.dataDimension];
     memset(trainvals, 0, sizeof(FP_TYPE)*(hyperParam.dataDimension));
 
