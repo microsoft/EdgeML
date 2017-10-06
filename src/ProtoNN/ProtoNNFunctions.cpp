@@ -169,7 +169,6 @@ FP_TYPE EdgeML::batchEvaluate(
       const MatrixXuf&,
       const dataCount_t*)> metric) {
   */
-  assert(WX.cols() >= WXval.cols()); //Can be avoided if necessary
   FP_TYPE objective = 0.0;
 
   dataCount_t n = WX.cols();
