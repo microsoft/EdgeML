@@ -9,12 +9,8 @@ set (EXECUTABLE_OUTPUT_PATH ${GLOBAL_BIN_DIR})
 add_executable(${tool_name} ${src} ${include})
 target_include_directories(${tool_name} PRIVATE include)
 
-set(LINKLIBS "common bonsai mkl_sequential mkl_intel_ilp64 mkl_core")
-
-MESSAGE(STATUS "Bonsai LINK Libraries:" ${LINKLIBS})
-
 IF(CMAKE_COMPILER_IS_GNUCC)
- target_link_libraries(${tool_name} common bonsai mkl_sequential mkl_intel_ilp64 mkl_core m dl pthread cilkrts)
+ target_link_libraries(${tool_name} common bonsai mkl_sequential mkl_intel_ilp64 mkl_core gomp pthread cilkrts)
 ENDIF (CMAKE_COMPILER_IS_GNUCC)
 
 IF(NOT CMAKE_COMPILER_IS_GNUCC)
