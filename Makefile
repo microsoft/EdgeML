@@ -11,7 +11,7 @@ BONSAI_INCLUDES=$(SOURCE_DIR)/Bonsai
 IFLAGS=-I eigen/ -I$(MKL_ROOT)/include \
 	 -I$(COMMON_INCLUDES) -I$(PROTONN_INCLUDES) -I$(BONSAI_INCLUDES)
 
-all: ProtoNN Bonsai #ProtoNNIngestTest BonsaiIngestTest 
+all: ProtoNN ProtoNNPredict #Bonsai #ProtoNNIngestTest BonsaiIngestTest 
 
 libcommon.so: $(COMMON_INCLUDES)
 	$(MAKE) -C $(SOURCE_DIR)/common
@@ -25,6 +25,9 @@ libBonsai.so: $(BONSAI_INCLUDES)
 ProtoNNLocalDriver.o: ProtoNNLocalDriver.cpp $(PROTONN_INCLUDES)
 	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
 
+ProtoNNLocalPredictor.o: ProtoNNLocalPredictor.cpp $(PROTONN_INCLUDES)
+	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
+
 ProtoNNIngestTest.o: ProtoNNIngestTest.cpp $(PROTONN_INCLUDES)
 	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
 
@@ -36,6 +39,9 @@ BonsaiIngestTest.o:BonsaiIngestTest.cpp $(BONSAI_INCLUDES)
 
 
 ProtoNN: ProtoNNLocalDriver.o libcommon.so libProtoNN.so
+	$(CC) -o $@ $^ $(CFLAGS) $(MKL_PAR_LDFLAGS) $(CILK_LDFLAGS)
+
+ProtoNNPredict: ProtoNNLocalPredictor.o libcommon.so libProtoNN.so
 	$(CC) -o $@ $^ $(CFLAGS) $(MKL_PAR_LDFLAGS) $(CILK_LDFLAGS)
 
 #ProtoNNIngestTest: ProtoNNIngestTest.o libcommon.so libProtoNN.so
@@ -57,7 +63,7 @@ clean:
 	$(MAKE) -C $(SOURCE_DIR)/Bonsai clean
 
 cleanest: clean
-	rm -f ProtoNN ProtoNNIngestTest BonsaiIngestTest Bonsai
+	rm -f ProtoNN ProtoNNPredict ProtoNNIngestTest BonsaiIngestTest Bonsai
 	$(MAKE) -C $(SOURCE_DIR)/common cleanest
 	$(MAKE) -C $(SOURCE_DIR)/ProtoNN cleanest
 	$(MAKE) -C $(SOURCE_DIR)/Bonsai cleanest
