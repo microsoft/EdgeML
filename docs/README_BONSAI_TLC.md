@@ -39,7 +39,7 @@ We use simple Batch Gradient Descent as the solver with Armijo rule as the step 
 When given an input fearure vector X, Bonsai gives the prediction as follows :
 
     (a) We project the data onto a low dimensional space by computing x^ = Zx.
-    (b) The final bonsai prediction score is the non linear scores ( wx^ * tanh(sigma*vx^) ) predicted by each of the individual nodes along the path traversed by the Bonsai tree.
+    (b) The final bonsai prediction score is the sum of the non linear scores ( wx^ * tanh(sigma*vx^) ) predicted by each of the individual nodes along the path traversed by the Bonsai tree.
 
 
 ## Parameters and HyperParameters
@@ -54,9 +54,9 @@ When given an input fearure vector X, Bonsai gives the prediction as follows :
     rz   : lambda_Z = regularizer for kernel parameters Z  (Default: 0.00001 Try: [0.001, 0.0001, 0.000001]).
 
     Use Sparsity Params to vary your model Size
-    sw  : sparsity_W = regularizer for classifier parameter W  (Default: For Binaray 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
-    sTheta  : sparsity_Theta = regularizer for kernel parameter Theta  (Default: For Binaray 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
-    sv  : sparsity_V = regularizer for kernel parameters V  (Default: For Binaray 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
-    sz  : sparsity_Z = regularizer for kernel parameters Z  (Default: 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
+    sw  : sparsity_W = sparsity for classifier parameter W  (Default: For Binaray 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
+    sTheta  : sparsity_Theta = sparsity for kernel parameter Theta  (Default: For Binaray 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
+    sv  : sparsity_V = sparsity for kernel parameters V  (Default: For Binaray 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
+    sz  : sparsity_Z = sparsity for kernel parameters Z  (Default: 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
 
     iter   : [Default: 40 Try: [100, 30, 60]] Number of passes through the dataset.

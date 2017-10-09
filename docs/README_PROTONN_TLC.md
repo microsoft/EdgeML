@@ -1,4 +1,4 @@
-# ProtoNN: Compressed and accurate KNN for resource-constrained devices
+o# ProtoNN: Compressed and accurate KNN for resource-constrained devices
 
 ProtoNN ([paper](http://manikvarma.org/pubs/gupta17.pdf)) has been developed for machine learning applications where the intended footprint of the ML model is small. ProtoNN models have memory requirements that are several orders of magnitude lower than other modern ML algorithms. At prediction time, ProtoNN is fast, precise, and accurate. 
 
@@ -21,7 +21,7 @@ ProtoNN also assumes an RBF-kernel parametrized by a single parameter \gamma. Ea
 The user presented with a model-size budget has to make a decision regarding the following 5 parameters: 
 - The projection dimension d
 - The number of prototypes m
-- The 3 sparsity parameters: \lambda_W, \lambda_B, \lambda_Z
+- The 3 sparsity parameters: \lambda~W, \lambda~B, \lambda~Z
  
 Each parameter requires the following number of non-zero values for storage:
 - S_W: min(1, 2\lambda_W) \cdot d \cdot D
