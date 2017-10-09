@@ -1,4 +1,4 @@
-o# ProtoNN: Compressed and accurate KNN for resource-constrained devices
+# ProtoNN: Compressed and accurate KNN for resource-constrained devices
 
 ProtoNN ([paper](http://manikvarma.org/pubs/gupta17.pdf)) has been developed for machine learning applications where the intended footprint of the ML model is small. ProtoNN models have memory requirements that are several orders of magnitude lower than other modern ML algorithms. At prediction time, ProtoNN is fast, precise, and accurate. 
 
@@ -21,7 +21,7 @@ ProtoNN also assumes an RBF-kernel parametrized by a single parameter \gamma. Ea
 The user presented with a model-size budget has to make a decision regarding the following 5 parameters: 
 - The projection dimension d
 - The number of prototypes m
-- The 3 sparsity parameters: \lambda~W, \lambda~B, \lambda~Z
+- The 3 sparsity parameters: \lambda_W, \lambda_B, \lambda_Z
  
 Each parameter requires the following number of non-zero values for storage:
 - S_W: min(1, 2\lambda_W) \cdot d \cdot D
@@ -43,8 +43,6 @@ While training, we are presented with training examples X_1, X_2, ... X_n along 
 We optimize the l_2-square loss over all training points as follows:  \sum_{i=0}^{n} = ||Y_i-\sum_{j=0}^{m}\space \left(exp\left[-\gamma^2||W\cdot X_i - B_j||^2\right]\cdot Z_j\right)||_2^2. 
 While performing stochastic gradient descent, we hard threshold after each gradient update step to ensure that the three memory constraints (one each for \lambda_W, \lambda_B, \lambda_Z) are satisfied by the matrices W, B and Z. 
 
-## Output
-TODO
 
 ## Parameters
 - Projection Dimension (d): this is the dimension into which the data is projected
