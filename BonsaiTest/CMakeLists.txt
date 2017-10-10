@@ -10,11 +10,11 @@ add_executable(${tool_name} ${src} ${include})
 target_include_directories(${tool_name} PRIVATE include)
 
 IF(CMAKE_COMPILER_IS_GNUCC)
- target_link_libraries(${tool_name} common bonsai mkl_sequential mkl_intel_ilp64 mkl_core gomp pthread cilkrts)
+ target_link_libraries(${tool_name} common bonsai  mkl_intel_ilp64 mkl_core mkl_sequential cilkrts)
 ENDIF (CMAKE_COMPILER_IS_GNUCC)
 
 IF(NOT CMAKE_COMPILER_IS_GNUCC)
- target_link_libraries(${tool_name} common bonsai mkl_sequential mkl_intel_ilp64 mkl_core)
+ target_link_libraries(${tool_name} common bonsai  mkl_intel_ilp64 mkl_core mkl_sequential)
 ENDIF (NOT CMAKE_COMPILER_IS_GNUCC)
 
 set_property(TARGET ${tool_name} PROPERTY FOLDER "bonsaitest")
