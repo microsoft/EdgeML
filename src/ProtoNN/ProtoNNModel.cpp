@@ -17,13 +17,15 @@ ProtoNNModel::ProtoNNModel(
   infile.read((char*)&modelSize, sizeof(modelSize));
 
   // Allocate buffer
-  char* buff[modelSize];
+  char* buff = new char[modelSize];
 
   //Load model from model file
   infile.read((char*)buff, modelSize);
   infile.close();
- 
+
   importModel(modelSize, (char *const) buff);
+
+  delete[] buff;
 }
 
 ProtoNNModel::ProtoNNModel()

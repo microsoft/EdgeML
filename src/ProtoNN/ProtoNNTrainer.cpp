@@ -186,13 +186,14 @@ void ProtoNNTrainer::train()
 
   // Save the model in a single file
   size_t modelSize = getModelSize();
-  char *buffer[modelSize];
-  exportModel( (const size_t)modelSize, (char *const)buffer);
+  char *buffer = new char[modelSize];
+  exportModel((const size_t)modelSize, (char *const)buffer);
   std::ofstream fout(outdir+"/model", std::ios::out|std::ios::binary);
   assert(fout.is_open());
   fout.write((char *const)&modelSize, sizeof(modelSize));
   fout.write((char *const)buffer, modelSize);
   fout.close();
+  delete[] buffer;
 
   std::string outFile = outdir + "/runInfo";
   storeParams(commandLine, stats, outFile);
