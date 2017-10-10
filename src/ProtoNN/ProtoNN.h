@@ -88,8 +88,8 @@ namespace EdgeML
         ~ProtoNNParams();
 
         void resizeParamsFromHyperParams(
-          const struct ProtoNNHyperParams& hyperParams,
-          const bool setMemory = true);
+        const struct ProtoNNHyperParams& hyperParams,
+        const bool setMemory = true);
       };
 
       struct ProtoNNParams params;
@@ -248,6 +248,10 @@ namespace EdgeML
         FP_TYPE precision1;
         FP_TYPE precision3;
         FP_TYPE precision5;
+
+        ResultStruct();
+        inline void scaleAndAdd(ResultStruct& a, FP_TYPE scale);
+        inline void scale(FP_TYPE scale);
       };
 
       ProtoNNPredictor(
@@ -268,7 +272,6 @@ namespace EdgeML
         const labelCount_t& numLabels,
         const EdgeML::ProblemFormat& problemType);
 
-
       // Not thread safe
       void scoreDenseDataPoint(
         FP_TYPE* scores,
@@ -280,7 +283,16 @@ namespace EdgeML
         const featureCount_t *indices,
         const featureCount_t numIndices);
 
-      ResultStruct evaluateScores();
+      void scoreBatch(
+        MatrixXuf& Yscores,
+        Eigen::Index startIdx,
+        Eigen::Index batchSize);
+
+      ResultStruct evaluate();
+
+      ResultStruct evaluateBatch(
+        const MatrixXuf& Yscores,
+        const LabelMatType& Y);
 
       void normalize();
     };

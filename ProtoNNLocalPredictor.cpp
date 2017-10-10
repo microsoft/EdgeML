@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
                                               argc, (const char**)argv);
 
   ProtoNNPredictor::ResultStruct res;
-  res = predictor.evaluateScores();
+  res = predictor.evaluate();
   switch(res.problemType) {
     case binary:
     case multiclass:
