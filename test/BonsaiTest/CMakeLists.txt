@@ -1,4 +1,4 @@
-set (tool_name bonsaitest)
+set (tool_name Bonsai)
 
 set (src src/BonsaiLocalDriver.cpp)
 
@@ -17,4 +17,4 @@ IF(NOT CMAKE_COMPILER_IS_GNUCC)
  target_link_libraries(${tool_name} common bonsai  mkl_intel_ilp64 mkl_core mkl_sequential)
 ENDIF (NOT CMAKE_COMPILER_IS_GNUCC)
 
-set_property(TARGET ${tool_name} PROPERTY FOLDER "bonsaitest")
+set_property(TARGET ${tool_name} PROPERTY FOLDER "test/Bonsai")

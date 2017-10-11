@@ -54,6 +54,5 @@ MESSAGE(STATUS "CMAKE_CXX_FLAGS:" ${CMAKE_CXX_FLAGS})
 MESSAGE(STATUS "CMAKE_CXX_FLAGS_DEBUG:" ${CMAKE_CXX_FLAGS_DEBUG})
 
 # Include project directories
-add_subdirectory(src)
-add_subdirectory(BonsaiTest)
-add_subdirectory(ProtoNNTest)
+add_subdirectory(lib)
+add_subdirectory(test)
