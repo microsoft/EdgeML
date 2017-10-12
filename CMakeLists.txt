@@ -25,9 +25,12 @@ if(MSVC)
 endif()
 
 #define variables for mkl include directories
-set(MKL_INCLUDE_DIR $ENV{MKLROOT}/include)
+#set your MKL_ROOT here
+set(MKL_ROOT "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017/windows/mkl")
+set(MKL_INCLUDE_DIR ${MKL_ROOT}/include)
 include_directories(${MKL_INCLUDE_DIR})
-link_directories($ENV{MKLROOT}/lib/intel64)
+link_directories(${MKL_ROOT}/lib/intel64_win)
+link_directories(${MKL_ROOT}/../compiler/lib/intel64_win)
 
 # add debug definitions to compiler flags
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DLIGHT_LOGGER")  #-DLOGGER #-DTIMER -DCONCISE #-DSTDERR_ONSCREEN #-DLIGHT_LOGGER -DVERBOSE #-DDUMP #-DVERIFY

@@ -14,7 +14,7 @@ IF(CMAKE_COMPILER_IS_GNUCC)
 ENDIF (CMAKE_COMPILER_IS_GNUCC)
 
 IF(NOT CMAKE_COMPILER_IS_GNUCC)
- target_link_libraries(${tool_name} common protonn mkl_intel_ilp64 mkl_core mkl_gnu_thread)
+ target_link_libraries(${tool_name} common protonn mkl_intel_ilp64  mkl_intel_thread mkl_core libiomp5md)
 ENDIF (NOT CMAKE_COMPILER_IS_GNUCC)
 
 set_property(TARGET ${tool_name} PROPERTY FOLDER "test/ProtoNN")
