@@ -151,7 +151,7 @@ void ProtoNNModel::ProtoNNHyperParams::setHyperParamsFromArgs(const int argc, co
         ntrain = strtol(argv[i], NULL, 0);
         break;
       case 'e':
-        nvalidation = std::stoi(argv[i], NULL);
+        nvalidation = strtol(argv[i], NULL, 0);
         break;
       case 'D':
         D = strtol(argv[i], NULL, 0);

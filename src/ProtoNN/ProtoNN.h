@@ -218,8 +218,8 @@ namespace EdgeML
       std::string normParamFile;
       std::string commandLine;
       std::string outdir;
-      int ntest;
-      int batchSize;
+      dataCount_t ntest;
+      dataCount_t batchSize;
       EdgeML::NormalizationFormat normalizationType;
 
       DataFormat dataformatType;
@@ -285,10 +285,12 @@ namespace EdgeML
 
       void scoreBatch(
         MatrixXuf& Yscores,
-        Eigen::Index startIdx,
-        Eigen::Index batchSize);
+        dataCount_t startIdx,
+        dataCount_t batchSize);
 
       ResultStruct evaluate();
+      
+      ResultStruct evaluatePoint();
 
       ResultStruct evaluateBatch(
         const MatrixXuf& Yscores,

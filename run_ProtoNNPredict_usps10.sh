@@ -8,7 +8,7 @@
 ########################################################
 
 test_file="-I usps10/test.txt"
-model_file="-M usps10/ProtoNNResults/pd_15_protPerClass_0_prot_200_spW_1.000000_spZ_1.000000_spB_1.000000_gammaNumer_1.000000_normal_1_seed_42_bs_1024_it_20_ep_20/model"
+model_file="-M usps10/ProtoNNResults/ProtoNNTrainer_pd_15_protPerClass_0_prot_200_spW_1.000000_spZ_1.000000_spB_1.000000_gammaNumer_1.000000_normal_1_seed_42_bs_1024_it_20_ep_20/model"
 output_dir="-O usps10/ProtoNNResults"
 input_format="-F 0"
 ntest="-e 2007"
