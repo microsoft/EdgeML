@@ -106,8 +106,6 @@ ProtoNNPredictor::ProtoNNPredictor(
   alpha = 1.0;
   beta = 0.0;
 #endif
-
-  data = NULL; //set to NULL, used for InterfaceIngest
 }
 
 ProtoNNPredictor::ProtoNNPredictor(
@@ -206,7 +204,7 @@ void ProtoNNPredictor::setFromArgs(const int argc, const char** argv)
           break;
 
         case 'e':
-          ntest = std::stoi(argv[i]);
+          ntest = strtol(argv[i], NULL, 0);
           break;
 
         case 'M':
@@ -229,7 +227,7 @@ void ProtoNNPredictor::setFromArgs(const int argc, const char** argv)
           break;
 
         case 'b':
-          batchSize = std::stoi(argv[i]);
+          batchSize = strtol(argv[i], NULL, 0);
           break;
 
 /*
@@ -352,6 +350,7 @@ void ProtoNNPredictor::scoreSparseDataPoint(
   const featureCount_t *indices,
   const featureCount_t numIndices)
 {
+
   memset(data, 0, sizeof(FP_TYPE)*model.hyperParams.D);
 
   pfor(featureCount_t i = 0; i < numIndices; ++i) {
@@ -388,8 +387,8 @@ void ProtoNNPredictor::scoreSparseDataPoint(
 
 void ProtoNNPredictor::scoreBatch(
   MatrixXuf& Yscores,
-  Eigen::Index startIdx,
-  Eigen::Index batchSize)
+  dataCount_t startIdx,
+  dataCount_t batchSize)
 {
   FP_TYPE stats[12]; // currently, stats are not being used
   dataCount_t n = testData.Xtest.cols();
@@ -398,9 +397,15 @@ void ProtoNNPredictor::scoreBatch(
   assert(batchSize > 0);
   assert(startIdx + batchSize <= n);
 
-  SparseMatrixuf curTestData = testData.Xtest.middleCols(startIdx, batchSize);
   MatrixXuf curWX = MatrixXuf(model.params.W.rows(), batchSize);
-  mm(curWX, model.params.W, CblasNoTrans, curTestData, CblasNoTrans, 1.0, 0.0L);
+  if (dataformatType == libsvmFormat) {
+    SparseMatrixuf curTestData = testData.Xtest.middleCols(startIdx, batchSize);
+    mm(curWX, model.params.W, CblasNoTrans, curTestData, CblasNoTrans, 1.0, 0.0L);
+  }
+  else {
+    MatrixXuf curTestData = testData.testData.middleCols(startIdx, batchSize);
+    mm(curWX, model.params.W, CblasNoTrans, curTestData, CblasNoTrans, 1.0, 0.0L);
+  }
   MatrixXuf curD = gaussianKernel(model.params.B, curWX, model.hyperParams.gamma);
 
   mm(Yscores, model.params.Z, CblasNoTrans, curD, CblasTrans, 1.0, 0.0L);
@@ -436,23 +441,87 @@ void ProtoNNPredictor::normalize()
 
 ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluate()
 {
-  dataCount_t n = testData.Xtest.cols();
+  dataCount_t n;
+  assert(dataformatType == libsvmFormat);
+  if (dataformatType == libsvmFormat)
+    n = testData.Xtest.cols();
+  else 
+    n = testData.testData.cols();
   assert(n > 0);
 
   dataCount_t nbatches = n / batchSize + 1;
 
-  ProtoNNPredictor::ResultStruct res;
+  ProtoNNPredictor::ResultStruct res, tempRes;
   for (dataCount_t i = 0; i < nbatches; ++i) {
     Eigen::Index startIdx =  i * batchSize;
     dataCount_t curBatchSize = (batchSize < n - startIdx)? batchSize : n - startIdx;
-    MatrixXuf Yscores = MatrixXuf::Zero(testData.Ytest.rows(), curBatchSize);
+    MatrixXuf Yscores = MatrixXuf::Zero(model.hyperParams.l, curBatchSize);
     scoreBatch(Yscores, startIdx, curBatchSize); 
-    ResultStruct tempRes = evaluateBatch(Yscores, testData.Ytest.middleCols(startIdx, curBatchSize));
+    if (dataformatType == libsvmFormat)
+      tempRes = evaluateBatch(Yscores, testData.Ytest.middleCols(startIdx, curBatchSize));
+    else
+      tempRes = evaluateBatch(Yscores, testData.Ytest.middleCols(startIdx, curBatchSize));
+      //?? Ytest needs to be replaced by testLabel
     res.scaleAndAdd(tempRes, curBatchSize);
   }
   res.scale(1/(FP_TYPE)n);
   return res;
 }
+
+ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluatePoint()
+{
+  dataCount_t n;
+  FP_TYPE *scores, *featureValues;
+  featureCount_t *featureIndices, numIndices;
+
+  assert(dataformatType == libsvmFormat);
+
+  if (dataformatType == libsvmFormat)
+    n = testData.Xtest.cols();
+  else 
+    n = testData.testData.cols();
+  assert(n > 0);
+
+  scores = new FP_TYPE[model.hyperParams.l];
+  Map<MatrixXuf> Yscores(scores, model.hyperParams.l, 1);
+
+  ProtoNNPredictor::ResultStruct res, tempRes;
+  for (dataCount_t i = 0; i < n; ++i) {
+    FP_TYPE* values;
+    if (dataformatType == libsvmFormat) {
+      featureCount_t numIndices = testData.Xtest.middleCols(i, 1).nonZeros();
+      featureValues = new FP_TYPE[numIndices];
+      featureIndices = new featureCount_t[numIndices];
+
+      featureCount_t fIdx = 0;
+      for (SparseMatrixuf::InnerIterator it(testData.Xtest, i); it; ++it) {
+        featureValues[fIdx] = it.value();
+        featureIndices[fIdx] = it.index();
+        ++fIdx;
+      }
+      scoreSparseDataPoint(scores, featureValues, featureIndices, numIndices);
+      tempRes = evaluateBatch(Yscores, testData.Ytest.middleCols(i, 1));
+       
+      delete[] featureValues;
+      delete[] featureIndices;
+    }  
+    else {
+      featureValues = &testData.testData(i, 0); /*
+      for (featureCount_t fIdx = 0; fIdx < model.hyperParams.D; fIdx++)
+        featureValues[fIdx] = testData.testData(i, fIdx); */
+      scoreDenseDataPoint(scores, featureValues);
+      tempRes = evaluateBatch(Yscores, testData.Ytest.middleCols(i, 1));
+      // ?? Ytest needs to be replaced by testLabel
+    }
+    res.scaleAndAdd(tempRes, 1);
+  }
+  res.scale(1/(FP_TYPE)n);
+
+  delete[] scores;
+  
+  return res;
+}
+
 
 // computes accuracy for binary/multiclass datasets, and prec1, prec3, prec5 for multilabel datasets
 ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluateBatch(

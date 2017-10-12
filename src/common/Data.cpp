@@ -32,6 +32,10 @@ void Data::loadDataFromFile(
   validationData = MatrixXuf(0, 0);
   testData = MatrixXuf(0, 0);
 
+  Xtest = SparseMatrixuf(0, 0);
+  Xvalidation = SparseMatrixuf(0, 0);
+  Xtest = SparseMatrixuf(0, 0);
+
   LOG_INFO("");
   if (format == tsvFormat) {
     if((!infileTrain.empty()) && (formatParams.numTrainPoints > 0)) {
