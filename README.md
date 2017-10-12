@@ -26,7 +26,7 @@ We welcome contributions, comments and criticism. For questions, please [email H
   The code can be made to work with other math libraries with a few modifications.
 
 ### Building
-After cloning this reposirory, set compiler and flags appropriately in `config.mk` and do:
+After cloning this repository, set compiler and flags appropriately in `config.mk` and do:
 
 ```bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<MKL_PATH>:<EDGEML_ROOT>
@@ -51,7 +51,7 @@ mv usps.t test.txt
 cd <EDGEML_ROOT>
 ```
 This will create a sample train and test dataset, on which
-you can  train and test Bonsai and ProtoNN algorithms.
+you can train and test Bonsai and ProtoNN algorithms.
 For detailed instructions, see [Bonsai Readme](docs/README_BONSAI_OSS.md) and [ProtoNN Readme](docs/README_PROTONN_OSS.ipynb).
 
 ### Makefile flags
