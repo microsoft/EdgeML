@@ -49,10 +49,10 @@ REM # execute Bonsai
 REM ########################################################
 
 REM #gdb= gdb --args
-SET executable=./build/bin/Bonsai
-@ECHO ON
+SET executable=./build/bin/Release/Bonsai
 SET command=%executable% %input_format% %num_features% %num_labels% %ntrain% %ntest% %projection_dimension% %tree_depth% %sigma% %reg_W% %reg_Z% %reg_Theta% %reg_V% %sparse_Z% %sparse_Theta% %sparse_V% %sparse_W% %batch_factor% %iters% %input_dir%
+@ECHO ON
 ECHO Running Bonsai with following command:
 ECHO %command%
-start %command%
+start /B %command%
 pause

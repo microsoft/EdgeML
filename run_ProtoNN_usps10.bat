@@ -56,10 +56,10 @@ REM ########################################################
 REM # execute ProtoNN
 REM ########################################################
 
-SET executable=./build/bin/ProtoNN
+SET executable=./build/bin/debug/ProtoNN
 SET command=%executable% %predefined_model% %seed% %problem_format% %input_dir% %input_format% %ntrain% %ntest% %original_dimension% %projection_dimension% %num_labels% %prototypes% %lambda_W% %lambda_Z% %lambda_B% %gammaNumerator% %batch_size% %iters% %epochs% %normalization%
+@ECHO ON
 ECHO Running ProtoNN with following command: 
-ECHO $command
-ECHO 
-START %command%
+ECHO %command%
+START /B %command%
 pause
