@@ -13,6 +13,7 @@ problem_format="-C 1"
 train_file="-I usps10/train.txt"
 validation_file="-V usps10/test.txt"
 output_dir="-O usps10/ProtoNNResults"
+model_dir="-M usps10/"
 input_format="-F 0"
 
 
@@ -22,7 +23,7 @@ input_format="-F 0"
 ########################################################
 
 ntrain="-r 7291"
-nvalidation="-e 2007"
+nvalidation="-v 2007"
 original_dimension="-D 256"
 num_labels="-l 10" 
 
@@ -46,7 +47,7 @@ lambda_W="-W 1.0"
 lambda_Z="-Z 1.0"
 lambda_B="-B 1.0"
 gammaNumerator="-g 1.0"
-normalization="-N 0"
+normalization="-N 1"
 seed="-R 42"
 
 
@@ -67,7 +68,7 @@ epochs="-E 20"
 
 #gdb=" gdb --args" 
 executable="./ProtoNN"
-command=$gdb" "$executable" "$predefined_model" "$seed" "$problem_format" "$train_file" "$validation_file" "$output_dir" "$input_format" "$ntrain" "$nvalidation" "$original_dimension" "$projection_dimension" "$num_labels" "$prototypes" "$lambda_W" "$lambda_Z" "$lambda_B" "$gammaNumerator" "$batch_size" "$iters" "$epochs" "$normalization
+command=$gdb" "$executable" "$predefined_model" "$seed" "$problem_format" "$train_file" "$validation_file" "$output_dir" "$model_dir" "$input_format" "$ntrain" "$nvalidation" "$original_dimension" "$projection_dimension" "$num_labels" "$prototypes" "$lambda_W" "$lambda_Z" "$lambda_B" "$gammaNumerator" "$batch_size" "$iters" "$epochs" "$normalization
 echo "Running ProtoNN with following command: "
 echo $command
 echo ""

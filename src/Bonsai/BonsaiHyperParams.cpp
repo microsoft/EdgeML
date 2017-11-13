@@ -64,7 +64,7 @@ void BonsaiModel::BonsaiHyperParams::setHyperParamsFromArgs(const int& argc,
 void BonsaiModel::BonsaiHyperParams::mkdir() const
 {
   /*
-  sprintf (outdir, "%s/results/%f_%f_%f_%llu_%d",
+  sprintf (outDir, "%s/results/%f_%f_%f_%llu_%d",
      indir, lambdaW, lambdaZ, lambda_B, d, m);
 
   char command [100];
@@ -72,14 +72,14 @@ void BonsaiModel::BonsaiHyperParams::mkdir() const
   try {
     sprintf (command, "mkdir %s/results", indir);
     system(command);
-    sprintf (command, "mkdir %s", outdir);
+    sprintf (command, "mkdir %s", outDir);
     system (command);
 #ifdef DUMP
-    sprintf (command, "mkdir %s/dump", outdir);
+    sprintf (command, "mkdir %s/dump", outDir);
     system (command);
 #endif
 #ifdef VERIFY
-    sprintf (command, "mkdir %s/verify", outdir);
+    sprintf (command, "mkdir %s/verify", outDir);
     system (command);
 #endif
   }

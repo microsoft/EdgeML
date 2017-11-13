@@ -85,7 +85,7 @@ namespace EdgeML
   size_t importSparseMatrix(SparseMatrixuf& mat, const char *const buffer);
   size_t importDenseMatrix(MatrixXuf& mat, const size_t& bufferSize, const char *const buffer);
 
-  void writeMatrixInASCII(const MatrixXuf& mat, const std::string& outdir, const std::string& fileName);
-  void writeSparseMatrixInASCII(const SparseMatrixuf& mat, const std::string& outdir, const std::string& fileName);
+  void writeMatrixInASCII(const MatrixXuf& mat, const std::string& outDir, const std::string& fileName);
+  void writeSparseMatrixInASCII(const SparseMatrixuf& mat, const std::string& outDir, const std::string& fileName);
 }
 #endif

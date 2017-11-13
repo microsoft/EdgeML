@@ -19,8 +19,7 @@ ProtoNNModel::ProtoNNHyperParams::ProtoNNHyperParams()
 
   ntrain = 0;
   nvalidation = 0;
-  ntest = 0;
-
+  
   iters = 20;
   epochs = 20;
   batchSize = 1024;
@@ -44,25 +43,6 @@ ProtoNNModel::ProtoNNHyperParams::ProtoNNHyperParams()
 
 ProtoNNModel::ProtoNNHyperParams::~ProtoNNHyperParams()
 {}
-
-/*
-void ProtoNNModel::ProtoNNHyperParams::ProtoNNHyperParams(const ProtoNNModel::ProtoNNHyperParams &from)
-  : isModelInitialized(false),
-    problemType(from.problemType),
-    initializationType(from.problemType),
-    dataformatType(from.dataformatType),
-    normalizationType(from.normalizationType),
-    seed(from.seed),
-    ntrain(from.ntrain),
-    ntest(from.ntest),
-    batchSize(from.batchSize),
-    iters(from.iters),
-    epochs(from.epochs),
-    d(from.d), m(from.m), k(from.k),
-    D(from.D), l(from.l),
-    gamma(from.gamma), gammaNumerator(from.gammaNumerator),
-    lambdaW(from.lambdaW), lambdaZ(from.lambdaZ), lambdaB(from.lambdaB) {}
-*/
 
 std::string ProtoNNModel::ProtoNNHyperParams::subdirName() const
 {
@@ -108,7 +88,7 @@ void ProtoNNModel::ProtoNNHyperParams::finalizeHyperParams()
   // Following asserts removed to faciliate support for TLC
   // which does not know how many datapoints are going to be fed before-hand!
   // assert(ntrain >= 1);               
-  // assert(ntest >= 0);
+  // assert(nvalidation >= 0);
   // assert(m <= ntrain);
   if (d > D) {
     LOG_INFO("Passed projection dimension (d) is larger than the original dimension. Setting d = D.");
@@ -150,7 +130,7 @@ void ProtoNNModel::ProtoNNHyperParams::setHyperParamsFromArgs(const int argc, co
       case 'r':
         ntrain = strtol(argv[i], NULL, 0);
         break;
-      case 'e':
+      case 'v':
         nvalidation = strtol(argv[i], NULL, 0);
         break;
       case 'D':
@@ -208,6 +188,7 @@ void ProtoNNModel::ProtoNNHyperParams::setHyperParamsFromArgs(const int argc, co
       case 'V':
       case 'O':
       case 'F':
+      case 'M':
         break;
 
       default:

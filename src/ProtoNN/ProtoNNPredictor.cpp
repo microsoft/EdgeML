@@ -54,6 +54,7 @@ ProtoNNPredictor::ProtoNNPredictor(
 
   model = ProtoNNModel(modelFile);
   model.hyperParams.ntest = ntest;
+  
   testData = Data(dataIngestType,
                   DataFormatParams{
                   0, // set the ntrain to zero
@@ -65,11 +66,11 @@ ProtoNNPredictor::ProtoNNPredictor(
   createOutputDirs();
 
 #ifdef TIMER
-  OPEN_TIMER_LOGFILE(outdir);
+  OPEN_TIMER_LOGFILE(outDir);
 #endif
 
 #ifdef LIGHT_LOGGER
-  OPEN_DIAGNOSTIC_LOGFILE(outdir);
+  OPEN_DIAGNOSTIC_LOGFILE(outDir);
 #endif
 
   //Assert that the trainFile is properly assigned
@@ -82,6 +83,7 @@ ProtoNNPredictor::ProtoNNPredictor(
                 trainFile,
                 validationFile,
 		testFile);
+  testData.finalizeData();
 
   normalize();
 
@@ -140,48 +142,40 @@ ProtoNNPredictor::ProtoNNPredictor(
 void ProtoNNPredictor::createOutputDirs()
 {
   std::string subdirName = model.hyperParams.subdirName();
-  std::string outsubdir = outdir + "/ProtoNNPredictor_" + subdirName;
+  outDir = outDir + "/ProtoNNPredictor_" + subdirName;
 
   try {
-    std::string testcommand1 = "test -d " + outdir;
-    std::string command1 = "mkdir " + outdir;
-    std::string testcommand2 = "test -d " + outsubdir;
-    std::string command2 = "mkdir " + outsubdir;
+    std::string testcommand = "test -d " + outDir;
+    std::string command = "mkdir " + outDir;
 
 #ifdef LINUX
-    if (system(testcommand1.c_str()) == 0)
-      LOG_INFO("ProtoNNResults subdirectory exists within data folder");
+    if (system(testcommand.c_str()) == 0)
+      LOG_INFO("Directory " + outDir + " already exists.");
     else
-      if (system(command1.c_str()) != 0)
-        LOG_WARNING("Error in creating results subdir");
-
-    if (system(testcommand2.c_str()) == 0)
-      LOG_INFO("output subdirectory exists within data folder");
-    else
-      if (system(command2.c_str()) != 0)
-        LOG_WARNING("Error in creating subdir for current hyperParams");
+      if (system(command.c_str()) != 0)
+        LOG_WARNING("Error in creating directory at this location: " + outDir);
 #endif
 
 #ifdef DUMP
-    std::string testcommand3 = "test -d " + outdir + "/dump";
-    std::string command3 = "mkdir " + outdir + "/dump";
+    testcommand = "test -d " + outDir + "/dump";
+    command = "mkdir " + outDir + "/dump";
 #ifdef LINUX
-    if (system(testcommand3.c_str()) == 0)
-      LOG_INFO("directory for dump within output directory exists");
+    if (system(testcommand.c_str()) == 0)
+      LOG_INFO("Directory " + outDir + "/dump already exists.");
     else
-      if (system(command3.c_str()) != 0)
-        LOG_WARNING("Error in creating subdir for dumping intermediate models");
+      if (system(command.c_str()) != 0)
+        LOG_WARNING("Error in creating directory at this location: " + outDir + "/dump");
 #endif
 #endif
 #ifdef VERIFY
-    std::string testcommand4 = "test -d " + outdir + "/verify";
-    std::string command4 = "mkdir " + outdir + "/verify";
+    testcommand = "test -d " + outDir + "/verify";
+    command = "mkdir " + outDir + "/verify";
 #ifdef LINUX
-    if (system(testcommand4.c_str()) == 0)
-      LOG_INFO("directory for verification log within output directory exists");
+    if (system(testcommand.c_str()) == 0)
+      LOG_INFO("Directory " + outDir + "/verify already exists.");
     else
-      if (system(command4.c_str()) != 0)
-        LOG_WARNING("Error in creating subdir for verification dumps");
+      if (system(command.c_str()) != 0)
+        LOG_WARNING("Error in creating directory at this location: " + outDir + "/verify");
 #endif
 #endif
   }
@@ -215,8 +209,8 @@ void ProtoNNPredictor::setFromArgs(const int argc, const char** argv)
           normParamFile = argv[i];
           break;
   
-        case 'O': //currently not used
-          outdir = argv[i];
+        case 'O': 
+          outDir = argv[i];
           break;
 
         case 'F':
@@ -381,8 +375,6 @@ void ProtoNNPredictor::scoreSparseDataPoint(
     1.0, model.params.Z.data(), model.params.Z.rows(),
     D.data(), 1, 0.0, scores, 1);
 #endif
-
-  // DO WE NEED TO NORMALIZE SCORES?
 }
 
 void ProtoNNPredictor::scoreBatch(
@@ -390,27 +382,19 @@ void ProtoNNPredictor::scoreBatch(
   dataCount_t startIdx,
   dataCount_t batchSize)
 {
-  FP_TYPE stats[12]; // currently, stats are not being used
-  dataCount_t n = testData.Xtest.cols();
-  assert(n > 0);
+  dataCount_t ntest = testData.Xtest.cols();
+  assert(ntest > 0);
   assert(startIdx >= 0);
   assert(batchSize > 0);
-  assert(startIdx + batchSize <= n);
+  assert(startIdx + batchSize <= ntest);
 
   MatrixXuf curWX = MatrixXuf(model.params.W.rows(), batchSize);
-  if (dataformatType == libsvmFormat) {
-    SparseMatrixuf curTestData = testData.Xtest.middleCols(startIdx, batchSize);
-    mm(curWX, model.params.W, CblasNoTrans, curTestData, CblasNoTrans, 1.0, 0.0L);
-  }
-  else {
-    MatrixXuf curTestData = testData.testData.middleCols(startIdx, batchSize);
-    mm(curWX, model.params.W, CblasNoTrans, curTestData, CblasNoTrans, 1.0, 0.0L);
-  }
+  SparseMatrixuf curTestData = testData.Xtest.middleCols(startIdx, batchSize);
+  mm(curWX, model.params.W, CblasNoTrans, curTestData, CblasNoTrans, 1.0, 0.0L);
+  
   MatrixXuf curD = gaussianKernel(model.params.B, curWX, model.hyperParams.gamma);
 
   mm(Yscores, model.params.Z, CblasNoTrans, curD, CblasTrans, 1.0, 0.0L);
-
-//  delete[] stats;
 }
 
 void ProtoNNPredictor::normalize()
@@ -439,14 +423,12 @@ void ProtoNNPredictor::normalize()
   }
 }
 
-ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluate()
+ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluateBatchWise()
 {
   dataCount_t n;
-  assert(dataformatType == libsvmFormat);
-  if (dataformatType == libsvmFormat)
-    n = testData.Xtest.cols();
-  else 
-    n = testData.testData.cols();
+  
+  n = testData.Xtest.cols();
+  
   assert(n > 0);
 
   dataCount_t nbatches = n / batchSize + 1;
@@ -457,29 +439,22 @@ ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluate()
     dataCount_t curBatchSize = (batchSize < n - startIdx)? batchSize : n - startIdx;
     MatrixXuf Yscores = MatrixXuf::Zero(model.hyperParams.l, curBatchSize);
     scoreBatch(Yscores, startIdx, curBatchSize); 
-    if (dataformatType == libsvmFormat)
-      tempRes = evaluateBatch(Yscores, testData.Ytest.middleCols(startIdx, curBatchSize));
-    else
-      tempRes = evaluateBatch(Yscores, testData.Ytest.middleCols(startIdx, curBatchSize));
-      //?? Ytest needs to be replaced by testLabel
+    
+    tempRes = evaluateBatch(Yscores, testData.Ytest.middleCols(startIdx, curBatchSize));
+    
     res.scaleAndAdd(tempRes, curBatchSize);
   }
   res.scale(1/(FP_TYPE)n);
   return res;
 }
 
-ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluatePoint()
+ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluatePointWise()
 {
   dataCount_t n;
   FP_TYPE *scores, *featureValues;
   featureCount_t *featureIndices, numIndices;
 
-  assert(dataformatType == libsvmFormat);
-
-  if (dataformatType == libsvmFormat)
-    n = testData.Xtest.cols();
-  else 
-    n = testData.testData.cols();
+  n = testData.testData.cols();
   assert(n > 0);
 
   scores = new FP_TYPE[model.hyperParams.l];
@@ -488,31 +463,23 @@ ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluatePoint()
   ProtoNNPredictor::ResultStruct res, tempRes;
   for (dataCount_t i = 0; i < n; ++i) {
     FP_TYPE* values;
-    if (dataformatType == libsvmFormat) {
-      featureCount_t numIndices = testData.Xtest.middleCols(i, 1).nonZeros();
-      featureValues = new FP_TYPE[numIndices];
-      featureIndices = new featureCount_t[numIndices];
-
-      featureCount_t fIdx = 0;
-      for (SparseMatrixuf::InnerIterator it(testData.Xtest, i); it; ++it) {
-        featureValues[fIdx] = it.value();
-        featureIndices[fIdx] = it.index();
-        ++fIdx;
-      }
-      scoreSparseDataPoint(scores, featureValues, featureIndices, numIndices);
-      tempRes = evaluateBatch(Yscores, testData.Ytest.middleCols(i, 1));
-       
-      delete[] featureValues;
-      delete[] featureIndices;
-    }  
-    else {
-      featureValues = &testData.testData(i, 0); /*
-      for (featureCount_t fIdx = 0; fIdx < model.hyperParams.D; fIdx++)
-        featureValues[fIdx] = testData.testData(i, fIdx); */
-      scoreDenseDataPoint(scores, featureValues);
-      tempRes = evaluateBatch(Yscores, testData.Ytest.middleCols(i, 1));
-      // ?? Ytest needs to be replaced by testLabel
+    
+    featureCount_t numIndices = testData.Xtest.middleCols(i, 1).nonZeros();
+    featureValues = new FP_TYPE[numIndices];
+    featureIndices = new featureCount_t[numIndices];
+    
+    featureCount_t fIdx = 0;
+    for (SparseMatrixuf::InnerIterator it(testData.Xtest, i); it; ++it) {
+      featureValues[fIdx] = it.value();
+      featureIndices[fIdx] = it.index();
+      ++fIdx;
     }
+    scoreSparseDataPoint(scores, featureValues, featureIndices, numIndices);
+    tempRes = evaluateBatch(Yscores, testData.Ytest.middleCols(i, 1));
+       
+    delete[] featureValues;
+    delete[] featureIndices;
+    
     res.scaleAndAdd(tempRes, 1);
   }
   res.scale(1/(FP_TYPE)n);

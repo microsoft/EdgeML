@@ -53,7 +53,6 @@ ProtoNNModel::ProtoNNModel(const ProtoNNModel::ProtoNNHyperParams& hyperParams_)
   params.resizeParamsFromHyperParams(hyperParams_);
   LOG_INFO("Resized model parameters");
 }
-
 ProtoNNModel::~ProtoNNModel() {}
 
 size_t ProtoNNModel::modelStat()
