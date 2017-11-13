@@ -23,7 +23,6 @@ int main()
   hyperParam.m = 4;
   hyperParam.k = 0;
   hyperParam.l = 3;
-  hyperParam.ntest = 0;
   hyperParam.gammaNumerator = 1.0;
   hyperParam.lambda_W = 1.0;
   hyperParam.lambda_Z = 1.0;

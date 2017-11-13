@@ -3,10 +3,9 @@
 
 
 #include "ProtoNN.h"
-#include "logger.h"
 #include <iostream>
 
-using namespace EdgeML::ProtoNN;
+using namespace EdgeML; 
 
 int main(int argc, char **argv) {
 #ifdef LINUX
@@ -21,20 +20,21 @@ int main(int argc, char **argv) {
   assert(sizeof(MKL_INT) == 8 && "need large enough indices to store matrices");
   assert(sizeof(MKL_INT) == sizeof(Eigen::Index) && "MKL BLAS routines are called directly on data of an Eigen matrix. Hence, the index sizes should match."); 
 
-  EdgeML::ProtoNN::ProtoNNPredictor predictor(EdgeML::DataIngestType::FileIngest,
+  ProtoNN::ProtoNNPredictor predictor(EdgeML::DataIngestType::FileIngest,
                                               argc, (const char**)argv);
+  ProtoNN::ProtoNNPredictor::ResultStruct res;
 
-  ProtoNNPredictor::ResultStruct res;
-  res = predictor.evaluate();
+  res = predictor.evaluateBatchWise();
+
   switch(res.problemType) {
     case binary:
     case multiclass:
-      std::cout << std::endl << "Accuracy: " << res.accuracy << std::endl;
+      LOG_INFO("Accuracy: " + std::to_string(res.accuracy));
       break;
     case multilabel:
-      std::cout << std::endl << "Prec@1: " << res.precision1 << std::endl
-                             << "Prec@3: " << res.precision3 << std::endl
-                             << "Prec@5: " << res.precision5 << std::endl;
+      LOG_INFO("Prec@1: " + std::to_string(res.precision1));
+      LOG_INFO("Prec@3: " + std::to_string(res.precision3));
+      LOG_INFO("Prec@5: " + std::to_string(res.precision5));
       break;
     default:
       assert(false);

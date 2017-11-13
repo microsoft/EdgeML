@@ -576,7 +576,7 @@ void EdgeML::altMinSGD(
   const EdgeML::Data& data,
   EdgeML::ProtoNN::ProtoNNModel& model,
   FP_TYPE *const stats,
-  const std::string& outdir)
+  const std::string& outDir)
 {
   // This allows us to make mkl-blas calls on Eigen matrices   
   assert(sizeof(MKL_INT) == sizeof(Eigen::Index));
@@ -766,13 +766,13 @@ void EdgeML::altMinSGD(
     else;
 
 #ifdef VERIFY
-    fileName = outdir + "/verify/W" + std::to_string(i);
+    fileName = outDir + "/verify/W" + std::to_string(i);
     f.open(fileName);
     f << "W_check = [" << model.params.W << "];" << std::endl;
     f.close();
 #endif 
 #ifdef DUMP 
-    fileName = outdir + "/dump/W" + std::to_string(i);
+    fileName = outDir + "/dump/W" + std::to_string(i);
     f.open(fileName);
     f << model.params.W.format(eigen_tsv);
     f.close();
@@ -844,13 +844,13 @@ void EdgeML::altMinSGD(
     else;
 
 #ifdef VERIFY
-    fileName = outdir + "/verify/Z" + std::to_string(i);
+    fileName = outDir + "/verify/Z" + std::to_string(i);
     f.open(fileName);
     f << "Z_check = [" << model.params.Z << "];" << std::endl;
     f.close();
 #endif 
 #ifdef DUMP
-    fileName = outdir + "/dump/Z" + std::to_string(i);
+    fileName = outDir + "/dump/Z" + std::to_string(i);
     f.open(fileName);
     f << model.params.Z.format(eigen_tsv);
     f.close();
@@ -920,13 +920,13 @@ void EdgeML::altMinSGD(
     else;
 
 #ifdef VERIFY
-    fileName = outdir + "/verify/B" + std::to_string(i);
+    fileName = outDir + "/verify/B" + std::to_string(i);
     f.open(fileName);
     f << "B_check = [" << model.params.B << "];" << std::endl;
     f.close();
 #endif 
 #ifdef DUMP
-    fileName = outdir + "/dump/B" + std::to_string(i);
+    fileName = outDir + "/dump/B" + std::to_string(i);
     f.open(fileName);
     f << model.params.B.format(eigen_tsv);
     f.close();

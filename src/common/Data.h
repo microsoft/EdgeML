@@ -105,7 +105,6 @@ namespace EdgeML
     inline DataIngestType getIngestType() { return ingestType; }
  };
 
-  void minMaxNormalize(SparseMatrixuf& dataMatrix, SparseMatrixuf& valMatrix);
   void computeMinMax(const SparseMatrixuf& dataMatrix, MatrixXuf& min, MatrixXuf& max);
   void minMaxNormalize(SparseMatrixuf& dataMatrix, const MatrixXuf& min, const MatrixXuf& max);
   void l2Normalize(SparseMatrixuf& dataMatrix);

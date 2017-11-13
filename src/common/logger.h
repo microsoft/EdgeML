@@ -51,13 +51,12 @@ namespace EdgeML
 
     bool isTimerFileOpen;
     std::ofstream timerLogStream;
-    bool openTimerLogFile(const std::string& outdir);
+    bool openTimerLogFile(const std::string& outDir);
 
     bool isDiagnosticFileOpen;
     std::ofstream diagnosticLogStream;
-    bool openDiagnosticLogFile(const std::string& outdir);
+    bool openDiagnosticLogFile(const std::string& outDir);
   };
-
 
 #define LOG_INFO(msg)		global_log_info		  (msg, __FILE__, __func__, __LINE__)
 #define LOG_TRACE(msg)		global_log_trace	  (msg, __FILE__, __func__, __LINE__)
@@ -78,20 +77,19 @@ namespace EdgeML
 #define LOG_SET_WARNING_FUNC(func_) global_set_warning_func (func_)
 #define LOG_SET_ERROR_FUNC(func_)	global_set_error_func	(func_)
 
-
   void global_log_info(const std::string& msg, const std::string& fileName, const std::string& fnName, int lineNo);
   void global_log_trace(const std::string& msg, const std::string& fileName, const std::string& fnName, int lineNo);
   void global_log_warning(const std::string& msg, const std::string& fileName, const std::string& fnName, int lineNo);
   void global_log_error(const std::string& msg, const std::string& fileName, const std::string& fnName, int lineNo);
 
   void global_log_timer(const std::string& msg, const std::string& fileName, const std::string& fnName, int lineNo);
-  bool global_openTimerLogFile(const std::string& outdir);
+  bool global_openTimerLogFile(const std::string& outDir);
 
   void global_log_diagnostic(const std::string& msg, const std::string& fileName, const std::string& fnName, int lineNo);
   void global_log_diagnostic(const MatrixXuf& mat, const std::string& matName, const std::string& fileName, int lineNo);
   void global_log_diagnostic(const SparseMatrixuf& mat, const std::string& matName, const std::string& fileName, int lineNo);
   void global_log_diagnostic(const int& num, const std::string& num_name, const std::string& fileName, int lineNo);
-  bool global_openDiagnosticLogFile(const std::string& outdir);
+  bool global_openDiagnosticLogFile(const std::string& outDir);
 
   void global_set_trace_func(ChannelFunc func_);
   void global_set_info_func(ChannelFunc func_);

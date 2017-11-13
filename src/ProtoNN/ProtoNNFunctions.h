@@ -18,14 +18,14 @@ namespace EdgeML
     FP_TYPE multiplier);
 
   FP_TYPE batchEvaluate(
-    const ZMatType & Z,
-    const LabelMatType & Y,
-    const LabelMatType & Yval,
-    const BMatType & B,
-    const MatrixXuf & WX,
-    const MatrixXuf & WXval,
-    const FP_TYPE & gamma,
-    const EdgeML::ProblemFormat & problemType,
+    const ZMatType& Z,
+    const LabelMatType& Y,
+    const LabelMatType& Yval,
+    const BMatType& B,
+    const MatrixXuf& WX,
+    const MatrixXuf& WXval,
+    const FP_TYPE& gamma,
+    const EdgeML::ProblemFormat& problemType,
     FP_TYPE * const stats);
 
   FP_TYPE batchEvaluate(
@@ -171,7 +171,7 @@ namespace EdgeML
     const EdgeML::Data& data,
     EdgeML::ProtoNN::ProtoNNModel& model,
     FP_TYPE *const stats,
-    const std::string& outdir);
+    const std::string& outDir);
 
   // ParamType is either MatrixXuf or SparseMatrixuf
   template <class ParamType>

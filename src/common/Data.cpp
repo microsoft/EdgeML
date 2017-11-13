@@ -93,7 +93,7 @@ void Data::loadDataFromFile(
         format);
     }
   }
-  else if (format = interfaceIngestFormat) {
+  else if (format == interfaceIngestFormat) {
     labelCount_t *label = new labelCount_t[1];
     if (!infileTrain.empty()) {
       LOG_INFO("Reading train data...");
@@ -374,9 +374,9 @@ void EdgeML::computeMinMax(
   min = MatrixXuf::Zero(dataMatrix.rows(), 1);
   max = MatrixXuf::Zero(dataMatrix.rows(), 1);
   pfor(featureCount_t i = 0; i < dataMatrix.rows(); ++i)
-    min(i, 1) = mn[i];
+    min(i, 0) = mn[i];
   pfor(featureCount_t i = 0; i < dataMatrix.rows(); ++i)
-    max(i, 1) = mx[i];
+    max(i, 0) = mx[i];
 
   delete[] mn;
   delete[] mx;
@@ -404,77 +404,10 @@ void EdgeML::minMaxNormalize(
   nnz = getnnzs(dataMatrix);
   for (auto i = 0; i < nnz; ++i) {
     values[i] =
-      (values[i] - min(offsets[i], 1)) /
-      (max(offsets[i], 1) - min(offsets[i], 1));
+      (values[i] - min(offsets[i], 0)) /
+      (max(offsets[i], 0) - min(offsets[i], 0));
   }
 }
-
-// The old code
-/*
-void EdgeML::minMaxNormalize(
-  SparseMatrixuf& dataMatrix,
-  SparseMatrixuf& valMatrix)
-{
-#ifdef ROWMAJOR
-  assert(false);
-#endif
-  FP_TYPE * mn = new FP_TYPE[dataMatrix.rows()];
-  FP_TYPE * mx = new FP_TYPE[dataMatrix.rows()];
-  for (Eigen::Index i = 0; i < dataMatrix.rows(); ++i) {
-    mn[i] = 99999999999.0f;
-    mx[i] = -99999999999.0f;
-  }
-
-  FP_TYPE * values = dataMatrix.valuePtr();
-  sparseIndex_t * offsets = dataMatrix.innerIndexPtr();
-  Eigen::Index nnz = getnnzs(dataMatrix);
-
-  for (auto i = 0; i < nnz; ++i) {
-    mn[offsets[i]] = mn[offsets[i]] < values[i] ? mn[offsets[i]] : values[i];
-    mx[offsets[i]] = mx[offsets[i]] > values[i] ? mx[offsets[i]] : values[i];
-  }
-
-  featureCount_t zero_feats(0);
-
-  for (auto i = 0; i < dataMatrix.rows(); ++i) {
-    if (mn[i] == mx[i]) {
-      mn[i] = 0;
-    }
-    if (mx[i] < mn[i]) {
-      zero_feats++;
-      mx[i] = 1;
-      mn[i] = 0;
-    }
-  }
-
-  LOG_WARNING(std::string(zero_feats) + " features are always zero. Remove them if possible");
-
-  for (auto i = 0; i < nnz; ++i) {
-    values[i] =
-      (values[i] - mn[offsets[i]]) /
-      (mx[offsets[i]] - mn[offsets[i]]);
-  }
-
-  // Make normalization modifications in the validation matrix as well
-  values = valMatrix.valuePtr();
-  offsets = valMatrix.innerIndexPtr();
-  nnz = getnnzs(valMatrix);
-  for (auto i = 0; i < nnz; ++i) {
-    values[i] =
-      (values[i] - mn[offsets[i]]) /
-      (mx[offsets[i]] - mn[offsets[i]]);
-  }
-
-  //Check with Chirag
-  pfor(featureCount_t i = 0; i < dataMatrix.rows(); ++i)
-	min[i] = mn[i];
-  pfor(featureCount_t i = 0; i < dataMatrix.rows(); ++i)
-	max[i] = mx[i];
-
-  delete[] mn;
-  delete[] mx;
-}
-*/
 
 void EdgeML::l2Normalize(SparseMatrixuf& dataMatrix)
 {
@@ -547,10 +480,10 @@ void EdgeML::saveMinMax(
   //out.open(fileName);
 
   for (auto i = 0; i < min.rows(); i++)
-    out << min(i, 1) << '\t';
+    out << min(i, 0) << '\t';
   out << '\n';
   for (auto i = 0; i < max.rows(); i++)
-    out << max(i, 1) << '\t';
+    out << max(i, 0) << '\t';
   out << '\n';
 }
 
@@ -575,9 +508,9 @@ void EdgeML::loadMinMax(
   //in.open(fileName);
 
   for (auto i = 0; i < dim; i++)
-    in >> min(i, 1);
+    in >> min(i, 0);
   for (auto i = 0; i < dim; i++)
-    in >> max(i, 1);
+    in >> max(i, 0);
 
   in.close();
 }

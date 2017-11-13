@@ -50,7 +50,7 @@ namespace EdgeML
       {
         int seed;
 
-        dataCount_t ntrain, ntest, nvalidation, batchSize;
+        dataCount_t ntrain, nvalidation, ntest, batchSize;
         int epochs, iters;
 
         featureCount_t D, d;
@@ -123,8 +123,8 @@ namespace EdgeML
       DataFormat dataformatType;
       std::string trainFile;
       std::string validationFile;
-      std::string resdir;
-      std::string outdir;
+      std::string modelDir;
+      std::string outDir;
       std::string commandLine;
 
       void normalize();
@@ -217,10 +217,10 @@ namespace EdgeML
       std::string modelFile;
       std::string normParamFile;
       std::string commandLine;
-      std::string outdir;
+      std::string outDir;
       dataCount_t ntest;
       dataCount_t batchSize;
-      EdgeML::NormalizationFormat normalizationType;
+      NormalizationFormat normalizationType;
 
       DataFormat dataformatType;
       Data testData;
@@ -288,9 +288,9 @@ namespace EdgeML
         dataCount_t startIdx,
         dataCount_t batchSize);
 
-      ResultStruct evaluate();
+      ResultStruct evaluateBatchWise();
       
-      ResultStruct evaluatePoint();
+      ResultStruct evaluatePointWise();
 
       ResultStruct evaluateBatch(
         const MatrixXuf& Yscores,

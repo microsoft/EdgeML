@@ -32,17 +32,17 @@ ProtoNNTrainer::ProtoNNTrainer(
   createOutputDirs();
 
 #ifdef TIMER
-  OPEN_TIMER_LOGFILE(outdir);
+  OPEN_TIMER_LOGFILE(outDir);
 #endif
 
 #ifdef LIGHT_LOGGER
-  OPEN_DIAGNOSTIC_LOGFILE(outdir);
+  OPEN_DIAGNOSTIC_LOGFILE(outDir);
 #endif
 
   //Assert that the trainFile is properly assigned
   assert((!trainFile.empty()) && (model.hyperParams.ntrain > 0)); 
 
-  // Pass an empty string as test file, unless it will try to load the test data also
+  // Pass an empty string as test file, else it will try to load the test data also
   std::string testFile = ""; 
   data.loadDataFromFile(dataformatType,
     trainFile,
@@ -56,48 +56,40 @@ ProtoNNTrainer::ProtoNNTrainer(
 void ProtoNNTrainer::createOutputDirs()
 {
   std::string subdirName = model.hyperParams.subdirName();
-  outdir = resdir + "/ProtoNNTrainer_" + subdirName;
+  outDir = outDir + "/ProtoNNTrainer_" + subdirName;
 
   try {
-    std::string testcommand1 = "test -d " + resdir;
-    std::string command1 = "mkdir " + resdir;
-    std::string testcommand2 = "test -d " + outdir;
-    std::string command2 = "mkdir " + outdir;
+    std::string testcommand = "test -d " + outDir;
+    std::string command = "mkdir " + outDir;
 
 #ifdef LINUX
-    if (system(testcommand1.c_str()) == 0)
-      LOG_INFO("ProtoNNResults subdirectory exists within data folder");
+    if (system(testcommand.c_str()) == 0)
+      LOG_INFO("Directory " + outDir + " already exists.");
     else
-      if (system(command1.c_str()) != 0)
-        LOG_WARNING("Error in creating results subdir");
-
-    if (system(testcommand2.c_str()) == 0)
-      LOG_INFO("output subdirectory exists within data folder");
-    else
-      if (system(command2.c_str()) != 0)
-        LOG_WARNING("Error in creating subdir for current hyperParams");
+      if (system(command.c_str()) != 0)
+        LOG_WARNING("Error in creating directory at this location: " + outDir);
 #endif
 
 #ifdef DUMP
-    std::string testcommand3 = "test -d " + outdir + "/dump";
-    std::string command3 = "mkdir " + outdir + "/dump";
+    testcommand = "test -d " + outDir + "/dump";
+    command = "mkdir " + outDir + "/dump";
 #ifdef LINUX
-    if (system(testcommand3.c_str()) == 0)
-      LOG_INFO("directory for dump within output directory exists");
+    if (system(testcommand.c_str()) == 0)
+      LOG_INFO("Directory " + outDir + "/dump already exists.");
     else
-      if (system(command3.c_str()) != 0)
-        LOG_WARNING("Error in creating subdir for dumping intermediate models");
+      if (system(command.c_str()) != 0)
+        LOG_WARNING("Error in creating directory at this location: " + outDir + "/dump");
 #endif
 #endif
 #ifdef VERIFY
-    std::string testcommand4 = "test -d " + outdir + "/verify";
-    std::string command4 = "mkdir " + outdir + "/verify";
+    testcommand = "test -d " + outDir + "/verify";
+    command = "mkdir " + outDir + "/verify";
 #ifdef LINUX
-    if (system(testcommand4.c_str()) == 0)
-      LOG_INFO("directory for verification log within output directory exists");
+    if (system(testcommand.c_str()) == 0)
+      LOG_INFO("Directory " + outDir + "/verify already exists.");
     else
-      if (system(command4.c_str()) != 0)
-        LOG_WARNING("Error in creating subdir for verification dumps");
+      if (system(command.c_str()) != 0)
+        LOG_WARNING("Error in creating directory at this location: " + outDir + "/verify");
 #endif
 #endif
   }
@@ -114,7 +106,7 @@ ProtoNNTrainer::ProtoNNTrainer(
   data(dataIngestType,
     DataFormatParams{
        model.hyperParams.ntrain,
-       model.hyperParams.ntest,
+       model.hyperParams.nvalidation,
        model.hyperParams.l,
          model.hyperParams.D }),
          dataformatType(DataFormat::interfaceIngestFormat)
@@ -151,12 +143,12 @@ void ProtoNNTrainer::finalizeData()
     // hence the number of training points was not known beforehand. 
     model.hyperParams.ntrain = data.Xtrain.cols();
     assert(data.Xtest.cols() == 0);
-    model.hyperParams.ntest = 0;
+    model.hyperParams.nvalidation = 0;
   }
 
   else {
     assert(model.hyperParams.ntrain == data.Xtrain.cols());
-    assert(model.hyperParams.ntest == data.Xtest.cols());
+    assert(model.hyperParams.nvalidation == data.Xvalidation.cols());
   }
 
   // Following asserts can only be made in finalieData since TLC 
@@ -174,28 +166,28 @@ void ProtoNNTrainer::train()
   initializeModel();
 
   FP_TYPE* stats = new FP_TYPE[model.hyperParams.iters * 9 + 3]; // store output of this run
-  altMinSGD(data, model, stats, outdir);
+  altMinSGD(data, model, stats, outDir);
 
   // Save the parameters of the model in seprate files
-  writeMatrixInASCII(model.params.W, outdir, "W");
-  writeMatrixInASCII(model.params.B, outdir, "B");
-  writeMatrixInASCII(model.params.Z, outdir, "Z");
+  writeMatrixInASCII(model.params.W, outDir, "W");
+  writeMatrixInASCII(model.params.B, outDir, "B");
+  writeMatrixInASCII(model.params.Z, outDir, "Z");
   MatrixXuf gammaMat(1, 1);
   gammaMat(0, 0) = model.hyperParams.gamma;
-  writeMatrixInASCII(gammaMat, outdir, "gamma");
+  writeMatrixInASCII(gammaMat, outDir, "gamma");
 
   // Save the model in a single file
   size_t modelSize = getModelSize();
   char *buffer = new char[modelSize];
   exportModel((const size_t)modelSize, (char *const)buffer);
-  std::ofstream fout(outdir+"/model", std::ios::out|std::ios::binary);
+  std::ofstream fout(outDir+"/model", std::ios::out|std::ios::binary);
   assert(fout.is_open());
   fout.write((char *const)&modelSize, sizeof(modelSize));
   fout.write((char *const)buffer, modelSize);
   fout.close();
   delete[] buffer;
 
-  std::string outFile = outdir + "/runInfo";
+  std::string outFile = outDir + "/runInfo";
   storeParams(commandLine, stats, outFile);
 
   // Log and final output
@@ -240,6 +232,7 @@ size_t ProtoNNTrainer::sizeForExportZSparse()
 {
   return sparseExportStat(model.params.Z);
 }
+
 void ProtoNNTrainer::exportZSparse(int bufferSize, char *const buf)
 {
   exportSparseMatrix(model.params.Z, bufferSize, buf);
@@ -277,7 +270,7 @@ void ProtoNNTrainer::normalize()
   switch (normalizationType) {
     case minMax: 
     {
-      std::string minMaxFile = resdir + "/min_max_param.txt";
+      std::string minMaxFile = outDir + "/minMaxParams";
       computeMinMax(data.Xtrain, data.min, data.max);
       saveMinMax(data.min, data.max, minMaxFile);
       minMaxNormalize(data.Xtrain, data.min, data.max);
@@ -307,27 +300,27 @@ void ProtoNNTrainer::initializeModel()
   LOG_INFO("    ");
 
   if (model.hyperParams.initializationType == predefined) {
-    LOG_INFO("Loading predefined input files from predefined folder " + resdir);
+    LOG_INFO("Loading predefined input files from predefined folder " + modelDir);
 
     MatrixXuf voidMat;
     DataFormat format = tsvFormat;
 
-    std::string infile = resdir + "/W";
+    std::string infile = modelDir + "/W";
     FileIO::Data W_(infile,
       model.params.W, voidMat, model.hyperParams.d, -1, 0,
       model.hyperParams.D, model.hyperParams.D, 0, format);
 
-    infile = resdir + "/Z";
+    infile = modelDir + "/Z";
     FileIO::Data Z_(infile,
       model.params.Z, voidMat, model.hyperParams.l, -1, 0,
       model.hyperParams.m, model.hyperParams.m, 0, format);
 
-    infile = resdir + "/B";
+    infile = modelDir + "/B";
     FileIO::Data B_(infile,
       model.params.B, voidMat, model.hyperParams.d, -1, 0,
       model.hyperParams.m, model.hyperParams.m, 0, format);
 
-    infile = resdir + "/gamma";
+    infile = modelDir + "/gamma";
     MatrixXuf gammaMat;
     FileIO::Data Gamma_(infile,
       gammaMat, voidMat, 1, -1, 0,
@@ -454,7 +447,11 @@ void ProtoNNTrainer::setFromArgs(const int argc, const char** argv)
         break;
 
       case 'O':
-        resdir = argv[i];
+	outDir = argv[i];
+	break;
+
+      case 'M': 
+        modelDir = argv[i];
         break;
 
       case 'F':
@@ -469,7 +466,7 @@ void ProtoNNTrainer::setFromArgs(const int argc, const char** argv)
       case 'R':
       case 'g':
       case 'r':
-      case 'e':
+      case 'v':
       case 'D':
       case 'l':
       case 'W':
