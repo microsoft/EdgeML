@@ -8,7 +8,7 @@
 # Input-output parameters
 ########################################################
 
-predefined_model="-P 0"
+predefined_model="-P 1"
 problem_format="-C 1"
 train_file="-I usps10/train.txt"
 validation_file="-V usps10/test.txt"

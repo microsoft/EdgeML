@@ -50,10 +50,11 @@ bzip2 -d usps.bz2
 bzip2 -d usps.t.bz2
 mv usps train.txt
 mv usps.t test.txt
+mkdir ProtoNNResults
 cd <EDGEML_ROOT>
 ```
 This will create a sample train and test dataset, on which
-you can train and test Bonsai and ProtoNN algorithms.
+you can train and test Bonsai and ProtoNN algorithms. As specified, we create an output folder for ProtoNN. Bonsai on the other hand creates its own output folder. 
 For instructions to actually run the algorithms, see [Bonsai Readme](docs/README_BONSAI_OSS.md) and [ProtoNN Readme](docs/README_PROTONN_OSS.ipynb).
 
 ### Makefile flags

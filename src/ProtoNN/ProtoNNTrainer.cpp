@@ -168,7 +168,7 @@ void ProtoNNTrainer::train()
   FP_TYPE* stats = new FP_TYPE[model.hyperParams.iters * 9 + 3]; // store output of this run
   altMinSGD(data, model, stats, outDir);
 
-  // Save the parameters of the model in seprate files
+  // Save the parameters of the model in separate files
   writeMatrixInASCII(model.params.W, outDir, "W");
   writeMatrixInASCII(model.params.B, outDir, "B");
   writeMatrixInASCII(model.params.Z, outDir, "Z");
@@ -202,16 +202,12 @@ size_t ProtoNNTrainer::getModelSize()
 
   return modelSize;
 }
-
 void ProtoNNTrainer::exportModel(const size_t& modelSize, char *const buffer)
 {
   assert(modelSize == getModelSize());
 
   model.exportModel(modelSize, buffer);
 }
-
-
-
 size_t ProtoNNTrainer::sizeForExportBSparse()
 {
   return sparseExportStat(model.params.B);

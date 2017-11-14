@@ -569,7 +569,7 @@ size_t Data::libsvmFillEntries(char*buf,
   data.conservativeResize(NUM_FEATURES, nRead);
   label.conservativeResize(NUM_LABELS, nRead);
 
-  LOG_INFO("#Lines of data read: " + std::to_string(nRead));
+  LOG_INFO("#Lines of data read: " + std::to_string(nRead) + "\n");
   return nRead;
 }
 
@@ -769,6 +769,6 @@ size_t Data::libsvmFillEntries(char*buf,
   data.setFromTriplets(data_triplet.begin(), data_triplet.end());
   label.setFromTriplets(label_triplet.begin(), label_triplet.end());
 
-  LOG_INFO("#Lines of data read: " + std::to_string(nRead));
+  LOG_INFO("#Lines of data read: " + std::to_string(nRead) + "\n");
   return nRead;
 }
