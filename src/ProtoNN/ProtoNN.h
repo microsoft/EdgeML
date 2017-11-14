@@ -296,6 +296,14 @@ namespace EdgeML
         const MatrixXuf& Yscores,
         const LabelMatType& Y);
 
+      void getTopKScoresBatch(
+        const MatrixXuf& Yscores,
+        MatrixXuf& topKIndices,
+        MatrixXuf& topKScores,
+        int k = 5);
+
+      void saveTopKScores(std::string filename = "", int k = 5);
+
       void normalize();
     };
   }

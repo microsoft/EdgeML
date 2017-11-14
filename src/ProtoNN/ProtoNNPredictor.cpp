@@ -559,15 +559,88 @@ ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluateBatch(
       }
     }
 
-    dataCount_t totLabel = Y.cols();
-    assert(totLabel != 0);
-    res.precision1 = (prec1 /= (FP_TYPE)totLabel);
-    res.precision3 = (prec3 /= ((FP_TYPE)totLabel)*3);
-    res.precision5 = (prec5 /= ((FP_TYPE)totLabel)*5);
+    dataCount_t totalCount = Y.cols();
+    assert(totalCount != 0);
+    res.precision1 = (prec1 /= (FP_TYPE)totalCount);
+    res.precision3 = (prec3 /= ((FP_TYPE)totalCount)*3);
+    res.precision5 = (prec5 /= ((FP_TYPE)totalCount)*5);
   }
 
   return res;
 }
 
+
+void ProtoNNPredictor::getTopKScoresBatch(
+  const MatrixXuf& Yscores,
+  MatrixXuf& topKindices,
+  MatrixXuf& topKscores,
+  int k)
+{
+  dataCount_t totalCount = Yscores.cols();
+  dataCount_t totalLabels = Yscores.rows();
+
+  if (k < 1)
+    k = 5;
+
+  if (totalLabels < k)
+    k = totalLabels;
+
+  topKindices = MatrixXuf::Zero(k, totalCount);
+  topKscores = MatrixXuf::Zero(k, totalCount);
+
+  pfor(Eigen::Index i = 0; i < Yscores.cols(); ++i) {
+    for (Eigen::Index j = 0; j < Yscores.rows(); ++j) {
+      FP_TYPE val = Yscores(j, i);
+      if (j >= k && (val < Yscores(topKindices(k-1, i), i)))
+        continue;
+      size_t top = std::min(j, (Eigen::Index)k - 1);
+      while (top > 0 && (Yscores(topKindices(top-1, i), i) < val)) {
+        topKindices(top, i) = topKindices(top - 1, i);
+        top--;
+      }
+      topKindices(top, i) = j;
+    }
+  }
+  
+  pfor(Eigen::Index i = 0; i < topKindices.cols(); ++i)
+    for (Eigen::Index j = 0; j < topKindices.rows(); ++j)
+      topKscores(j, i) = Yscores(topKindices(j, i), i);
+}
+
+
+void ProtoNNPredictor::saveTopKScores(std::string filename, int k)
+{
+  dataCount_t n;
+  n = testData.Xtest.cols();
+  assert(n > 0);
+
+  if (k < 1)
+    k = 5;
+
+  if (filename.empty())
+    filename = outDir + "/predicted_scores.txt";
+  std::ofstream outfile(filename);
+  assert(outfile.is_open());
+
+  dataCount_t nbatches = n / batchSize + 1;
+  MatrixXuf topKindices, topKscores;
+  for (dataCount_t i = 0; i < nbatches; ++i) {
+    Eigen::Index startIdx =  i * batchSize;
+    dataCount_t curBatchSize = (batchSize < n - startIdx)? batchSize : n - startIdx;
+    MatrixXuf Yscores = MatrixXuf::Zero(model.hyperParams.l, curBatchSize);
+    scoreBatch(Yscores, startIdx, curBatchSize); 
+  
+    getTopKScoresBatch(Yscores, topKindices, topKscores, k); 
+
+    for (Eigen::Index i = 0; i < topKindices.cols(); i++) {
+      for (Eigen::Index j = 0; j < topKindices.rows(); j++) {
+        outfile << topKindices(j, i) << ":" << topKscores(j, i) << "  ";
+      }
+      outfile << std::endl;
+    }
+  }
+
+  outfile.close();
+}
 
 
