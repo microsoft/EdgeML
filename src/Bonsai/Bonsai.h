@@ -80,7 +80,7 @@ namespace EdgeML
 
         int seed;
         int iters, epochs;
-        dataCount_t ntrain, nvalidation, batchSize;
+        dataCount_t ntrain, nvalidation, ntest, batchSize;
         bool isOneIndex;
 
         FP_TYPE Sigma; ///< Sigmoid parameter for prediction
