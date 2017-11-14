@@ -26,6 +26,8 @@ int main(int argc, char **argv) {
 
   res = predictor.evaluateBatchWise();
 
+  predictor.saveTopKScores();
+
   switch(res.problemType) {
     case binary:
     case multiclass:
