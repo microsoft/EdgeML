@@ -957,7 +957,7 @@ void Bonsai::parseInput(const int& argc, const char** argv,
 		required++;
 		break;
 	  case 'E':
-		hyperParam.ntest = int(atoi(argv[i]));
+		hyperParam.nvalidation = int(atoi(argv[i]));
 		required++;
 		break;
 	  }
