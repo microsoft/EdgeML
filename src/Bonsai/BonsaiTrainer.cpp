@@ -29,7 +29,7 @@ BonsaiTrainer::BonsaiTrainer(
   data(dataIngestType,
     DataFormatParams{
       model.hyperParams.ntrain,
-        model.hyperParams.ntest,
+        model.hyperParams.nvalidation,
         model.hyperParams.numClasses,
         model.hyperParams.dataDimension })
 {
@@ -47,7 +47,7 @@ BonsaiTrainer::BonsaiTrainer(
   mean = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
   variance = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
 
-  data.loadDataFromFile(model.hyperParams.dataformatType, dataDir + "/train.txt", dataDir + "/test.txt");
+  data.loadDataFromFile(model.hyperParams.dataformatType, dataDir + "/train.txt", dataDir + "/test.txt", "");
   finalizeData();
 }
 
@@ -62,7 +62,7 @@ BonsaiTrainer::BonsaiTrainer(
   data(dataIngestType,
     DataFormatParams{
       model.hyperParams.ntrain,
-  model.hyperParams.ntest,
+  model.hyperParams.nvalidation,
   model.hyperParams.numClasses,
   model.hyperParams.dataDimension })
 {
@@ -81,7 +81,7 @@ BonsaiTrainer::BonsaiTrainer(
   mean = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
   variance = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
 
-  data.loadDataFromFile(model.hyperParams.dataformatType, dataDir + "/train.txt", dataDir + "/test.txt");
+  data.loadDataFromFile(model.hyperParams.dataformatType, dataDir + "/train.txt", dataDir + "/test.txt", "");
   finalizeData();
 
   initializeModel();
@@ -96,7 +96,7 @@ BonsaiTrainer::BonsaiTrainer(
   data(dataIngestType,
     DataFormatParams{
          model.hyperParams.ntrain,
-     model.hyperParams.ntest,
+     model.hyperParams.nvalidation,
      model.hyperParams.numClasses,
      model.hyperParams.dataDimension })
 {
@@ -155,12 +155,11 @@ void BonsaiTrainer::finalizeData()
     // This condition means that the ingest type is Interface ingest,
     // hence the number of training points was not known beforehand. 
     model.hyperParams.ntrain = data.Xtrain.cols();
-    assert(data.Xtest.cols() == 0);
-    model.hyperParams.ntest = 0;
+    assert(data.Xvalidation.cols() == 0);
+    model.hyperParams.nvalidation = 0;
   }
   else {
     assert(model.hyperParams.ntrain == data.Xtrain.cols());
-    // assert(model.hyperParams.ntest == data.Xtest.cols());
   }
 
   // Following asserts can only be made in finalieData since TLC 
@@ -340,11 +339,15 @@ void BonsaiTrainer::exportMeanVar(
 void BonsaiTrainer::normalize()
 {
   if (model.hyperParams.normalizationType == minMax) {
-    minMaxNormalize(data.Xtrain, data.Xtest);
+    computeMinMax(data.Xtrain, data.min, data.max);
+    minMaxNormalize(data.Xtrain, data.min, data.max);
+    if (data.Xvalidation.cols() > 0)
+      minMaxNormalize(data.Xvalidation, data.min, data.max);
   }
   else if (model.hyperParams.normalizationType == l2) {
     l2Normalize(data.Xtrain);
-    l2Normalize(data.Xtest);
+    if (data.Xvalidation.cols() > 0)
+      l2Normalize(data.Xvalidation);
   }
   else;
 }
