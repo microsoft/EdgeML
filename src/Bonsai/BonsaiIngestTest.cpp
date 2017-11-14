@@ -24,7 +24,7 @@ int main()
 
   hyperParam.numClasses = 10;
 
-  hyperParam.ntest = 0;
+  hyperParam.nvalidation = 0;
   hyperParam.ntrain = 5000;
 
   hyperParam.Sigma = 1.0;

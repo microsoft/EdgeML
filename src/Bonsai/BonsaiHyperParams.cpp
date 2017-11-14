@@ -20,7 +20,7 @@ BonsaiModel::BonsaiHyperParams::BonsaiHyperParams()
   seed = 42;
 
   ntrain = 0;
-  ntest = 0;
+  nvalidation = 0;
   batchSize = 0;
 
   iters = 0;
@@ -102,7 +102,6 @@ void BonsaiModel::BonsaiHyperParams::finalizeHyperParams()
   // Following asserts removed to faciliate support for TLC
   // which does not know how many datapoints are going to be fed before-hand!
   // assert(ntrain >= 1);               
-  // assert(ntest >= 0);
   assert(projectionDimension <= dataDimension + 1);
   assert(numClasses > 0);
 
