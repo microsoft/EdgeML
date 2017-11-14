@@ -30,6 +30,7 @@ BonsaiTrainer::BonsaiTrainer(
     DataFormatParams{
       model.hyperParams.ntrain,
         model.hyperParams.nvalidation,
+        0,
         model.hyperParams.numClasses,
         model.hyperParams.dataDimension })
 {
@@ -63,6 +64,7 @@ BonsaiTrainer::BonsaiTrainer(
     DataFormatParams{
       model.hyperParams.ntrain,
   model.hyperParams.nvalidation,
+  0,
   model.hyperParams.numClasses,
   model.hyperParams.dataDimension })
 {
@@ -97,6 +99,7 @@ BonsaiTrainer::BonsaiTrainer(
     DataFormatParams{
          model.hyperParams.ntrain,
      model.hyperParams.nvalidation,
+     0,
      model.hyperParams.numClasses,
      model.hyperParams.dataDimension })
 {
