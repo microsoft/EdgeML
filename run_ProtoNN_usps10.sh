@@ -8,12 +8,12 @@
 # Input-output parameters
 ########################################################
 
-predefined_model="-P 1"
+predefined_model="-P 0"
 problem_format="-C 1"
 train_file="-I usps10/train.txt"
 validation_file="-V usps10/test.txt"
 output_dir="-O usps10/ProtoNNResults"
-model_dir="-M usps10/"
+#model_dir="-M usps10/"
 input_format="-F 0"
 
 
