@@ -504,6 +504,7 @@ void EdgeML::loadMinMax(
   min = MatrixXuf::Zero(dim, 1);
   max = MatrixXuf::Zero(dim, 1);
 
+  LOG_INFO("Loading min-max normalization parameters from file: " + fileName);
   std::ifstream in(fileName);
   //in.open(fileName);
 

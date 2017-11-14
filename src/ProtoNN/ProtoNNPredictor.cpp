@@ -52,6 +52,7 @@ ProtoNNPredictor::ProtoNNPredictor(
     commandLine += (std::string(argv[i]) + " ");
   setFromArgs(argc, argv);
 
+  LOG_INFO("Attempting to load a model from the file: " + modelFile + "\n");
   model = ProtoNNModel(modelFile);
   model.hyperParams.ntest = ntest;
   
@@ -407,12 +408,12 @@ void ProtoNNPredictor::normalize()
       assert(!normParamFile.empty());
       loadMinMax(testData.min, testData.max, testData.Xtest.rows(), normParamFile);
       minMaxNormalize(testData.Xtest, testData.min, testData.max);
-      LOG_INFO("Completed min-max normalization of test data");
+      LOG_INFO("Completed min-max normalization of test data\n");
       break;
 
     case l2:
       l2Normalize(testData.Xtest);
-      LOG_INFO("Completed l2 normalization of test data");
+      LOG_INFO("Completed l2 normalization of test data\n");
       break;
 
     case none:
@@ -618,7 +619,7 @@ void ProtoNNPredictor::saveTopKScores(std::string filename, int topk)
     topk = 5;
 
   if (filename.empty())
-    filename = outDir + "/predicted_scores.txt";
+    filename = outDir + "/detailedPrediction";
   std::ofstream outfile(filename);
   assert(outfile.is_open());
 
