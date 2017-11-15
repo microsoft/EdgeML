@@ -339,7 +339,7 @@ void ProtoNNTrainer::initializeModel()
       for (labelCount_t i = 0; i < model.hyperParams.m; ++i) {
         dataCount_t prot = rand() % data.Xtrain.cols();
         model.params.B.col(i) = model.params.W * data.Xtrain.col(prot);
-#ifdef SPARSE_Z
+#ifdef SPARSE_Z_PROTONN
         model.params.Z.col(i) = data.trainLabel.col(prot).sparseView();
 #else
         model.params.Z.col(i) = data.trainLabel.col(prot);
@@ -353,7 +353,7 @@ void ProtoNNTrainer::initializeModel()
       MatrixXuf WX = MatrixXuf::Zero(model.params.W.rows(), data.Xtrain.cols());
       mm(WX, model.params.W, CblasNoTrans, data.Xtrain, CblasNoTrans, 1.0, 0.0L);
 
-#ifdef SPARSE_Z
+#ifdef SPARSE_Z_PROTONN
       MatrixXuf Z = model.params.Z;
       assert(model.params.B.cols() % data.Ytrain.rows() == 0);
       kmeansLabelwise(data.Ytrain, WX, model.params.B, Z,
@@ -379,7 +379,7 @@ void ProtoNNTrainer::initializeModel()
       SparseMatrixuf YTrainSub(data.Ytrain.rows(), numRand);
       randPick(WX, WXSub);
       randPick(data.Ytrain, YTrainSub);
-#ifdef SPARSE_Z 
+#ifdef SPARSE_Z_PROTONN 
       MatrixXuf Z = model.params.Z;
       kmeansOverall(YTrainSub, WXSub, model.params.B, Z);
       model.params.Z = Z.sparseView();
@@ -388,7 +388,7 @@ void ProtoNNTrainer::initializeModel()
 #endif
 
 #else
-#ifdef SPARSE_Z
+#ifdef SPARSE_Z_PROTONN
       MatrixXuf Z = model.params.Z;
       kmeansOverall(data.Ytrain, WX, model.params.B, Z);
       model.params.Z = Z.sparseView();
