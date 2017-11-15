@@ -5,6 +5,7 @@
 #define __PROTONN_H__
 
 #include "Data.h"
+#include "metrics.h"
 
 namespace EdgeML
 {
@@ -14,25 +15,25 @@ namespace EdgeML
     // Should the model parameters and labels be represented as sparse or dense?
     //
 
-#ifdef SPARSE_Z
+#ifdef SPARSE_Z_PROTONN
 #define ZMatType SparseMatrixuf
 #else
 #define ZMatType MatrixXuf
 #endif
 
-#ifdef SPARSE_W
+#ifdef SPARSE_W_PROTONN
 #define WMatType SparseMatrixuf
 #else
 #define WMatType MatrixXuf
 #endif
 
-#ifdef SPARSE_B
+#ifdef SPARSE_B_PROTONN
 #define BMatType SparseMatrixuf
 #else
 #define BMatType MatrixXuf
 #endif
 
-#ifdef SPARSE_LABEL
+#ifdef SPARSE_LABEL_PROTONN
 #define LabelMatType SparseMatrixuf
 #else
 #define LabelMatType MatrixXuf
@@ -223,7 +224,7 @@ namespace EdgeML
       Data testData;
       FP_TYPE* dataPoint;	// for scoreSparseDataPoint
 
-#ifdef SPARSE_Z
+#ifdef SPARSE_Z_PROTONN
       // for mkl csc_mv call
       char matdescra[6] = { 'G', 'X', 'X', 'C', 'X', 'X' }; // 'X' means unused
       char transa = 'n';
@@ -239,18 +240,6 @@ namespace EdgeML
       void createOutputDirs();
 
     public:
-      struct ResultStruct {
-        ProblemFormat problemType;
-        FP_TYPE accuracy;
-        FP_TYPE precision1;
-        FP_TYPE precision3;
-        FP_TYPE precision5;
-
-        ResultStruct();
-        inline void scaleAndAdd(ResultStruct& a, FP_TYPE scale);
-        inline void scale(FP_TYPE scale);
-      };
-
       // Use this consutrctor when loading model from binary stream.
       // For this you need to have exported a binary stream model from the trainer.
       ProtoNNPredictor(
@@ -291,20 +280,10 @@ namespace EdgeML
       
       ResultStruct testPointWise();
 
-      ResultStruct test(); 
+      ResultStruct test();
+
+      void saveTopKScores(std::string filename="", int topk=5);
       
-      ResultStruct evaluate(
-        const MatrixXuf& Yscores,
-        const LabelMatType& Y);
-
-      void getTopKScoresBatch(
-        const MatrixXuf& Yscores,
-        MatrixXuf& topKIndices,
-        MatrixXuf& topKScores,
-        int k = 5);
-
-      void saveTopKScores(std::string filename = "", int k = 5);
-
       void normalize();
     };
   }

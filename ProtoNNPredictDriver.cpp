@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
   assert(sizeof(MKL_INT) == sizeof(Eigen::Index) && "MKL BLAS routines are called directly on data of an Eigen matrix. Hence, the index sizes should match."); 
 
   ProtoNN::ProtoNNPredictor predictor(argc, (const char**)argv);
-  ProtoNN::ProtoNNPredictor::ResultStruct res;
+  EdgeML::ResultStruct res;
 
   res = predictor.test(); 
 
