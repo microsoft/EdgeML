@@ -9,37 +9,6 @@
 using namespace EdgeML;
 using namespace EdgeML::ProtoNN;
 
-
-ProtoNNPredictor::ResultStruct::ResultStruct()
-  :
-  problemType(undefinedProblem),
-  accuracy(0),
-  precision1(0),
-  precision3(0),
-  precision5(0)
-{}
-
-
-inline void ProtoNNPredictor::ResultStruct::scaleAndAdd(ProtoNNPredictor::ResultStruct& a, FP_TYPE scale)
-{
-  if ((problemType == undefinedProblem) && (a.problemType != undefinedProblem))
-    problemType = a.problemType;
-  assert(problemType == a.problemType);
-
-  accuracy += scale * a.accuracy;
-  precision1 += scale * a.precision1;
-  precision3 += scale * a.precision3;
-  precision5 += scale * a.precision5;
-}
-
-inline void ProtoNNPredictor::ResultStruct::scale(FP_TYPE scale)
-{
-  accuracy *= scale;
-  precision1 *= scale;
-  precision3 *= scale;
-  precision5 *= scale;
-}
-
 ProtoNNPredictor::ProtoNNPredictor(
   const int& argc,
   const char ** argv)
@@ -111,7 +80,7 @@ ProtoNNPredictor::ProtoNNPredictor(
     dataPoint = new FP_TYPE[model.hyperParams.D];
   }
   
-#ifdef SPARSE_Z
+#ifdef SPARSE_Z_PROTONN
   ZRows = model.params.Z.rows();
   ZCols = model.params.Z.cols();
   alpha = 1.0;
@@ -140,7 +109,7 @@ ProtoNNPredictor::ProtoNNPredictor(
 
   dataPoint = new FP_TYPE[model.hyperParams.D];
 
-#ifdef SPARSE_Z
+#ifdef SPARSE_Z_PROTONN
   ZRows = model.params.Z.rows();
   ZCols = model.params.Z.cols();
   alpha = 1.0;
@@ -329,7 +298,7 @@ void ProtoNNPredictor::scoreDenseDataPoint(
   RBF();
 
   //  mm(scoresMat, model.params.Z, CblasNoTrans, D, CblasTrans, 1.0, 0.0L);
-#ifdef SPARSE_Z
+#ifdef SPARSE_Z_PROTONN
   cscmv(&transa,
     &ZRows, &ZCols,
     &alpha, matdescra, model.params.Z.valuePtr(),
@@ -368,7 +337,7 @@ void ProtoNNPredictor::scoreSparseDataPoint(
   RBF();
 
   //  mm(scoresMat, model.params.Z, CblasNoTrans, D, CblasTrans, 1.0, 0.0L);
-#ifdef SPARSE_Z
+#ifdef SPARSE_Z_PROTONN
   cscmv(&transa,
     &ZRows, &ZCols,
     &alpha, matdescra, model.params.Z.valuePtr(),
@@ -430,13 +399,13 @@ void ProtoNNPredictor::normalize()
   }
 }
 
-ProtoNNPredictor::ResultStruct ProtoNNPredictor::test()
+EdgeML::ResultStruct ProtoNNPredictor::test()
 {
   if(batchSize == 0) return testPointWise();
   else return testBatchWise();
 }
   
-ProtoNNPredictor::ResultStruct ProtoNNPredictor::testBatchWise()
+EdgeML::ResultStruct ProtoNNPredictor::testBatchWise()
 {
   dataCount_t n;
   
@@ -446,14 +415,14 @@ ProtoNNPredictor::ResultStruct ProtoNNPredictor::testBatchWise()
 
   dataCount_t nBatches = (n + batchSize - 1)/ batchSize;
 
-  ProtoNNPredictor::ResultStruct res, tempRes;
+  EdgeML::ResultStruct res, tempRes;
   for (dataCount_t i = 0; i < nBatches; ++i) {
     Eigen::Index startIdx =  i * batchSize;
     dataCount_t curBatchSize = (batchSize < n - startIdx)? batchSize : n - startIdx;
     MatrixXuf Yscores = MatrixXuf::Zero(model.hyperParams.l, curBatchSize);
     scoreBatch(Yscores, startIdx, curBatchSize); 
     
-    tempRes = evaluate(Yscores, testData.Ytest.middleCols(startIdx, curBatchSize));
+    tempRes = evaluate(Yscores, testData.Ytest.middleCols(startIdx, curBatchSize), model.hyperParams.problemType);
     
     res.scaleAndAdd(tempRes, curBatchSize);
   }
@@ -461,7 +430,7 @@ ProtoNNPredictor::ResultStruct ProtoNNPredictor::testBatchWise()
   return res;
 }
 
-ProtoNNPredictor::ResultStruct ProtoNNPredictor::testPointWise()
+EdgeML::ResultStruct ProtoNNPredictor::testPointWise()
 {  
   dataCount_t n;
   FP_TYPE *scores, *featureValues;
@@ -473,14 +442,14 @@ ProtoNNPredictor::ResultStruct ProtoNNPredictor::testPointWise()
   scores = new FP_TYPE[model.hyperParams.l];
   Map<MatrixXuf> Yscores(scores, model.hyperParams.l, 1);
 
-  ProtoNNPredictor::ResultStruct res, tempRes;
+  EdgeML::ResultStruct res, tempRes;
   for (dataCount_t i = 0; i < n; ++i) {
     scoreSparseDataPoint(scores,
 			 (const FP_TYPE*) testData.Xtest.valuePtr() + testData.Xtest.outerIndexPtr()[i],
 			 (const featureCount_t*) testData.Xtest.innerIndexPtr() + testData.Xtest.outerIndexPtr()[i],
 			 (featureCount_t) testData.Xtest.outerIndexPtr()[i + 1] - testData.Xtest.outerIndexPtr()[i]);
 
-    tempRes = evaluate(Yscores, testData.Ytest.middleCols(i, 1));
+    tempRes = evaluate(Yscores, testData.Ytest.middleCols(i, 1), model.hyperParams.problemType);
     res.scaleAndAdd(tempRes, 1);
   }
   res.scale(1/(FP_TYPE)n);
@@ -490,139 +459,20 @@ ProtoNNPredictor::ResultStruct ProtoNNPredictor::testPointWise()
   return res;
 }
 
-
-// computes accuracy for binary/multiclass datasets, and prec1, prec3, prec5 for multilabel datasets
-ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluate(
-  const MatrixXuf& Yscores, 
-  const LabelMatType& Y)
-{
-  assert(Yscores.cols() == Y.cols());
-  assert(Yscores.rows() == Y.rows());
-  MatrixXuf Ytrue(Y);
-  MatrixXuf Ypred = Yscores;
-
-  FP_TYPE acc = 0;
-  FP_TYPE prec1 = 0;
-  FP_TYPE prec3 = 0;
-  FP_TYPE prec5 = 0;
-
-  ProblemFormat problemType = model.hyperParams.problemType;
-  
-  ProtoNNPredictor::ResultStruct res;
-  res.problemType = problemType;
-
-  if (problemType == EdgeML::ProblemFormat::binary || problemType == EdgeML::ProblemFormat::multiclass) {
-    dataCount_t Ytrue_, Ypred_;
-
-    for (Eigen::Index i = 0; i < Ytrue.cols(); ++i) {
-      Ytrue.col(i).maxCoeff(&Ytrue_);
-      Ypred.col(i).maxCoeff(&Ypred_);
-
-      if (Ytrue_ == Ypred_)
-        acc += 1;
-    }
-
-    assert(Y.cols() != 0);
-    res.accuracy = acc = safeDiv(acc, (FP_TYPE)Y.cols());
-  }
-  else if (problemType == EdgeML::ProblemFormat::multilabel) {
-    const labelCount_t k = 5;
-
-    assert(k * Ypred.cols() < 3e9);
-    std::vector<labelCount_t> topInd(k * Ypred.cols());
-    pfor(Eigen::Index i = 0; i < Ytrue.cols(); ++i) {
-      for (Eigen::Index j = 0; j < Ytrue.rows(); ++j) {
-        FP_TYPE val = Ypred(j, i);
-        if (j >= k && (val < Ypred(topInd[i*k + (k - 1)], i)))
-          continue;
-        size_t top = std::min(j, (Eigen::Index)k - 1);
-        while (top > 0 && (Ypred(topInd[i*k + (top - 1)], i) < val)) {
-          topInd[i*k + (top)] = topInd[i*k + (top - 1)];
-          top--;
-        }
-        topInd[i*k + top] = j;
-      }
-    }
-
-    assert(k >= 5);
-    for (Eigen::Index i = 0; i < Ytrue.cols(); ++i) {
-      for (labelCount_t j = 0; j < 1; ++j) {
-        if (Ytrue(topInd[i*k + j], i) == 1)
-          prec1++;
-      }
-      for (labelCount_t j = 0; j < 3; ++j) {
-        if (Ytrue(topInd[i*k + j], i) == 1)
-          prec3++;
-      }
-      for (labelCount_t j = 0; j < 5; ++j) {
-        if (Ytrue(topInd[i*k + j], i) == 1)
-          prec5++;
-      }
-    }
-
-    dataCount_t totalCount = Y.cols();
-    assert(totalCount != 0);
-    res.precision1 = (prec1 /= (FP_TYPE)totalCount);
-    res.precision3 = (prec3 /= ((FP_TYPE)totalCount)*3);
-    res.precision5 = (prec5 /= ((FP_TYPE)totalCount)*5);
-  }
-
-  return res;
-}
-
-
-void ProtoNNPredictor::getTopKScoresBatch(
-  const MatrixXuf& Yscores,
-  MatrixXuf& topKindices,
-  MatrixXuf& topKscores,
-  int k)
-{
-  dataCount_t totalCount = Yscores.cols();
-  dataCount_t totalLabels = Yscores.rows();
-
-  if (k < 1)
-    k = 5;
-
-  if (totalLabels < k)
-    k = totalLabels;
-
-  topKindices = MatrixXuf::Zero(k, totalCount);
-  topKscores = MatrixXuf::Zero(k, totalCount);
-
-  pfor(Eigen::Index i = 0; i < Yscores.cols(); ++i) {
-    for (Eigen::Index j = 0; j < Yscores.rows(); ++j) {
-      FP_TYPE val = Yscores(j, i);
-      if (j >= k && (val < Yscores(topKindices(k-1, i), i)))
-        continue;
-      size_t top = std::min(j, (Eigen::Index)k - 1);
-      while (top > 0 && (Yscores(topKindices(top-1, i), i) < val)) {
-        topKindices(top, i) = topKindices(top - 1, i);
-        top--;
-      }
-      topKindices(top, i) = j;
-    }
-  }
-  
-  pfor(Eigen::Index i = 0; i < topKindices.cols(); ++i)
-    for (Eigen::Index j = 0; j < topKindices.rows(); ++j)
-      topKscores(j, i) = Yscores(topKindices(j, i), i);
-}
-
-
 void ProtoNNPredictor::saveTopKScores(std::string filename, int topk)
 {
   dataCount_t tempBatchSize = batchSize;
   if(tempBatchSize == 0) tempBatchSize = 1; 
-  
-  dataCount_t n;
-  n = testData.Xtest.cols();
+
+  const dataCount_t n = testData.Ytest.cols();
   assert(n > 0);
 
   if (topk < 1)
     topk = 5;
 
   if (filename.empty())
-    filename = outDir + "/detailedPrediction";
+      filename = outDir + "/detailedPrediction";
+  LOG_INFO("Attempting to open the following file for detailed prediction output: " + filename);
   std::ofstream outfile(filename);
   assert(outfile.is_open());
 
@@ -636,7 +486,7 @@ void ProtoNNPredictor::saveTopKScores(std::string filename, int topk)
     getTopKScoresBatch(Yscores, topKindices, topKscores, topk); 
 
     for (Eigen::Index j = 0; j < topKindices.cols(); j++) {
-      for (LabelMatType::InnerIterator it(testData.Ytest, i*tempBatchSize+j); it; ++it)
+      for (SparseMatrixuf::InnerIterator it(testData.Ytest, i*tempBatchSize+j); it; ++it)
         outfile << it.row() << ",  ";
       for (Eigen::Index k = 0; k < topKindices.rows(); k++) {
         outfile << topKindices(k, j) << ":" << topKscores(k, j) << "  ";
@@ -647,5 +497,3 @@ void ProtoNNPredictor::saveTopKScores(std::string filename, int topk)
 
   outfile.close();
 }
-
-

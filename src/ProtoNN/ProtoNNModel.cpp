@@ -59,7 +59,7 @@ size_t ProtoNNModel::modelStat()
 {
   size_t offset = 0;
   offset += sizeof(hyperParams);
-#ifdef SPARSE_Z
+#ifdef SPARSE_Z_PROTONN
   offset += sizeof(bool);
   offset += sizeof(Eigen::Index);
   Eigen::Index nnz = params.Z.outerIndexPtr()[params.Z.cols()]
@@ -92,7 +92,7 @@ void ProtoNNModel::exportModel(
   memcpy(toModel + offset, (void *)&hyperParams, sizeof(hyperParams));
   offset += sizeof(hyperParams);
 
-#ifdef SPARSE_Z
+#ifdef SPARSE_Z_PROTONN
   memcpy(toModel + offset, (void *)&isZSparse, sizeof(bool));
   offset += sizeof(bool);
   offset += sizeof(Eigen::Index);
@@ -125,7 +125,7 @@ void ProtoNNModel::importModel(const size_t numBytes, const char *const fromMode
   params.resizeParamsFromHyperParams(hyperParams, false); // No need to set to zero.
 
   bool isZSparse(true);
-#ifdef SPARSE_Z
+#ifdef SPARSE_Z_PROTONN
 #else
   memcpy((void *)&isZSparse, fromModel + offset, sizeof(bool));
   offset += sizeof(bool);

@@ -35,7 +35,7 @@ namespace EdgeML
     const MatrixXuf& WX,
     const FP_TYPE& gamma,
     const EdgeML::ProblemFormat& problemType,
-    EdgeML::ProtoNN::ProtoNNPredictor::ResultStruct& res,
+    EdgeML::ResultStruct& res,
     FP_TYPE* const stats);
 
   //
@@ -51,7 +51,7 @@ namespace EdgeML
   void accuracy(
     const ZMatType& Z, const LabelMatType& Y, const MatrixXuf& D,
     const EdgeML::ProblemFormat& problemType, 
-    EdgeML::ProtoNN::ProtoNNPredictor::ResultStruct& res);
+    EdgeML::ResultStruct& res);
 
 
   //
