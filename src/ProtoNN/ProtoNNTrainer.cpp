@@ -8,12 +8,11 @@ using namespace EdgeML;
 using namespace EdgeML::ProtoNN;
 
 ProtoNNTrainer::ProtoNNTrainer(
-  const DataIngestType& dataIngestType,
   const int& argc,
   const char ** argv)
   :
   model(argc, argv),               // Initialize model
-  data(dataIngestType,
+  data(FileIngest,
     DataFormatParams{
       model.hyperParams.ntrain,
       model.hyperParams.nvalidation,
@@ -22,8 +21,6 @@ ProtoNNTrainer::ProtoNNTrainer(
       model.hyperParams.D }),
       dataformatType(DataFormat::undefinedData)
 {
-  assert(dataIngestType == FileIngest);
-
   commandLine = "";
   for (int i = 0; i < argc; ++i)
     commandLine += (std::string(argv[i]) + " ");
@@ -99,11 +96,10 @@ void ProtoNNTrainer::createOutputDirs()
 }
 
 ProtoNNTrainer::ProtoNNTrainer(
-  const DataIngestType& dataIngestType,
   const ProtoNNModel::ProtoNNHyperParams& fromHyperParams)
   :
   model(fromHyperParams),
-  data(dataIngestType,
+  data(InterfaceIngest,
     DataFormatParams{
        model.hyperParams.ntrain,
        model.hyperParams.nvalidation,
@@ -111,7 +107,6 @@ ProtoNNTrainer::ProtoNNTrainer(
          model.hyperParams.D }),
          dataformatType(DataFormat::interfaceIngestFormat)
 {
-  assert(dataIngestType == InterfaceIngest);
   assert(model.hyperParams.normalizationType == none);
 }
 

@@ -41,12 +41,9 @@ inline void ProtoNNPredictor::ResultStruct::scale(FP_TYPE scale)
 }
 
 ProtoNNPredictor::ProtoNNPredictor(
-  const DataIngestType& dataIngestType,
   const int& argc,
   const char ** argv)
 {
-  assert(dataIngestType == FileIngest);
-
   // initialize member variables
   batchSize = 0;
   ntest = 0;
@@ -64,7 +61,7 @@ ProtoNNPredictor::ProtoNNPredictor(
 
   assert(ntest > 0);
   
-  testData = Data(dataIngestType,
+  testData = Data(FileIngest,
                   DataFormatParams{
                   0, // set the ntrain to zero
                   0, // set the nvalidation to zero
