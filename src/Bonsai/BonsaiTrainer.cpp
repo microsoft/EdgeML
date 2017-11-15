@@ -303,6 +303,7 @@ size_t BonsaiTrainer::getMeanVarSize()
 {
   size_t offset = 0;
 
+  offset += sizeof(size_t);
   offset += sizeof(FP_TYPE) * mean.rows() * mean.cols();
   offset += sizeof(FP_TYPE) * variance.rows() * variance.cols();
 
@@ -316,6 +317,9 @@ void BonsaiTrainer::exportMeanVar(
   assert(meanVarSize == getMeanVarSize());
 
   size_t offset = 0;
+
+  memcpy(buffer + offset, (void *)&meanVarSize, sizeof(meanVarSize));
+  offset += sizeof(meanVarSize);
 
   memcpy(buffer + offset, mean.data(), sizeof(FP_TYPE) * mean.rows() * mean.cols());
   offset += sizeof(FP_TYPE) * mean.rows() * mean.cols();

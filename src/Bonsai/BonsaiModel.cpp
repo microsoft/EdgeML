@@ -9,6 +9,23 @@
 using namespace EdgeML;
 using namespace EdgeML::Bonsai;
 
+BonsaiModel::BonsaiModel(
+  std::string modelFile, 
+  const bool isDense)
+{
+  std::ifstream infile(modelFile, std::ios::in|std::ios::binary);
+  assert(infile.is_open());
+
+  size_t modelSize;
+  infile.read((char*)&modelSize, sizeof(modelSize));
+  infile.close();
+  infile.open(modelFile, std::ios::in|std::ios::binary);
+  char* modelBuff = new char[modelSize];
+  infile.read((char*)modelBuff, modelSize);
+  infile.close();  
+
+  (isDense) ? importModel(modelSize, modelBuff) : importSparseModel(modelSize, modelBuff);
+}
 
 BonsaiModel::BonsaiModel(
   const size_t numBytes,
@@ -45,6 +62,7 @@ size_t BonsaiModel::modelStat()
 {
   size_t offset = 0;
 
+  offset += sizeof(offset);
   offset += sizeof(hyperParams);
 
   offset += sizeof(FP_TYPE) * params.Z.rows() * params.Z.cols();
@@ -99,6 +117,9 @@ void BonsaiModel::exportModel(
   assert(modelSize == modelStat());
 
   size_t offset = 0;
+  memcpy(toModel + offset, (void *)&modelSize, sizeof(modelSize));
+  offset += sizeof(modelSize);
+
   memcpy(toModel + offset, (void *)&hyperParams, sizeof(hyperParams));
   offset += sizeof(hyperParams);
 
@@ -156,6 +177,10 @@ void BonsaiModel::importModel(
 
   size_t offset = 0;
 
+  size_t modelSize;
+  memcpy((void *)&modelSize, fromModel + offset, sizeof(modelSize));
+  offset += sizeof(modelSize);
+
   memcpy((void *)&hyperParams, fromModel + offset, sizeof(hyperParams));
   offset += sizeof(hyperParams);
 
@@ -211,7 +236,7 @@ void BonsaiModel::importModel(
 
 size_t BonsaiModel::sparseModelStat()
 {
-  return sizeof(hyperParams) + sparseExportStat(params.Z) + sparseExportStat(params.W) +
+  return sizeof(size_t) + sizeof(hyperParams) + sparseExportStat(params.Z) + sparseExportStat(params.W) +
     sparseExportStat(params.V) + sparseExportStat(params.Theta);
 }
 
@@ -222,6 +247,9 @@ void BonsaiModel::exportSparseModel(
   assert(modelSize == sparseModelStat());
 
   size_t offset = 0;
+
+  memcpy(toModel + offset, (void *)&modelSize, sizeof(modelSize));
+  offset += sizeof(modelSize);
 
   memcpy(toModel + offset, (void *)&hyperParams, sizeof(hyperParams));
   offset += sizeof(hyperParams);
@@ -270,6 +298,10 @@ void BonsaiModel::importSparseModel(
   const char *const fromModel)
 {
   size_t offset = 0;
+  size_t modelSize;
+
+  memcpy((void *)&modelSize, fromModel + offset, sizeof(modelSize));
+  offset += sizeof(modelSize);
 
   memcpy((void *)&hyperParams, fromModel + offset, sizeof(hyperParams));
   offset += sizeof(hyperParams);
