@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
                                               argc, (const char**)argv);
   ProtoNN::ProtoNNPredictor::ResultStruct res;
 
-  res = predictor.evaluateBatchWise();
+  res = predictor.test(); 
 
   predictor.saveTopKScores();
 

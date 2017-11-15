@@ -11,7 +11,7 @@ normalization_file="-n usps10/ProtoNNResults/ProtoNNTrainer_pd_15_protPerClass_0
 output_dir="-O usps10/ProtoNNResults"
 input_format="-F 0"
 ntest="-e 2007"
-batch_size="-b 1024"
+#batch_size="-b 1024"
 
 
 ########################################################

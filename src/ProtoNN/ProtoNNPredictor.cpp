@@ -47,6 +47,12 @@ ProtoNNPredictor::ProtoNNPredictor(
 {
   assert(dataIngestType == FileIngest);
 
+  // initialize member variables
+  batchSize = 0;
+  ntest = 0;
+  dataformatType = undefinedData; 
+  dataPoint = NULL;
+  
   commandLine = "";
   for (int i = 0; i < argc; ++i)
     commandLine += (std::string(argv[i]) + " ");
@@ -55,6 +61,8 @@ ProtoNNPredictor::ProtoNNPredictor(
   LOG_INFO("Attempting to load a model from the file: " + modelFile + "\n");
   model = ProtoNNModel(modelFile);
   model.hyperParams.ntest = ntest;
+
+  assert(ntest > 0);
   
   testData = Data(dataIngestType,
                   DataFormatParams{
@@ -88,21 +96,24 @@ ProtoNNPredictor::ProtoNNPredictor(
 
   normalize();
 
-  WX = MatrixXuf::Zero(model.hyperParams.d, 1);
-  WXColSum = MatrixXuf::Zero(1, 1);
-  D = MatrixXuf::Zero(1, model.hyperParams.m);
+  // if batchSize is not set, then we want to do point-wise prediction
+  if (batchSize == 0){
+    WX = MatrixXuf::Zero(model.hyperParams.d, 1);
+    WXColSum = MatrixXuf::Zero(1, 1);
+    D = MatrixXuf::Zero(1, model.hyperParams.m);
 
-  BColSum = MatrixXuf::Zero(1, model.hyperParams.m);
-  BAccumulator = MatrixXuf::Constant(1, model.hyperParams.d, 1.0);
-  B_B = model.params.B.cwiseProduct(model.params.B);
-  mm(BColSum, BAccumulator, CblasNoTrans, B_B, CblasNoTrans, 1.0, 0.0L);
+    BColSum = MatrixXuf::Zero(1, model.hyperParams.m);
+    BAccumulator = MatrixXuf::Constant(1, model.hyperParams.d, 1.0);
+    B_B = model.params.B.cwiseProduct(model.params.B);
+    mm(BColSum, BAccumulator, CblasNoTrans, B_B, CblasNoTrans, 1.0, 0.0L);
 
-  gammaSq = model.hyperParams.gamma * model.hyperParams.gamma;
-  gammaSqRow = MatrixXuf::Constant(1, model.hyperParams.m, -gammaSq);
-  gammaSqCol = MatrixXuf::Constant(WX.cols(), 1, -gammaSq);
+    gammaSq = model.hyperParams.gamma * model.hyperParams.gamma;
+    gammaSqRow = MatrixXuf::Constant(1, model.hyperParams.m, -gammaSq);
+    gammaSqCol = MatrixXuf::Constant(WX.cols(), 1, -gammaSq);
 
-  data = new FP_TYPE[model.hyperParams.D];
-
+    dataPoint = new FP_TYPE[model.hyperParams.D];
+  }
+  
 #ifdef SPARSE_Z
   ZRows = model.params.Z.rows();
   ZCols = model.params.Z.cols();
@@ -130,7 +141,7 @@ ProtoNNPredictor::ProtoNNPredictor(
   gammaSqRow = MatrixXuf::Constant(1, model.hyperParams.m, -gammaSq);
   gammaSqCol = MatrixXuf::Constant(WX.cols(), 1, -gammaSq);
 
-  data = new FP_TYPE[model.hyperParams.D];
+  dataPoint = new FP_TYPE[model.hyperParams.D];
 
 #ifdef SPARSE_Z
   ZRows = model.params.Z.rows();
@@ -258,8 +269,8 @@ void ProtoNNPredictor::setFromArgs(const int argc, const char** argv)
 
 ProtoNNPredictor::~ProtoNNPredictor()
 {
-  if (data)
-    delete[] data;
+  if(dataPoint)
+    delete[] dataPoint;
 }
 
 FP_TYPE ProtoNNPredictor::testDenseDataPoint(
@@ -335,8 +346,6 @@ void ProtoNNPredictor::scoreDenseDataPoint(
     1.0, model.params.Z.data(), model.params.Z.rows(),
     D.data(), 1, 0.0, scores, 1);
 #endif
-
-  // DO WE NEED TO NORMALIZE SCORES?
 }
 
 void ProtoNNPredictor::scoreSparseDataPoint(
@@ -344,19 +353,19 @@ void ProtoNNPredictor::scoreSparseDataPoint(
   const FP_TYPE *const values,
   const featureCount_t *indices,
   const featureCount_t numIndices)
+  
 {
-
-  memset(data, 0, sizeof(FP_TYPE)*model.hyperParams.D);
+  memset(dataPoint, 0, sizeof(FP_TYPE)*model.hyperParams.D);
 
   pfor(featureCount_t i = 0; i < numIndices; ++i) {
     assert(indices[i] < model.hyperParams.D);
-    data[indices[i]] = values[i];
+    dataPoint[indices[i]] = values[i];
   }
 
   gemv(CblasColMajor, CblasNoTrans,
     model.params.W.rows(), model.params.W.cols(),
     1.0, model.params.W.data(), model.params.W.rows(),
-    data, 1, 0.0, WX.data(), 1);
+    dataPoint, 1, 0.0, WX.data(), 1);
 
   //  MatrixXuf D = gaussianKernel(model.params.B, WX, model.hyperParams.gamma);
   RBF();
@@ -405,7 +414,7 @@ void ProtoNNPredictor::normalize()
   std::string minMaxFile;
   switch (normalizationType) {
     case minMax:
-      assert(!normParamFile.empty());
+      assert(!normParamFile.empty() && "Normalization parameteres file for min-max normalization needs to be provided");
       loadMinMax(testData.min, testData.max, testData.Xtest.rows(), normParamFile);
       minMaxNormalize(testData.Xtest, testData.min, testData.max);
       LOG_INFO("Completed min-max normalization of test data\n");
@@ -424,7 +433,13 @@ void ProtoNNPredictor::normalize()
   }
 }
 
-ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluateBatchWise()
+ProtoNNPredictor::ResultStruct ProtoNNPredictor::test()
+{
+  if(batchSize == 0) return testPointWise();
+  else return testBatchWise();
+}
+  
+ProtoNNPredictor::ResultStruct ProtoNNPredictor::testBatchWise()
 {
   dataCount_t n;
   
@@ -432,16 +447,16 @@ ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluateBatchWise()
   
   assert(n > 0);
 
-  dataCount_t nbatches = n / batchSize + 1;
+  dataCount_t nBatches = (n + batchSize - 1)/ batchSize;
 
   ProtoNNPredictor::ResultStruct res, tempRes;
-  for (dataCount_t i = 0; i < nbatches; ++i) {
+  for (dataCount_t i = 0; i < nBatches; ++i) {
     Eigen::Index startIdx =  i * batchSize;
     dataCount_t curBatchSize = (batchSize < n - startIdx)? batchSize : n - startIdx;
     MatrixXuf Yscores = MatrixXuf::Zero(model.hyperParams.l, curBatchSize);
     scoreBatch(Yscores, startIdx, curBatchSize); 
     
-    tempRes = evaluateBatch(Yscores, testData.Ytest.middleCols(startIdx, curBatchSize));
+    tempRes = evaluate(Yscores, testData.Ytest.middleCols(startIdx, curBatchSize));
     
     res.scaleAndAdd(tempRes, curBatchSize);
   }
@@ -449,13 +464,13 @@ ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluateBatchWise()
   return res;
 }
 
-ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluatePointWise()
-{
+ProtoNNPredictor::ResultStruct ProtoNNPredictor::testPointWise()
+{  
   dataCount_t n;
   FP_TYPE *scores, *featureValues;
   featureCount_t *featureIndices, numIndices;
 
-  n = testData.testData.cols();
+  n = testData.Xtest.cols();
   assert(n > 0);
 
   scores = new FP_TYPE[model.hyperParams.l];
@@ -463,24 +478,12 @@ ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluatePointWise()
 
   ProtoNNPredictor::ResultStruct res, tempRes;
   for (dataCount_t i = 0; i < n; ++i) {
-    FP_TYPE* values;
-    
-    featureCount_t numIndices = testData.Xtest.middleCols(i, 1).nonZeros();
-    featureValues = new FP_TYPE[numIndices];
-    featureIndices = new featureCount_t[numIndices];
-    
-    featureCount_t fIdx = 0;
-    for (SparseMatrixuf::InnerIterator it(testData.Xtest, i); it; ++it) {
-      featureValues[fIdx] = it.value();
-      featureIndices[fIdx] = it.index();
-      ++fIdx;
-    }
-    scoreSparseDataPoint(scores, featureValues, featureIndices, numIndices);
-    tempRes = evaluateBatch(Yscores, testData.Ytest.middleCols(i, 1));
-       
-    delete[] featureValues;
-    delete[] featureIndices;
-    
+    scoreSparseDataPoint(scores,
+			 (const FP_TYPE*) testData.Xtest.valuePtr() + testData.Xtest.outerIndexPtr()[i],
+			 (const featureCount_t*) testData.Xtest.innerIndexPtr() + testData.Xtest.outerIndexPtr()[i],
+			 (featureCount_t) testData.Xtest.outerIndexPtr()[i + 1] - testData.Xtest.outerIndexPtr()[i]);
+
+    tempRes = evaluate(Yscores, testData.Ytest.middleCols(i, 1));
     res.scaleAndAdd(tempRes, 1);
   }
   res.scale(1/(FP_TYPE)n);
@@ -492,7 +495,7 @@ ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluatePointWise()
 
 
 // computes accuracy for binary/multiclass datasets, and prec1, prec3, prec5 for multilabel datasets
-ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluateBatch(
+ProtoNNPredictor::ResultStruct ProtoNNPredictor::evaluate(
   const MatrixXuf& Yscores, 
   const LabelMatType& Y)
 {
@@ -611,6 +614,9 @@ void ProtoNNPredictor::getTopKScoresBatch(
 
 void ProtoNNPredictor::saveTopKScores(std::string filename, int topk)
 {
+  dataCount_t tempBatchSize = batchSize;
+  if(tempBatchSize == 0) tempBatchSize = 1; 
+  
   dataCount_t n;
   n = testData.Xtest.cols();
   assert(n > 0);
@@ -623,17 +629,17 @@ void ProtoNNPredictor::saveTopKScores(std::string filename, int topk)
   std::ofstream outfile(filename);
   assert(outfile.is_open());
 
-  dataCount_t nbatches = n / batchSize + 1;
+  dataCount_t nBatches = ((n + tempBatchSize - 1)/ tempBatchSize); 
   MatrixXuf topKindices, topKscores;
-  for (dataCount_t i = 0; i < nbatches; ++i) {
-    Eigen::Index startIdx =  i * batchSize;
-    dataCount_t curBatchSize = (batchSize < n - startIdx)? batchSize : n - startIdx;
+  for (dataCount_t i = 0; i < nBatches; ++i) {
+    Eigen::Index startIdx =  i * tempBatchSize;
+    dataCount_t curBatchSize = (tempBatchSize < n - startIdx)? tempBatchSize : n - startIdx;
     MatrixXuf Yscores = MatrixXuf::Zero(model.hyperParams.l, curBatchSize);
     scoreBatch(Yscores, startIdx, curBatchSize); 
     getTopKScoresBatch(Yscores, topKindices, topKscores, topk); 
 
     for (Eigen::Index j = 0; j < topKindices.cols(); j++) {
-      for (LabelMatType::InnerIterator it(testData.Ytest, i*batchSize+j); it; ++it)
+      for (LabelMatType::InnerIterator it(testData.Ytest, i*tempBatchSize+j); it; ++it)
         outfile << it.row() << ",  ";
       for (Eigen::Index k = 0; k < topKindices.rows(); k++) {
         outfile << topKindices(k, j) << ":" << topKscores(k, j) << "  ";
