@@ -9,8 +9,10 @@ IFLAGS= -I ../../eigen/ -I$(MKL_ROOT)/include
 COMMON_INCLUDES = logger.h timer.h \
 		  blas_routines.h par_utils.h \
 		  mmaped.h utils.h \
-		  goldfoil.h Data.h 
-COMMON_OBJS = logger.o timer.o blas_routines.o  par_utils.o mmaped.o utils.o goldfoil.o Data.o
+		  goldfoil.h Data.h \
+		  metrics.h
+
+COMMON_OBJS = logger.o timer.o blas_routines.o  par_utils.o mmaped.o utils.o goldfoil.o Data.o metrics.o
 
 COMMON_LIB = ../../libcommon.so
 
@@ -42,6 +44,9 @@ utils.o: utils.cpp  $(COMMON_INCLUDES)
 	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
 
 goldfoil.o: goldfoil.cpp $(COMMON_INCLUDES)
+	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
+
+metrics.o: metrics.cpp $(COMMON_INCLUDES)
 	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
 
 
