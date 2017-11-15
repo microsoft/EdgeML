@@ -138,7 +138,6 @@ namespace EdgeML
         // Gurantees that finalizeData is called before returning
         //
       ProtoNNTrainer(
-        const DataIngestType& dataIngestType,
         const int& argc,
         const char ** argv);
 
@@ -148,9 +147,7 @@ namespace EdgeML
       // 2. You are starting with a new model from scratch
       // finalizeData is not called inside, it must explicity called after feeding data
       //
-      ProtoNNTrainer(
-        const DataIngestType& dataIngestType,
-        const ProtoNNModel::ProtoNNHyperParams& hyperParams);
+      ProtoNNTrainer(const ProtoNNModel::ProtoNNHyperParams& hyperParams);
 
       ~ProtoNNTrainer();
 
@@ -254,12 +251,14 @@ namespace EdgeML
         inline void scale(FP_TYPE scale);
       };
 
+      // Use this consutrctor when loading model from binary stream.
+      // For this you need to have exported a binary stream model from the trainer.
       ProtoNNPredictor(
         const size_t numBytes,
         const char *const fromModel);
 
+      // Use this constructor when loading model from file through command line
       ProtoNNPredictor(
-        const DataIngestType& dataIngestType,
         const int& argc,
         const char ** argv);
 

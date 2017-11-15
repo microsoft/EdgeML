@@ -22,10 +22,10 @@ libProtoNN.so: $(PROTONN_INCLUDES)
 libBonsai.so: $(BONSAI_INCLUDES)
 	$(MAKE) -C $(SOURCE_DIR)/Bonsai
 
-ProtoNNLocalDriver.o: ProtoNNLocalDriver.cpp $(PROTONN_INCLUDES)
+ProtoNNTrainDriver.o: ProtoNNTrainDriver.cpp $(PROTONN_INCLUDES)
 	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
 
-ProtoNNLocalPredictor.o: ProtoNNLocalPredictor.cpp $(PROTONN_INCLUDES)
+ProtoNNPredictDriver.o: ProtoNNPredictDriver.cpp $(PROTONN_INCLUDES)
 	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
 
 ProtoNNIngestTest.o: ProtoNNIngestTest.cpp $(PROTONN_INCLUDES)
@@ -37,10 +37,10 @@ BonsaiLocalDriver.o:BonsaiLocalDriver.cpp $(BONSAI_INCLUDES)
 BonsaiIngestTest.o:BonsaiIngestTest.cpp $(BONSAI_INCLUDES)
 	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
 
-ProtoNN: ProtoNNLocalDriver.o libcommon.so libProtoNN.so
+ProtoNN: ProtoNNTrainDriver.o libcommon.so libProtoNN.so
 	$(CC) -o $@ $^ $(CFLAGS) $(MKL_PAR_LDFLAGS) $(CILK_LDFLAGS)
 
-ProtoNNPredict: ProtoNNLocalPredictor.o libcommon.so libProtoNN.so
+ProtoNNPredict: ProtoNNPredictDriver.o libcommon.so libProtoNN.so
 	$(CC) -o $@ $^ $(CFLAGS) $(MKL_PAR_LDFLAGS) $(CILK_LDFLAGS)
 
 ProtoNNIngestTest: ProtoNNIngestTest.o libcommon.so libProtoNN.so
