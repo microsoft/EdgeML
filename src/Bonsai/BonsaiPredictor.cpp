@@ -15,7 +15,7 @@ void BonsaiPredictor::exitWithHelp()
   LOG_INFO("-f    : [Required] Input format. Takes two values [0 and 1]. 0 is for libsvmFormat(default), 1 is for tab/space separated input.");
   LOG_INFO("-N    : [Required] Number of data points in the test data.");
   LOG_INFO("-D    : [Required] Directory of data with test.txt present in it.");
-  LOG_INFO("-M    : [Required] Directory of the Model (loadableModel and loadableMeanVar) .");
+  LOG_INFO("-M    : [Required] Directory of the Model (loadableModel and loadableMeanVar).");
   exit(1);
 }
 
