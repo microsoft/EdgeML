@@ -224,7 +224,7 @@ namespace EdgeML
 
       DataFormat dataformatType;
       Data testData;
-      FP_TYPE* data;	// for scoreSparseDataPoint
+      FP_TYPE* dataPoint;	// for scoreSparseDataPoint
 
 #ifdef SPARSE_Z
       // for mkl csc_mv call
@@ -288,11 +288,13 @@ namespace EdgeML
         dataCount_t startIdx,
         dataCount_t batchSize);
 
-      ResultStruct evaluateBatchWise();
+      ResultStruct testBatchWise();
       
-      ResultStruct evaluatePointWise();
+      ResultStruct testPointWise();
 
-      ResultStruct evaluateBatch(
+      ResultStruct test(); 
+      
+      ResultStruct evaluate(
         const MatrixXuf& Yscores,
         const LabelMatType& Y);
 
