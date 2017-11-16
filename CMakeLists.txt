@@ -26,20 +26,26 @@ endif()
 
 #define variables for mkl include directories
 #set your MKL_ROOT here
-set(MKL_ROOT "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/mkl")
-set(MKL_INCLUDE_DIR ${MKL_ROOT}/include)
-include_directories(${MKL_INCLUDE_DIR})
-link_directories(${MKL_ROOT}/lib/intel64_win)
-link_directories(${MKL_ROOT}/../compiler/lib/intel64_win)
 
-#set(MKL_ROOT "/opt/intel/mkl/")
-#set(MKL_INCLUDE_DIR ${MKL_ROOT}/include)
-#include_directories(${MKL_INCLUDE_DIR})
-#link_directories(${MKL_ROOT}/lib/intel64_lin)
-#link_directories(${MKL_ROOT}/../compiler/lib/intel64_lin)
+if(MSVC)
+ set(MKL_ROOT "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/mkl")
+ set(MKL_INCLUDE_DIR ${MKL_ROOT}/include)
+ include_directories(${MKL_INCLUDE_DIR})
+ link_directories(${MKL_ROOT}/lib/intel64_win)
+ link_directories(${MKL_ROOT}/../compiler/lib/intel64_win)
+ENDIF(MSVC)
+
+IF(CMAKE_COMPILER_IS_GNUCC)
+  set(MKL_ROOT "/opt/intel/mkl/")
+  set(MKL_INCLUDE_DIR ${MKL_ROOT}/include)
+  include_directories(${MKL_INCLUDE_DIR})
+  link_directories(${MKL_ROOT}/lib/intel64_lin)
+  link_directories(${MKL_ROOT}/../compiler/lib/intel64_lin)
+ENDIF(CMAKE_COMPILER_IS_GNUCC)
 
 # add debug definitions to compiler flags
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DLIGHT_LOGGER")  #-DLOGGER #-DTIMER -DCONCISE #-DSTDERR_ONSCREEN #-DLIGHT_LOGGER -DVERBOSE #-DDUMP #-DVERIFY
+#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DLIGHT_LOGGER")  #-DLOGGER #-DTIMER -DCONCISE #-DSTDERR_ONSCREEN #-DLIGHT_LOGGER -DVERBOSE #-DDUMP #-DVERIFY
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DLIGHT_LOGGER -DSTDERR_ONSCREEN -DVERBOSE -DDUMP -DVERIFY")  #-DLOGGER #-DTIMER -DCONCISE #-DSTDERR_ONSCREEN #-DLIGHT_LOGGER -DVERBOSE #-DDUMP #-DVERIFY
 
 set(CONFIG_FLAGS "-DSINGLE") #-DXML -DZERO_BASED_IO
 
