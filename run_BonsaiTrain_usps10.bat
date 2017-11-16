@@ -42,14 +42,14 @@ REM # Bonsai optimization hyper-parameters (optional)
 REM ########################################################
 
 SET batch_factor=-B 1
-SET iters=-I 100
+SET iters=-I 1
 
 REM ########################################################
 REM # execute Bonsai
 REM ########################################################
 
 SET executable=./BonsaiTrain
-SET command=%executable% %input_format% %num_features% %num_labels% %ntrain% %ntest% %projection_dimension% %tree_depth% %sigma% %reg_W% %reg_Z% %reg_Theta% %reg_V% %sparse_Z% %sparse_Theta% %sparse_V" %sparse_W% %batch_factor% %iters% %input_dir%
+SET command=%executable% %input_format% %num_features% %num_labels% %ntrain% %ntest% %projection_dimension% %tree_depth% %sigma% %reg_W% %reg_Z% %reg_Theta% %reg_V% %sparse_Z% %sparse_Theta% %sparse_V% %sparse_W% %batch_factor% %iters% %input_dir%
 @ECHO ON
 ECHO Running Bonsai with following command: 
 ECHO %command%
