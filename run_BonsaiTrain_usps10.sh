@@ -48,7 +48,7 @@ iters="-I 100"
 ########################################################
 
 #gdb=" gdb --args"
-executable="./BonsaiTrain"
+executable="./Bonsai"
 command=$gdb" "$executable" "$input_format" "$num_features" "$num_labels" "$ntrain" "$ntest" "$projection_dimension" "$tree_depth" "$sigma" "$reg_W" "$reg_Z" "$reg_Theta" "$reg_V" "$sparse_Z" "$sparse_Theta" "$sparse_V" "$sparse_W" "$batch_factor" "$iters" "$input_dir
 echo "Running Bonsai with following command: "
 echo $command
