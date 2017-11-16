@@ -37,7 +37,7 @@ using namespace Eigen;
 
 
 #ifndef COMPILER_GCC
-#pragma comment(lib, "../../../../Libraries/MKL/Win/Microsoft.MachineLearning.MklImports.lib")
+//#pragma comment(lib, "../../../../Libraries/MKL/Win/Microsoft.MachineLearning.MklImports.lib")
 #endif 
 
 //input and output are assumed to be of the same format (single/double)
