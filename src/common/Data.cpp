@@ -7,7 +7,6 @@
 
 using namespace EdgeML;
 
-
 Data::Data(
   DataIngestType ingestType_,
   DataFormatParams formatParams_)
@@ -23,101 +22,174 @@ Data::Data(
 void Data::loadDataFromFile(
   DataFormat format,
   std::string infileTrain,
+  std::string infileValidation,
   std::string infileTest)
 {
   assert(isDataLoaded == false);
   assert(ingestType == FileIngest);
 
+  trainData = MatrixXuf(0, 0);
+  validationData = MatrixXuf(0, 0);
+  testData = MatrixXuf(0, 0);
+
+  Xtest = SparseMatrixuf(0, 0);
+  Xvalidation = SparseMatrixuf(0, 0);
+  Xtest = SparseMatrixuf(0, 0);
+
   LOG_INFO("");
   if (format == tsvFormat) {
-    LOG_INFO("Reading train data...");
-    FileIO::Data train(infileTrain,
-      trainData, trainLabel,
-      formatParams.numTrainPoints, 0, 1,
-      formatParams.dimension + 1, formatParams.dimension, formatParams.numLabels,
-      format);
+    if((!infileTrain.empty()) && (formatParams.numTrainPoints > 0)) {
+      LOG_INFO("Reading train data...");
+      FileIO::Data train(infileTrain,
+        trainData, trainLabel,
+        formatParams.numTrainPoints, 0, 1,
+        formatParams.dimension + 1, formatParams.dimension, formatParams.numLabels,
+        format);
+    }
 
-    LOG_INFO("Reading test data...");
-    FileIO::Data test(infileTest,
-      testData, testLabel,
-      formatParams.numTestPoints, 0, 1,
-      formatParams.dimension + 1, formatParams.dimension, formatParams.numLabels,
-      format);
+    if((!infileValidation.empty()) && (formatParams.numValidationPoints > 0)) {
+      LOG_INFO("Reading validation data...");
+      FileIO::Data validation(infileValidation,
+        validationData, validationLabel,
+        formatParams.numValidationPoints, 0, 1,
+        formatParams.dimension + 1, formatParams.dimension, formatParams.numLabels,
+        format);
+    }
+
+    if((!infileTest.empty()) && (formatParams.numTestPoints > 0)) {
+      LOG_INFO("Reading test data...");
+      FileIO::Data test(infileTest,
+        testData, testLabel,
+        formatParams.numTestPoints, 0, 1,
+        formatParams.dimension + 1, formatParams.dimension, formatParams.numLabels,
+        format);
+    }
   }
   else if (format == libsvmFormat) {
-    LOG_INFO("Reading train data...");
-    FileIO::Data train(infileTrain,
-      Xtrain, Ytrain,
-      formatParams.numTrainPoints, -1, -1,
-      -1, formatParams.dimension, formatParams.numLabels,
-      format);
+    if((!infileTrain.empty()) && (formatParams.numTrainPoints > 0)) {
+      LOG_INFO("Reading train data...");
+      FileIO::Data train(infileTrain,
+        Xtrain, Ytrain,
+        formatParams.numTrainPoints, -1, -1,
+        -1, formatParams.dimension, formatParams.numLabels,
+        format);
+    }
 
-    LOG_INFO("Reading test data...");
-    FileIO::Data test(infileTest,
-      Xtest, Ytest,
-      formatParams.numTestPoints, -1, -1,
-      -1, formatParams.dimension, formatParams.numLabels,
-      format);
+    if ((!infileValidation.empty()) && (formatParams.numValidationPoints > 0)) {
+      LOG_INFO("Reading validation data...");
+      FileIO::Data validation(infileValidation,
+        Xvalidation, Yvalidation,
+        formatParams.numValidationPoints, -1, -1,
+        -1, formatParams.dimension, formatParams.numLabels,
+        format);
+    }
+
+    if ((!infileTest.empty()) && (formatParams.numTestPoints > 0)) {
+      LOG_INFO("Reading test data...");
+      FileIO::Data test(infileTest,
+        Xtest, Ytest,
+        formatParams.numTestPoints, -1, -1,
+        -1, formatParams.dimension, formatParams.numLabels,
+        format);
+    }
   }
-  else if (format = interfaceIngestFormat) {
-    LOG_INFO("Reading train data...");
-
+  else if (format == interfaceIngestFormat) {
     labelCount_t *label = new labelCount_t[1];
+    if (!infileTrain.empty()) {
+      LOG_INFO("Reading train data...");
 
-    std::ifstream trainreader(infileTrain);
-    trainData = MatrixXuf::Zero(formatParams.dimension, formatParams.numTrainPoints);
-    trainLabel = MatrixXuf::Zero(formatParams.numLabels, formatParams.numTrainPoints);
-    FP_TYPE readLbl;
-    FP_TYPE readFeat;
-    for (dataCount_t i = 0; i < formatParams.numTrainPoints; ++i) {
-      trainreader >> readLbl;
-      label[0] = (labelCount_t)readLbl;
-
-#ifdef ZERO_BASED_IO
-      trainLabel(label[0], i) = 1;
-#else
-      trainLabel(label[0] - 1, i) = 1;
-#endif
-
-      featureCount_t count = 0;
-      while (count < formatParams.dimension - 1) {
-        trainreader >> readFeat;
-        trainData(count, i) = readFeat;
-        count++;
-      }
-      trainData(count, i) = 1.0;
-    }
-    trainreader.close();
-    Xtrain = trainData.sparseView(); trainData.resize(0, 0);
-    Ytrain = trainLabel.sparseView(); trainLabel.resize(0, 0);
-
-    std::ifstream testreader(infileTest);
-    LOG_INFO("Reading test data...");
-
-    testData = MatrixXuf::Zero(formatParams.dimension, formatParams.numTestPoints);
-    testLabel = MatrixXuf::Zero(formatParams.numLabels, formatParams.numTestPoints);
-    for (dataCount_t i = 0; i < formatParams.numTestPoints; ++i) {
-      testreader >> readLbl;
-      label[0] = (labelCount_t)readLbl;
+      std::ifstream trainreader(infileTrain);
+      trainData = MatrixXuf::Zero(formatParams.dimension, formatParams.numTrainPoints);
+      trainLabel = MatrixXuf::Zero(formatParams.numLabels, formatParams.numTrainPoints);
+      FP_TYPE readLbl;
+      FP_TYPE readFeat;
+      for (dataCount_t i = 0; i < formatParams.numTrainPoints; ++i) {
+        trainreader >> readLbl;
+        label[0] = (labelCount_t)readLbl;
 
 #ifdef ZERO_BASED_IO
-      testLabel(label[0], i) = 1;
+        trainLabel(label[0], i) = 1;
 #else
-      testLabel(label[0] - 1, i) = 1;
+        trainLabel(label[0] - 1, i) = 1;
 #endif
 
-      featureCount_t count = 0;
-      while (count < formatParams.dimension - 1) {
-        testreader >> readFeat;
-        testData(count, i) = readFeat;
-        count++;
+        featureCount_t count = 0;
+        while (count < formatParams.dimension - 1) {
+          trainreader >> readFeat;
+          trainData(count, i) = readFeat;
+          count++;
+        }
+        trainData(count, i) = 1.0;
       }
-      testData(count, i) = 1.0;
+      trainreader.close();
+      Xtrain = trainData.sparseView(); trainData.resize(0, 0);
+      Ytrain = trainLabel.sparseView(); trainLabel.resize(0, 0);
     }
-    testreader.close();
 
-    Xtest = testData.sparseView(); testData.resize(0, 0);
-    Ytest = testLabel.sparseView(); testLabel.resize(0, 0);
+    if (!infileValidation.empty()) {
+      LOG_INFO("Reading validation data...");
+
+      std::ifstream validationreader(infileValidation);
+      validationData = MatrixXuf::Zero(formatParams.dimension, formatParams.numValidationPoints);
+      validationLabel = MatrixXuf::Zero(formatParams.numLabels, formatParams.numValidationPoints);
+      FP_TYPE readLbl;
+      FP_TYPE readFeat;
+      for (dataCount_t i = 0; i < formatParams.numValidationPoints; ++i) {
+        validationreader >> readLbl;
+        label[0] = (labelCount_t)readLbl;
+
+#ifdef ZERO_BASED_IO
+        validationLabel(label[0], i) = 1;
+#else
+        validationLabel(label[0] - 1, i) = 1;
+#endif
+
+        featureCount_t count = 0;
+        while (count < formatParams.dimension - 1) {
+          validationreader >> readFeat;
+          validationData(count, i) = readFeat;
+          count++;
+        }
+        validationData(count, i) = 1.0;
+      }
+      validationreader.close();
+      Xvalidation = validationData.sparseView(); validationData.resize(0, 0);
+      Yvalidation = validationLabel.sparseView(); validationLabel.resize(0, 0);
+    }
+
+    if (!infileTest.empty()) {
+      std::ifstream testreader(infileTest);
+      LOG_INFO("Reading test data...");
+
+      testData = MatrixXuf::Zero(formatParams.dimension, formatParams.numTestPoints);
+      testLabel = MatrixXuf::Zero(formatParams.numLabels, formatParams.numTestPoints);
+      FP_TYPE readLbl;
+      FP_TYPE readFeat;
+      for (dataCount_t i = 0; i < formatParams.numTestPoints; ++i) {
+        testreader >> readLbl;
+        label[0] = (labelCount_t)readLbl;
+
+#ifdef ZERO_BASED_IO
+        testLabel(label[0], i) = 1;
+#else
+        testLabel(label[0] - 1, i) = 1;
+#endif
+
+        featureCount_t count = 0;
+        while (count < formatParams.dimension - 1) {
+          testreader >> readFeat;
+          testData(count, i) = readFeat;
+          count++;
+        }
+        testData(count, i) = 1.0;
+      }
+      testreader.close();
+
+      Xtest = testData.sparseView(); testData.resize(0, 0);
+      Ytest = testLabel.sparseView(); testLabel.resize(0, 0);
+    }
+
+    delete[] label;
   }
   else
     assert(false);
@@ -134,6 +206,7 @@ void Data::finalizeData()
 
     formatParams.numTrainPoints = numPointsIngested;
     formatParams.numTestPoints = 0;
+    formatParams.numValidationPoints = 0;
 
     if (sparseDataHolder.size() != 0) {
       if (denseDataHolder.size() != 0) {
@@ -189,6 +262,11 @@ void Data::finalizeData()
     Xtrain = trainData.sparseView();
     trainData.resize(0, 0);
   }
+  if (getnnzs(Xvalidation) == 0) {
+    Xvalidation = validationData.sparseView();
+    validationData.resize(0, 0);
+  }
+
   if (getnnzs(Ytest) == 0) {
     Ytest = testLabel.sparseView();
     testLabel.resize(0, 0);
@@ -197,6 +275,13 @@ void Data::finalizeData()
     Ytrain = trainLabel.sparseView();
     trainLabel.resize(0, 0);
   }
+  if (getnnzs(Yvalidation) == 0) {
+    Yvalidation = validationLabel.sparseView();
+    validationLabel.resize(0, 0);
+  }
+
+  min = MatrixXuf::Zero(0, 0);
+  max = MatrixXuf::Zero(0, 0);
 
   /*
   if(Xtest.cols() == 0){
@@ -242,10 +327,10 @@ void Data::feedSparseData(const SparseDataPoint& point)
   numPointsIngested++;
 }
 
-
-void EdgeML::minMaxNormalize(
-  SparseMatrixuf& dataMatrix,
-  SparseMatrixuf& valMatrix)
+void EdgeML::computeMinMax(
+  const SparseMatrixuf& dataMatrix,
+  MatrixXuf& min,
+  MatrixXuf& max)
 {
 #ifdef ROWMAJOR
   assert(false);
@@ -254,11 +339,11 @@ void EdgeML::minMaxNormalize(
   FP_TYPE * mx = new FP_TYPE[dataMatrix.rows()];
   for (Eigen::Index i = 0; i < dataMatrix.rows(); ++i) {
     mn[i] = 99999999999.0f;
-    mx[i] = 0.0f;
+    mx[i] = -99999999999.0f;
   }
 
-  FP_TYPE * values = dataMatrix.valuePtr();
-  sparseIndex_t * offsets = dataMatrix.innerIndexPtr();
+  const FP_TYPE * values = dataMatrix.valuePtr();
+  const sparseIndex_t * offsets = dataMatrix.innerIndexPtr();
   Eigen::Index nnz = getnnzs(dataMatrix);
 
   for (auto i = 0; i < nnz; ++i) {
@@ -272,34 +357,56 @@ void EdgeML::minMaxNormalize(
     if (mn[i] == mx[i]) {
       mn[i] = 0;
     }
-    if (mx[i] <= mn[i]) {
+    if (mx[i] < mn[i]) {
       zero_feats++;
       mx[i] = 1;
       mn[i] = 0;
     }
-    assert(mx[i] > mn[i]);
   }
 
-  LOG_WARNING("Features are always zero. Remove them if possible");
+  if (zero_feats > 0)
+    LOG_WARNING(std::to_string(zero_feats) + " features are always zero. Remove them if possible");
 
-  for (auto i = 0; i < nnz; ++i) {
-    values[i] =
-      (values[i] - mn[offsets[i]]) /
-      (mx[offsets[i]] - mn[offsets[i]]);
-  }
+  //Assert that min max parameter is not assigned
+  assert(min.rows() == 0);
 
-  // Make normalization modifications in the validation matrix as well
-  values = valMatrix.valuePtr();
-  offsets = valMatrix.innerIndexPtr();
-  nnz = getnnzs(valMatrix);
-  for (auto i = 0; i < nnz; ++i) {
-    values[i] =
-      (values[i] - mn[offsets[i]]) /
-      (mx[offsets[i]] - mn[offsets[i]]);
-  }
+  //Ok, go ahead
+  min = MatrixXuf::Zero(dataMatrix.rows(), 1);
+  max = MatrixXuf::Zero(dataMatrix.rows(), 1);
+  pfor(featureCount_t i = 0; i < dataMatrix.rows(); ++i)
+    min(i, 0) = mn[i];
+  pfor(featureCount_t i = 0; i < dataMatrix.rows(); ++i)
+    max(i, 0) = mx[i];
 
   delete[] mn;
   delete[] mx;
+}
+
+void EdgeML::minMaxNormalize(
+  SparseMatrixuf& dataMatrix,
+  const MatrixXuf& min,
+  const MatrixXuf& max)
+{
+#ifdef ROWMAJOR
+  assert(false);
+#endif
+  
+  //Assert that min max parameter is already initialized
+  assert(min.rows() == dataMatrix.rows());
+  assert(max.rows() == dataMatrix.rows());
+
+  FP_TYPE * values = dataMatrix.valuePtr();
+  const sparseIndex_t * offsets = dataMatrix.innerIndexPtr();
+  Eigen::Index nnz = getnnzs(dataMatrix);
+
+  values = dataMatrix.valuePtr();
+  offsets = dataMatrix.innerIndexPtr();
+  nnz = getnnzs(dataMatrix);
+  for (auto i = 0; i < nnz; ++i) {
+    values[i] =
+      (values[i] - min(offsets[i], 0)) /
+      (max(offsets[i], 0) - min(offsets[i], 0));
+  }
 }
 
 void EdgeML::l2Normalize(SparseMatrixuf& dataMatrix)
@@ -355,6 +462,61 @@ void EdgeML::meanVarNormalize(
 
   dataMatrix = denseDataMatrix.sparseView();
 }
+
+void EdgeML::saveMinMax(
+  const MatrixXuf& min,
+  const MatrixXuf& max,
+  std::string fileName)
+{
+#ifdef ROWMAJOR
+  assert(false);
+#endif
+
+  // Assert the min max params are already assigned
+  assert(min.rows() > 0);
+  assert(max.rows() > 0);
+
+  std::ofstream out(fileName);
+  //out.open(fileName);
+
+  for (auto i = 0; i < min.rows(); i++)
+    out << min(i, 0) << '\t';
+  out << '\n';
+  for (auto i = 0; i < max.rows(); i++)
+    out << max(i, 0) << '\t';
+  out << '\n';
+}
+
+void EdgeML::loadMinMax(
+  MatrixXuf& min,
+  MatrixXuf& max,
+  int dim,
+  std::string fileName)
+{
+#ifdef ROWMAJOR
+  assert(false);
+#endif
+
+  // Assert that min max params are not assigned
+  assert(min.rows() == 0);
+
+  //Ok, go ahead
+  min = MatrixXuf::Zero(dim, 1);
+  max = MatrixXuf::Zero(dim, 1);
+
+  LOG_INFO("Loading min-max normalization parameters from file: " + fileName);
+  std::ifstream in(fileName);
+  //in.open(fileName);
+
+  for (auto i = 0; i < dim; i++)
+    in >> min(i, 0);
+  for (auto i = 0; i < dim; i++)
+    in >> max(i, 0);
+
+  in.close();
+}
+
+
 
 // void EdgeML::meanVarNormalize(
 //   MatrixXuf& dataMatrix,     //< 

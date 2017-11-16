@@ -26,7 +26,7 @@ We welcome contributions, comments and criticism. For questions, please [email H
   The code can be made to work with other math libraries with a few modifications.
 
 ### Building
-After cloning this repository, set compiler and flags appropriately in `config.mk` and do:
+After cloning this repository, set compiler and flags appropriately in `config.mk`. Then execute the following in bash:
 
 ```bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<MKL_PATH>:<EDGEML_ROOT>
@@ -35,11 +35,13 @@ make -j
 Typically, MKL_PATH = /opt/intel/mkl/lib/intel64_lin/, and EDGEML_ROOT is '.'.
 
 This will build two executables _Bonsai_ and _ProtoNN_.
-Sample data to try these executables is not included in this repository. 
+Sample data to try these executables is not included in this repository, but instructions to do so are given below. 
 
 ### Download a sample dataset
+Follow the bash commands given below to download a sample dataset, USPS10 to the repository. Bonsai and ProtoNN come with sample scripts to run on the usps10 dataset. EDGEML_ROOT is defined in the previous section. 
 
 ```bash
+cd <EDGEML_ROOT>
 mkdir usps10
 cd usps10
 wget http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.bz2
@@ -48,11 +50,12 @@ bzip2 -d usps.bz2
 bzip2 -d usps.t.bz2
 mv usps train.txt
 mv usps.t test.txt
+mkdir ProtoNNResults
 cd <EDGEML_ROOT>
 ```
 This will create a sample train and test dataset, on which
-you can train and test Bonsai and ProtoNN algorithms.
-For detailed instructions, see [Bonsai Readme](docs/README_BONSAI_OSS.md) and [ProtoNN Readme](docs/README_PROTONN_OSS.ipynb).
+you can train and test Bonsai and ProtoNN algorithms. As specified, we create an output folder for ProtoNN. Bonsai on the other hand creates its own output folder. 
+For instructions to actually run the algorithms, see [Bonsai Readme](docs/README_BONSAI_OSS.md) and [ProtoNN Readme](docs/README_PROTONN_OSS.ipynb).
 
 ### Makefile flags
 You could change the behavior of the code by setting these flags in `config.mk` and rebuilding with `make -Bj`. All these flags can be set for both ProtoNN and Bonsai.

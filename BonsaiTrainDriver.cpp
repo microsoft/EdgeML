@@ -35,11 +35,6 @@ int main(int argc, char **argv)
   
   trainer.dumpModelMeanVar(currResultsPath);
   
-  BonsaiPredictor predictor(modelBytes, model); // use the constructor predictor(modelBytes, model, false) for loading a sparse model.
-  predictor.importMeanVar(meanVarBytes, meanVar);
-  
-  predictor.batchEvaluate(trainer.data.Xvalidation, trainer.data.Yvalidation, dataDir, currResultsPath);
-  
   delete[] model, meanVar;
   
   return 0;

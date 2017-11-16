@@ -20,7 +20,7 @@ BonsaiModel::BonsaiHyperParams::BonsaiHyperParams()
   seed = 42;
 
   ntrain = 0;
-  ntest = 0;
+  nvalidation = 0;
   batchSize = 0;
 
   iters = 0;
@@ -64,7 +64,7 @@ void BonsaiModel::BonsaiHyperParams::setHyperParamsFromArgs(const int& argc,
 void BonsaiModel::BonsaiHyperParams::mkdir() const
 {
   /*
-  sprintf (outdir, "%s/results/%f_%f_%f_%llu_%d",
+  sprintf (outDir, "%s/results/%f_%f_%f_%llu_%d",
      indir, lambdaW, lambdaZ, lambda_B, d, m);
 
   char command [100];
@@ -72,14 +72,14 @@ void BonsaiModel::BonsaiHyperParams::mkdir() const
   try {
     sprintf (command, "mkdir %s/results", indir);
     system(command);
-    sprintf (command, "mkdir %s", outdir);
+    sprintf (command, "mkdir %s", outDir);
     system (command);
 #ifdef DUMP
-    sprintf (command, "mkdir %s/dump", outdir);
+    sprintf (command, "mkdir %s/dump", outDir);
     system (command);
 #endif
 #ifdef VERIFY
-    sprintf (command, "mkdir %s/verify", outdir);
+    sprintf (command, "mkdir %s/verify", outDir);
     system (command);
 #endif
   }
@@ -102,7 +102,6 @@ void BonsaiModel::BonsaiHyperParams::finalizeHyperParams()
   // Following asserts removed to faciliate support for TLC
   // which does not know how many datapoints are going to be fed before-hand!
   // assert(ntrain >= 1);               
-  // assert(ntest >= 0);
   assert(projectionDimension <= dataDimension + 1);
   assert(numClasses > 0);
 
