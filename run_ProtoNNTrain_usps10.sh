@@ -67,7 +67,7 @@ epochs="-E 20"
 ########################################################
 
 #gdb=" gdb --args" 
-executable="./ProtoNN"
+executable="./ProtoNNTrain"
 command=$gdb" "$executable" "$predefined_model" "$seed" "$problem_format" "$train_file" "$validation_file" "$output_dir" "$model_dir" "$input_format" "$ntrain" "$nvalidation" "$original_dimension" "$projection_dimension" "$num_labels" "$prototypes" "$lambda_W" "$lambda_Z" "$lambda_B" "$gammaNumerator" "$batch_size" "$iters" "$epochs" "$normalization
 echo "Running ProtoNN with following command: "
 echo $command
