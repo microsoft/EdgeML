@@ -133,11 +133,5 @@ typedef MKL_INT sparseIndex_t;
 
 static IOFormat eigen_tsv(FullPrecision, DontAlignCols, "\t", "\n", "", "", "", "");
 
-// TODO: Move these to another place
-enum PROBLEM { undefined_type, binary, multiclass, multilabel };
-enum INITIALIZATION { undefinedInitialization, predefined, perClassKmeans, overallKmeans, sample };
-enum FILE_FORMAT { undefined_format, MNISTFormat, office_format, tsvFormat, libsvmFormat };
-enum NORMALIZATION { undefined, none, l2, minMax };
-
 #endif
 

@@ -71,7 +71,7 @@ namespace EdgeML
       hyperParam.m = numPrototypes;
       hyperParam.k = numPrototypesPerClass;
       hyperParam.l = numClasses;
-      hyperParam.ntest = 0;
+      hyperParam.nvalidation = 0;
       hyperParam.gammaNumerator = gammaNumerator;
       hyperParam.lambdaW = sparsityW;
       hyperParam.lambdaZ = sparsityZ;

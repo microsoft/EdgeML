@@ -80,7 +80,7 @@ namespace EdgeML
 
         int seed;
         int iters, epochs;
-        dataCount_t ntrain, ntest, batchSize;
+        dataCount_t ntrain, nvalidation, ntest, batchSize;
         bool isOneIndex;
 
         FP_TYPE Sigma; ///< Sigmoid parameter for prediction
@@ -149,6 +149,13 @@ namespace EdgeML
       BonsaiModel(
         const size_t numBytes,
         const char *const fromModel,
+        const bool isDense);
+
+      ///
+      /// Model Constructor from commandline args
+      ///
+      BonsaiModel(
+        std::string modelFile,
         const bool isDense);
 
       ///
@@ -544,7 +551,22 @@ namespace EdgeML
       MatrixXuf variance; ///< Object to hold variance of the train data from imported model
 
       BonsaiModel model; ///< Object to hold the imported model
+      Data testData;
+      dataCount_t numTest;
+      DataFormat dataformatType;
+
+      std::string dataDir;
+      std::string modelDir;
+      void setFromArgs(const int argc, const char** argv);
+      void exitWithHelp();
+
     public:
+      
+      ///
+      /// Constructor instantiating model from commandline
+      ///
+      BonsaiPredictor(const int argc,
+        const char** argv);
 
       ///
       /// Constructor instantiating model from a trained model
@@ -560,6 +582,11 @@ namespace EdgeML
       ///
       void importMeanVar(const size_t numBytes,
         const char *const fromBuffer);
+
+      ///
+      /// Function to import stored Mean and Variance
+      ///
+      void importMeanVar(std::string meanVarFile);
 
       ///
       /// Function to Score an incoming Dense Data Point.Not thread safe
@@ -622,6 +649,11 @@ namespace EdgeML
         const SparseMatrixuf& Ytest,
         const std::string& dataDir,
         const std::string& currResultsPath);
+      
+      ///
+      /// Function to predict an entire test dataset
+      ///
+      void evaluate();
     };
 
   }

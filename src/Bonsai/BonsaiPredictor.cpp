@@ -1,11 +1,93 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-#include "blas_routines.h"
+#include "blas_routines.h" 
 #include "Bonsai.h"
 
 using namespace EdgeML;
 using namespace	EdgeML::Bonsai;
+
+void BonsaiPredictor::exitWithHelp()
+{
+  LOG_INFO("./BonsaiPredictor [Options] \n");
+  LOG_INFO("Options:");
+
+  LOG_INFO("-f    : [Required] Input format. Takes two values [0 and 1]. 0 is for libsvmFormat(default), 1 is for tab/space separated input.");
+  LOG_INFO("-N    : [Required] Number of data points in the test data.");
+  LOG_INFO("-D    : [Required] Directory of data with test.txt present in it.");
+  LOG_INFO("-M    : [Required] Directory of the Model (loadableModel and loadableMeanVar).");
+  exit(1);
+}
+
+
+void BonsaiPredictor::setFromArgs(
+  const int argc,
+  const char** argv)
+{
+  int tempFormat;
+  int required = 0;
+  for(int i = 1; i < argc; i++) {
+    if(i % 2 == 1)
+      assert(argv[i][0] == '-');
+    else {
+      switch(argv[i-1][1]) {
+          case 'f':
+            tempFormat = int(atoi(argv[i]));
+            required++;
+            if (tempFormat == 0) dataformatType = DataFormat::libsvmFormat;
+            else if (tempFormat == 1) dataformatType = DataFormat::interfaceIngestFormat;
+            else exitWithHelp();
+            break;
+        case 'N':
+          numTest = int(atoi(argv[i]));
+          required++;
+          break;
+        case 'M':
+          modelDir = argv[i];
+          required++;
+          break;
+        case 'D':
+          dataDir = argv[i];
+          required++;
+          break;
+        default:
+          LOG_INFO("Unknown option: " + std::to_string(argv[i - 1][1]));
+          exitWithHelp();
+          break;
+      }
+    }
+  }
+  if(required != 4) exitWithHelp();
+}
+
+BonsaiPredictor::BonsaiPredictor(
+  const int argc,
+  const char** argv)
+{
+  setFromArgs(argc, argv);
+  std::string modelFile = modelDir + "/loadableModel"; 
+ 
+  model = BonsaiModel(modelFile, 1);
+
+  feedDataValBuffer = new FP_TYPE[model.hyperParams.dataDimension];
+  feedDataFeatureBuffer = new labelCount_t[model.hyperParams.dataDimension];
+  
+  mean = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
+  variance = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
+
+  std::string meanVarFile = modelDir + "/loadableMeanVar"; 
+  
+  importMeanVar(meanVarFile);
+
+  testData = Data(FileIngest,
+    DataFormatParams{0, 0, numTest, model.hyperParams.numClasses, model.hyperParams.dataDimension});
+
+  if(model.hyperParams.dataformatType != dataformatType)
+    LOG_INFO("WARNING: The Train and Test input formats don't match.");
+
+  testData.loadDataFromFile(dataformatType, "", "", dataDir + "/test.txt");
+  evaluate();
+}
 
 BonsaiPredictor::BonsaiPredictor(
   const size_t numBytes,
@@ -21,10 +103,33 @@ BonsaiPredictor::BonsaiPredictor(
 }
 
 void BonsaiPredictor::importMeanVar(
+  std::string meanVarFile)
+{
+  size_t meanVarSize;
+  std::ifstream infileMeanVar(meanVarFile, std::ios::in|std::ios::binary);
+  assert(infileMeanVar.is_open());
+
+  infileMeanVar.read((char*)&meanVarSize, sizeof(meanVarSize));
+  infileMeanVar.close();
+  
+  infileMeanVar.open(meanVarFile, std::ios::in|std::ios::binary);
+  
+  char* meanVarBuff = new char[meanVarSize];
+  infileMeanVar.read((char*)meanVarBuff, meanVarSize);
+  infileMeanVar.close();
+  
+  importMeanVar(meanVarSize, meanVarBuff);
+}
+
+void BonsaiPredictor::importMeanVar(
   const size_t numBytes,
   const char *const fromBuffer)
 {
   size_t offset = 0;
+
+  size_t meanVarSize;
+  memcpy((void *)&meanVarSize, fromBuffer + offset, sizeof(meanVarSize));
+  offset += sizeof(meanVarSize);
   memcpy(mean.data(), fromBuffer + offset, sizeof(FP_TYPE) * mean.rows() * mean.cols());
   offset += sizeof(FP_TYPE) * mean.rows() * mean.cols();
   memcpy(variance.data(), fromBuffer + offset, sizeof(FP_TYPE) * variance.rows() * variance.cols());
@@ -149,6 +254,11 @@ void BonsaiPredictor::scoreDenseDataPoint(
   dataPoint(model.hyperParams.dataDimension - 1, 0) = (FP_TYPE)1.0;
 
   predictionScore(dataPoint, scores);
+}
+
+void BonsaiPredictor::evaluate()
+{
+  batchEvaluate(testData.Xtest, testData.Ytest, dataDir, modelDir);
 }
 
 void BonsaiPredictor::batchEvaluate(

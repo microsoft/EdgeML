@@ -130,6 +130,7 @@ Data::Data(
   NUM_COLS = _NUM_COLS;
   NUM_FEATURES = _NUM_FEATURES;
   NUM_LABELS = _NUM_LABELS;
+  if (filename.empty()) { data = SparseMatrixuf(0, 0); label = SparseMatrixuf(0, 0); return;  }
 
 #ifdef LINUX 
   if (formatType != EdgeML::libsvmFormat) {
@@ -568,7 +569,7 @@ size_t Data::libsvmFillEntries(char*buf,
   data.conservativeResize(NUM_FEATURES, nRead);
   label.conservativeResize(NUM_LABELS, nRead);
 
-  LOG_INFO("#Lines of data read: " + std::to_string(nRead));
+  LOG_INFO("#Lines of data read: " + std::to_string(nRead) + "\n");
   return nRead;
 }
 
@@ -768,6 +769,6 @@ size_t Data::libsvmFillEntries(char*buf,
   data.setFromTriplets(data_triplet.begin(), data_triplet.end());
   label.setFromTriplets(label_triplet.begin(), label_triplet.end());
 
-  LOG_INFO("#Lines of data read: " + std::to_string(nRead));
+  LOG_INFO("#Lines of data read: " + std::to_string(nRead) + "\n");
   return nRead;
 }

@@ -105,27 +105,26 @@ FP_TYPE EdgeML::batchEvaluate(
       const MatrixXuf&,
       const dataCount_t*)> metric) {
   */
-  assert(WX.cols() >= WXval.cols()); //Can be avoided if necessary
   FP_TYPE objective = 0.0;
 
   dataCount_t n = WX.cols();
-  dataCount_t ntest = WXval.cols();
+  dataCount_t nvalid = WXval.cols();
   const size_t maxMem = 0x200000000ULL; // Use a maximum of 8 GiGs memory
   //size_t maxBatch = maxMem/(8LL*B.rows());
   dataCount_t maxBatch = 10000;
   if (maxBatch > n) maxBatch = n;
-  if (ntest > 0) {
-    if (maxBatch > ntest) maxBatch = ntest;
+  if (nvalid > 0) {
+    if (maxBatch > nvalid) maxBatch = nvalid;
   }
 
   dataCount_t bs = maxBatch;
   dataCount_t trainBatches = (n + bs - 1) / bs; //taking ceil
-  dataCount_t testBatches;
-  if (ntest > 0) {
-    testBatches = (ntest + bs - 1) / bs; //taking ceil
+  dataCount_t validationBatches;
+  if (nvalid > 0) {
+    validationBatches = (nvalid + bs - 1) / bs; //taking ceil
   }
   FP_TYPE accuracyTrain = 0.0;
-  FP_TYPE accuracyTest = 0.0;
+  FP_TYPE accuracyValidation = 0.0;
 
   for (dataCount_t i = 0; i < trainBatches; ++i) {
     Eigen::Index idx1 = (i*(Eigen::Index)bs) % n;
@@ -156,11 +155,11 @@ FP_TYPE EdgeML::batchEvaluate(
     LOG_INFO("Training prec@1: " + std::to_string(accuracyTrain / n));
     stats[1] = accuracyTrain / n;
   }
-  if (ntest > 0) {
-    for (dataCount_t i = 0; i < testBatches; ++i) {
-      Eigen::Index idx1 = (i*(Eigen::Index)bs) % ntest;
-      Eigen::Index idx2 = ((i + 1)*(Eigen::Index)bs) % ntest;
-      if (idx2 <= idx1) idx2 = ntest;
+  if (nvalid > 0) {
+    for (dataCount_t i = 0; i < validationBatches; ++i) {
+      Eigen::Index idx1 = (i*(Eigen::Index)bs) % nvalid;
+      Eigen::Index idx2 = ((i + 1)*(Eigen::Index)bs) % nvalid;
+      if (idx2 <= idx1) idx2 = nvalid;
 
       assert(idx1 < idx2);
       assert(idx2 <= idx1 + (Eigen::Index)maxBatch);
@@ -170,17 +169,17 @@ FP_TYPE EdgeML::batchEvaluate(
       assert(idx2 <= Y.cols());
       LabelMatType YBatch = Yval.middleCols(idx1, idx2 - idx1);
       if (problemType == EdgeML::ProblemFormat::binary || problemType == EdgeML::ProblemFormat::multiclass)
-        accuracyTest += (idx2 - idx1) * accuracy(Z, YBatch, D, problemType);
+        accuracyValidation += (idx2 - idx1) * accuracy(Z, YBatch, D, problemType);
       else if (problemType == EdgeML::ProblemFormat::multilabel)
-        accuracyTest += (idx2 - idx1) * accuracy(Z, YBatch, D, problemType);
+        accuracyValidation += (idx2 - idx1) * accuracy(Z, YBatch, D, problemType);
     }
     if (problemType == EdgeML::ProblemFormat::binary || problemType == EdgeML::ProblemFormat::multiclass) {
-      LOG_INFO("Testing accuracy: " + std::to_string(accuracyTest / ntest));
-      stats[2] = accuracyTest / ntest;
+      LOG_INFO("Validation accuracy: " + std::to_string(accuracyValidation / nvalid));
+      stats[2] = accuracyValidation / nvalid;
     }
     else if (problemType == EdgeML::ProblemFormat::multilabel) {
-      LOG_INFO("Testing prec@1: " + std::to_string(accuracyTest / ntest));
-      stats[2] = accuracyTest / ntest;
+      LOG_INFO("Validation prec@1: " + std::to_string(accuracyValidation / nvalid));
+      stats[2] = accuracyValidation / nvalid;
     }
   }
   else {
@@ -577,7 +576,7 @@ void EdgeML::altMinSGD(
   const EdgeML::Data& data,
   EdgeML::ProtoNN::ProtoNNModel& model,
   FP_TYPE *const stats,
-  const std::string& outdir)
+  const std::string& outDir)
 {
   // This allows us to make mkl-blas calls on Eigen matrices   
   assert(sizeof(MKL_INT) == sizeof(Eigen::Index));
@@ -619,9 +618,9 @@ void EdgeML::altMinSGD(
   MatrixXuf WX(model.params.W.rows(), data.Xtrain.cols());
   mm(WX, model.params.W, CblasNoTrans, data.Xtrain, CblasNoTrans, 1.0, 0.0L);
 
-  MatrixXuf WXtest(model.params.W.rows(), data.Xtest.cols());
-  if (data.Xtest.cols() > 0) {
-    mm(WXtest, model.params.W, CblasNoTrans, data.Xtest, CblasNoTrans, 1.0, 0.0L);
+  MatrixXuf WXvalidation(model.params.W.rows(), data.Xvalidation.cols());
+  if (data.Xvalidation.cols() > 0) {
+    mm(WXvalidation, model.params.W, CblasNoTrans, data.Xvalidation, CblasNoTrans, 1.0, 0.0L);
   }
 
 #ifdef XML
@@ -634,14 +633,14 @@ void EdgeML::altMinSGD(
 
   mm(WX_sub, model.params.W, CblasNoTrans, X_sub, CblasNoTrans, 1.0, 0.0L);
 
-  dataCount_t numEvalTest = std::min((dataCount_t)10000, (dataCount_t)data.Xtest.cols());
-  MatrixXuf WXtest_sub(WX.rows(), numEvalTest);
-  SparseMatrixuf Ytest_sub(data.Ytest.rows(), numEvalTest);
-  SparseMatrixuf Xtest_sub(data.Xtest.rows(), numEvalTest);
-  if (data.Xtest.cols() > 0) {
-    randPick(data.Xtest, Xtest_sub);
-    randPick(data.Ytest, Ytest_sub);
-    mm(WXtest_sub, model.params.W, CblasNoTrans, Xtest_sub, CblasNoTrans, 1.0, 0.0L);
+  dataCount_t numEvalValidation= std::min((dataCount_t)10000, (dataCount_t)data.Xvalidation.cols());
+  MatrixXuf WXvalidation_sub(WX.rows(), numEvalValidation);
+  SparseMatrixuf Yvalidation_sub(data.Yvalidation.rows(), numEvalValidation);
+  SparseMatrixuf Xvalidation_sub(data.Xvalidation.rows(), numEvalValidation);
+  if (data.Xvalidation.cols() > 0) {
+    randPick(data.Xvalidation, Xvalidation_sub);
+    randPick(data.Yvalidation, Yvalidation_sub);
+    mm(WXvalidation_sub, model.params.W, CblasNoTrans, Xvalidation_sub, CblasNoTrans, 1.0, 0.0L);
   }
 #endif
 
@@ -650,9 +649,9 @@ void EdgeML::altMinSGD(
 
   LOG_INFO("\nInitial stats...");
 #ifdef XML
-  fNew = batchEvaluate(model.params.Z, Y_sub, Ytest_sub, model.params.B, WX_sub, WXtest_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats);
+  fNew = batchEvaluate(model.params.Z, Y_sub, Yvalidation_sub, model.params.B, WX_sub, WXvalidation_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats);
 #else 
-  fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Ytest, model.params.B, WX, WXtest, model.hyperParams.gamma, model.hyperParams.problemType, stats);
+  fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Yvalidation, model.params.B, WX, WXvalidation, model.hyperParams.gamma, model.hyperParams.problemType, stats);
 #endif 
   timer.nextTime("evaluating");
 
@@ -745,19 +744,19 @@ void EdgeML::altMinSGD(
     //LOG_INFO("Final step-length for gradW = " + std::to_string(eta_));
 
     mm(WX, model.params.W, CblasNoTrans, data.Xtrain, CblasNoTrans, 1.0, 0.0L);
-    if (data.Xtest.cols() > 0) {
-      mm(WXtest, model.params.W, CblasNoTrans, data.Xtest, CblasNoTrans, 1.0, 0.0L);
+    if (data.Xvalidation.cols() > 0) {
+      mm(WXvalidation, model.params.W, CblasNoTrans, data.Xvalidation, CblasNoTrans, 1.0, 0.0L);
     }
 
     fOld = fNew;
 #ifdef XML
     mm(WX_sub, model.params.W, CblasNoTrans, X_sub, CblasNoTrans, 1.0, 0.0L);
     if (data.Xtest.cols() > 0) {
-      mm(WXtest_sub, model.params.W, CblasNoTrans, Xtest_sub, CblasNoTrans, 1.0, 0.0L);
+      mm(WXvalidation_sub, model.params.W, CblasNoTrans, Xvalidation_sub, CblasNoTrans, 1.0, 0.0L);
     }
-    fNew = batchEvaluate(model.params.Z, Y_sub, Ytest_sub, model.params.B, WX_sub, WXtest_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 3);
+    fNew = batchEvaluate(model.params.Z, Y_sub, Yvalidation_sub, model.params.B, WX_sub, WXvalidation_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 3);
 #else 
-    fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Ytest, model.params.B, WX, WXtest, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 3);
+    fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Yvalidation, model.params.B, WX, WXvalidation, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 3);
 #endif 
 
     if (fNew >= fOld * (1 + safeDiv(sgdTol*(FP_TYPE)log(3), (FP_TYPE)log(2 + i))))
@@ -767,13 +766,13 @@ void EdgeML::altMinSGD(
     else;
 
 #ifdef VERIFY
-    fileName = outdir + "/verify/W" + std::to_string(i);
+    fileName = outDir + "/verify/W" + std::to_string(i);
     f.open(fileName);
     f << "W_check = [" << model.params.W << "];" << std::endl;
     f.close();
 #endif 
 #ifdef DUMP 
-    fileName = outdir + "/dump/W" + std::to_string(i);
+    fileName = outDir + "/dump/W" + std::to_string(i);
     f.open(fileName);
     f << model.params.W.format(eigen_tsv);
     f.close();
@@ -833,9 +832,9 @@ void EdgeML::altMinSGD(
 
     fOld = fNew;
 #ifdef XML
-    fNew = batchEvaluate(model.params.Z, Y_sub, Ytest_sub, model.params.B, WX_sub, WXtest_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 6);
+    fNew = batchEvaluate(model.params.Z, Y_sub, Yvalidation_sub, model.params.B, WX_sub, WXvalidation_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 6);
 #else 
-    fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Ytest, model.params.B, WX, WXtest, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 6);
+    fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Yvalidation, model.params.B, WX, WXvalidation, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 6);
 #endif
 
     if (fNew >= fOld * (1 + safeDiv(sgdTol*(FP_TYPE)log(3), (FP_TYPE)log(2 + i))))
@@ -845,13 +844,13 @@ void EdgeML::altMinSGD(
     else;
 
 #ifdef VERIFY
-    fileName = outdir + "/verify/Z" + std::to_string(i);
+    fileName = outDir + "/verify/Z" + std::to_string(i);
     f.open(fileName);
     f << "Z_check = [" << model.params.Z << "];" << std::endl;
     f.close();
 #endif 
 #ifdef DUMP
-    fileName = outdir + "/dump/Z" + std::to_string(i);
+    fileName = outDir + "/dump/Z" + std::to_string(i);
     f.open(fileName);
     f << model.params.Z.format(eigen_tsv);
     f.close();
@@ -909,9 +908,9 @@ void EdgeML::altMinSGD(
 
     fOld = fNew;
 #ifdef XML
-    fNew = batchEvaluate(model.params.Z, Y_sub, Ytest_sub, model.params.B, WX_sub, WXtest_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 9);
+    fNew = batchEvaluate(model.params.Z, Y_sub, Yvalidation_sub, model.params.B, WX_sub, WXvalidation_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 9);
 #else 
-    fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Ytest, model.params.B, WX, WXtest, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 9);
+    fNew = batchEvaluate(model.params.Z, data.Ytrain, data.Yvalidation, model.params.B, WX, WXvalidation, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 9);
 #endif
 
     if (fNew >= fOld * (1 + safeDiv(sgdTol*(FP_TYPE)log(3), (FP_TYPE)log(2 + i))))
@@ -921,13 +920,13 @@ void EdgeML::altMinSGD(
     else;
 
 #ifdef VERIFY
-    fileName = outdir + "/verify/B" + std::to_string(i);
+    fileName = outDir + "/verify/B" + std::to_string(i);
     f.open(fileName);
     f << "B_check = [" << model.params.B << "];" << std::endl;
     f.close();
 #endif 
 #ifdef DUMP
-    fileName = outdir + "/dump/B" + std::to_string(i);
+    fileName = outDir + "/dump/B" + std::to_string(i);
     f.open(fileName);
     f << model.params.B.format(eigen_tsv);
     f.close();
@@ -1021,6 +1020,7 @@ FP_TYPE EdgeML::accuracy(
 
   return ret;
 }
+
 
 template<class ParamType>
 void EdgeML::accProxSGD(std::function<FP_TYPE(const ParamType&,

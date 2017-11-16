@@ -5,6 +5,7 @@
 #define __PROTONN_H__
 
 #include "Data.h"
+#include "metrics.h"
 
 namespace EdgeML
 {
@@ -13,25 +14,26 @@ namespace EdgeML
     //
     // Should the model parameters and labels be represented as sparse or dense?
     //
-#ifdef SPARSE_Z
+
+#ifdef SPARSE_Z_PROTONN
 #define ZMatType SparseMatrixuf
 #else
 #define ZMatType MatrixXuf
 #endif
 
-#ifdef SPARSE_W
+#ifdef SPARSE_W_PROTONN
 #define WMatType SparseMatrixuf
 #else
 #define WMatType MatrixXuf
 #endif
 
-#ifdef SPARSE_B
+#ifdef SPARSE_B_PROTONN
 #define BMatType SparseMatrixuf
 #else
 #define BMatType MatrixXuf
 #endif
 
-#ifdef SPARSE_LABEL
+#ifdef SPARSE_LABEL_PROTONN
 #define LabelMatType SparseMatrixuf
 #else
 #define LabelMatType MatrixXuf
@@ -49,8 +51,8 @@ namespace EdgeML
       {
         int seed;
 
-        dataCount_t ntrain, ntest, batchSize;
-        int iters, epochs;
+        dataCount_t ntrain, nvalidation, ntest, batchSize;
+        int epochs, iters;
 
         featureCount_t D, d;
         labelCount_t m, k, l;
@@ -87,8 +89,8 @@ namespace EdgeML
         ~ProtoNNParams();
 
         void resizeParamsFromHyperParams(
-          const struct ProtoNNHyperParams& hyperParams,
-          const bool setMemory = true);
+        const struct ProtoNNHyperParams& hyperParams,
+        const bool setMemory = true);
       };
 
       struct ProtoNNParams params;
@@ -101,6 +103,9 @@ namespace EdgeML
       void exportModel(const size_t modelSize, char *const toModel);
       void importModel(const size_t numBytes, const char *const fromModel);
 
+
+      ProtoNNModel();
+      ProtoNNModel(std::string fromModelFile);
       ProtoNNModel(const size_t numBytes, const char *const fromModel);
       ProtoNNModel(const int argc, const char** argv);
       ProtoNNModel(const ProtoNNHyperParams& hyperParams_);
@@ -117,8 +122,10 @@ namespace EdgeML
       ////////////////////////////////////////////////////////
 
       DataFormat dataformatType;
-      std::string indir;
-      std::string outdir;
+      std::string trainFile;
+      std::string validationFile;
+      std::string modelDir;
+      std::string outDir;
       std::string commandLine;
 
       void normalize();
@@ -132,7 +139,6 @@ namespace EdgeML
         // Gurantees that finalizeData is called before returning
         //
       ProtoNNTrainer(
-        const DataIngestType& dataIngestType,
         const int& argc,
         const char ** argv);
 
@@ -142,9 +148,7 @@ namespace EdgeML
       // 2. You are starting with a new model from scratch
       // finalizeData is not called inside, it must explicity called after feeding data
       //
-      ProtoNNTrainer(
-        const DataIngestType& dataIngestType,
-        const ProtoNNModel::ProtoNNHyperParams& hyperParams);
+      ProtoNNTrainer(const ProtoNNModel::ProtoNNHyperParams& hyperParams);
 
       ~ProtoNNTrainer();
 
@@ -207,9 +211,20 @@ namespace EdgeML
       MatrixXuf BColSum, BAccumulator, B_B, gammaSqRow, gammaSqCol; // Constants set in constructor
       FP_TYPE gammaSq;
 
-      FP_TYPE* data;	// for scoreSparseDataPoint
+      std::string testFile;
+      std::string modelFile;
+      std::string normParamFile;
+      std::string commandLine;
+      std::string outDir;
+      dataCount_t ntest;
+      dataCount_t batchSize;
+      NormalizationFormat normalizationType;
 
-#ifdef SPARSE_Z
+      DataFormat dataformatType;
+      Data testData;
+      FP_TYPE* dataPoint;	// for scoreSparseDataPoint
+
+#ifdef SPARSE_Z_PROTONN
       // for mkl csc_mv call
       char matdescra[6] = { 'G', 'X', 'X', 'C', 'X', 'X' }; // 'X' means unused
       char transa = 'n';
@@ -220,11 +235,21 @@ namespace EdgeML
 
       void RBF();
 
-    public:
+      void setFromArgs(const int argc, const char** argv);
+  
+      void createOutputDirs();
 
+    public:
+      // Use this consutrctor when loading model from binary stream.
+      // For this you need to have exported a binary stream model from the trainer.
       ProtoNNPredictor(
         const size_t numBytes,
         const char *const fromModel);
+
+      // Use this constructor when loading model from file through command line
+      ProtoNNPredictor(
+        const int& argc,
+        const char ** argv);
 
       ~ProtoNNPredictor();
 
@@ -234,7 +259,6 @@ namespace EdgeML
         const labelCount_t *const labels,
         const labelCount_t& numLabels,
         const EdgeML::ProblemFormat& problemType);
-
 
       // Not thread safe
       void scoreDenseDataPoint(
@@ -247,6 +271,20 @@ namespace EdgeML
         const featureCount_t *indices,
         const featureCount_t numIndices);
 
+      void scoreBatch(
+        MatrixXuf& Yscores,
+        dataCount_t startIdx,
+        dataCount_t batchSize);
+
+      ResultStruct testBatchWise();
+      
+      ResultStruct testPointWise();
+
+      ResultStruct test();
+
+      void saveTopKScores(std::string filename="", int topk=5);
+      
+      void normalize();
     };
   }
 }
