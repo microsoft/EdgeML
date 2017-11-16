@@ -25,7 +25,7 @@ ntest="-N 2007"
 #gdb=" gdb --args"
 executable="./BonsaiPredict"
 command=$gdb" "$executable" "$input_format" "$ntest" "$input_dir" "$model_dir
-echo "Running Bonsai with following command: "
+echo "Running Bonsai predict with following command: "
 echo $command
 echo ""
 exec $command
