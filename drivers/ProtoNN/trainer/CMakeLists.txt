@@ -4,11 +4,8 @@ set (src ProtoNNTrainDriver.cpp)
 
 source_group("src" FILES ${src})
 
-#set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR})
-#set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR})
-
-set (GLOBAL_BIN_DIR ${CMAKE_BINARY_DIR}/bin)
-set (EXECUTABLE_OUTPUT_PATH ${GLOBAL_BIN_DIR})
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR})
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR})
 
 add_executable(${tool_name} ${src} ${include})
 target_include_directories(${tool_name} PRIVATE ${CMAKE_SOURCE_DIR}/src/common ${CMAKE_SOURCE_DIR}/src/ProtoNN)
