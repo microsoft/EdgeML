@@ -10,7 +10,7 @@
 
 input_dir="-D ./usps10"
 input_format="-f 0"
-model_dir="-M ./usps10/BonsaiResults/23_44_23_15_11" # Note: The model_dir has to be changed as Model naming is based on timestamp so required to be changed by the user
+model_dir="-M ./usps10/BonsaiResults/10_21_41_20_11" # Note: The model_dir has to be changed as Model naming is based on timestamp so required to be changed by the user
 
 ########################################################
 # Data-dependent parameters
