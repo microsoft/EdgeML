@@ -41,7 +41,7 @@ namespace EdgeML
         MatrixXuf& label,
         dataCount_t maxEntries,
         featureCount_t numCols,
-        off_t fileSize,
+        uint64_t fileSize,
         EdgeML::DataFormat& formatType);
 
       size_t libsvmFillEntries(
@@ -50,7 +50,7 @@ namespace EdgeML
         MatrixXuf& label,
         dataCount_t maxEntries,
         featureCount_t numCols,
-        off_t fileSize,
+        uint64_t fileSize,
         EdgeML::DataFormat& formatType);
 
       size_t libsvmFillEntries(
@@ -59,7 +59,7 @@ namespace EdgeML
         SparseMatrixuf& label,
         dataCount_t maxEntries,
         featureCount_t numCols,
-        off_t fileSize,
+        uint64_t fileSize,
         EdgeML::DataFormat& formatType);
 
     };

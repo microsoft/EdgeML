@@ -161,7 +161,7 @@ Data::Data(
   close(fd);
 #endif
 
-#ifdef WINDOWS
+#ifdef _MSC_VER
   HANDLE hFile =
     CreateFileA(filename.c_str(),
       GENERIC_READ, FILE_SHARE_READ, NULL, // default security
@@ -186,8 +186,6 @@ Data::Data(
     (char*)MapViewOfFile(hMapFile, FILE_MAP_READ, 0, 0, 0);
   assert(pBuf != NULL);
 
-  assert(sizeof(dataCount_t) == sizeof(off_t));
-
   assert(formatType == EdgeML::libsvmFormat);
   int nRead = libsvmFillEntries((char*)pBuf, data, label,
     max_entries, NUM_COLS, fileSize,
@@ -211,10 +209,9 @@ size_t Data::fillEntries(
   MatrixXuf& label,
   dataCount_t max_entries,
   featureCount_t num_cols,
-  off_t fileSize,
+  uint64_t fileSize,
   EdgeML::DataFormat& formatType)
 {
-  assert(sizeof(off_t) == 8);
   data = MatrixXuf::Zero(NUM_FEATURES, max_entries);
   label = MatrixXuf::Zero(NUM_LABELS, max_entries);
 
@@ -388,10 +385,9 @@ size_t Data::libsvmFillEntries(char*buf,
   MatrixXuf& label,
   dataCount_t max_entries,
   featureCount_t num_cols,
-  off_t fileSize,
+  uint64_t fileSize,
   EdgeML::DataFormat& format_type)
 {
-  assert(sizeof(off_t) == 8);
   data = MatrixXuf::Zero(NUM_FEATURES, max_entries);
   label = MatrixXuf::Zero(NUM_LABELS, max_entries);
 
@@ -583,10 +579,9 @@ size_t Data::libsvmFillEntries(char*buf,
   SparseMatrixuf& label,
   dataCount_t max_entries,
   featureCount_t num_cols,
-  off_t fileSize,
+  uint64_t fileSize,
   EdgeML::DataFormat& format_type)
 {
-  assert(sizeof(off_t) == 8);
   std::vector <Trip> data_triplet;
   std::vector <Trip> label_triplet;
 
