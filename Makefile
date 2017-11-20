@@ -11,7 +11,7 @@ BONSAI_INCLUDES=$(SOURCE_DIR)/Bonsai
 IFLAGS=-I eigen/ -I$(MKL_ROOT)/include \
 	 -I$(COMMON_INCLUDES) -I$(PROTONN_INCLUDES) -I$(BONSAI_INCLUDES)
 
-all: ProtoNN ProtoNNPredict Bonsai BonsaiPredict #ProtoNNIngestTest BonsaiIngestTest 
+all: ProtoNN ProtoNNPredict Bonsai BonsaiPredict BonsaiTrain #ProtoNNIngestTest BonsaiIngestTest 
 
 libcommon.so: $(COMMON_INCLUDES)
 	$(MAKE) -C $(SOURCE_DIR)/common
