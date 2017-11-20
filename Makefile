@@ -4,14 +4,17 @@
 
 include config.mk
 
-COMMON_INCLUDES=$(SOURCE_DIR)/common
-PROTONN_INCLUDES=$(SOURCE_DIR)/ProtoNN
-BONSAI_INCLUDES=$(SOURCE_DIR)/Bonsai
+SOURCE_DIR=src
+DRIVER_DIR=drivers
 
-IFLAGS=-I eigen/ -I$(MKL_ROOT)/include \
-	 -I$(COMMON_INCLUDES) -I$(PROTONN_INCLUDES) -I$(BONSAI_INCLUDES)
+COMMON_DIR=$(SOURCE_DIR)/common
+PROTONN_DIR=$(SOURCE_DIR)/ProtoNN
+BONSAI_DIR=$(SOURCE_DIR)/Bonsai
 
-all: ProtoNN ProtoNNPredict Bonsai BonsaiPredict #ProtoNNIngestTest BonsaiIngestTest 
+IFLAGS = -I eigen/ -I$(MKL_ROOT)/include \
+	 -I$(COMMON_DIR) -I$(PROTONN_DIR) -I$(BONSAI_DIR)
+
+all: ProtoNNTrain ProtoNNPredict BonsaiTrain BonsaiPredict #ProtoNNIngestTest BonsaiIngestTest 
 
 libcommon.so: $(COMMON_INCLUDES)
 	$(MAKE) -C $(SOURCE_DIR)/common
@@ -22,47 +25,40 @@ libProtoNN.so: $(PROTONN_INCLUDES)
 libBonsai.so: $(BONSAI_INCLUDES)
 	$(MAKE) -C $(SOURCE_DIR)/Bonsai
 
-ProtoNNTrainDriver.o: ProtoNNTrainDriver.cpp $(PROTONN_INCLUDES)
-	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
+ProtoNNTrainDriver.o:
+	$(MAKE) -C $(DRIVER_DIR)/ProtoNN/trainer
 
-ProtoNNPredictDriver.o: ProtoNNPredictDriver.cpp $(PROTONN_INCLUDES)
-	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
+ProtoNNPredictDriver.o:
+	$(MAKE) -C $(DRIVER_DIR)/ProtoNN/predictor
 
-ProtoNNIngestTest.o: ProtoNNIngestTest.cpp $(PROTONN_INCLUDES)
-	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
+BonsaiTrainDriver.o:
+	$(MAKE) -C $(DRIVER_DIR)/Bonsai/trainer
 
-BonsaiLocalDriver.o:BonsaiLocalDriver.cpp $(BONSAI_INCLUDES)
-	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
+BostinPredictDriver.o:
+	$(MAKE) -C $(DRIVER_DIR)/Bonsai/predictor
 
-BonsaiPredictDriver.o:BonsaiPredictDriver.cpp $(BONSAI_INCLUDES)
-	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
+#ProtoNNIngestTest.o BonsaiIngestTest.o:
 
-BonsaiTrainDriver.o:BonsaiTrainDriver.cpp $(BONSAI_INCLUDES)
-	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
-
-BonsaiIngestTest.o:BonsaiIngestTest.cpp $(BONSAI_INCLUDES)
-	$(CC) -c -o $@ $(IFLAGS) $(CFLAGS) $<
-
-ProtoNN: ProtoNNTrainDriver.o libcommon.so libProtoNN.so
+ProtoNNTrain: ProtoNNTrainDriver.o libcommon.so libProtoNN.so
 	$(CC) -o $@ $^ $(CFLAGS) $(MKL_PAR_LDFLAGS) $(CILK_LDFLAGS)
 
 ProtoNNPredict: ProtoNNPredictDriver.o libcommon.so libProtoNN.so
 	$(CC) -o $@ $^ $(CFLAGS) $(MKL_PAR_LDFLAGS) $(CILK_LDFLAGS)
 
-ProtoNNIngestTest: ProtoNNIngestTest.o libcommon.so libProtoNN.so
-	$(CC) -o $@ $^ $(CFLAGS) $(MKL_PAR_LDFLAGS) $(CILK_LDFLAGS)
+#ProtoNNIngestTest: ProtoNNIngestTest.o libcommon.so libProtoNN.so
+#	$(CC) -o $@ $^ $(CFLAGS) $(MKL_PAR_LDFLAGS) $(CILK_LDFLAGS)
 
-Bonsai: BonsaiLocalDriver.o libcommon.so libBonsai.so
+#Bonsai: BonsaiLocalDriver.o libcommon.so libBonsai.so
+#	$(CC) -o $@ $^ $(CFLAGS) $(MKL_SEQ_LDFLAGS) $(CILK_LDFLAGS)
+
+BonsaiTrain: BonsaiTrainDriver.o libcommon.so libBonsai.so
 	$(CC) -o $@ $^ $(CFLAGS) $(MKL_SEQ_LDFLAGS) $(CILK_LDFLAGS)
 
 BonsaiPredict: BonsaiPredictDriver.o libcommon.so libBonsai.so
 	$(CC) -o $@ $^ $(CFLAGS) $(MKL_SEQ_LDFLAGS) $(CILK_LDFLAGS)
 
-BonsaiTrain: BonsaiTrainDriver.o libcommon.so libBonsai.so
-	$(CC) -o $@ $^ $(CFLAGS) $(MKL_SEQ_LDFLAGS) $(CILK_LDFLAGS)
-
-BonsaiIngestTest: BonsaiIngestTest.o libcommon.so libBonsai.so
-	$(CC) -o $@ $^ $(CFLAGS) $(MKL_PAR_LDFLAGS) $(CILK_LDFLAGS)
+#BonsaiIngestTest: BonsaiIngestTest.o libcommon.so libBonsai.so
+#	$(CC) -o $@ $^ $(CFLAGS) $(MKL_PAR_LDFLAGS) $(CILK_LDFLAGS)
 
 
 .PHONY: clean cleanest
@@ -72,9 +68,17 @@ clean:
 	$(MAKE) -C $(SOURCE_DIR)/common clean
 	$(MAKE) -C $(SOURCE_DIR)/ProtoNN clean
 	$(MAKE) -C $(SOURCE_DIR)/Bonsai clean
+	$(MAKE) -C $(DRIVER_DIR)/ProtoNN/trainer clean
+	$(MAKE) -C $(DRIVER_DIR)/ProtoNN/predictor clean
+	$(MAKE) -C $(DRIVER_DIR)/Bonsai/trainer clean
+	$(MAKE) -C $(DRIVER_DIR)/Bonsai/predictor clean
 
 cleanest: clean
 	rm -f ProtoNN ProtoNNPredict ProtoNNIngestTest BonsaiIngestTest Bonsai
 	$(MAKE) -C $(SOURCE_DIR)/common cleanest
 	$(MAKE) -C $(SOURCE_DIR)/ProtoNN cleanest
 	$(MAKE) -C $(SOURCE_DIR)/Bonsai cleanest
+	$(MAKE) -C $(DRIVER_DIR)/ProtoNN/trainer cleanest
+	$(MAKE) -C $(DRIVER_DIR)/ProtoNN/predictor cleanest
+	$(MAKE) -C $(DRIVER_DIR)/Bonsai/trainer cleanest
+	$(MAKE) -C $(DRIVER_DIR)/Bonsai/predictor cleanest
