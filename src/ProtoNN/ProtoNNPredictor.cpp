@@ -57,7 +57,7 @@ ProtoNNPredictor::ProtoNNPredictor(
   testData.loadDataFromFile(dataformatType,
                 trainFile,
                 validationFile,
-		testFile);
+        testFile);
   testData.finalizeData();
 
   normalize();
@@ -120,7 +120,14 @@ ProtoNNPredictor::ProtoNNPredictor(
 void ProtoNNPredictor::createOutputDirs()
 {
   std::string subdirName = model.hyperParams.subdirName();
+
+#ifdef LINUX
   outDir = outDir + "/ProtoNNPredictor_" + subdirName;
+#endif
+
+#ifdef WINDOWS
+  outDir = outDir + "\\ProtoNNPredictor_" + subdirName;
+#endif
 
   try {
     std::string testcommand = "test -d " + outDir;
@@ -134,29 +141,48 @@ void ProtoNNPredictor::createOutputDirs()
         LOG_WARNING("Error in creating directory at this location: " + outDir);
 #endif
 
+#ifdef WINDOWS
+    if (system(command.c_str()) != 0)
+        LOG_WARNING("Error in creating directory at this location: " + outDir + " (Directory might already exist)");
+#endif
+
+
 #ifdef DUMP
+#ifdef LINUX
     testcommand = "test -d " + outDir + "/dump";
     command = "mkdir " + outDir + "/dump";
-#ifdef LINUX
     if (system(testcommand.c_str()) == 0)
       LOG_INFO("Directory " + outDir + "/dump already exists.");
     else
       if (system(command.c_str()) != 0)
         LOG_WARNING("Error in creating directory at this location: " + outDir + "/dump");
 #endif
+
+#ifdef WINDOWS
+    command = "mkdir " + outDir + "\\dump";
+    if (system(command.c_str()) != 0)
+      LOG_WARNING("Error in creating directory at this location: " + outDir + "\dump" + " (Directory might already exist)");
 #endif
+#endif
+
 #ifdef VERIFY
+#ifdef LINUX
     testcommand = "test -d " + outDir + "/verify";
     command = "mkdir " + outDir + "/verify";
-#ifdef LINUX
     if (system(testcommand.c_str()) == 0)
       LOG_INFO("Directory " + outDir + "/verify already exists.");
     else
       if (system(command.c_str()) != 0)
         LOG_WARNING("Error in creating directory at this location: " + outDir + "/verify");
 #endif
+
+#ifdef WINDOWS
+    command = "mkdir " + outDir + "\\verify";
+    if (system(command.c_str()) != 0)
+      LOG_WARNING("Error in creating directory at this location: " + outDir + "\verify" + " (Directory might already exist)");
 #endif
-  }
+#endif
+}
   catch (...) {
     LOG_WARNING("Error in creating one of the subdirectories. Some of the output may not be recorded.");
   }
@@ -444,10 +470,10 @@ EdgeML::ResultStruct ProtoNNPredictor::testPointWise()
 
   EdgeML::ResultStruct res, tempRes;
   for (dataCount_t i = 0; i < n; ++i) {
-    scoreSparseDataPoint(scores,
-			 (const FP_TYPE*) testData.Xtest.valuePtr() + testData.Xtest.outerIndexPtr()[i],
-			 (const featureCount_t*) testData.Xtest.innerIndexPtr() + testData.Xtest.outerIndexPtr()[i],
-			 (featureCount_t) testData.Xtest.outerIndexPtr()[i + 1] - testData.Xtest.outerIndexPtr()[i]);
+	scoreSparseDataPoint(scores,
+		(const FP_TYPE*) testData.Xtest.valuePtr() + testData.Xtest.outerIndexPtr()[i],
+		(const featureCount_t*) testData.Xtest.innerIndexPtr() + testData.Xtest.outerIndexPtr()[i],
+		(featureCount_t) testData.Xtest.outerIndexPtr()[i + 1] - testData.Xtest.outerIndexPtr()[i]);
 
     tempRes = evaluate(Yscores, testData.Ytest.middleCols(i, 1), model.hyperParams.problemType);
     res.scaleAndAdd(tempRes, 1);
