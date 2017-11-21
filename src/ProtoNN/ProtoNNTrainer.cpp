@@ -53,7 +53,14 @@ ProtoNNTrainer::ProtoNNTrainer(
 void ProtoNNTrainer::createOutputDirs()
 {
   std::string subdirName = model.hyperParams.subdirName();
+
+#ifdef LINUX
   outDir = outDir + "/ProtoNNTrainer_" + subdirName;
+#endif
+
+#ifdef WINDOWS
+  outDir = outDir + "\\ProtoNNTrainer_" + subdirName;
+#endif
 
   try {
     std::string testcommand = "test -d " + outDir;
@@ -67,26 +74,45 @@ void ProtoNNTrainer::createOutputDirs()
         LOG_WARNING("Error in creating directory at this location: " + outDir);
 #endif
 
+#ifdef WINDOWS
+    if (system(command.c_str()) != 0)
+        LOG_WARNING("Error in creating directory at this location: " + outDir + " (Directory might already exist)");
+#endif
+
+
 #ifdef DUMP
+#ifdef LINUX
     testcommand = "test -d " + outDir + "/dump";
     command = "mkdir " + outDir + "/dump";
-#ifdef LINUX
     if (system(testcommand.c_str()) == 0)
       LOG_INFO("Directory " + outDir + "/dump already exists.");
     else
       if (system(command.c_str()) != 0)
         LOG_WARNING("Error in creating directory at this location: " + outDir + "/dump");
 #endif
+
+#ifdef WINDOWS
+    command = "mkdir " + outDir + "\\dump";
+    if (system(command.c_str()) != 0)
+        LOG_WARNING("Error in creating directory at this location: " + outDir + "\dump" + " (Directory might already exist)");
 #endif
+#endif
+
 #ifdef VERIFY
+#ifdef LINUX
     testcommand = "test -d " + outDir + "/verify";
     command = "mkdir " + outDir + "/verify";
-#ifdef LINUX
     if (system(testcommand.c_str()) == 0)
       LOG_INFO("Directory " + outDir + "/verify already exists.");
     else
       if (system(command.c_str()) != 0)
         LOG_WARNING("Error in creating directory at this location: " + outDir + "/verify");
+#endif
+
+#ifdef WINDOWS
+    command = "mkdir " + outDir + "\\verify";
+    if (system(command.c_str()) != 0)
+        LOG_WARNING("Error in creating directory at this location: " + outDir + "\verify" + " (Directory might already exist)");
 #endif
 #endif
   }

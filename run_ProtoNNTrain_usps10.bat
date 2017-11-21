@@ -13,7 +13,7 @@ SET predefined_model=-P 0
 SET problem_format=-C 1
 SET train_file=-I usps10/train.txt
 SET validation_file=-V usps10/test.txt
-SET output_dir=-O usps10/ProtoNNResults
+SET output_dir=-O usps10\ProtoNNResults
 SET input_format=-F 0
 
 REM ########################################################
