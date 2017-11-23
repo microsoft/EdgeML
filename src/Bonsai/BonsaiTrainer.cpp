@@ -631,6 +631,7 @@ void BonsaiTrainer::dumpModelMeanVar(const std::string& currResultsPath)
 
   writeMatrixInASCII(mean, params_path, "Mean");
   writeMatrixInASCII(variance, params_path, "Variance");
+  LOG_INFO(currResultsPath);
 }
 
 size_t BonsaiTrainer::totalNonZeros()
