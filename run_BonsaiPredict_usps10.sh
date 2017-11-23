@@ -10,7 +10,7 @@
 
 input_dir="-D ./usps10"
 input_format="-f 0"
-model_dir="-M ./usps10/BonsaiResults/10_21_41_20_11" # Note: The model_dir has to be changed as Model naming is based on timestamp so required to be changed by the user
+model_dir="-M current_model" # Note: The model_dir has to be changed as Model naming is based on timestamp so required to be changed by the user
 
 ########################################################
 # Data-dependent parameters
@@ -25,7 +25,7 @@ ntest="-N 2007"
 #gdb=" gdb --args"
 executable="./BonsaiPredict"
 command=$gdb" "$executable" "$input_format" "$ntest" "$input_dir" "$model_dir
-echo "Running Bonsai predict with following command: "
+echo "Running Bonsai with following command: "
 echo $command
 echo ""
 exec $command
