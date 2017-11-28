@@ -28,11 +28,11 @@ BonsaiTrainer::BonsaiTrainer(
   model(numBytes, fromModel, isDense),   // Initialize model
   data(dataIngestType,
     DataFormatParams{
-      model.hyperParams.ntrain,
-        model.hyperParams.nvalidation,
-        model.hyperParams.ntest,
-        model.hyperParams.numClasses,
-        model.hyperParams.dataDimension })
+  model.hyperParams.ntrain,
+  model.hyperParams.nvalidation,
+  model.hyperParams.ntest,
+  model.hyperParams.numClasses,
+  model.hyperParams.dataDimension })
 {
   assert(dataIngestType == FileIngest);
 
@@ -62,7 +62,7 @@ BonsaiTrainer::BonsaiTrainer(
   model(argc, argv, dataDir),               // Initialize model
   data(dataIngestType,
     DataFormatParams{
-      model.hyperParams.ntrain,
+  model.hyperParams.ntrain,
   model.hyperParams.nvalidation,
   model.hyperParams.ntest,
   model.hyperParams.numClasses,
@@ -97,11 +97,11 @@ BonsaiTrainer::BonsaiTrainer(
   : model(fromHyperParams),
   data(dataIngestType,
     DataFormatParams{
-         model.hyperParams.ntrain,
-     model.hyperParams.nvalidation,
-     model.hyperParams.ntest,
-     model.hyperParams.numClasses,
-     model.hyperParams.dataDimension })
+  model.hyperParams.ntrain,
+  model.hyperParams.nvalidation,
+  model.hyperParams.ntest,
+  model.hyperParams.numClasses,
+  model.hyperParams.dataDimension })
 {
   assert(dataIngestType == InterfaceIngest);
   assert(model.hyperParams.normalizationType == none);
@@ -218,7 +218,7 @@ FP_TYPE BonsaiTrainer::computeObjective(
   if (ZX.cols() == data.Xtrain.cols())
     LOG_INFO(infoStr);
   /* else
-   LOG_TRACE(infoStr);*/
+  LOG_TRACE(infoStr);*/
 
   return normAdd + (FP_TYPE)marginLoss / ZX.cols();
 }
@@ -280,10 +280,24 @@ void BonsaiTrainer::exportModel(
 {
   std::string loadableModelPath = currResultsPath + "/loadableModel";
   model.exportModel(modelSize, buffer);
-
-  std::ofstream modelExporter(loadableModelPath);
+  std::ofstream modelExporter(loadableModelPath, std::ios::out | std::ios::binary);
   modelExporter.write(buffer, modelSize);
   modelExporter.close();
+}
+
+void BonsaiTrainer::getLoadableModelMeanVar(
+  char *const modelBuffer,
+  const size_t& modelBytes,
+  char *const meanVarBuffer,
+  const size_t& meanVarBytes,
+  const std::string& currResultsPath)
+{
+  std::ofstream modelExporter(currResultsPath + "/loadableModel", std::ios::out | std::ios::binary);
+  modelExporter.write(modelBuffer, modelBytes);
+  modelExporter.close();
+  std::ofstream meanVarExporter(currResultsPath + "/loadableMeanVar", std::ios::out | std::ios::binary);
+  meanVarExporter.write(meanVarBuffer, meanVarBytes);
+  meanVarExporter.close();
 }
 
 void BonsaiTrainer::exportSparseModel(
@@ -487,7 +501,7 @@ void BonsaiTrainer::TreeCache::fillNodeProbability(
   tanhThetaXCache = MatrixXuf::Zero(model.hyperParams.internalNodes, Xdata.cols());
   nodeProbability = MatrixXuf::Ones(model.hyperParams.totalNodes, Xdata.cols());
 
-  if(model.hyperParams.internalNodes > 0)
+  if (model.hyperParams.internalNodes > 0)
     mm(tanhThetaXCache, Thetamat, CblasNoTrans, Xdata, CblasNoTrans, (FP_TYPE)1.0, (FP_TYPE)0.0L);
   // Scale VXClassIDScratch by scalar sigma_i
   scal(tanhThetaXCache.rows()*tanhThetaXCache.cols(), model.hyperParams.sigma_i, tanhThetaXCache.data(), 1);

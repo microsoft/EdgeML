@@ -535,6 +535,11 @@ namespace EdgeML
       ///
       void dumpModelMeanVar(const std::string& currResultsPath);
 
+      ///
+      /// Function to Dump Loadable Mean, Variance and Model 
+      ///
+      void getLoadableModelMeanVar(char *const modelBuffer, const size_t& modelBytes, char *const meanVarBuffer, const size_t& meanVarBytes, const std::string& currResultsPath);
+
       size_t totalNonZeros();
     };
 
