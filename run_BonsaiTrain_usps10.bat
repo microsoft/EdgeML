@@ -42,7 +42,7 @@ REM # Bonsai optimization hyper-parameters (optional)
 REM ########################################################
 
 SET batch_factor=-B 1
-SET iters=-I 1
+SET iters=-I 100
 
 REM ########################################################
 REM # execute Bonsai
