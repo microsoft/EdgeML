@@ -15,16 +15,16 @@ We welcome contributions, comments and criticism. For questions, please [email H
 [People](http://harsha-simhadri.org/EdgeML/People/) who have contributed to this [project](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
 
 ### Requirements
-- Linux. 
-  -- gcc version 5.4. Other gcc versions above 5.0 could also work.
-  -- We developed the code on Ubuntu 16.04LTS. Other linux versions could also work.
-  -- You can either use the Makefile in the root, or cmake via the build directory (see below).
+* Linux. 
+  * gcc version 5.4. Other gcc versions above 5.0 could also work.
+  * We developed the code on Ubuntu 16.04LTS. Other linux versions could also work.
+  * You can either use the Makefile in the root, or cmake via the build directory (see below).
   
-- For Windows 10 
-  -- Visual Studio 2015. For this, use cmake (see below)
-  -- For Anniversary Update or later, one can use the Windows Subsystem for Linux, and the instructions for Linux build. 
+* For Windows 10 
+  * Visual Studio 2015. For this, use cmake (see below)
+  * For Anniversary Update or later, one can use the Windows Subsystem for Linux, and the instructions for Linux build. 
 
-- On both Linux and Windows, you need an implementation of BLAS, sparseBLAS and vector math calls.
+* On both Linux and Windows, you need an implementation of BLAS, sparseBLAS and vector math calls.
   We link with the implementation provided by the [Intel(R) Math Kernel Library](https://software.intel.com/en-us/mkl).
   Please download later versions (2017v3+) of MKL as far as possible.
   The code can be made to work with other math libraries with a few modifications.
