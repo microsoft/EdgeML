@@ -34,7 +34,7 @@ ProtoNNPredictDriver.o:
 BonsaiTrainDriver.o:
 	$(MAKE) -C $(DRIVER_DIR)/Bonsai/trainer
 
-BostinPredictDriver.o:
+BonsaiPredictDriver.o:
 	$(MAKE) -C $(DRIVER_DIR)/Bonsai/predictor
 
 #ProtoNNIngestTest.o BonsaiIngestTest.o:
