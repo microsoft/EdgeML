@@ -65,7 +65,7 @@ cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_BUILD_TYPE=Release ..
 ```
 Finally, open `EdgeML.sln` in VS2015, build and run.
 
-Both Linux and Windows10 cmake builds will generate four executables _BonsaiTrain_, _BonsaiPredict_, _ProtoNNTrain_ and _ProtoNNPredict_ in <EDGEML_ROOT>.
+Both Linux and Windows10, cmake builds will generate four executables _BonsaiTrain_, _BonsaiPredict_, _ProtoNNTrain_ and _ProtoNNPredict_ in <EDGEML_ROOT>.
 
 ### Download a sample dataset
 Follow the bash commands given below to download a sample dataset, USPS10 to the repository. Bonsai and ProtoNN come with sample scripts to run on the usps10 dataset. EDGEML_ROOT is defined in the previous section. 
