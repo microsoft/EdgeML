@@ -15,27 +15,57 @@ We welcome contributions, comments and criticism. For questions, please [email H
 [People](http://harsha-simhadri.org/EdgeML/People/) who have contributed to this [project](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
 
 ### Requirements
-- Linux. We developed the code on Ubuntu 16.04LTS.
-  For Windows 10 Anniversary Update or later, one can also use the Windows Subsystem for Linux. 
-  The code can also be compiled in Windows with Visual Studio,
-  but this release does not include necessary makefiles yet. 
-- gcc version 5.4. Other gcc versions above 5.0 could also work.
-- An implementation of BLAS, sparseBLAS and vector math calls.
+- Linux. 
+  -- gcc version 5.4. Other gcc versions above 5.0 could also work.
+  -- We developed the code on Ubuntu 16.04LTS. Other linux versions could also work.
+  -- You can either use the Makefile in the root, or cmake via the build directory (see below).
+  
+- For Windows 10 
+  -- Visual Studio 2015. For this, use cmake (see below)
+  -- For Anniversary Update or later, one can use the Windows Subsystem for Linux, and the instructions for Linux build. 
+
+- On both Linux and Windows, you need an implementation of BLAS, sparseBLAS and vector math calls.
   We link with the implementation provided by the [Intel(R) Math Kernel Library](https://software.intel.com/en-us/mkl).
   Please download later versions (2017v3+) of MKL as far as possible.
   The code can be made to work with other math libraries with a few modifications.
 
-### Building
+### Building using Makefile
+
 After cloning this repository, set compiler and flags appropriately in `config.mk`. Then execute the following in bash:
 
 ```bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<MKL_PATH>:<EDGEML_ROOT>
-make -j
+make -Bj
 ```
 Typically, MKL_PATH = /opt/intel/mkl/lib/intel64_lin/, and EDGEML_ROOT is '.'.
 
-This will build two executables _Bonsai_ and _ProtoNN_.
+This will build four executables _BonsaiTrain_, _BonsaiPredict_, _ProtoNNTrain_ and _ProtoNNPredict_ in <EDGEML_ROOT>.
 Sample data to try these executables is not included in this repository, but instructions to do so are given below. 
+
+### Building using CMake
+
+For Linux, in the <EDGEML_ROOT> directory:
+
+```mkdir build
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<MKL_PATH>
+cd build
+cmake ..
+make -Bj
+```
+
+For Windows 10, in the <EDGEML_ROOT> directory, modify `CMakeLists.txt` file to change <MKL_ROOT> by changing the
+line 
+```set(MKL_ROOT "<MKL_ROOT>")```
+
+Then, generate Visual Studio 2015 solution using:
+
+```mkdir build
+cd build
+cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_BUILD_TYPE=Release ..
+```
+Finally, open `EdgeML.sln` in VS2015, build and run.
+
+Both Linux and Windows10 cmake builds will generate four executables _BonsaiTrain_, _BonsaiPredict_, _ProtoNNTrain_ and _ProtoNNPredict_ in <EDGEML_ROOT>.
 
 ### Download a sample dataset
 Follow the bash commands given below to download a sample dataset, USPS10 to the repository. Bonsai and ProtoNN come with sample scripts to run on the usps10 dataset. EDGEML_ROOT is defined in the previous section. 
@@ -58,7 +88,7 @@ you can train and test Bonsai and ProtoNN algorithms. As specified, we create an
 For instructions to actually run the algorithms, see [Bonsai Readme](docs/README_BONSAI_OSS.md) and [ProtoNN Readme](docs/README_PROTONN_OSS.ipynb).
 
 ### Makefile flags
-You could change the behavior of the code by setting these flags in `config.mk` and rebuilding with `make -Bj`. All these flags can be set for both ProtoNN and Bonsai.
+You could change the behavior of the code by setting these flags in `config.mk` and rebuilding with `make -Bj` when building with the default Makefile in <EDGEML_ROOT>. When building with CMake, change these flags in `CMakeLists.txt` in <EDGEML_ROOT>. All these flags can be set for both ProtoNN and Bonsai.
 The following are supported currently by both ProtoNN and Bonsai. 
 
     SINGLE/DOUBLE:  Single/Double precision floating-point. Single is most often sufficient. Double might help with reproducibility.
