@@ -15,16 +15,16 @@ We welcome contributions, comments and criticism. For questions, please [email H
 [People](http://harsha-simhadri.org/EdgeML/People/) who have contributed to this [project](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
 
 ### Requirements
-* Linux. 
+* Linux:
   * gcc version 5.4. Other gcc versions above 5.0 could also work.
   * We developed the code on Ubuntu 16.04LTS. Other linux versions could also work.
   * You can either use the Makefile in the root, or cmake via the build directory (see below).
   
-* For Windows 10 
-  * Visual Studio 2015. For this, use cmake (see below)
+* Windows 10:
+  * Visual Studio 2015. Use cmake (see below).
   * For Anniversary Update or later, one can use the Windows Subsystem for Linux, and the instructions for Linux build. 
 
-* On both Linux and Windows, you need an implementation of BLAS, sparseBLAS and vector math calls.
+* On both Linux and Windows 10, you need an implementation of BLAS, sparseBLAS and vector math calls.
   We link with the implementation provided by the [Intel(R) Math Kernel Library](https://software.intel.com/en-us/mkl).
   Please download later versions (2017v3+) of MKL as far as possible.
   The code can be made to work with other math libraries with a few modifications.
@@ -65,7 +65,7 @@ cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_BUILD_TYPE=Release ..
 ```
 Finally, open `EdgeML.sln` in VS2015, build and run.
 
-Both Linux and Windows10, cmake builds will generate four executables _BonsaiTrain_, _BonsaiPredict_, _ProtoNNTrain_ and _ProtoNNPredict_ in <EDGEML_ROOT>.
+For both Linux and Windows10, cmake builds will generate four executables _BonsaiTrain_, _BonsaiPredict_, _ProtoNNTrain_ and _ProtoNNPredict_ in <EDGEML_ROOT>.
 
 ### Download a sample dataset
 Follow the bash commands given below to download a sample dataset, USPS10 to the repository. Bonsai and ProtoNN come with sample scripts to run on the usps10 dataset. EDGEML_ROOT is defined in the previous section. 
