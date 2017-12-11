@@ -6,13 +6,13 @@ Machine learning models for edge devices need to have a small footprint in terms
 
 This repository contains two such algorithms **Bonsai** and **ProtoNN** that shine in this setting. These algorithms can train models for classical supervised learning problems with memory requirements that are orders of magnitude lower than other modern ML algorithms. The trained models can be loaded onto edge devices such as IoT devices/sensors, and used to make fast and accurate predictions completely offline.
 
-For details, please see the ICML'17 publications on [Bonsai](publications/Bonsai.pdf) and [ProtoNN](publications/ProtoNN.pdf) algorithms.
-
-Initial Code Contributors: [Chirag Gupta](https://github.com/AIgen), [Aditya Kusupati](https://adityakusupati.github.io/), [Ashish Kumar](https://ashishkumar1993.github.io/), and [Harsha Simhadri](http://harsha-simhadri.org).
+For details, please see our [wiki page](https://github.com/Microsoft/EdgeML/wiki/) and our ICML'17 publications on [Bonsai](publications/Bonsai.pdf) and [ProtoNN](publications/ProtoNN.pdf) algorithms.
+ 
+Initial Code Contributors: [Chirag Gupta](https://aigen.github.io/), [Aditya Kusupati](https://adityakusupati.github.io/), [Ashish Kumar](https://ashishkumar1993.github.io/), and [Harsha Simhadri](http://harsha-simhadri.org).
 
 We welcome contributions, comments and criticism. For questions, please [email Harsha](mailto:harshasi@microsoft.com).
 
-[People](http://harsha-simhadri.org/EdgeML/People/) who have contributed to this [project](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
+[People](https://github.com/Microsoft/EdgeML/wiki/People/) who have contributed to this [project](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
 
 ### Requirements
 * Linux:
