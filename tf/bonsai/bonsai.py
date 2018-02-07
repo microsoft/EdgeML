@@ -176,17 +176,19 @@ class Bonsai:
 			self.loss = self.margin_loss + self.reg_loss
 
 	def trainGraph(self):
-		self.train_stepW = (tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss, var_list=[self.W]))
-		self.train_stepV = (tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss, var_list=[self.V]))
-		self.train_stepT = (tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss, var_list=[self.T]))
-		self.train_stepZ = (tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss, var_list=[self.Z]))
+		# self.train_stepW = (tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss, var_list=[self.W]))
+		# self.train_stepV = (tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss, var_list=[self.V]))
+		# self.train_stepT = (tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss, var_list=[self.T]))
+		# self.train_stepZ = (tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss, var_list=[self.Z]))
+		self.train_step = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
 
 	def runTraining(self, sess, _feed_dict):
 		## Done independently to allow the order to remain the same to match C++ version and to avoid race during concurrency
-		sess.run([self.train_stepW], feed_dict=_feed_dict)
-		sess.run([self.train_stepV], feed_dict=_feed_dict)
-		sess.run([self.train_stepT], feed_dict=_feed_dict)
-		sess.run([self.train_stepZ], feed_dict=_feed_dict)
+		# sess.run([self.train_stepW], feed_dict=_feed_dict)
+		# sess.run([self.train_stepV], feed_dict=_feed_dict)
+		# sess.run([self.train_stepT], feed_dict=_feed_dict)
+		# sess.run([self.train_stepZ], feed_dict=_feed_dict)
+		sess.run([self.train_step], feed_dict=_feed_dict)
 
 	def accuracyGraph(self):
 		if (self.numClasses > 2):
