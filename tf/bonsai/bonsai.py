@@ -2,7 +2,9 @@ import utils
 import tensorflow as tf
 import numpy as np
 
+## Bonsai Class
 class Bonsai:
+	## Constructor
 	def __init__(self, C, F, P, D, S, lW, lT, lV, lZ, 
 		sW, sT, sV, sZ, lr = None, W = None, T = None, 
 		V = None, Z = None, feats = None):
@@ -18,11 +20,13 @@ class Bonsai:
 		self.treeDepth = D
 		self.sigma = S
 		
+		## Regularizer coefficients
 		self.lW = lW
 		self.lV = lV
 		self.lT = lT
 		self.lZ = lZ
 		
+		## Sparsity hyperparams
 		self.sW = sW
 		self.sV = sV
 		self.sT = sT
@@ -31,41 +35,44 @@ class Bonsai:
 		self.internalNodes = 2**self.treeDepth - 1
 		self.totalNodes = 2*self.internalNodes + 1
 
+		## The Parameters of Bonsai
 		self.W = self.initW(W)
 		self.V = self.initV(V)
 		self.T = self.initT(T)
 		self.Z = self.initZ(Z)
 
-		self.W_th = tf.placeholder(tf.float32, name='W_th')
-		self.V_th = tf.placeholder(tf.float32, name='V_th')
-		self.Z_th = tf.placeholder(tf.float32, name='Z_th')
-		self.T_th = tf.placeholder(tf.float32, name='T_th')
-
-		self.W_st = tf.placeholder(tf.float32, name='W_st')
-		self.V_st = tf.placeholder(tf.float32, name='V_st')
-		self.Z_st = tf.placeholder(tf.float32, name='Z_st')
-		self.T_st = tf.placeholder(tf.float32, name='T_st')
+		## Placeholders for Hard Thresholding and Sparse Training
+		self.Wth = tf.placeholder(tf.float32, name='Wth')
+		self.Vth = tf.placeholder(tf.float32, name='Vth')
+		self.Zth = tf.placeholder(tf.float32, name='Zth')
+		self.Tth = tf.placeholder(tf.float32, name='Tth')
 		
+		## Placeholders for Features and labels
+		## feats are to be fed when joint training is being done with Bonsai as end classifier
 		if feats is None:
 			self.x = tf.placeholder("float", [None, self.dataDimension])
 		else:
 			self.x = feats
 
 		self.y = tf.placeholder("float", [None, self.numClasses])
+
+		## Placeholder for batch size, needed for Multiclass hinge loss
 		self.batch_th = tf.placeholder(tf.int64, name='batch_th')
 
 		self.sigmaI = 1.0
 		if lr is not None:
-			self.learning_rate = lr
+			self.learningRate = lr
 		else:
-			self.learning_rate = 0.01
+			self.learningRate = 0.01
 
+		## Fucntions to setup required graphs
 		self.hardThrsd()
 		self.sparseTraining()
 		self.lossGraph()
 		self.trainGraph()
 		self.accuracyGraph()
 
+	## Functions to initilaise Params (Warm start possible with given numpy matrices)
 	def initZ(self, Z):
 		if Z is None:
 			Z = tf.random_normal([self.projectionDimension, self.dataDimension])
@@ -90,6 +97,7 @@ class Bonsai:
 		T = tf.Variable(T, name='T', dtype=tf.float32)
 		return T
 
+	## Function to get aimed model size
 	def getModelSize(self):	
 		nnzZ = np.ceil(int(self.Z.shape[0]*self.Z.shape[1])*self.sZ)
 		nnzW = np.ceil(int(self.W.shape[0]*self.W.shape[1])*self.sW)
@@ -97,8 +105,9 @@ class Bonsai:
 		nnzT = np.ceil(int(self.T.shape[0]*self.T.shape[1])*self.sT)
 		return int((nnzZ+nnzT+nnzV+nnzW)*8)
 
+	## Function to build the Bonsai Tree graph
 	def bonsaiGraph(self, X):
-		X = tf.reshape(X,[-1,self.dataDimension])
+		X = tf.reshape(X, [-1,self.dataDimension])
 		X_ = tf.divide(tf.matmul(self.Z, X, transpose_b=True), self.projectionDimension)
 		
 		W_ = self.W[0:(self.numClasses)]
@@ -111,93 +120,91 @@ class Bonsai:
 		for i in range(1, self.totalNodes):
 			W_ = self.W[i*self.numClasses:((i+1)*self.numClasses)]
 			V_ = self.V[i*self.numClasses:((i+1)*self.numClasses)]
+
 			prob = (1+((-1)**(i+1))*tf.tanh(tf.multiply(self.sigmaI, 
 				tf.matmul(tf.reshape(self.T[int(np.ceil(i/2)-1)], [-1, self.projectionDimension]), X_))))
+
 			prob = tf.divide(prob, 2)
 			prob = self.nodeProb[int(np.ceil(i/2)-1)]*prob
 			self.nodeProb.append(prob)
-			score_ = score_ + self.nodeProb[i]*tf.multiply(tf.matmul(W_, X_), tf.tanh(self.sigma*tf.matmul(V_, X_)))
+			score_ += self.nodeProb[i]*tf.multiply(tf.matmul(W_, X_), tf.tanh(self.sigma*tf.matmul(V_, X_)))
 			
 		return score_, X_, self.T, self.W, self.V, self.Z
 
+	## Functions setting up graphs for IHT and Sparse Retraining
 	def hardThrsd(self):
-		self.W_op1 = self.W.assign(self.W_th)
-		self.V_op1 = self.V.assign(self.V_th)
-		self.T_op1 = self.T.assign(self.T_th)
-		self.Z_op1 = self.Z.assign(self.Z_th)
-		self.hard_thrsd_grp = tf.group(self.W_op1, self.V_op1, self.T_op1, self.Z_op1)
+		self.Woph = self.W.assign(self.Wth)
+		self.Voph = self.V.assign(self.Vth)
+		self.Toph = self.T.assign(self.Tth)
+		self.Zoph = self.Z.assign(self.Zth)
+		self.hardThresholdGroup = tf.group(self.Woph, self.Voph, self.Toph, self.Zoph)
 
 	def runHardThrsd(self, sess):
-		self.W_old = self.W_eval.eval()
-		self.V_old = self.V_eval.eval()
-		self.Z_old = self.Z_eval.eval()
-		self.T_old = self.T_eval.eval()
+		currW = self.Weval.eval()
+		currV = self.Veval.eval()
+		currZ = self.Zeval.eval()
+		currT = self.Teval.eval()
 
-		self.W_new = utils.hard_thrsd(self.W_old, self.sW)
-		self.V_new = utils.hard_thrsd(self.V_old, self.sV)
-		self.Z_new = utils.hard_thrsd(self.Z_old, self.sZ)
-		self.T_new = utils.hard_thrsd(self.T_old, self.sT)
+		self.thrsdW = utils.hardThreshold(currW, self.sW)
+		self.thrsdV = utils.hardThreshold(currV, self.sV)
+		self.thrsdZ = utils.hardThreshold(currZ, self.sZ)
+		self.thrsdT = utils.hardThreshold(currT, self.sT)
 
-		fd_thrsd = {self.W_th:self.W_new, self.V_th:self.V_new, self.Z_th:self.Z_new, self.T_th:self.T_new}
-		sess.run(self.hard_thrsd_grp, feed_dict=fd_thrsd)
+		fd_thrsd = {self.Wth:self.thrsdW, self.Vth:self.thrsdV, self.Zth:self.thrsdZ, self.Tth:self.thrsdT}
+		sess.run(self.hardThresholdGroup, feed_dict=fd_thrsd)
 
 	def sparseTraining(self):
-		self.W_op2 = self.W.assign(self.W_st)
-		self.V_op2 = self.V.assign(self.V_st)
-		self.Z_op2 = self.Z.assign(self.Z_st)
-		self.T_op2 = self.T.assign(self.T_st)
-		self.sparse_retrain_grp = tf.group(self.W_op2, self.V_op2, self.T_op2, self.Z_op2)
+		self.Wops = self.W.assign(self.Wth)
+		self.Vops = self.V.assign(self.Vth)
+		self.Zops = self.Z.assign(self.Zth)
+		self.Tops = self.T.assign(self.Tth)
+		self.sparseRetrainGroup = tf.group(self.Wops, self.Vops, self.Tops, self.Zops)
 
 	def runSparseTraining(self, sess):
-		self.W_old = self.W_eval.eval()
-		self.V_old = self.V_eval.eval()
-		self.Z_old = self.Z_eval.eval()
-		self.T_old = self.T_eval.eval()
+		currW = self.Weval.eval()
+		currV = self.Veval.eval()
+		currZ = self.Zeval.eval()
+		currT = self.Teval.eval()
 
-		W_new1 = utils.copy_support(self.W_new, self.W_old)
-		V_new1 = utils.copy_support(self.V_new, self.V_old)
-		Z_new1 = utils.copy_support(self.Z_new, self.Z_old)
-		T_new1 = utils.copy_support(self.T_new, self.T_old)
+		newW = utils.copySupport(self.thrsdW, currW)
+		newV = utils.copySupport(self.thrsdV, currV)
+		newZ = utils.copySupport(self.thrsdZ, currZ)
+		newT = utils.copySupport(self.thrsdT, currT)
 
-		fd_st = {self.W_st:W_new1, self.V_st:V_new1, self.Z_st:Z_new1, self.T_st:T_new1}
-		sess.run(self.sparse_retrain_grp, feed_dict=fd_st)
+		fd_st = {self.Wth:newW, self.Vth:newV, self.Zth:newZ, self.Tth:newT}
+		sess.run(self.sparseRetrainGroup, feed_dict=fd_st)
 
+	## Fucntion to build a Loss graph for Bonsai
 	def lossGraph(self):
-		self.score, self.X_eval, self.T_eval, self.W_eval, self.V_eval, self.Z_eval = self.bonsaiGraph(self.x)
+		self.score, self.Xeval, self.Teval, self.Weval, self.Veval, self.Zeval = self.bonsaiGraph(self.x)
 
-		self.reg_loss = 0.5*(self.lZ*tf.square(tf.norm(self.Z)) + self.lW*tf.square(tf.norm(self.W)) + 
+		self.regLoss = 0.5*(self.lZ*tf.square(tf.norm(self.Z)) + self.lW*tf.square(tf.norm(self.W)) + 
 			self.lV*tf.square(tf.norm(self.V)) + self.lT*tf.square(tf.norm(self.T)))
 
 		if (self.numClasses > 2):
-			self.margin_loss = utils.multi_class_hinge_loss(tf.transpose(self.score), tf.argmax(self.y,1), self.batch_th)
-			self.loss = self.margin_loss + self.reg_loss
+			self.marginLoss = utils.multiClassHingeLoss(tf.transpose(self.score), tf.argmax(self.y,1), self.batch_th)
+			self.loss = self.marginLoss + self.regLoss
 		else:
-			self.margin_loss = tf.reduce_mean(tf.nn.relu(1.0 - (2*self.y-1)*tf.transpose(self.score)))
-			self.loss = self.margin_loss + self.reg_loss
+			self.marginLoss = tf.reduce_mean(tf.nn.relu(1.0 - (2*self.y-1)*tf.transpose(self.score)))
+			self.loss = self.marginLoss + self.regLoss
 
+	## Function to set up optimisation for Bonsai
 	def trainGraph(self):
-		# self.train_stepW = (tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss, var_list=[self.W]))
-		# self.train_stepV = (tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss, var_list=[self.V]))
-		# self.train_stepT = (tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss, var_list=[self.T]))
-		# self.train_stepZ = (tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss, var_list=[self.Z]))
-		self.train_step = tf.train.AdamOptimizer(self.learning_rate).minimize(self.loss)
+		self.trainStep = tf.train.AdamOptimizer(self.learningRate).minimize(self.loss)
 
+	## Function to run training step on Bonsai
 	def runTraining(self, sess, _feed_dict):
-		## Done independently to allow the order to remain the same to match C++ version and to avoid race during concurrency
-		# sess.run([self.train_stepW], feed_dict=_feed_dict)
-		# sess.run([self.train_stepV], feed_dict=_feed_dict)
-		# sess.run([self.train_stepT], feed_dict=_feed_dict)
-		# sess.run([self.train_stepZ], feed_dict=_feed_dict)
-		sess.run([self.train_step], feed_dict=_feed_dict)
+		sess.run([self.trainStep], feed_dict=_feed_dict)
 
+	## Fucntion to build a graph to compute accuracy of the current model
 	def accuracyGraph(self):
 		if (self.numClasses > 2):
-			correct_prediction = tf.equal(tf.argmax(tf.transpose(self.score),1), tf.argmax(self.y,1))
-			self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+			correctPrediction = tf.equal(tf.argmax(tf.transpose(self.score),1), tf.argmax(self.y,1))
+			self.accuracy = tf.reduce_mean(tf.cast(correctPrediction, tf.float32))
 		else:
 			y_ = self.y*2-1
-			correct_prediction = tf.multiply(tf.transpose(self.score), y_)
-			correct_prediction = tf.nn.relu(correct_prediction)
-			correct_prediction = tf.ceil(tf.tanh(correct_prediction))
-			self.accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+			correctPrediction = tf.multiply(tf.transpose(self.score), y_)
+			correctPrediction = tf.nn.relu(correctPrediction)
+			correctPrediction = tf.ceil(tf.tanh(correctPrediction))
+			self.accuracy = tf.reduce_mean(tf.cast(correctPrediction, tf.float32))
 

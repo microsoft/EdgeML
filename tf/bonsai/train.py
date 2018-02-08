@@ -1,164 +1,177 @@
 import utils
 import tensorflow as tf
 import numpy as np
+import sys
 from bonsai import Bonsai
 
+## Fixing seeds for reproducibility
 tf.set_random_seed(42)
 np.random.seed(42)
 
+## Hyper Param pre-processing
 args = utils.getArgs()
 
 sigma = args.sigma
 depth = args.depth
 
-embed_dims = args.proj_dim
-reg_Z = args.rZ
-reg_T = args.rT
-reg_W = args.rW
-reg_V = args.rV
+projectionDimension = args.projDim
+regZ = args.rZ
+regT = args.rT
+regW = args.rW
+regV = args.rV
 
-total_epochs = args.epochs
+totalEpochs = args.epochs
 
-learning_rate = args.learning_rate
+learningRate = args.learningRate
 
 data_dir = args.data_dir
 
-(inp_dims, n_classes, 
-	train_feats, train_labels, test_feats, test_labels) = utils.preProcessData(data_dir)
+(dataDimension, numClasses, 
+	Xtrain, Ytrain, Xtest, Ytest) = utils.preProcessData(data_dir)
 
-spar_Z = args.sZ
+sparZ = args.sZ
 
-if n_classes == 2:
-	spar_W = 1
-	spar_V = 1
-	spar_T = 1
+if numClasses == 2:
+	sparW = 1
+	sparV = 1
+	sparT = 1
 else:
-	spar_W = 0.2
-	spar_V = 0.2
-	spar_T = 0.2
+	sparW = 0.2
+	sparV = 0.2
+	sparT = 0.2
 
 if args.sW is not None:
-	spar_W = args.sW
+	sparW = args.sW
 if args.sV is not None:
-	spar_V = args.sV
+	sparV = args.sV
 if args.sT is not None:
-	spar_T = args.sT
+	sparT = args.sT
 
-if args.batch_size is None:
-	batch_size = np.maximum(100, int(np.ceil(np.sqrt(train_labels.shape[0]))))
+if args.batchSize is None:
+	batchSize = np.maximum(100, int(np.ceil(np.sqrt(Ytrain.shape[0]))))
 else:
-	batch_size = args.batch_size
+	batchSize = args.batchSize
 
-bonsaiObj = Bonsai(n_classes, inp_dims, embed_dims, depth, sigma, 
-	reg_W, reg_T, reg_V, reg_Z, spar_W, spar_T, spar_V, spar_Z, lr = learning_rate)
+
+## Creation of Bonsai Object
+bonsaiObj = Bonsai(numClasses, dataDimension, projectionDimension, depth, sigma, 
+	regW, regT, regV, regZ, sparW, sparT, sparV, sparZ, lr = learningRate)
 
 sess = tf.InteractiveSession()
 sess.run(tf.group(tf.initialize_all_variables(), tf.initialize_variables(tf.local_variables())))
-saver = tf.train.Saver()   ##for saving the model
+saver = tf.train.Saver()   ## Use it incase of saving the model
 
-num_iters=train_feats.shape[0]/batch_size
+numIters=Xtrain.shape[0]/batchSize
 
-total_batches = num_iters*total_epochs
+totalBatches = numIters*totalEpochs
 
 counter = 0
 if bonsaiObj.numClasses > 2:
 	trimlevel = 15
 else:
 	trimlevel = 5
-iht_done = 0
+ihtDone = 0
 
 
-for i in range(total_epochs):
+for i in range(totalEpochs):
 	print("\nEpoch Number: "+str(i))
 
-	accu = 0.0
-	for j in range(num_iters):
+	trainAcc = 0.0
+	for j in range(numIters):
 
 		if counter == 0:
 			print("\n******************** Dense Training Phase Started ********************\n")
 
-		if ((counter == 0) or (counter == int(total_batches/3)) or (counter == int(2*total_batches/3))):
+		## Updating the indicator sigma
+		if ((counter == 0) or (counter == int(totalBatches/3)) or (counter == int(2*totalBatches/3))):
 			bonsaiObj.sigmaI = 1
-			iters_phase = 0
+			itersInPhase = 0
 
-		elif (iters_phase%100 == 0):
-			indices = np.random.choice(train_feats.shape[0],100)
-			batch_x = train_feats[indices,:]
-			batch_y = train_labels[indices,:]
-			batch_y = np.reshape(batch_y, [-1, bonsaiObj.numClasses])
-			_feed_dict = {bonsaiObj.x: batch_x, bonsaiObj.y: batch_y}
-			x_cap_eval = bonsaiObj.X_eval.eval(feed_dict=_feed_dict)
-			T_eval = bonsaiObj.T_eval.eval()
+		elif (itersInPhase%100 == 0):
+			indices = np.random.choice(Xtrain.shape[0],100)
+			batchX = Xtrain[indices,:]
+			batchY = Ytrain[indices,:]
+			batchY = np.reshape(batchY, [-1, bonsaiObj.numClasses])
+			_feed_dict = {bonsaiObj.x: batchX, bonsaiObj.y: batchY}
+			Xcapeval = bonsaiObj.Xeval.eval(feed_dict=_feed_dict)
+			Teval = bonsaiObj.Teval.eval()
 			sum_tr = 0.0
 			for k in range(0, bonsaiObj.internalNodes):
-				sum_tr = sum_tr + (np.sum(np.abs(np.dot(T_eval[k], x_cap_eval))))
+				sum_tr += (np.sum(np.abs(np.dot(Teval[k], Xcapeval))))
 
 			if(bonsaiObj.internalNodes > 0):
-				sum_tr = sum_tr/(100*bonsaiObj.internalNodes)
+				sum_tr /= (100*bonsaiObj.internalNodes)
 				sum_tr = 0.1/sum_tr
 			else:
 				sum_tr = 0.1
-			sum_tr = min(1000,sum_tr*(2**(float(iters_phase)/(float(total_batches)/30.0))))
+			sum_tr = min(1000,sum_tr*(2**(float(itersInPhase)/(float(totalBatches)/30.0))))
 
 			bonsaiObj.sigmaI = sum_tr
 		
-		iters_phase = iters_phase + 1
-		batch_x = train_feats[j*batch_size:(j+1)*batch_size]
-		batch_y = train_labels[j*batch_size:(j+1)*batch_size]
-		batch_y = np.reshape(batch_y, [-1, bonsaiObj.numClasses])
+		itersInPhase += 1
+		batchX = Xtrain[j*batchSize:(j+1)*batchSize]
+		batchY = Ytrain[j*batchSize:(j+1)*batchSize]
+		batchY = np.reshape(batchY, [-1, bonsaiObj.numClasses])
 
 		if bonsaiObj.numClasses > 2:
-			_feed_dict = {bonsaiObj.x: batch_x, bonsaiObj.y: batch_y, bonsaiObj.batch_th: batch_y.shape[0]}
+			_feed_dict = {bonsaiObj.x: batchX, bonsaiObj.y: batchY, bonsaiObj.batch_th: batchY.shape[0]}
 		else:
-			_feed_dict = {bonsaiObj.x: batch_x, bonsaiObj.y: batch_y}
+			_feed_dict = {bonsaiObj.x: batchX, bonsaiObj.y: batchY}
 
-
+		## Mini-batch training
 		batchLoss = bonsaiObj.runTraining(sess, _feed_dict)
 
-		temp = bonsaiObj.accuracy.eval(feed_dict=_feed_dict)
-		accu = temp+accu
+		batchAcc = bonsaiObj.accuracy.eval(feed_dict=_feed_dict)
+		trainAcc += batchAcc
 
-		if (counter >= int(total_batches/3) and (counter < int(2*total_batches/3)) and counter%trimlevel == 0):
+		## Training routine involving IHT and sparse retraining
+		if (counter >= int(totalBatches/3) and (counter < int(2*totalBatches/3)) and counter%trimlevel == 0):
 			bonsaiObj.runHardThrsd(sess)
-			if iht_done == 0:
+			if ihtDone == 0:
 				print("\n******************** IHT Phase Started ********************\n")
-			iht_done = 1
-		elif ((iht_done == 1 and counter >= int(total_batches/3) and (counter < int(2*total_batches/3)) 
-			and counter%trimlevel != 0) or (counter >= int(2*total_batches/3))):
+			ihtDone = 1
+		elif ((ihtDone == 1 and counter >= int(totalBatches/3) and (counter < int(2*totalBatches/3)) 
+			and counter%trimlevel != 0) or (counter >= int(2*totalBatches/3))):
 			bonsaiObj.runSparseTraining(sess)
-			if counter == int(2*total_batches/3):
+			if counter == int(2*totalBatches/3):
 				print("\n******************** Sprase Retraining Phase Started ********************\n")
-		counter = counter + 1
+		counter += 1
 
-	print("Train accuracy "+str(accu/num_iters)) 
+	print("Train accuracy "+str(trainAcc/numIters)) 
 
 	if bonsaiObj.numClasses > 2:
-		_feed_dict={bonsaiObj.x: test_feats, bonsaiObj.y: test_labels, bonsaiObj.batch_th: test_labels.shape[0]}
+		_feed_dict={bonsaiObj.x: Xtest, bonsaiObj.y: Ytest, bonsaiObj.batch_th: Ytest.shape[0]}
 	else:
-		_feed_dict={bonsaiObj.x: test_feats, bonsaiObj.y: test_labels}
+		_feed_dict={bonsaiObj.x: Xtest, bonsaiObj.y: Ytest}
 
-	old = bonsaiObj.sigmaI
+	## this helps in direct testing instead of extracting the model out
+	oldSigmaI = bonsaiObj.sigmaI
 	bonsaiObj.sigmaI = 1e9
 
-	test_acc = bonsaiObj.accuracy.eval(feed_dict=_feed_dict)
-	if iht_done == 0:
-		max_acc = -10000
+	testAcc = bonsaiObj.accuracy.eval(feed_dict=_feed_dict)
+	if ihtDone == 0:
+		maxTestAcc = -10000
+		maxTestAccEpoch = i
 	else:
-		max_acc = max(max_acc, test_acc)
+		if maxTestAcc <= testAcc:
+			maxTestAccEpoch = i
+			maxTestAcc = testAcc
 
-	print("Test accuracy %g"%test_acc)
+	print("Test accuracy %g"%testAcc)
 
-	loss_new = bonsaiObj.loss.eval(feed_dict=_feed_dict)
-	reg_loss_new = bonsaiObj.reg_loss.eval(feed_dict=_feed_dict)
-	print("Margin_Loss + Reg_Loss: " + str(loss_new - reg_loss_new) + " + " + str(reg_loss_new) + " = " + str(loss_new) + "\n")
+	testLoss = bonsaiObj.loss.eval(feed_dict=_feed_dict)
+	regTestLoss = bonsaiObj.regLoss.eval(feed_dict=_feed_dict)
+	print("MarginLoss + RegLoss: " + str(testLoss - regTestLoss) + " + " + str(regTestLoss) + " = " + str(testLoss) + "\n")
 
-	bonsaiObj.sigmaI = old  
+	bonsaiObj.sigmaI = oldSigmaI
+	sys.stdout.flush()
 
-print("Maximum Test accuracy at compressed model size(including early stopping): " + str(max_acc) + " Final Test Accuracy: " + str(test_acc))
+print("Maximum Test accuracy at compressed model size(including early stopping): " 
+	+ str(maxTestAcc) + " Final Test Accuracy: " + str(testAcc))
 print("\nNon-Zeros: " + str(bonsaiObj.getModelSize()) + " Model Size: " + 
 	str(float(bonsaiObj.getModelSize())/1024.0) + " KB \n")
 
-np.save("W.npy", bonsaiObj.W_eval.eval())
-np.save("V.npy", bonsaiObj.V_eval.eval())
-np.save("Z.npy", bonsaiObj.Z_eval.eval())
-np.save("T.npy", bonsaiObj.T_eval.eval())
+np.save("W.npy", bonsaiObj.Weval.eval())
+np.save("V.npy", bonsaiObj.Veval.eval())
+np.save("Z.npy", bonsaiObj.Zeval.eval())
+np.save("T.npy", bonsaiObj.Teval.eval())
