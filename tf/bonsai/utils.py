@@ -115,7 +115,7 @@ def preProcessData(data_dir):
 	if (numClasses == 2):
 		Ytrain = np.reshape(lab, [-1, 1])
 	else:
-			Ytrain = lab_
+		Ytrain = lab_
 
 	lab = Ytest_.astype('uint8')
 	lab = np.array(lab)-min(lab)

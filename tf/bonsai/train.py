@@ -61,7 +61,7 @@ sess = tf.InteractiveSession()
 sess.run(tf.group(tf.initialize_all_variables(), tf.initialize_variables(tf.local_variables())))
 saver = tf.train.Saver()   ## Use it incase of saving the model
 
-numIters=Xtrain.shape[0]/batchSize
+numIters = Xtrain.shape[0]/batchSize
 
 totalBatches = numIters*totalEpochs
 
@@ -140,9 +140,9 @@ for i in range(totalEpochs):
 	print("Train accuracy "+str(trainAcc/numIters)) 
 
 	if bonsaiObj.numClasses > 2:
-		_feed_dict={bonsaiObj.x: Xtest, bonsaiObj.y: Ytest, bonsaiObj.batch_th: Ytest.shape[0]}
+		_feed_dict = {bonsaiObj.x: Xtest, bonsaiObj.y: Ytest, bonsaiObj.batch_th: Ytest.shape[0]}
 	else:
-		_feed_dict={bonsaiObj.x: Xtest, bonsaiObj.y: Ytest}
+		_feed_dict = {bonsaiObj.x: Xtest, bonsaiObj.y: Ytest}
 
 	## this helps in direct testing instead of extracting the model out
 	oldSigmaI = bonsaiObj.sigmaI
@@ -167,7 +167,7 @@ for i in range(totalEpochs):
 	sys.stdout.flush()
 
 print("Maximum Test accuracy at compressed model size(including early stopping): " 
-	+ str(maxTestAcc) + " Final Test Accuracy: " + str(testAcc))
+	+ str(maxTestAcc) + " at Epoch: " + str(maxTestAccEpoch) + "\nFinal Test Accuracy: " + str(testAcc))
 print("\nNon-Zeros: " + str(bonsaiObj.getModelSize()) + " Model Size: " + 
 	str(float(bonsaiObj.getModelSize())/1024.0) + " KB \n")
 

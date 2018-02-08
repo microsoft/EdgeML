@@ -65,7 +65,7 @@ class Bonsai:
 		else:
 			self.learningRate = 0.01
 
-		## Fucntions to setup required graphs
+		## Functions to setup required graphs
 		self.hardThrsd()
 		self.sparseTraining()
 		self.lossGraph()
@@ -174,7 +174,7 @@ class Bonsai:
 		fd_st = {self.Wth:newW, self.Vth:newV, self.Zth:newZ, self.Tth:newT}
 		sess.run(self.sparseRetrainGroup, feed_dict=fd_st)
 
-	## Fucntion to build a Loss graph for Bonsai
+	## Function to build a Loss graph for Bonsai
 	def lossGraph(self):
 		self.score, self.Xeval, self.Teval, self.Weval, self.Veval, self.Zeval = self.bonsaiGraph(self.x)
 
@@ -196,7 +196,7 @@ class Bonsai:
 	def runTraining(self, sess, _feed_dict):
 		sess.run([self.trainStep], feed_dict=_feed_dict)
 
-	## Fucntion to build a graph to compute accuracy of the current model
+	## Function to build a graph to compute accuracy of the current model
 	def accuracyGraph(self):
 		if (self.numClasses > 2):
 			correctPrediction = tf.equal(tf.argmax(tf.transpose(self.score),1), tf.argmax(self.y,1))
