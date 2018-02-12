@@ -182,7 +182,11 @@ class Bonsai:
 			self.lV*tf.square(tf.norm(self.V)) + self.lT*tf.square(tf.norm(self.T)))
 
 		if (self.numClasses > 2):
-			self.marginLoss = utils.multiClassHingeLoss(tf.transpose(self.score), tf.argmax(self.y,1), self.batch_th)
+			## need to give users an option to choose the loss
+			if True:
+				self.marginLoss = utils.multiClassHingeLoss(tf.transpose(self.score), tf.argmax(self.y,1), self.batch_th)
+			else:
+				self.marginLoss = utils.crossEntropyLoss(tf.transpose(self.score), self.y)
 			self.loss = self.marginLoss + self.regLoss
 		else:
 			self.marginLoss = tf.reduce_mean(tf.nn.relu(1.0 - (2*self.y-1)*tf.transpose(self.score)))
