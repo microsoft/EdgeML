@@ -64,6 +64,10 @@ def multiClassHingeLoss(logits, label, batch_th):
 
 	return tf.reduce_mean(tf.nn.relu(1. + wrong_max_logit - correct_logit))
 
+## Function for cross entropy loss in multiclass case (for faster convergence in joint training)
+def crossEntropyLoss(logits, label):
+	return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logit, labels=label))
+
 ## Hard Thresholding Function
 def hardThreshold(A, s):
 	A_ = np.copy(A)
