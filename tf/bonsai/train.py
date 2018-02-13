@@ -1,15 +1,16 @@
-import utils
+import bonsaiPreProcess
 import tensorflow as tf
 import numpy as np
 from bonsaiTrainer import BonsaiTrainer
 from bonsai import Bonsai
+
 
 # Fixing seeds for reproducibility
 tf.set_random_seed(42)
 np.random.seed(42)
 
 # Hyper Param pre-processing
-args = utils.getArgs()
+args = bonsaiPreProcess.getArgs()
 
 sigma = args.sigma
 depth = args.depth
@@ -27,7 +28,7 @@ learningRate = args.learningRate
 data_dir = args.data_dir
 
 (dataDimension, numClasses,
-    Xtrain, Ytrain, Xtest, Ytest) = utils.preProcessData(data_dir)
+    Xtrain, Ytrain, Xtest, Ytest) = bonsaiPreProcess.preProcessData(data_dir)
 
 sparZ = args.sZ
 
@@ -74,6 +75,8 @@ bonsaiTrainer.train(batchSize, totalEpochs, sess, Xtrain, Xtest, Ytrain, Ytest)
 
 print(bonsaiTrainer.bonsaiObj.score.eval(feed_dict={X: Xtest}))
 print(bonsaiObj.score.eval(feed_dict={X: Xtest}))
+
+# TODO: Write a model saver for storing the params
 
 np.save("W.npy", bonsaiTrainer.bonsaiObj.W.eval())
 np.save("V.npy", bonsaiTrainer.bonsaiObj.V.eval())
