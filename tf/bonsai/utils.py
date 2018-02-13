@@ -53,16 +53,16 @@ def getArgs():
 
 ## Function for Multi Class Hinge Loss : TF has no internal implementation
 def multiClassHingeLoss(logits, label, batch_th):
-	flat_logits = tf.reshape(logits, [-1,])
-	correct_id = tf.range(0, batch_th) * logits.shape[1] + label
-	correct_logit = tf.gather(flat_logits, correct_id)
+	flatLogits = tf.reshape(logits, [-1,])
+	correctId = tf.range(0, batch_th) * logits.shape[1] + label
+	correctLogit = tf.gather(flatLogits, correctId)
 
-	max_label = tf.argmax(logits, 1)
+	maxLabel = tf.argmax(logits, 1)
 	top2, _ = tf.nn.top_k(logits, k=2, sorted=True)
 
-	wrong_max_logit = tf.where(tf.equal(max_label, label), top2[:,1], top2[:,0])
+	wrongMaxLogit = tf.where(tf.equal(maxLabel, label), top2[:,1], top2[:,0])
 
-	return tf.reduce_mean(tf.nn.relu(1. + wrong_max_logit - correct_logit))
+	return tf.reduce_mean(tf.nn.relu(1. + wrongMaxLogit - correctLogit))
 
 ## Function for cross entropy loss in multiclass case (for faster convergence in joint training)
 def crossEntropyLoss(logits, label):
