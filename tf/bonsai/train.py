@@ -92,9 +92,11 @@ for i in range(totalEpochs):
 			batchX = Xtrain[indices,:]
 			batchY = Ytrain[indices,:]
 			batchY = np.reshape(batchY, [-1, bonsaiObj.numClasses])
+
 			_feed_dict = {bonsaiObj.x: batchX, bonsaiObj.y: batchY}
 			Xcapeval = bonsaiObj.Xeval.eval(feed_dict=_feed_dict)
 			Teval = bonsaiObj.Teval.eval()
+			
 			sum_tr = 0.0
 			for k in range(0, bonsaiObj.internalNodes):
 				sum_tr += (np.sum(np.abs(np.dot(Teval[k], Xcapeval))))

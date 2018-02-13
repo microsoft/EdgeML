@@ -40,12 +40,6 @@ class Bonsai:
 		self.V = self.initV(V)
 		self.T = self.initT(T)
 		self.Z = self.initZ(Z)
-
-		## Placeholders for Hard Thresholding and Sparse Training
-		self.Wth = tf.placeholder(tf.float32, name='Wth')
-		self.Vth = tf.placeholder(tf.float32, name='Vth')
-		self.Zth = tf.placeholder(tf.float32, name='Zth')
-		self.Tth = tf.placeholder(tf.float32, name='Tth')
 		
 		## Placeholders for Features and labels
 		## feats are to be fed when joint training is being done with Bonsai as end classifier
@@ -133,10 +127,17 @@ class Bonsai:
 
 	## Functions setting up graphs for IHT and Sparse Retraining
 	def hardThrsd(self):
+		## Placeholders for Hard Thresholding and Sparse Training
+		self.Wth = tf.placeholder(tf.float32, name='Wth')
+		self.Vth = tf.placeholder(tf.float32, name='Vth')
+		self.Zth = tf.placeholder(tf.float32, name='Zth')
+		self.Tth = tf.placeholder(tf.float32, name='Tth')
+
 		self.Woph = self.W.assign(self.Wth)
 		self.Voph = self.V.assign(self.Vth)
 		self.Toph = self.T.assign(self.Tth)
 		self.Zoph = self.Z.assign(self.Zth)
+		
 		self.hardThresholdGroup = tf.group(self.Woph, self.Voph, self.Toph, self.Zoph)
 
 	def runHardThrsd(self, sess):
