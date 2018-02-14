@@ -1,5 +1,7 @@
 import argparse
 import numpy as np
+import datetime
+import os
 
 # Functions to check sanity of input arguments
 
@@ -85,7 +87,6 @@ def preProcessData(data_dir):
     Expects a .npy file of form [lbl feats] for each datapoint
     Outputs a train and test set datapoints appended with 1 for Bias induction
     dataDimension, numClasses are inferred directly
-    numClasses returned will be 1 in case of Binary problem
     '''
     train = np.load(data_dir + '/train.npy')
     test = np.load(data_dir + '/test.npy')
@@ -135,7 +136,15 @@ def preProcessData(data_dir):
     testBias = np.ones([Xtest.shape[0], 1])
     Xtest = np.append(Xtest, testBias, axis=1)
 
-    if numClasses == 2:
-        numClasses = 1
-
     return dataDimension + 1, numClasses, Xtrain, Ytrain, Xtest, Ytest
+
+
+def createDir(dataDir):
+    '''
+    Creates a Directory with timestamp as it's name
+    '''
+    currDir = datetime.datetime.now().strftime("%H_%M_%S_%d_%m_%y")
+    if os.path.isdir(dataDir + '/' + currDir) is False:
+        os.mkdir(dataDir + '/' + currDir)
+        return (dataDir + '/' + currDir)
+    return None

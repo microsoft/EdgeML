@@ -1,6 +1,7 @@
 import tensorflow as tf
 import utils
 import numpy as np
+import os
 import sys
 
 
@@ -176,24 +177,29 @@ class BonsaiTrainer:
         assert self.sV >= 0 and self.sV <= 1, "V " + err
         assert self.sZ >= 0 and self.sZ <= 1, "Z " + err
         assert self.sT >= 0 and self.sT <= 1, "T " + err
-        errMsg = "Dimension Mismatch, X is [_, self.dataDimension]"
+        errMsg = "Dimension Mismatch, Y has to be [_, " + str(self.bonsaiObj.numClasses) + "]"
+        errCont = " numClasses are 1 in case of Binary case by design"
         assert (len(self.Y.shape) == 2 and
-                self.Y.shape[1] == self.bonsaiObj.numClasses), errMsg
+                self.Y.shape[1] == self.bonsaiObj.numClasses), errMsg + errCont
 
     # Function to get aimed model size
     def getModelSize(self):
-        nnzZ, sizeZ = utils.countnnZ(self.bonsaiObj.Z, self.sZ)
-        nnzW, sizeW = utils.countnnZ(self.bonsaiObj.W, self.sW)
-        nnzV, sizeV = utils.countnnZ(self.bonsaiObj.V, self.sV)
-        nnzT, sizeT = utils.countnnZ(self.bonsaiObj.T, self.sT)
+        nnzZ, sizeZ, sparseZ = utils.countnnZ(self.bonsaiObj.Z, self.sZ)
+        nnzW, sizeW, sparseW = utils.countnnZ(self.bonsaiObj.W, self.sW)
+        nnzV, sizeV, sparseV = utils.countnnZ(self.bonsaiObj.V, self.sV)
+        nnzT, sizeT, sparseT = utils.countnnZ(self.bonsaiObj.T, self.sT)
 
-        return (nnzZ + nnzT + nnzV + nnzW), (sizeZ + sizeW + sizeV + sizeT)
+        totalnnZ = (nnzZ + nnzT + nnzV + nnzW)
+        totalSize = (sizeZ + sizeW + sizeV + sizeT)
+        hasSparse = (sparseW or sparseV or sparseT or sparseZ)
+        return totalnnZ, totalSize, hasSparse
 
     def train(self, batchSize, totalEpochs, sess,
-              Xtrain, Xtest, Ytrain, Ytest):
+              Xtrain, Xtest, Ytrain, Ytest, dataDir, currDir):
         '''
         The Dense - IHT - Sparse Retrain Routine for Bonsai Training
         '''
+        resultFile = open(dataDir + '/BonsaiResults.txt', 'a+')
         numIters = Xtrain.shape[0] / batchSize
 
         totalBatches = numIters * totalEpochs
@@ -327,6 +333,15 @@ class BonsaiTrainer:
         self.bonsaiObj.sigmaI = 1e9
         print("Maximum Test accuracy at compressed model size(including early stopping): " +
               str(maxTestAcc) + " at Epoch: " +
-              str(maxTestAccEpoch) + "\nFinal Test Accuracy: " + str(testAcc))
+              str(maxTestAccEpoch + 1) + "\nFinal Test Accuracy: " + str(testAcc))
         print("\nNon-Zeros: " + str(self.getModelSize()[1]) + " Model Size: " +
-              str(float(self.getModelSize()[1]) / 1024.0) + " KB \n")
+              str(float(self.getModelSize()[1]) / 1024.0) + " KB hasSparse: " +
+              str(self.getModelSize()[2]) + "\n")
+
+        resultFile.write("MaxTestAcc: " + str(maxTestAcc) +
+                         " at Epoch(totalEpochs): " + str(maxTestAccEpoch + 1) +
+                         "(" + str(totalEpochs) + ")" + " ModelSize: " +
+                         str(float(self.getModelSize()[1]) / 1024.0) +
+                         " KB hasSparse: " + str(self.getModelSize()[2]) +
+                         " Param Directory: " + str(os.path.abspath(currDir)) + "\n")
+        resultFile.close()
