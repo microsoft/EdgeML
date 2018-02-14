@@ -48,3 +48,20 @@ def copySupport(src, dest):
     dest = np.zeros(dest_.shape)
     dest[support] = dest_[support]
     return dest
+
+
+def countnnZ(A, s):
+    '''
+    Returns # of nonzeros and represnetative size of the tensor
+    Uses dense for s >= 0.5 - 4 byte
+    Else uses sparse - 8 byte
+    '''
+    params = 1
+    for i in range(0, len(A.shape)):
+        params *= int(A.shape[i])
+    if s < 0.5:
+        nnZ = np.ceil(params * s)
+        return nnZ, nnZ * 8
+    else:
+        nnZ = params
+        return nnZ, nnZ * 4

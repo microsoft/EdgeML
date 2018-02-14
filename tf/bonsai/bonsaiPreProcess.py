@@ -85,6 +85,7 @@ def preProcessData(data_dir):
     Expects a .npy file of form [lbl feats] for each datapoint
     Outputs a train and test set datapoints appended with 1 for Bias induction
     dataDimension, numClasses are inferred directly
+    numClasses returned will be 1 in case of Binary problem
     '''
     train = np.load(data_dir + '/train.npy')
     test = np.load(data_dir + '/test.npy')
