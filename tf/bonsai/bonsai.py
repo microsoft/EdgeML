@@ -4,7 +4,7 @@ import numpy as np
 
 class Bonsai:
     def __init__(self, numClasses, dataDimension, projectionDimension,
-                 treeDepth, sigma, X,
+                 treeDepth, sigma,
                  W=None, T=None, V=None, Z=None):
         '''
         Expected Dimensions:
@@ -20,8 +20,7 @@ class Bonsai:
 
         sigma - tanh nonlinearity
         sigmaI - Indicator function for node probs
-
-        X is the Data Placeholder - Dims [_, dataDimension]
+        sigmaI - has to be set to infinity while doing testing/inference
         '''
 
         self.dataDimension = dataDimension
@@ -42,12 +41,11 @@ class Bonsai:
 
         self.sigmaI = 1.0
 
-        self.X = X
-
         self.assertInit()
 
-        self.score, self.X_ = self.bonsaiGraph(self.X)
-        self.prediction = self.getPrediction(self.score)
+        self.score = None
+        self.X_ = None
+        self.prediction = None
 
     def initZ(self, Z):
         if Z is None:
@@ -77,13 +75,18 @@ class Bonsai:
         T = tf.Variable(T, name='T', dtype=tf.float32)
         return T
 
-    def bonsaiGraph(self, X):
+    def __call__(self, X):
         '''
         Function to build the Bonsai Tree graph
         Expected Dimensions
 
         X is [_, self.dataDimension]
         '''
+        errmsg = "Dimension Mismatch, X is [_, self.dataDimension]"
+        assert (len(X.shape) == 2 and int(
+            X.shape[1]) == self.dataDimension), errmsg
+        if self.score is not None:
+            return self.score, self.X_
 
         X_ = tf.divide(tf.matmul(self.Z, X, transpose_b=True),
                        self.projectionDimension)
@@ -100,8 +103,10 @@ class Bonsai:
             W_ = self.W[i * self.numClasses:((i + 1) * self.numClasses)]
             V_ = self.V[i * self.numClasses:((i + 1) * self.numClasses)]
 
-            prob = (1 + ((-1)**(i + 1)) * tf.tanh(tf.multiply(self.sigmaI,
-                tf.matmul(tf.reshape(self.T[int(np.ceil(i / 2) - 1)], [-1, self.projectionDimension]), X_))))
+            T_ = tf.reshape(self.T[int(np.ceil(i / 2) - 1)],
+                            [-1, self.projectionDimension])
+            prob = (1 + ((-1)**(i + 1)) *
+                    tf.tanh(tf.multiply(self.sigmaI, tf.matmul(T_, X_))))
 
             prob = tf.divide(prob, 2)
             prob = self.__nodeProb[int(np.ceil(i / 2) - 1)] * prob
@@ -109,25 +114,28 @@ class Bonsai:
             score_ += self.__nodeProb[i] * tf.multiply(
                 tf.matmul(W_, X_), tf.tanh(self.sigma * tf.matmul(V_, X_)))
 
-        return score_, X_
+        self.score = score_
+        self.X_ = X_
+        return self.score, self.X_
 
-    def getPrediction(self, score):
+    def getPrediction(self):
         '''
         Takes in a score tensor and outputs a integer class for each datapoint
         '''
+
+        if self.prediction is not None:
+            return self.prediction
+
         if self.numClasses > 2:
-            prediction = tf.argmax(tf.transpose(score), 1)
-            return prediction
+            self.prediction = tf.argmax(tf.transpose(self.score), 1)
         else:
-            prediction = tf.argmax(
-                tf.concat([tf.transpose(score),
-                           0 * tf.transpose(score)], 1), 1)
-            return prediction
+            self.prediction = tf.argmax(
+                tf.concat([tf.transpose(self.score),
+                           0 * tf.transpose(self.score)], 1), 1)
+
+        return self.prediction
 
     def assertInit(self):
-        errmsg = "Dimension Mismatch, X is [_, self.dataDimension]"
-        assert (len(self.X.shape) == 2 and int(
-            self.X.shape[1]) == self.dataDimension), errmsg
         errRank = "All Parameters must has only two dimensions shape = [a, b]"
         assert len(self.W.shape) == len(self.Z.shape), errRank
         assert len(self.W.shape) == len(self.T.shape), errRank

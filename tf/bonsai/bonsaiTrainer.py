@@ -6,16 +6,17 @@ import sys
 
 class BonsaiTrainer:
     def __init__(self, bonsaiObj, lW, lT, lV, lZ, sW, sT, sV, sZ,
-                 learningRate, Y, lossFlag=True):
+                 learningRate, X, Y, useMCHLoss=True):
         '''
         bonsaiObj - Initialised Bonsai Object and Graph
         lW, lT, lV and lZ are regularisers to Bonsai Params
         sW, sT, sV and sZ are sparsity factors to Bonsai Params
         learningRate - learningRate fro optimizer
+        X is the Data Placeholder - Dims [_, dataDimension]
         Y - Label placeholder for loss computation
-        lossFlag - For choice between HingeLoss vs CrossEntropy
-        lossFlag - True - MultiClass - multiClassHingeLoss
-        lossFlag - False - MultiClass - crossEntropyLoss
+        useMCHLoss - For choice between HingeLoss vs CrossEntropy
+        useMCHLoss - True - MultiClass - multiClassHingeLoss
+        useMCHLoss - False - MultiClass - crossEntropyLoss
         '''
 
         self.bonsaiObj = bonsaiObj
@@ -31,22 +32,21 @@ class BonsaiTrainer:
         self.sZ = sZ
 
         self.Y = Y
-        self.X = self.bonsaiObj.X
+        self.X = X
 
-        self.lossFlag = lossFlag
+        self.useMCHLoss = useMCHLoss
 
         self.learningRate = learningRate
 
         self.assertInit()
 
-        self.score = self.bonsaiObj.score
-        self.X_ = self.bonsaiObj.X_
+        self.score, self.X_ = self.bonsaiObj(self.X)
 
         self.loss, self.marginLoss, self.regLoss = self.lossGraph()
 
         self.trainStep = self.trainGraph()
         self.accuracy = self.accuracyGraph()
-        self.prediction = self.bonsaiObj.prediction
+        self.prediction = self.bonsaiObj.getPrediction()
 
         self.hardThrsd()
         self.sparseTraining()
@@ -61,10 +61,11 @@ class BonsaiTrainer:
                               self.lT * tf.square(tf.norm(self.bonsaiObj.T)))
 
         if (self.bonsaiObj.numClasses > 2):
-            if self.lossFlag is True:
+            if self.useMCHLoss is True:
                 self.batch_th = tf.placeholder(tf.int64, name='batch_th')
                 self.marginLoss = utils.multiClassHingeLoss(
-                    tf.transpose(self.score), tf.argmax(self.Y, 1), self.batch_th)
+                    tf.transpose(self.score), tf.argmax(self.Y, 1),
+                    self.batch_th)
             else:
                 self.marginLoss = utils.crossEntropyLoss(
                     tf.transpose(self.score), self.Y)
@@ -181,15 +182,12 @@ class BonsaiTrainer:
 
     # Function to get aimed model size
     def getModelSize(self):
-        nnzZ = np.ceil(
-            int(self.bonsaiObj.Z.shape[0] * self.bonsaiObj.Z.shape[1]) * self.sZ)
-        nnzW = np.ceil(
-            int(self.bonsaiObj.W.shape[0] * self.bonsaiObj.W.shape[1]) * self.sW)
-        nnzV = np.ceil(
-            int(self.bonsaiObj.V.shape[0] * self.bonsaiObj.V.shape[1]) * self.sV)
-        nnzT = np.ceil(
-            int(self.bonsaiObj.T.shape[0] * self.bonsaiObj.T.shape[1]) * self.sT)
-        return int((nnzZ + nnzT + nnzV + nnzW) * 8)
+        nnzZ, sizeZ = utils.countnnZ(self.bonsaiObj.Z, self.sZ)
+        nnzW, sizeW = utils.countnnZ(self.bonsaiObj.W, self.sW)
+        nnzV, sizeV = utils.countnnZ(self.bonsaiObj.V, self.sV)
+        nnzT, sizeT = utils.countnnZ(self.bonsaiObj.T, self.sT)
+
+        return (nnzZ + nnzT + nnzV + nnzW), (sizeZ + sizeW + sizeV + sizeT)
 
     def train(self, batchSize, totalEpochs, sess,
               Xtrain, Xtest, Ytrain, Ytest):
@@ -207,6 +205,7 @@ class BonsaiTrainer:
             trimlevel = 5
         ihtDone = 0
 
+        header = '*' * 20
         for i in range(totalEpochs):
             print("\nEpoch Number: " + str(i))
 
@@ -214,8 +213,8 @@ class BonsaiTrainer:
             for j in range(numIters):
 
                 if counter == 0:
-                    print(
-                        "\n******************** Dense Training Phase Started ********************\n")
+                    msg = " Dense Training Phase Started "
+                    print("\n%s%s%s\n" % (header, msg, header))
 
                 # Updating the indicator sigma
                 if ((counter == 0) or (counter == int(totalBatches / 3)) or
@@ -256,7 +255,7 @@ class BonsaiTrainer:
                     batchY, [-1, self.bonsaiObj.numClasses])
 
                 if self.bonsaiObj.numClasses > 2:
-                    if self.lossFlag is True:
+                    if self.useMCHLoss is True:
                         _feed_dict = {self.X: batchX, self.Y: batchY,
                                       self.batch_th: batchY.shape[0]}
                     else:
@@ -277,8 +276,8 @@ class BonsaiTrainer:
                         counter % trimlevel == 0):
                     self.runHardThrsd(sess)
                     if ihtDone == 0:
-                        print(
-                            "\n******************** IHT Phase Started ********************\n")
+                        msg = " IHT Phase Started "
+                        print("\n%s%s%s\n" % (header, msg, header))
                     ihtDone = 1
                 elif ((ihtDone == 1 and counter >= int(totalBatches / 3) and
                        (counter < int(2 * totalBatches / 3)) and
@@ -286,14 +285,14 @@ class BonsaiTrainer:
                         (counter >= int(2 * totalBatches / 3))):
                     self.runSparseTraining(sess)
                     if counter == int(2 * totalBatches / 3):
-                        print(
-                            "\n******************** Sprase Retraining Phase Started ********************\n")
+                        msg = " Sprase Retraining Phase Started "
+                        print("\n%s%s%s\n" % (header, msg, header))
                 counter += 1
 
             print("Train accuracy " + str(trainAcc / numIters))
 
             if self.bonsaiObj.numClasses > 2:
-                if self.lossFlag is True:
+                if self.useMCHLoss is True:
                     _feed_dict = {self.X: Xtest, self.Y: Ytest,
                                   self.batch_th: Ytest.shape[0]}
                 else:
@@ -324,8 +323,10 @@ class BonsaiTrainer:
             self.bonsaiObj.sigmaI = oldSigmaI
             sys.stdout.flush()
 
+        # sigmaI has to be set to infinity to ensure only a single path is used in inference
+        self.bonsaiObj.sigmaI = 1e9
         print("Maximum Test accuracy at compressed model size(including early stopping): " +
               str(maxTestAcc) + " at Epoch: " +
               str(maxTestAccEpoch) + "\nFinal Test Accuracy: " + str(testAcc))
-        print("\nNon-Zeros: " + str(self.getModelSize()) + " Model Size: " +
-              str(float(self.getModelSize()) / 1024.0) + " KB \n")
+        print("\nNon-Zeros: " + str(self.getModelSize()[1]) + " Model Size: " +
+              str(float(self.getModelSize()[1]) / 1024.0) + " KB \n")

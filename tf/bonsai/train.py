@@ -53,18 +53,18 @@ if args.batchSize is None:
 else:
     batchSize = args.batchSize
 
-lossFlag = True
+useMCHLoss = True
 
 X = tf.placeholder("float32", [None, dataDimension])
 Y = tf.placeholder("float32", [None, numClasses])
 
 bonsaiObj = Bonsai(numClasses, dataDimension,
-                   projectionDimension, depth, sigma, X)
+                   projectionDimension, depth, sigma)
 
 bonsaiTrainer = BonsaiTrainer(bonsaiObj,
                               regW, regT, regV, regZ,
                               sparW, sparT, sparV, sparZ,
-                              learningRate, Y, lossFlag)
+                              learningRate, X, Y, useMCHLoss)
 
 sess = tf.InteractiveSession()
 sess.run(tf.group(tf.initialize_all_variables(),
@@ -73,12 +73,11 @@ saver = tf.train.Saver()
 
 bonsaiTrainer.train(batchSize, totalEpochs, sess, Xtrain, Xtest, Ytrain, Ytest)
 
-print(bonsaiTrainer.bonsaiObj.score.eval(feed_dict={X: Xtest}))
-print(bonsaiObj.score.eval(feed_dict={X: Xtest}))
-
 # TODO: Write a model saver for storing the params
 
-np.save("W.npy", bonsaiTrainer.bonsaiObj.W.eval())
-np.save("V.npy", bonsaiTrainer.bonsaiObj.V.eval())
-np.save("Z.npy", bonsaiTrainer.bonsaiObj.Z.eval())
-np.save("T.npy", bonsaiTrainer.bonsaiObj.T.eval())
+# For the following command:
+# python train.py -dir ../../../../../../deepBonsai/DeepBonsai/Bonsai_tf/data/curet/ -d 2 -p 22 -rW 0.00001 -rZ 0.0000001 -rV 0.00001 -rT 0.000001 -sZ 0.4 -sW 0.5 -sV 0.5 -sT 1 -e 300 -s 0.1 -b 20
+# Final Output
+# Maximum Test accuracy at compressed model size(including early stopping): 0.94583 at Epoch: 156
+# Final Test Accuracy: 0.92516
+# Non-Zeros: 118696 Model Size: 115.9140625 KB
