@@ -57,11 +57,13 @@ def countnnZ(A, s):
     Else uses sparse - 8 byte
     '''
     params = 1
+    hasSparse = False
     for i in range(0, len(A.shape)):
         params *= int(A.shape[i])
     if s < 0.5:
         nnZ = np.ceil(params * s)
-        return nnZ, nnZ * 8
+        hasSparse = True
+        return nnZ, nnZ * 8, hasSparse
     else:
         nnZ = params
-        return nnZ, nnZ * 4
+        return nnZ, nnZ * 4, hasSparse
