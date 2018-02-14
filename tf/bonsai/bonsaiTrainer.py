@@ -177,7 +177,8 @@ class BonsaiTrainer:
         assert self.sV >= 0 and self.sV <= 1, "V " + err
         assert self.sZ >= 0 and self.sZ <= 1, "Z " + err
         assert self.sT >= 0 and self.sT <= 1, "T " + err
-        errMsg = "Dimension Mismatch, Y has to be [_, " + str(self.bonsaiObj.numClasses) + "]"
+        errMsg = "Dimension Mismatch, Y has to be [_, " + \
+            str(self.bonsaiObj.numClasses) + "]"
         errCont = " numClasses are 1 in case of Binary case by design"
         assert (len(self.Y.shape) == 2 and
                 self.Y.shape[1] == self.bonsaiObj.numClasses), errMsg + errCont
@@ -270,10 +271,10 @@ class BonsaiTrainer:
                     _feed_dict = {self.X: batchX, self.Y: batchY}
 
                 # Mini-batch training
-                _, batchLoss = sess.run(
-                    [self.trainStep, self.loss], feed_dict=_feed_dict)
+                _, batchLoss, batchAcc = sess.run(
+                    [self.trainStep, self.loss, self.accuracy],
+                    feed_dict=_feed_dict)
 
-                batchAcc = self.accuracy.eval(feed_dict=_feed_dict)
                 trainAcc += batchAcc
 
                 # Training routine involving IHT and sparse retraining
@@ -310,7 +311,8 @@ class BonsaiTrainer:
             oldSigmaI = self.bonsaiObj.sigmaI
             self.bonsaiObj.sigmaI = 1e9
 
-            testAcc = self.accuracy.eval(feed_dict=_feed_dict)
+            testAcc, testLoss, regTestLoss = sess.run(
+                [self.accuracy, self.loss, self.regLoss], feed_dict=_feed_dict)
             if ihtDone == 0:
                 maxTestAcc = -10000
                 maxTestAccEpoch = i
@@ -320,9 +322,6 @@ class BonsaiTrainer:
                     maxTestAcc = testAcc
 
             print("Test accuracy %g" % testAcc)
-
-            testLoss = self.loss.eval(feed_dict=_feed_dict)
-            regTestLoss = self.regLoss.eval(feed_dict=_feed_dict)
             print("MarginLoss + RegLoss: " + str(testLoss - regTestLoss) +
                   " + " + str(regTestLoss) + " = " + str(testLoss) + "\n")
 
