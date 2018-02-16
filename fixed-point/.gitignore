@@ -1,0 +1,4 @@
+predict.cpp
+output/
+
+!*.pyc
