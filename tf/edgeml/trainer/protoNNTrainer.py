@@ -1,5 +1,4 @@
 import tensorflow as tf
-import edgeml.utisl as utils
 import numpy as np
 
 
@@ -39,7 +38,7 @@ class ProtoNNTrainer:
         and Y
         '''
 
-    def __validatInit(self):
+    def __validateInit(self):
         self.__validInit = False
         msg = "Sparcity value should be between"
         msg += " 0 and 1 (both inclusive)."
@@ -60,8 +59,8 @@ class ProtoNNTrainer:
 
     def __lossGraph(self):
         pnnOut = self.__protoNNOut
-        l1, l2, l3 = self.__regW, self.__regB, self.regZ
-        W, B, Z, _ = self.bonsaiObj.getModelMatrices()
+        l1, l2, l3 = self.__regW, self.__regB, self.__regZ
+        W, B, Z, _ = self.protoNNObj.getModelMatrices()
         with tf.name_scope('protonn-l2-loss'):
             loss_0 = tf.nn.l2_loss(self.Y - pnnOut)
             reg = l1 * tf.nn.l2_loss(W) + l2 * tf.nn.l2_loss(B)
@@ -71,7 +70,7 @@ class ProtoNNTrainer:
 
     def __trainGraph(self):
         with tf.name_scope('protonn-gradient-adam'):
-            trainStep = tf.train.AdamOptimizer(self.learningRate)
+            trainStep = tf.train.AdamOptimizer(self.__lR)
             trainStep = trainStep.minimize(self.loss)
         return trainStep
 
@@ -113,11 +112,11 @@ class ProtoNNTrainer:
         y_train_batches = np.array_split(y_train, trainNumBatches)
         x_test_batches = np.array_split(x_test, testNumBatches)
         y_test_batches = np.array_split(y_test, testNumBatches)
-        if noInit:
+        if not noInit:
             sess.run(tf.global_variables_initializer())
         X, Y = self.X, self.Y
-        for epoch in totalEpochs:
-            for i in len(x_train_batches):
+        for epoch in range(totalEpochs):
+            for i in range(len(x_train_batches)):
                 batch_x = x_train_batches[i]
                 batch_y = y_train_batches[i]
                 feed_dict = {
@@ -131,10 +130,10 @@ class ProtoNNTrainer:
                     msg = "Epoch: %3d Batch: %3d" % (epoch, i)
                     msg += " Loss: %3.5f Accuracy: %2.5f" % (loss, acc)
                     print(msg, file=redirFile)
-            if epoch % 3 == 0:
+            if (epoch + 1) % 3 == 0:
                 acc = 0.0
                 loss = 0.0
-                for j in len(x_test_batches):
+                for j in range(len(x_test_batches)):
                     batch_x = x_test_batches[j]
                     batch_y = y_test_batches[j]
                     feed_dict = {
@@ -147,7 +146,7 @@ class ProtoNNTrainer:
                     loss += loss_
                 acc /= len(y_test_batches)
                 loss /= len(y_test_batches)
-                print("Test accuracy: %2.5f Loss: %2.5f")
+                print("Test Loss: %2.5f Accuracy: %2.5f" % (loss, acc))
 
 
 
