@@ -3,6 +3,10 @@ import os
 
 from Utils import *
 
+# Class to read Bonsai model dumps and generate input files (C header file and the compiler input)
+# The two classes BonsaiFixed and BonsaiFloat are for generating fixed model and float model respectively
+# The baseclass Bonsai collects some of the common functions between them.
+
 
 class Bonsai:
 
@@ -56,6 +60,7 @@ class Bonsai:
         assert Sigma_m == Sigma_n == 1
         assert Mean_n == Variance_n == 1
 
+    # Restructure the W and V matrix to be node ID major instead of class ID major
     def rearrangeWandV(self, mat):
         matNew = [[] for _ in range(len(mat))]
         for i in range(self.numClasses):
@@ -63,7 +68,7 @@ class Bonsai:
                 matNew[i + j * self.numClasses] = mat[i * self.totalNodes + j]
         return matNew
 
-    # Note: Following computations assume that the tree is always complete
+    # Note: Following computations assume that the tree is always complete (which is a property of Bonsai algorithm)
     def computeVars(self):
         self.D = len(self.Z[0])
         self.d = len(self.Z)
@@ -73,6 +78,7 @@ class Bonsai:
         self.numClasses = len(self.W) // self.totalNodes
 
     def formatModel(self):
+        # Manually set mean and variance of bias to 0 and 1 respectively
         self.Mean[len(self.Mean) - 1] = [0]
         self.Variance[len(self.Variance) - 1] = [1]
 
@@ -80,23 +86,29 @@ class Bonsai:
 
         self.computeVars()
 
+        # Precompute some values to speedup prediction
+        # Precompute V*sigma and Z/d
         self.V = [[x * sigma for x in y] for y in self.V]
         self.Z = [[x / self.d for x in y] for y in self.Z]
+
+        # Precompute Z*(X-m)/v by absorbing m, v into Z
         self.Z = [[x / v[0] for x, v in zip(y, self.Variance)] for y in self.Z]
 
         self.mean = matMul(self.Z, self.Mean)
-
         assert len(self.mean[0]) == 1
         self.mean = [x[0] for x in self.mean]
 
+        # Restructure W and V
         self.W = self.rearrangeWandV(self.W)
         self.V = self.rearrangeWandV(self.V)
 
     def verifyModel(self):
+        # If T is empty, it is replaced with a matrix containing 2 elements (which is never used during prediction)
         if len(self.T) == 0:
             print("Warning: Empty matrix T\n")
             self.T = [[-0.000001, 0.000001]]
 
+    # Write macros and namespace declarations
     def writeHeader(self):
         with open(self.headerFile, 'a') as file:
             file.write("#pragma once\n\n")
@@ -111,27 +123,6 @@ class Bonsai:
     def writeFooter(self):
         with open(self.headerFile, 'a') as file:
             file.write("}\n")
-
-    def writeModel(self):
-        lists = {'mean': self.mean}
-        mats = {}
-
-        if useSparseMat():
-            Z_transp = matTranspose(self.Z)
-            Zval, Zidx = convertToSparse(Z_transp)
-            lists.update({'Zval': Zval, 'Zidx': Zidx})
-        else:
-            mats['Z'] = self.Z
-
-        mats.update({'W': self.W, 'V': self.V, 'T': self.T})
-
-        self.writeHeader()
-        writeVars({'D': self.D, 'd': self.d, 'c': self.numClasses, 'depth': self.depth,
-                                'totalNodes': self.totalNodes, 'internalNodes': self.internalNodes,
-                                'tanh_limit': self.tanh_limit}, self.headerFile)
-        writeListsAsArray(lists, self.headerFile)
-        writeMatsAsArray(mats, self.headerFile)
-        self.writeFooter()
 
     def processModel(self):
         self.readModel()
@@ -160,14 +151,21 @@ class Bonsai:
 
 class BonsaiFixed(Bonsai):
 
+    # The X matrix is quantized using a scale factor computed from the training dataset.
+    # The range of X_train is used to compute the scale factor.
+    # Since the range of X_train depends on its distribution, the scale computed may be imprecise.
+    # To avoid this, any outliers in X_train is trimmed off using a threshold to get a more precise range and a more precise scale.
     def transformDataset(self):
+        # If X itself is X_train, reuse it. Otherwise, read it from file
         if usingTrainingDataset():
             self.X_train = list(self.X)
         else:
             self.X_train, _ = readXandY(trainingDataset=True)
 
+        # Trim some data points from X_train
         self.X_train, _ = trimMatrix(self.X_train)
 
+        # Compute range and scale and quantize X
         testDatasetRange = matRange(self.X)
         self.trainDatasetRange = matRange(self.X_train)
 
@@ -181,7 +179,10 @@ class BonsaiFixed(Bonsai):
                 self.trainDatasetRange))
             file.write("Test dataset scaled by: %d\n\n" % (scale))
 
+    # Write the Bonsai algorithm in terms of the compiler DSL.
+    # Compiler takes this as input and generates fixed-point code.
     def genInputForCompiler(self):
+        # Threshold for mean
         m_mean, M_mean = listRange(self.mean)
         if abs(m_mean) < 0.0000005:
             m_mean = -0.000001
@@ -189,6 +190,7 @@ class BonsaiFixed(Bonsai):
             M_mean = 0.000001
 
         with open(self.inputFile, 'w') as file:
+            # Matrix declarations
             file.write("let XX   = X(%d, 1)   in [%.6f, %.6f] in\n" % (
                 (len(self.X[0]),) + self.trainDatasetRange))
             file.write("let ZZ   = Z(%d, %d)  in [%.6f, %.6f] in\n" % (
@@ -204,6 +206,7 @@ class BonsaiFixed(Bonsai):
 
             file.write("let ZX = ZZ |*| XX - Mean in\n\n")
 
+            # Computing score for depth == 0
             file.write("// depth 0\n")
             file.write("let node0   = 0    in\n")
             file.write("let W0      = WW[node0] * ZX in\n")
@@ -211,6 +214,7 @@ class BonsaiFixed(Bonsai):
             file.write("let V0_tanh = tanh(V0) in\n")
             file.write("let score0  = W0 <*> V0_tanh in\n\n")
 
+            # Computing score for depth > 0
             for i in range(1, self.depth + 1):
                 file.write("// depth %d\n" % (i))
                 file.write(
@@ -221,11 +225,13 @@ class BonsaiFixed(Bonsai):
                 file.write(
                     "let score%d  = score%d + W%d <*> V%d_tanh in\n\n" % (i, i - 1, i, i))
 
+            # Predicting the class
             if self.numClasses <= 2:
                 file.write("sgn(score%d)\n" % (self.depth))
             else:
                 file.write("argmax(score%d)\n" % (self.depth))
 
+    # Quantize the matrices
     def transformModel(self):
         if dumpDataset():
             self.genInputForCompiler()
@@ -236,12 +242,14 @@ class BonsaiFixed(Bonsai):
         self.T, _ = scaleMatSpecial(self.T)
         self.mean, _ = scaleListSpecial(self.mean)
 
+    # Writing the model as a bunch of variables, arrays and matrices to a file
     def writeModel(self):
         self.writeHeader()
 
         writeListAsArray(self.mean, 'mean', self.headerFile,
                          shapeStr="[%d]" * 2 % (self.d, 1))
 
+        # Sparse matrices are converted in to two arrays containing values and indices to reduce space
         if useSparseMat():
             Z_transp = matTranspose(self.Z)
             Zval, Zidx = convertToSparse(Z_transp)
@@ -249,6 +257,8 @@ class BonsaiFixed(Bonsai):
         else:
             writeMatAsArray(self.Z, 'Z', self.headerFile)
 
+        # If T_m is 0, the generated code will throw an error
+        # Hence, setting it to 1
         T_m = self.internalNodes
         if T_m == 0:
             T_m = 1
@@ -265,6 +275,8 @@ class BonsaiFixed(Bonsai):
 
 class BonsaiFloat(Bonsai):
 
+    # Float model is generated for for training dataset to profile the prediction
+    # Hence, X is trimmed down to remove outliers. Prediction profiling is performed on the trimmed X to generate more precise profile data
     def transformDataset(self):
         if usingTrainingDataset():
             beforeLen = len(self.X)
@@ -281,5 +293,29 @@ class BonsaiFloat(Bonsai):
                     beforeLen, afterLen, float(beforeLen - afterLen) / beforeLen * 100))
                 file.write("New range of X: [%.6f, %.6f]\n" % (afterRange))
 
+    # tanh_limit used to approximate the tanh computation
     def transformModel(self):
         self.tanh_limit = 1.0
+
+    # Writing the model as a bunch of variables, arrays and matrices to a file
+    def writeModel(self):
+        lists = {'mean': self.mean}
+        mats = {}
+
+        # Sparse matrices are converted in to two arrays containing values and indices to reduce space
+        if useSparseMat():
+            Z_transp = matTranspose(self.Z)
+            Zval, Zidx = convertToSparse(Z_transp)
+            lists.update({'Zval': Zval, 'Zidx': Zidx})
+        else:
+            mats['Z'] = self.Z
+
+        mats.update({'W': self.W, 'V': self.V, 'T': self.T})
+
+        self.writeHeader()
+        writeVars({'D': self.D, 'd': self.d, 'c': self.numClasses, 'depth': self.depth,
+                                'totalNodes': self.totalNodes, 'internalNodes': self.internalNodes,
+                                'tanh_limit': self.tanh_limit}, self.headerFile)
+        writeListsAsArray(lists, self.headerFile)
+        writeMatsAsArray(mats, self.headerFile)
+        self.writeFooter()
