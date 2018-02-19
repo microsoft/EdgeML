@@ -6,7 +6,8 @@ import sys
 
 
 class BonsaiTrainer:
-    def __init__(self, bonsaiObj, lW, lT, lV, lZ, sW, sT, sV, sZ,
+    def __init__(self, bonsaiObj, lW, lT, lV, lZ,
+                 sW, sT, sV, sZ,
                  learningRate, X, Y, useMCHLoss=True):
         '''
         bonsaiObj - Initialised Bonsai Object and Graph
