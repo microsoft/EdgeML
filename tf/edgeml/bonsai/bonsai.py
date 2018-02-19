@@ -20,7 +20,8 @@ class Bonsai:
 
         sigma - tanh nonlinearity
         sigmaI - Indicator function for node probs
-        sigmaI - has to be set to infinity(1e9 for practicality) while doing testing/inference
+        sigmaI - has to be set to infinity(1e9 for practicality)
+        while doing testing/inference
         numClasses will be reset to 1 in binary case
         '''
 
@@ -176,7 +177,8 @@ class Bonsai:
         assert len(self.W.shape) == len(self.Z.shape), errRank
         assert len(self.W.shape) == len(self.T.shape), errRank
         assert len(self.W.shape) == 2, errRank
-        assert self.W.shape == self.V.shape, "W and V should be of same Dimensions"
+        msg = "W and V should be of same Dimensions"
+        assert self.W.shape == self.V.shape, msg
         errW = "W and V are [numClasses*totalNodes, projectionDimension]"
         assert self.W.shape[0] == self.numClasses * self.totalNodes, errW
         assert self.W.shape[1] == self.projectionDimension, errW
@@ -187,6 +189,9 @@ class Bonsai:
         assert self.T.shape[0] == self.internalNodes, errT
         assert self.T.shape[1] == self.projectionDimension, errT
         assert int(self.numClasses) > 0, "numClasses should be > 1"
-        assert int(self.dataDimension) > 0, "# of features in data should be > 0"
-        assert int(self.projectionDimension) > 0, "Projection should be  > 0 dims"
-        assert int(self.treeDepth) >= 0, "treeDepth should be >= 0"
+        msg = "# of features in data should be > 0"
+        assert int(self.dataDimension) > 0, msg
+        msg = "Projection should be  > 0 dims"
+        assert int(self.projectionDimension) > 0, msg
+        msg = "treeDepth should be >= 0"
+        assert int(self.treeDepth) >= 0, msg
