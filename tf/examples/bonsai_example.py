@@ -1,8 +1,8 @@
 import bonsaipreprocess
 import tensorflow as tf
 import numpy as np
-from bonsaiTrainer import BonsaiTrainer
-from bonsai import Bonsai
+from edgeml.trainer.bonsaiTrainer import BonsaiTrainer
+from edgeml.graph.bonsai import Bonsai
 
 
 # Fixing seeds for reproducibility
@@ -82,7 +82,7 @@ bonsaiTrainer.train(batchSize, totalEpochs, sess,
 
 # For the following command:
 # Data - Curet
-# python train.py -dir ../../../../../../deepBonsai/DeepBonsai/Bonsai_tf/data/curet/ -d 2 -p 22 -rW 0.00001 -rZ 0.0000001 -rV 0.00001 -rT 0.000001 -sZ 0.4 -sW 0.5 -sV 0.5 -sT 1 -e 300 -s 0.1 -b 20
+# python train.py -dir ./curet/ -d 2 -p 22 -rW 0.00001 -rZ 0.0000001 -rV 0.00001 -rT 0.000001 -sZ 0.4 -sW 0.5 -sV 0.5 -sT 1 -e 300 -s 0.1 -b 20
 # Final Output
 # Maximum Test accuracy at compressed model size(including early stopping): 0.94583 at Epoch: 157
 # Final Test Accuracy: 0.92516
