@@ -52,16 +52,17 @@ def main():
     # Configuration
     # -----------------
     DATA_DIR = './curet/'
-    PROJECTION_DIM = 600
-    NUM_PROTOTYPES = 1000
-    GAMMA = 0.3
 
-    REG_W = 0.0
-    REG_B = 0.0
-    REG_Z = 0.0
-    SPAR_W = 0.0
-    SPAR_B = 0.0
-    SPAR_Z = 0.0
+    PROJECTION_DIM = 60 
+    NUM_PROTOTYPES = 100 
+    GAMMA = 0.02
+
+    REG_W = 0.005
+    REG_B = 0.0001
+    REG_Z = 0.0001
+    SPAR_W = 1.0
+    SPAR_B = 1.0
+    SPAR_Z = 1.0
     LEARNING_RATE = 0.1
     # -----------------
     # End configuration
@@ -79,7 +80,7 @@ def main():
                       GAMMA)
     trainer = ProtoNNTrainer(protoNN, REG_W, REG_B, REG_Z,
                              SPAR_W, SPAR_B, SPAR_Z,
-                             LEARNING_RATE, X, Y)
+                             LEARNING_RATE, X, Y, lossType='xentropy')
     sess = tf.Session()
     trainer.train(16, 150, sess, x_train, x_test, y_train, y_test)
 
