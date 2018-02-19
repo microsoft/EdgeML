@@ -645,6 +645,11 @@ void BonsaiTrainer::dumpModelMeanVar(const std::string& currResultsPath)
 
   writeMatrixInASCII(mean, params_path, "Mean");
   writeMatrixInASCII(variance, params_path, "Variance");
+
+  std::ofstream out(params_path + "/Sigma");
+  out << model.hyperParams.Sigma ;
+  out.close();
+  
   LOG_INFO(currResultsPath);
 }
 
