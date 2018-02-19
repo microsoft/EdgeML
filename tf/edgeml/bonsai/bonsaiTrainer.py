@@ -328,19 +328,24 @@ class BonsaiTrainer:
             self.bonsaiObj.sigmaI = oldSigmaI
             sys.stdout.flush()
 
-        # sigmaI has to be set to infinity to ensure only a single path is used in inference
+        # sigmaI has to be set to infinity to ensure
+        # only a single path is used in inference
         self.bonsaiObj.sigmaI = 1e9
-        print("Maximum Test accuracy at compressed model size(including early stopping): " +
+        print("Maximum Test accuracy at compressed" +
+              " model size(including early stopping): " +
               str(maxTestAcc) + " at Epoch: " +
-              str(maxTestAccEpoch + 1) + "\nFinal Test Accuracy: " + str(testAcc))
+              str(maxTestAccEpoch + 1) + "\nFinal Test" +
+              " Accuracy: " + str(testAcc))
         print("\nNon-Zeros: " + str(self.getModelSize()[1]) + " Model Size: " +
               str(float(self.getModelSize()[1]) / 1024.0) + " KB hasSparse: " +
               str(self.getModelSize()[2]) + "\n")
 
         resultFile.write("MaxTestAcc: " + str(maxTestAcc) +
-                         " at Epoch(totalEpochs): " + str(maxTestAccEpoch + 1) +
+                         " at Epoch(totalEpochs): " +
+                         str(maxTestAccEpoch + 1) +
                          "(" + str(totalEpochs) + ")" + " ModelSize: " +
                          str(float(self.getModelSize()[1]) / 1024.0) +
                          " KB hasSparse: " + str(self.getModelSize()[2]) +
-                         " Param Directory: " + str(os.path.abspath(currDir)) + "\n")
+                         " Param Directory: " +
+                         str(os.path.abspath(currDir)) + "\n")
         resultFile.close()
