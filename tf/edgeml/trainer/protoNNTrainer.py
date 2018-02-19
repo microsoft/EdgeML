@@ -5,7 +5,7 @@ import numpy as np
 class ProtoNNTrainer:
     def __init__(self, protoNNObj, regW, regB, regZ,
                  sparcityW, sparcityB, sparcityZ,
-                 learningRate, X, Y):
+                 learningRate, X, Y, lossType='l2'):
         '''
         protoNNObj: An instance of ProtoNN class. This instance
             will be trained.
@@ -16,6 +16,7 @@ class ProtoNNTrainer:
         X, Y : Placeholders for data and labels.
             X [-1, featureDimension]
             Y [-1, num Labels]
+        lossType: ['l2', 'xentropy']
         '''
         self.protoNNObj = protoNNObj
         self.__regW = regW
@@ -27,6 +28,7 @@ class ProtoNNTrainer:
         self.__lR = learningRate
         self.X = X
         self.Y = Y
+        self.__lossType = lossType
         self.__validInit = False
         self.__validInit = self.__validateInit()
         self.__protoNNOut = protoNNObj(X)
@@ -42,9 +44,9 @@ class ProtoNNTrainer:
         self.__validInit = False
         msg = "Sparcity value should be between"
         msg += " 0 and 1 (both inclusive)."
-        assert self.__sW >= 0. and self.__sW <= 0., 'W:' + msg
-        assert self.__sB >= 0. and self.__sB <= 0., 'B:' + msg
-        assert self.__sZ >= 0. and self.__sZ <= 0., 'Z:' + msg
+        assert self.__sW >= 0. and self.__sW <= 1., 'W:' + msg
+        assert self.__sB >= 0. and self.__sB <= 1., 'B:' + msg
+        assert self.__sZ >= 0. and self.__sZ <= 1., 'Z:' + msg
         d, dcap, m, L, _ = self.protoNNObj.getHyperParams()
         msg = 'Y should be of dimension [-1, num labels/classes]'
         msg += ' specified as part of ProtoNN object.'
@@ -55,17 +57,30 @@ class ProtoNNTrainer:
         assert (len(self.X.shape) == 2), msg
         assert (self.X.shape[1] == d), msg
         self.__validInit = True
+        msg = 'Values can be \'l2\', or \'xentropy\''
+        if self.__lossType not in ['l2', 'xentropy']:
+            raise ValueError(msg)
         return True
 
     def __lossGraph(self):
         pnnOut = self.__protoNNOut
         l1, l2, l3 = self.__regW, self.__regB, self.__regZ
         W, B, Z, _ = self.protoNNObj.getModelMatrices()
-        with tf.name_scope('protonn-l2-loss'):
-            loss_0 = tf.nn.l2_loss(self.Y - pnnOut)
-            reg = l1 * tf.nn.l2_loss(W) + l2 * tf.nn.l2_loss(B)
-            reg += l3 * tf.nn.l2_loss(Z)
-            loss = loss_0 + reg
+        if self.__lossType == 'l2':
+            with tf.name_scope('protonn-l2-loss'):
+                loss_0 = tf.nn.l2_loss(self.Y - pnnOut)
+                reg = l1 * tf.nn.l2_loss(W) + l2 * tf.nn.l2_loss(B)
+                reg += l3 * tf.nn.l2_loss(Z)
+                loss = loss_0 + reg
+        elif self.__lossType == 'xentropy':
+            with tf.name_scope('protonn-xentropy-loss'):
+                loss_0 = tf.nn.softmax_cross_entropy_with_logits(logits=pnnOut,
+                                                                 labels=self.Y)
+                loss_0 = tf.reduce_mean(loss_0)
+                reg = l1 * tf.nn.l2_loss(W) + l2 * tf.nn.l2_loss(B)
+                reg += l3 * tf.nn.l2_loss(Z)
+                loss = loss_0 + reg
+
         return loss
 
     def __trainGraph(self):
