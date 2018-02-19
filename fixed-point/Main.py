@@ -13,229 +13,258 @@ import Compiler
 import Converter
 import Predictor
 
+
 class Main:
 
-	def __init__(self, algo, trainingFile, testingFile, modelDir):
-		self.algo, self.trainingFile, self.testingFile, self.modelDir = algo, trainingFile, testingFile, modelDir
-		self.datasetType = "testing"
+    def __init__(self, algo, trainingFile, testingFile, modelDir):
+        self.algo, self.trainingFile, self.testingFile, self.modelDir = algo, trainingFile, testingFile, modelDir
+        self.datasetType = "testing"
 
-	def convert(self, target, version, datasetType):
-		print("Generating input files for %s %s dataset..." % (version, datasetType))
+    def convert(self, target, version, datasetType):
+        print("Generating input files for %s %s dataset..." %
+              (version, datasetType))
 
-		if target == "desktop":
-			datasetOutputDir = os.path.join("Predictor", self.algo, version + "-" + datasetType)
-			outputDir = os.path.join("Predictor", self.algo, version + "-testing")
-		else:
-			outputDir = os.path.join("Streamer", "input")
-			datasetOutputDir = outputDir
-		
-		os.makedirs(datasetOutputDir, exist_ok=True)
-		os.makedirs(outputDir, exist_ok=True)
+        if target == "desktop":
+            datasetOutputDir = os.path.join(
+                "Predictor", self.algo, version + "-" + datasetType)
+            outputDir = os.path.join(
+                "Predictor", self.algo, version + "-testing")
+        else:
+            outputDir = os.path.join("Streamer", "input")
+            datasetOutputDir = outputDir
 
-		try:
-			obj = Converter.Main(self.algo, version, datasetType, target, self.modelDir, datasetOutputDir = datasetOutputDir, outputDir = outputDir)
-			obj.setTSVinput(self.trainingFile, self.testingFile)
-			obj.run()
-		except Exception as e:
-			traceback.print_exc()
-			return False
-		return True
+        os.makedirs(datasetOutputDir, exist_ok=True)
+        os.makedirs(outputDir, exist_ok=True)
 
-	def compile(self, target, sf):
-		print("Generating code...", end = '')
+        try:
+            obj = Converter.Main(self.algo, version, datasetType, target, self.modelDir,
+                                 datasetOutputDir=datasetOutputDir, outputDir=outputDir)
+            obj.setTSVinput(self.trainingFile, self.testingFile)
+            obj.run()
+        except Exception as e:
+            traceback.print_exc()
+            return False
+        return True
 
-		inputFile = os.path.join("Predictor", self.algo, "fixed-testing", "input.txt")
-		profileLogFile = os.path.join("Predictor", "output", self.algo + "-float", "profile.txt")
-		
-		if target == "desktop":
-			outputFile = os.path.join("Predictor", self.algo + "_fixed.cpp")
-		else:
-			outputFile = "predict.cpp"
+    def compile(self, target, sf):
+        print("Generating code...", end='')
 
-		try:
-			obj = Compiler.Main(self.algo, target, inputFile, outputFile, profileLogFile, sf)
-			obj.run()
-		except:
-			print("failed!\n")
-			#traceback.print_exc()
-			return False
+        inputFile = os.path.join(
+            "Predictor", self.algo, "fixed-testing", "input.txt")
+        profileLogFile = os.path.join(
+            "Predictor", "output", self.algo + "-float", "profile.txt")
 
-		print("completed")
-		return True
+        if target == "desktop":
+            outputFile = os.path.join("Predictor", self.algo + "_fixed.cpp")
+        else:
+            outputFile = "predict.cpp"
 
-	def predict(self, version, datasetType):
-		curDir = os.getcwd()
-		os.chdir("Predictor")
+        try:
+            obj = Compiler.Main(self.algo, target, inputFile,
+                                outputFile, profileLogFile, sf)
+            obj.run()
+        except:
+            print("failed!\n")
+            # traceback.print_exc()
+            return False
 
-		obj = Predictor.Main(self.algo, version, datasetType, verbose = False)
-		res = obj.run()
-		
-		if res == False:
-			os.chdir(curDir)
-			return False
-		
-		os.chdir(curDir)
-		return True
+        print("completed")
+        return True
 
-	def readStatsFile(self, version, datasetType, sf):
-		statsFile = os.path.join("Predictor", "output", self.algo + "-" + version, "stats-" + datasetType + ".txt")
-		
-		with open(statsFile, 'r') as file:
-			content = file.readlines()
+    def predict(self, version, datasetType):
+        curDir = os.getcwd()
+        os.chdir("Predictor")
 
-		stats = [x.strip() for x in content]
+        obj = Predictor.Main(self.algo, version, datasetType, verbose=False)
+        res = obj.run()
 
-		self.accuracy[sf] = float(stats[0])
+        if res == False:
+            os.chdir(curDir)
+            return False
 
-	def runOnce(self, version, datasetType, target, sf):
-		res = self.compile(target, sf)
-		if res == False: return False, False
+        os.chdir(curDir)
+        return True
 
-		res = self.predict(version, datasetType)
-		if res == False: return False, True
+    def readStatsFile(self, version, datasetType, sf):
+        statsFile = os.path.join(
+            "Predictor", "output", self.algo + "-" + version, "stats-" + datasetType + ".txt")
 
-		self.readStatsFile(version, datasetType, sf)
+        with open(statsFile, 'r') as file:
+            content = file.readlines()
 
-		print("Accuracy is %.3f%%\n" % (self.accuracy[sf]))
+        stats = [x.strip() for x in content]
 
-		return True, False
+        self.accuracy[sf] = float(stats[0])
 
-	def runOnTraining(self):
-		start, end = 0, -16
-		searching = False
-		for i in range(start, end, -1):
-			print("Testing with max scale factor of " + str(i))
+    def runOnce(self, version, datasetType, target, sf):
+        res = self.compile(target, sf)
+        if res == False:
+            return False, False
 
-			res, exit = self.runOnce("fixed", "training", "desktop", i)
+        res = self.predict(version, datasetType)
+        if res == False:
+            return False, True
 
-			if exit == True: return False
+        self.readStatsFile(version, datasetType, sf)
 
-			if res == True:
-				searching = True
-			elif searching == True:
-				break
+        print("Accuracy is %.3f%%\n" % (self.accuracy[sf]))
 
-		if searching == False:
-			return False
-		else:
-			return True
+        return True, False
 
-	def getBestScale(self):
-		sorted_accuracy = dict(sorted(self.accuracy.items(), key=operator.itemgetter(1), reverse = True)[:5])
-		print(sorted_accuracy)
-		return next(iter(sorted_accuracy))
+    def runOnTraining(self):
+        start, end = 0, -16
+        searching = False
+        for i in range(start, end, -1):
+            print("Testing with max scale factor of " + str(i))
 
-	def compileAndPredict(self):
-		print("\n-------------------------------")
-		print("Predicting on training dataset")
-		print("-------------------------------\n")
-		print("Starting search to find the best scaling factor...\n\n")
+            res, exit = self.runOnce("fixed", "training", "desktop", i)
 
-		self.accuracy = {}
+            if exit == True:
+                return False
 
-		res = self.runOnTraining()
-		if res == False: return False
+            if res == True:
+                searching = True
+            elif searching == True:
+                break
 
-		print("\nSearch completed\n")
-		print("----------------------------------------------")
-		print("Best performing scaling factors with accuracy:")
+        if searching == False:
+            return False
+        else:
+            return True
 
-		self.sf = self.getBestScale()
+    def getBestScale(self):
+        sorted_accuracy = dict(
+            sorted(self.accuracy.items(), key=operator.itemgetter(1), reverse=True)[:5])
+        print(sorted_accuracy)
+        return next(iter(sorted_accuracy))
 
-		print("Best scaling factor = " + str(self.sf))
+    def compileAndPredict(self):
+        print("\n-------------------------------")
+        print("Predicting on training dataset")
+        print("-------------------------------\n")
+        print("Starting search to find the best scaling factor...\n\n")
 
-		print("\n-------------------------------")
-		print("Predicting on testing dataset")
-		print("-------------------------------\n")
+        self.accuracy = {}
 
-		print("Setting max scaling factor to " + str(self.sf))
+        res = self.runOnTraining()
+        if res == False:
+            return False
 
-		res = self.runOnce("fixed", "testing", "desktop", self.sf)
-		if res == False: return False
+        print("\nSearch completed\n")
+        print("----------------------------------------------")
+        print("Best performing scaling factors with accuracy:")
 
-		return True
+        self.sf = self.getBestScale()
 
-	def collectProfile(self):
+        print("Best scaling factor = " + str(self.sf))
 
-		res = self.convert("desktop", "float", "training")
-		if res == False: return False
+        print("\n-------------------------------")
+        print("Predicting on testing dataset")
+        print("-------------------------------\n")
 
-		print("-----------------------")
-		print("Collecting profile data")
-		print("-----------------------")
+        print("Setting max scaling factor to " + str(self.sf))
 
-		res = self.predict("float", "training")
-		if res == False: return False
+        res = self.runOnce("fixed", "testing", "desktop", self.sf)
+        if res == False:
+            return False
 
-		self.accuracy = {}
+        return True
 
-		self.readStatsFile("float", "training", 0)
+    def collectProfile(self):
 
-		print("Accuracy is %.3f%%\n\n" % (self.accuracy[0]))
+        res = self.convert("desktop", "float", "training")
+        if res == False:
+            return False
 
-	def dumpForArduino(self):
-		print("--------------------------------------")
-		print("Generating Arduino prediction files...")
-		print("--------------------------------------\n")
+        print("-----------------------")
+        print("Collecting profile data")
+        print("-----------------------")
 
-		res = self.convert("arduino", "fixed", "testing")
-		if res == False: return False
+        res = self.predict("float", "training")
+        if res == False:
+            return False
 
-		# Copy file
-		srcFile = os.path.join("Streamer", "input", "model.h")
-		destFile = "model.h"
-		shutil.copyfile(srcFile, destFile)
+        self.accuracy = {}
 
-		res = self.compile("arduino", self.sf)
-		if res == False: return False
+        self.readStatsFile("float", "training", 0)
 
-	def run(self):
+        print("Accuracy is %.3f%%\n\n" % (self.accuracy[0]))
 
-		res = self.collectProfile()
-		if res == False: return False
+    def dumpForArduino(self):
+        print("--------------------------------------")
+        print("Generating Arduino prediction files...")
+        print("--------------------------------------\n")
 
-		res = self.convert("desktop", "fixed", "training")
-		if res == False: return False
+        res = self.convert("arduino", "fixed", "testing")
+        if res == False:
+            return False
 
-		res = self.convert("desktop", "fixed", "testing")
-		if res == False: return False
+        # Copy file
+        srcFile = os.path.join("Streamer", "input", "model.h")
+        destFile = "model.h"
+        shutil.copyfile(srcFile, destFile)
 
-		res = self.compileAndPredict()
-		if res == False: return False
+        res = self.compile("arduino", self.sf)
+        if res == False:
+            return False
 
-		self.dumpForArduino()
+    def run(self):
 
-		return True
+        res = self.collectProfile()
+        if res == False:
+            return False
+
+        res = self.convert("desktop", "fixed", "training")
+        if res == False:
+            return False
+
+        res = self.convert("desktop", "fixed", "testing")
+        if res == False:
+            return False
+
+        res = self.compileAndPredict()
+        if res == False:
+            return False
+
+        self.dumpForArduino()
+
+        return True
+
 
 class MainDriver:
 
-	algosAll = ["bonsai", "protonn"]
+    algosAll = ["bonsai", "protonn"]
 
-	def __init__(self):
-		parser = argparse.ArgumentParser()
+    def __init__(self):
+        parser = argparse.ArgumentParser()
 
-		parser.add_argument("-a", "--algo", choices = self.algosAll,
-					  required = True, metavar = '', help = "Algorithm to run")
-		parser.add_argument("--train", required = True, metavar = '', help = "Training dataset file")
-		parser.add_argument("--test", required = True, metavar = '', help = "Testing dataset file")
-		parser.add_argument("--model", required = True, metavar = '', help = "Directory containing model")
-		
-		self.args = parser.parse_args()
+        parser.add_argument("-a", "--algo", choices=self.algosAll,
+                                  required=True, metavar='', help="Algorithm to run")
+        parser.add_argument("--train", required=True,
+                            metavar='', help="Training dataset file")
+        parser.add_argument("--test", required=True,
+                            metavar='', help="Testing dataset file")
+        parser.add_argument("--model", required=True,
+                            metavar='', help="Directory containing model")
 
-		if not os.path.isfile(self.args.train):
-			raise Exception("Training dataset file doesn't exist")
-		if not os.path.isfile(self.args.test):
-			raise Exception("Testing dataset file doesn't exist")
-		if not os.path.isdir(self.args.model):
-			raise Exception("Model directory doesn't exist")
+        self.args = parser.parse_args()
 
-	def run(self):
-		print("\n====================")
-		print("Executing on %s" % (self.args.algo))
-		print("====================\n")
-		obj = Main(self.args.algo, self.args.train, self.args.test, self.args.model)
-		obj.run()
+        if not os.path.isfile(self.args.train):
+            raise Exception("Training dataset file doesn't exist")
+        if not os.path.isfile(self.args.test):
+            raise Exception("Testing dataset file doesn't exist")
+        if not os.path.isdir(self.args.model):
+            raise Exception("Model directory doesn't exist")
+
+    def run(self):
+        print("\n====================")
+        print("Executing on %s" % (self.args.algo))
+        print("====================\n")
+        obj = Main(self.args.algo, self.args.train,
+                   self.args.test, self.args.model)
+        obj.run()
+
 
 if __name__ == "__main__":
-	obj = MainDriver()
-	obj.run()
+    obj = MainDriver()
+    obj.run()

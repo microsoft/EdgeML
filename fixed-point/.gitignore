@@ -1,4 +1,5 @@
-predict.cpp
 output/
+model.h
+predict.cpp
 
 !*.pyc
