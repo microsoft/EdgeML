@@ -6,7 +6,8 @@ import tensorflow as tf
 from edgeml.trainer.protoNNTrainer import ProtoNNTrainer
 from edgeml.graph.protoNN import ProtoNN
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '' 
+os.environ["CUDA_VISIBLE_DEVICES"] = ''
+
 
 def loadData(dataDir):
     train = np.load(dataDir + '/train.npy')
@@ -42,19 +43,18 @@ def loadData(dataDir):
     lab_ = np.zeros((x_test.shape[0], numClasses))
     lab_[np.arange(x_test.shape[0]), lab] = 1
     y_test = lab_
-   
+
     return dataDimension, numClasses, x_train, y_train, x_test, y_test
-    
+
 
 def main():
     # -----------------
     # Configuration
     # -----------------
     DATA_DIR = './curet/'
-    PROJECTION_DIM = 600 
-    NUM_PROTOTYPES = 1000 
+    PROJECTION_DIM = 600
+    NUM_PROTOTYPES = 1000
     GAMMA = 0.3
-    
 
     REG_W = 0.0
     REG_B = 0.0
@@ -83,7 +83,8 @@ def main():
     sess = tf.Session()
     trainer.train(16, 150, sess, x_train, x_test, y_train, y_test)
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     main()
 
 '''
