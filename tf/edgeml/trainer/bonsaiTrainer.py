@@ -1,5 +1,5 @@
 import tensorflow as tf
-import utils
+import edgeml.utils as utils
 import numpy as np
 import os
 import sys
@@ -217,6 +217,7 @@ class BonsaiTrainer:
             print("\nEpoch Number: " + str(i))
 
             trainAcc = 0.0
+            numIters = int(numIters)
             for j in range(numIters):
 
                 if counter == 0:
