@@ -1,4 +1,4 @@
-import bonsaiPreProcess
+import bonsaipreprocess
 import tensorflow as tf
 import numpy as np
 from bonsaiTrainer import BonsaiTrainer
@@ -10,7 +10,7 @@ tf.set_random_seed(42)
 np.random.seed(42)
 
 # Hyper Param pre-processing
-args = bonsaiPreProcess.getArgs()
+args = bonsaipreprocess.getArgs()
 
 sigma = args.sigma
 depth = args.depth
@@ -28,7 +28,7 @@ learningRate = args.learningRate
 data_dir = args.data_dir
 
 (dataDimension, numClasses,
-    Xtrain, Ytrain, Xtest, Ytest) = bonsaiPreProcess.preProcessData(data_dir)
+    Xtrain, Ytrain, Xtest, Ytest) = bonsaipreprocess.preProcessData(data_dir)
 
 sparZ = args.sZ
 
@@ -61,7 +61,7 @@ if numClasses == 2:
 X = tf.placeholder("float32", [None, dataDimension])
 Y = tf.placeholder("float32", [None, numClasses])
 
-currDir = bonsaiPreProcess.createDir(data_dir)
+currDir = bonsaipreprocess.createDir(data_dir)
 
 # numClasses = 1 for binary case
 bonsaiObj = Bonsai(numClasses, dataDimension,

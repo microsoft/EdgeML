@@ -1,9 +1,11 @@
+'''
+ Functions to check sanity of input arguments
+ for the example script.
+'''
 import argparse
 import numpy as np
 import datetime
 import os
-
-# Functions to check sanity of input arguments
 
 
 def checkIntPos(value):
@@ -45,7 +47,8 @@ def getArgs():
     parser = argparse.ArgumentParser(
         description='HyperParams for Bonsai Algorithm')
     parser.add_argument('-dir', '--data_dir', required=True,
-                        help='Data directory containing train.npy and test.npy')
+                        help='Data directory containing' +
+                        'train.npy and test.npy')
 
     parser.add_argument('-d', '--depth', type=checkIntNneg, default=2,
                         help='Depth of Bonsai Tree (default: 2 try: [0, 1, 3])')
