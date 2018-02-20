@@ -80,6 +80,8 @@ def getArgs():
                         help='Sparsity for branching parameter Theta  (default: For Binary classification 1.0 else 0.2 try: [0.1, 0.3, 0.5])')
     parser.add_argument('-sZ', type=checkFloatPos, default=0.2,
                         help='Sparsity for projection parameter Z  (default: 0.2 try: [0.1, 0.3, 0.5])')
+    parser.add_argument('-oF', '--output_file', default=None,
+                        help='Output Filename for dumping the program output')
 
     return parser.parse_args()
 
