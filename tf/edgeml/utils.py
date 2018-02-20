@@ -50,7 +50,7 @@ def copySupport(src, dest):
     return dest
 
 
-def countnnZ(A, s):
+def countnnZ(A, s, bytesPerVar = 4):
     '''
     Returns # of nonzeros and represnetative size of the tensor
     Uses dense for s >= 0.5 - 4 byte
@@ -63,7 +63,7 @@ def countnnZ(A, s):
     if s < 0.5:
         nnZ = np.ceil(params * s)
         hasSparse = True
-        return nnZ, nnZ * 8, hasSparse
+        return nnZ, nnZ * 2 * bytesPerVar, hasSparse
     else:
         nnZ = params
-        return nnZ, nnZ * 4, hasSparse
+        return nnZ, nnZ * bytesPerVar, hasSparse
