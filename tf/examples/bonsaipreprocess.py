@@ -81,7 +81,7 @@ def getArgs():
     parser.add_argument('-sZ', type=checkFloatPos, default=0.2,
                         help='Sparsity for projection parameter Z  (default: 0.2 try: [0.1, 0.3, 0.5])')
     parser.add_argument('-oF', '--output_file', default=None,
-                        help='Output Filename for dumping the program output')
+                        help='Output file for dumping the program output, (default: stdout)')
 
     return parser.parse_args()
 
