@@ -41,12 +41,13 @@ class ProtoNN:
         self.__initWBZ()
         self.__initGamma()
         self.__validateInit()
+        self.protoNNOut = None
 
     def __validateInit(self):
         self.__validInit = False
         errmsg = "Dimensions mismatch! Should be W[d, d_cap]"
         errmsg += ", B[d_cap, m] and Z[L, m]"
-        d, d_cap, m, L = self.getHyperParams()
+        d, d_cap, m, L, _ = self.getHyperParams()
         assert self.W.shape[0] == d, errmsg
         assert self.W.shape[1] == d_cap, errmsg
         assert self.B.shape[0] == d_cap, errmsg
@@ -102,7 +103,10 @@ class ProtoNN:
         dcap = self.__d_cap
         m = self.__m
         L = self.__L
-        return d, dcap, m, L
+        return d, dcap, m, L, self.gamma
+
+    def getModelMatrices(self):
+        return self.W, self.B, self.Z, self.gamma
 
     def __call__(self, X):
         '''
@@ -112,8 +116,10 @@ class ProtoNN:
         '''
         # This should never execute
         assert self.__validInit is True, "Initialization failed!"
-        W, B, Z, gamma = self.W, self.B, self.Z, self.gamma
+        if self.protoNNOut is not None:
+            return self.protoNNOut
 
+        W, B, Z, gamma = self.W, self.B, self.Z, self.gamma
         with tf.name_scope(self.__nscope):
             WX = tf.matmul(X, W)
             # Convert WX to tensor so that broadcasting can work
@@ -131,4 +137,5 @@ class ProtoNN:
             Z = tf.reshape(Z, dim)
             y = tf.multiply(Z, M)
             y = tf.reduce_sum(y, 2, name='protoNNScoreOut')
+            self.protoNNOut = y
         return y
