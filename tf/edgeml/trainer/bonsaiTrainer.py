@@ -1,3 +1,4 @@
+from __future__ import print_function
 import tensorflow as tf
 import edgeml.utils as utils
 import numpy as np
@@ -6,9 +7,8 @@ import sys
 
 
 class BonsaiTrainer:
-    def __init__(self, bonsaiObj, lW, lT, lV, lZ,
-                 sW, sT, sV, sZ,
-                 learningRate, X, Y, useMCHLoss=True):
+    def __init__(self, bonsaiObj, lW, lT, lV, lZ, sW, sT, sV, sZ,
+                 learningRate, X, Y, useMCHLoss=True, outFile=None):
         '''
         bonsaiObj - Initialised Bonsai Object and Graph
         lW, lT, lV and lZ are regularisers to Bonsai Params
@@ -37,6 +37,11 @@ class BonsaiTrainer:
         self.X = X
 
         self.useMCHLoss = useMCHLoss
+
+        if outFile is not None:
+            self.outFile = open(outFile, 'w')
+        else:
+            self.outFile = sys.stdout
 
         self.learningRate = learningRate
 
@@ -215,7 +220,7 @@ class BonsaiTrainer:
 
         header = '*' * 20
         for i in range(totalEpochs):
-            print("\nEpoch Number: " + str(i))
+            print("\nEpoch Number: " + str(i), file=self.outFile)
 
             trainAcc = 0.0
             numIters = int(numIters)
@@ -223,7 +228,8 @@ class BonsaiTrainer:
 
                 if counter == 0:
                     msg = " Dense Training Phase Started "
-                    print("\n%s%s%s\n" % (header, msg, header))
+                    print("\n%s%s%s\n" %
+                          (header, msg, header), file=self.outFile)
 
                 # Updating the indicator sigma
                 if ((counter == 0) or (counter == int(totalBatches / 3)) or
@@ -286,7 +292,8 @@ class BonsaiTrainer:
                     self.runHardThrsd(sess)
                     if ihtDone == 0:
                         msg = " IHT Phase Started "
-                        print("\n%s%s%s\n" % (header, msg, header))
+                        print("\n%s%s%s\n" %
+                              (header, msg, header), file=self.outFile)
                     ihtDone = 1
                 elif ((ihtDone == 1 and counter >= int(totalBatches / 3) and
                        (counter < int(2 * totalBatches / 3)) and
@@ -295,10 +302,12 @@ class BonsaiTrainer:
                     self.runSparseTraining(sess)
                     if counter == int(2 * totalBatches / 3):
                         msg = " Sprase Retraining Phase Started "
-                        print("\n%s%s%s\n" % (header, msg, header))
+                        print("\n%s%s%s\n" %
+                              (header, msg, header), file=self.outFile)
                 counter += 1
 
-            print("Train accuracy " + str(trainAcc / numIters))
+            print("Train accuracy " + str(trainAcc / numIters),
+                  file=self.outFile)
 
             if self.bonsaiObj.numClasses > 2:
                 if self.useMCHLoss is True:
@@ -323,12 +332,13 @@ class BonsaiTrainer:
                     maxTestAccEpoch = i
                     maxTestAcc = testAcc
 
-            print("Test accuracy %g" % testAcc)
+            print("Test accuracy %g" % testAcc, file=self.outFile)
             print("MarginLoss + RegLoss: " + str(testLoss - regTestLoss) +
-                  " + " + str(regTestLoss) + " = " + str(testLoss) + "\n")
+                  " + " + str(regTestLoss) + " = " + str(testLoss) + "\n",
+                  file=self.outFile)
+            self.outFile.flush()
 
             self.bonsaiObj.sigmaI = oldSigmaI
-            sys.stdout.flush()
 
         # sigmaI has to be set to infinity to ensure
         # only a single path is used in inference
@@ -337,10 +347,10 @@ class BonsaiTrainer:
               " model size(including early stopping): " +
               str(maxTestAcc) + " at Epoch: " +
               str(maxTestAccEpoch + 1) + "\nFinal Test" +
-              " Accuracy: " + str(testAcc))
+              " Accuracy: " + str(testAcc), file=self.outFile)
         print("\nNon-Zeros: " + str(self.getModelSize()[1]) + " Model Size: " +
               str(float(self.getModelSize()[1]) / 1024.0) + " KB hasSparse: " +
-              str(self.getModelSize()[2]) + "\n")
+              str(self.getModelSize()[2]) + "\n", file=self.outFile)
 
         resultFile.write("MaxTestAcc: " + str(maxTestAcc) +
                          " at Epoch(totalEpochs): " +
@@ -351,3 +361,5 @@ class BonsaiTrainer:
                          " Param Directory: " +
                          str(os.path.abspath(currDir)) + "\n")
         resultFile.close()
+        self.outFile.flush()
+        self.outFile.close()

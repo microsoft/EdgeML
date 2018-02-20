@@ -1,6 +1,9 @@
 import bonsaipreprocess
 import tensorflow as tf
 import numpy as np
+import sys
+sys.path.insert(0, '../')
+
 from edgeml.trainer.bonsaiTrainer import BonsaiTrainer
 from edgeml.graph.bonsai import Bonsai
 
@@ -27,36 +30,38 @@ learningRate = args.learningRate
 
 data_dir = args.data_dir
 
+outFile = args.output_file
+
 (dataDimension, numClasses,
     Xtrain, Ytrain, Xtest, Ytest) = bonsaipreprocess.preProcessData(data_dir)
 
 sparZ = args.sZ
 
 if numClasses > 2:
-    sparW = 0.2
-    sparV = 0.2
-    sparT = 0.2
+  sparW = 0.2
+  sparV = 0.2
+  sparT = 0.2
 else:
-    sparW = 1
-    sparV = 1
-    sparT = 1
+  sparW = 1
+  sparV = 1
+  sparT = 1
 
 if args.sW is not None:
-    sparW = args.sW
+  sparW = args.sW
 if args.sV is not None:
-    sparV = args.sV
+  sparV = args.sV
 if args.sT is not None:
-    sparT = args.sT
+  sparT = args.sT
 
 if args.batchSize is None:
-    batchSize = np.maximum(100, int(np.ceil(np.sqrt(Ytrain.shape[0]))))
+  batchSize = np.maximum(100, int(np.ceil(np.sqrt(Ytrain.shape[0]))))
 else:
-    batchSize = args.batchSize
+  batchSize = args.batchSize
 
 useMCHLoss = True
 
 if numClasses == 2:
-    numClasses = 1
+  numClasses = 1
 
 X = tf.placeholder("float32", [None, dataDimension])
 Y = tf.placeholder("float32", [None, numClasses])
@@ -70,7 +75,7 @@ bonsaiObj = Bonsai(numClasses, dataDimension,
 bonsaiTrainer = BonsaiTrainer(bonsaiObj,
                               regW, regT, regV, regZ,
                               sparW, sparT, sparV, sparZ,
-                              learningRate, X, Y, useMCHLoss)
+                              learningRate, X, Y, useMCHLoss, outFile)
 
 sess = tf.InteractiveSession()
 sess.run(tf.group(tf.initialize_all_variables(),
