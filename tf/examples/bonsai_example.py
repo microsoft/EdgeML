@@ -38,30 +38,30 @@ outFile = args.output_file
 sparZ = args.sZ
 
 if numClasses > 2:
-  sparW = 0.2
-  sparV = 0.2
-  sparT = 0.2
+    sparW = 0.2
+    sparV = 0.2
+    sparT = 0.2
 else:
-  sparW = 1
-  sparV = 1
-  sparT = 1
+    sparW = 1
+    sparV = 1
+    sparT = 1
 
 if args.sW is not None:
-  sparW = args.sW
+    sparW = args.sW
 if args.sV is not None:
-  sparV = args.sV
+    sparV = args.sV
 if args.sT is not None:
-  sparT = args.sT
+    sparT = args.sT
 
 if args.batchSize is None:
-  batchSize = np.maximum(100, int(np.ceil(np.sqrt(Ytrain.shape[0]))))
+    batchSize = np.maximum(100, int(np.ceil(np.sqrt(Ytrain.shape[0]))))
 else:
-  batchSize = args.batchSize
+    batchSize = args.batchSize
 
 useMCHLoss = True
 
 if numClasses == 2:
-  numClasses = 1
+    numClasses = 1
 
 X = tf.placeholder("float32", [None, dataDimension])
 Y = tf.placeholder("float32", [None, numClasses])
