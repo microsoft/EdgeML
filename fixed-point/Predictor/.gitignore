@@ -1,3 +1,9 @@
 output/
+bonsai/
+protonn/
+!bonsai/fixed-testing/model.h
+!bonsai/float-testing/model.h
+!protonn/fixed-testing/model.h
+!protonn/float-testing/model.h
 bonsai_fixed.cpp
 protonn_fixed.cpp

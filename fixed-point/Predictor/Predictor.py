@@ -3,10 +3,13 @@ import os
 import subprocess
 import argparse
 
+# Program to build and run the predictor project using msbuild
+# The accuracy and other statistics are written to the output file specified
+
 
 class Main:
 
-    def __init__(self, algo, version, datasetType, outputDir=None, verbose=True):
+    def __init__(self, algo, version, datasetType, outputDir=None, verbose=True, msbuildPath=None):
         self.algo, self.version, self.datasetType = algo, version, datasetType
 
         if outputDir == None:
@@ -16,13 +19,17 @@ class Main:
         os.makedirs(self.outputDir, exist_ok=True)
 
         self.verbose = verbose
+        self.msbuildPath = msbuildPath
 
     def build(self):
+        '''
+        Builds using the Predictor.vcxproj project file and creates the executable
+        The target platform is currently set to x64
+        '''
         print("Build...", end='')
 
-        msbuild = r"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe"
         projFile = "Predictor.vcxproj"
-        args = [msbuild, projFile, r"/t:Build",
+        args = [self.msbuildPath, projFile, r"/t:Build",
                 r"/p:Configuration=Release", r"/p:Platform=x64"]
 
         logFile = os.path.join(self.outputDir, "msbuild.txt")
@@ -37,6 +44,9 @@ class Main:
             return True
 
     def execute(self):
+        '''
+        Invokes the executable with arguments
+        '''
         print("Execution...", end='')
 
         exeFile = os.path.join("x64", "Release", "Predictor.exe")

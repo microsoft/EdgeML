@@ -28,21 +28,12 @@ int protonnFloat(float *X) {
 
 	ite_idx = 0;
 	ite_val = 0;
+	// Dimensionality reduction
 	for (MYINT i = 0; i < D; i++) {
 #if  PROFILE
 		updateRange(X[i]);
 #endif
 		float input = X[i];
-		/*
-		// Read each feature
-		while (!Serial.available())
-		;
-
-		Serial.readBytes(buff, 8);
-
-		float input = atof(buff);
-		*/
-		//float input = pgm_read_float_near(&X[i]);
 
 #if P_SPARSE_W
 		index = Widx[ite_idx];
@@ -79,6 +70,7 @@ int protonnFloat(float *X) {
 
 	for (MYINT i = 0; i < p; i++) {
 
+		// Norm of WX - B
 		float v = 0;
 		for (MYINT j = 0; j < d; j++) {
 #if  PROFILE
@@ -97,6 +89,7 @@ int protonnFloat(float *X) {
 			v += t * t;
 		}
 
+		// Prediction distribution
 #if  PROFILE
 		updateRange(g2);
 		updateRange(v);
@@ -120,6 +113,7 @@ int protonnFloat(float *X) {
 		}
 	}
 
+	// Argmax of score
 	float max = score[0];
 	MYINT classID = 0;
 	for (MYINT i = 1; i < c; i++) {

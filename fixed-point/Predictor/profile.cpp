@@ -9,7 +9,7 @@ using namespace std;
 float m_all, M_all;
 float m_exp, M_exp;
 
-void initializeRange() {
+void initializeProfiling() {
 	m_all = numeric_limits<float>::max();
 	M_all = -numeric_limits<float>::max();
 
@@ -42,15 +42,6 @@ void dumpRange(string outputFile) {
 	fout << fixed;
 	fout << m_all << ", " << M_all << endl;
 	fout << m_exp << ", " << M_exp << endl;
-
-	/*
-	cout.precision(6);
-	cout << fixed;
-	cout << "Range of ALL computation:" << endl;
-	cout << "[" << m_all << ", " << M_all << "]" << endl << endl;
-	cout << "Range of EXP computation:" << endl;
-	cout << "[" << m_exp << ", " << M_exp << "]" << endl << endl;
-	*/
 
 	return;
 }

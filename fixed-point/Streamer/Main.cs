@@ -5,8 +5,6 @@ namespace Streamer
 {
 	class Program
 	{
-		int limit = -1; // -1 to stream the entire dataset
-
 		static int Main(string[] args)
 		{
 			new Program().Run();
@@ -35,6 +33,7 @@ namespace Streamer
 			return;
 		}
 
+		// Read and validate the dataset
 		public void ReadDataset(string X_file, string Y_file)
 		{
 			X = File.ReadAllLines(X_file);
@@ -66,13 +65,10 @@ namespace Streamer
 			int correct = 0, total = 0;
 			ulong totalPredictionTime = 0;
 
-			int ite = limit;
-			if (limit == -1)
-				ite = X.Length;
-
 			using (StreamWriter file = new StreamWriter(outputFile))
 			{
-				for (int i = 0; i < ite; i++)
+				// Read each data point, predict on device and compare the class ID
+				for (int i = 0; i < X.Length; i++)
 				{
 					int classID = device.PredictOnDevice(X[i], out ulong predictionTime);
 

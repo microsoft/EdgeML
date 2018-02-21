@@ -29,21 +29,12 @@ int bonsaiFloat(float *X) {
 
 	ite_idx = 0;
 	ite_val = 0;
+	// Dimensionality reduction
 	for (MYINT i = 0; i < D; i++) {
 #if  PROFILE
 		updateRange(X[i]);
 #endif
 		float input = X[i];
-		/*
-		// Read each feature
-		while (!Serial.available())
-			;
-
-		Serial.readBytes(buff, 8);
-
-		float input = atof(buff);
-		*/
-		//float input = pgm_read_float_near(&X[i]);
 
 #if B_SPARSE_Z
 		index = Zidx[ite_idx];
@@ -85,6 +76,7 @@ int bonsaiFloat(float *X) {
 		memset(WZX, 0, sizeof(float) * c);
 		memset(VZX, 0, sizeof(float) * c);
 
+		// Accumulating score at each node
 		for (MYINT i = 0; i < d; i++) {
 			for (MYINT j = currNode * c; j < (currNode + 1) * c; j++) {
 #if  PROFILE
@@ -129,6 +121,7 @@ int bonsaiFloat(float *X) {
 #endif
 		}
 
+		// Computing theta value for branching into a child node
 		float val = 0;
 		for (MYINT i = 0; i < d; i++) {
 #if  PROFILE
@@ -150,6 +143,7 @@ int bonsaiFloat(float *X) {
 	memset(WZX, 0, sizeof(float) * c);
 	memset(VZX, 0, sizeof(float) * c);
 
+	// Accumulating score for the last node
 	for (MYINT i = 0; i < d; i++) {
 		for (MYINT j = currNode * c; j < (currNode + 1) * c; j++) {
 #if  PROFILE
@@ -196,6 +190,9 @@ int bonsaiFloat(float *X) {
 
 	MYINT classID;
 
+	// Finding the class ID
+	// If binary classification, the sign of the score is used
+	// If multiclass classification, argmax of score is used
 	if (c <= 2) {
 		if (score[0] > 0)
 			classID = 1;

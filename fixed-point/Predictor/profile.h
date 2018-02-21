@@ -1,6 +1,6 @@
 #pragma once
 
-void initializeRange();
+void initializeProfiling();
 
 void updateRange(float x);
 void updateRangeOfExp(float x);

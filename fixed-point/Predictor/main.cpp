@@ -16,6 +16,7 @@ enum Algo { Bonsai, Protonn };
 enum Version { Fixed, Float };
 enum DatasetType { Training, Testing };
 
+// Split the CSV row into multiple values
 vector<float> readCSVLine(string line) {
 	vector<float> tokens;
 
@@ -56,6 +57,7 @@ int getLabel(string line) {
 	return (int)labels.front();
 }
 
+// Windows specific sys call for creating directories
 void createDir(string dir) {
 	bool result = CreateDirectory(dir.c_str(), NULL) || GetLastError() == ERROR_ALREADY_EXISTS;
 	if (result == false)
@@ -70,6 +72,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	// Parsing the arguments
 	Algo algo;
 	if (strcmp(argv[1], "bonsai") == 0)
 		algo = Bonsai;
@@ -103,6 +106,7 @@ int main(int argc, char *argv[]) {
 	}
 	string datasetTypeStr = argv[3];
 
+	// Reading the dataset
 	string inputDir = algoStr + "\\" + versionStr + "-" + datasetTypeStr + "\\";
 
 	ifstream featuresFile(inputDir + "X.csv");
@@ -111,6 +115,7 @@ int main(int argc, char *argv[]) {
 	if (featuresFile.good() == false || lablesFile.good() == false)
 		throw "Input files doesn't exist";
 
+	// Create output directory and files
 	string outputDir = "output\\" + algoStr + "-" + versionStr;
 	createDir(outputDir);
 
@@ -123,44 +128,52 @@ int main(int argc, char *argv[]) {
 	int correct = 0, total = 0;
 
 	bool alloc = false;
-	MYINT **features_int = NULL, features_size = -1;
+	int features_size = -1;
+	MYINT **features_int = NULL;
+	float *features_float = NULL;
 
-	initializeRange();
-
-	int limit = -1;
+	// Initialize variables used for profiling
+	initializeProfiling();
 
 	string line1, line2;
 	while (getline(featuresFile, line1) && getline(lablesFile, line2)) {
-
-		if (limit != -1)
-			if (total >= limit)
-				break;
-
+		// Read the feature vector and class ID
 		vector<float> features = getFeatures(line1);
 		int label = getLabel(line2);
 
-		if (version == Fixed) {
-			if (alloc == false) {
-				features_size = (int)features.size();
+		// Allocate memory to store the feature vector as arrays
+		if (alloc == false) {
+			features_size = (int)features.size();
+
+			if (version == Fixed) {
 				features_int = new MYINT*[features_size];
 				for (int i = 0; i < features_size; i++)
 					features_int[i] = new MYINT[1];
-				alloc = true;
 			}
+			else
+				features_float = new float[features_size];
 
-			for (int i = 0; i < features_size; i++)
-				features_int[i][0] = (MYINT)features.at(i);
+			alloc = true;
 		}
 
+		// Populate the array using the feature vector
+		if (version == Fixed)
+			for (int i = 0; i < features_size; i++)
+				features_int[i][0] = (MYINT)features.at(i);
+		else
+			for (int i = 0; i < features_size; i++)
+				features_float[i] = features.at(i);
+
+		// Invoke the predictor function
 		int res;
 		if (algo == Bonsai && version == Fixed)
 			res = bonsaiFixed(features_int);
 		else if (algo == Bonsai && version == Float)
-			res = bonsaiFloat(&features[0]);
+			res = bonsaiFloat(features_float);
 		else if (algo == Protonn && version == Fixed)
 			res = protonnFixed(features_int);
 		else if (algo == Protonn && version == Float)
-			res = protonnFloat(&features[0]);
+			res = protonnFloat(features_float);
 
 		if ((res + 1) == label)
 			correct++;
@@ -170,11 +183,14 @@ int main(int argc, char *argv[]) {
 		total++;
 	}
 
+	// Deallocate memory
 	if (version == Fixed) {
 		for (int i = 0; i < features_size; i++)
 			delete features_int[i];
 		delete features_int;
 	}
+	else
+		delete features_float;
 
 	float accuracy = (float)correct / total * 100.0f;
 
