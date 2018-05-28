@@ -1040,8 +1040,9 @@ void EdgeML::accProxSGD(std::function<FP_TYPE(const ParamType&,
 
   ParamType paramTailAverage = param;                              // Stores the tail averaged gradient that is finally returned 
   MatrixXuf temp = MatrixXuf::Zero(param.rows(), param.cols());    // A dense matrix to hold intermediate param-sized matrices
-  ParamType param0_;                                               // A sparse matrix to hold intermediate values for param0 matrix (below)
-  ParamType param0 = param;                                        // Stores momentum term for accProxSGD
+  ParamType curUpdate = param;                                     // Stores momentum term for accProxSGD; corresponds to vanilla gradient 
+                                                                   // descent update for previous iterate
+  ParamType prevUpdate;                                            // A matrix to hold intermediate values for param0 matrix (below)
 
   int burnPeriod = 50;
   FP_TYPE gamma0 = 1;
@@ -1079,25 +1080,26 @@ void EdgeML::accProxSGD(std::function<FP_TYPE(const ParamType&,
 
     temp += param;
     // temp now holds the destination reached after previous update
-    timer.nextTime("computing new destination (vanilla gradient step)");
+    timer.nextTime("computing new destination (temp now stores the new parameter after a vanilla gradient step)");
 
     prox(temp);
-    timer.nextTime("L0 projection (sparsifying parameter matrix after taking gradient step)");
+    timer.nextTime("L0 projection (sparsifying parameter matrix after taking densifying gradient step)");
 
-    typeMismatchAssign(param0_, temp);
-    // Store the current destination in a temporary matrix (required for the next update
+    typeMismatchAssign(currentUpdate, temp);
+    // Store the current update in a temporary matrix (required for the next update)
     timer.nextTime("storing current destination in temp matrix");
 
     temp = (1 - alpha) * temp;
-    temp += (alpha * param0);
+    temp += (alpha * prevUpdate);
     // temp now stores the new update = (momentum term + current update)
+    // Momentum term is same as previous update
     timer.nextTime("computing new parameter value taking into account current and previous update (accelerated sgd step)");
 
     typeMismatchAssign(param, temp);
     timer.nextTime("assigning computed destination to the true parameter variable");
 
     gamma0 = gamma;
-    param0 = param0_;
+    prevUpdate = currentUpdate;
     timer.nextTime("");
     FP_TYPE tmp = ((i - burnPeriod) > 1) ? (i - burnPeriod) : (FP_TYPE)1.0;
     assert(tmp >= 0.999999);
