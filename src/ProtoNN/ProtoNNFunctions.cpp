@@ -1107,7 +1107,12 @@ FP_TYPE EdgeML::btls(std::function<FP_TYPE(const ParamType&,
   ParamType paramNew = param; 
   FP_TYPE f1, f2, gradIp;
   
-  Eigen::Index randStartIndex = rand()%(n-bs);
+  Eigen::Index randStartIndex; 
+  if (n > bs) 
+    randStartIndex = rand()%(n-bs);
+  else
+    randStartIndex = 0;
+  
   Eigen::Index randEndIndex = randStartIndex + bs; 
   MatrixXuf gradParam = gradf(param, randStartIndex, randEndIndex);
   FP_TYPE fParam = f(param, randStartIndex, randEndIndex); 
