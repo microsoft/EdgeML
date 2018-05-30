@@ -607,10 +607,10 @@ void EdgeML::altMinSGD(
 #else
   dataCount_t hessianbs = bs;
 #endif 
-  const FP_TYPE hessianAdjustment = 1.0; // (FP_TYPE)hessianbs / (FP_TYPE)bs;
+  //const FP_TYPE hessianAdjustment = 1.0; // (FP_TYPE)hessianbs / (FP_TYPE)bs;
   int     etaUpdate = 0;
-  FP_TYPE etaZ((FP_TYPE)0.2), etaB((FP_TYPE)0.2), etaW((FP_TYPE)0.2);
-  FP_TYPE fOld, fNew, eta_;
+  FP_TYPE armijoZ((FP_TYPE)0.2), armijoB((FP_TYPE)0.2), armijoW((FP_TYPE)0.2);
+  FP_TYPE fOld, fNew, etaZ(1), etaB(1), etaW(1);
 
   LOG_INFO("\nComputing model size assuming 4 bytes per entry for matrices with sparsity > 0.5 and 8 bytes per entry for matrices with sparsity <= 0.5 (to store sparse matrices, we require about 4 bytes for the index information)...");
   LOG_INFO("Model size in kB = " + std::to_string(computeModelSizeInkB(model.hyperParams.lambdaW, model.hyperParams.lambdaZ, model.hyperParams.lambdaB, model.params.W, model.params.Z, model.params.B)));
@@ -682,6 +682,32 @@ void EdgeML::altMinSGD(
     timer.nextTime("starting optimization w.r.t. W");
     LOG_INFO("Optimizing w.r.t. projection matrix (W)...");
 
+#ifdef BTLS
+    etaW = armijoW * btls<WMatType>
+      ([&model, &data] (const WMatType& W, const Eigen::Index begin, const Eigen::Index end) ->FP_TYPE {
+	MatrixXuf WX = MatrixXuf::Zero(W.rows(), end - begin);
+	SparseMatrixuf XMiddle = data.Xtrain.middleCols(begin, end - begin);
+	mm(WX, W, CblasNoTrans, XMiddle,
+	   CblasNoTrans, 1.0, 0.0L);
+	return L(model.params.Z, data.Ytrain,
+		 gaussianKernel(model.params.B, WX, model.hyperParams.gamma),
+		 begin, end);
+      },
+	[&model, &data]
+	(const WMatType& W, const Eigen::Index begin, const Eigen::Index end)
+	->MatrixXuf {
+	MatrixXuf WX = MatrixXuf::Zero(W.rows(), end - begin);
+	SparseMatrixuf XMiddle = data.Xtrain.middleCols(begin, end - begin);
+	mm(WX, W, CblasNoTrans,
+	   XMiddle,
+	   CblasNoTrans, 1.0, 0.0L);
+	return gradL_W(model.params.B, data.Ytrain, model.params.Z, W, data.Xtrain,
+		       gaussianKernel(model.params.B, WX, model.hyperParams.gamma),
+		       model.hyperParams.gamma, begin, end);
+      },
+	std::bind(hardThrsd, std::placeholders::_1, model.hyperParams.lambdaW),
+	model.params.W, n, bs, (etaW/armijoW)*2);
+#else
     for (auto j = 0; j < eta.size(); ++j) {
       Eigen::Index idx1 = (j*(Eigen::Index)hessianbs) % n;
       Eigen::Index idx2 = ((j + 1)*(Eigen::Index)hessianbs) % n;
@@ -710,8 +736,9 @@ void EdgeML::altMinSGD(
         eta(j) = safeDiv((Wtmp - model.params.W).norm(), gtmpW.norm());
     }
     std::sort(eta.data(), eta.data() + eta.size());
-    eta_ = hessianAdjustment * etaW * eta(4);
-    //LOG_INFO("Step-length estimate for gradW = " + std::to_string(eta_));
+    etaW = armijoW * eta(4);
+#endif
+    LOG_INFO("Step-length estimate for gradW = " + std::to_string(etaW));
 
     accProxSGD<WMatType>
       (//[&model.params.Z, &data.Ytrain, &model.params.B, &data.Xtrain, &model.hyperParams] TODO: Figure out the elegant way of getting this to work
@@ -739,9 +766,9 @@ void EdgeML::altMinSGD(
         model.hyperParams.gamma, begin, end);
     },
       std::bind(hardThrsd, std::placeholders::_1, model.hyperParams.lambdaW),
-      model.params.W, epochs, n, bs, eta_, etaUpdate);
+      model.params.W, epochs, n, bs, etaW, etaUpdate);
     timer.nextTime("ending gradW");
-    //LOG_INFO("Final step-length for gradW = " + std::to_string(eta_));
+    //LOG_INFO("Final step-length for gradW = " + std::to_string(etaW));
 
     mm(WX, model.params.W, CblasNoTrans, data.Xtrain, CblasNoTrans, 1.0, 0.0L);
     if (data.Xvalidation.cols() > 0) {
@@ -751,7 +778,7 @@ void EdgeML::altMinSGD(
     fOld = fNew;
 #ifdef XML
     mm(WX_sub, model.params.W, CblasNoTrans, X_sub, CblasNoTrans, 1.0, 0.0L);
-    if (data.Xtest.cols() > 0) {
+    if (data.Xvalidation.cols() > 0) {
       mm(WXvalidation_sub, model.params.W, CblasNoTrans, Xvalidation_sub, CblasNoTrans, 1.0, 0.0L);
     }
     fNew = batchEvaluate(model.params.Z, Y_sub, Yvalidation_sub, model.params.B, WX_sub, WXvalidation_sub, model.hyperParams.gamma, model.hyperParams.problemType, stats + 9 * i + 3);
@@ -760,9 +787,9 @@ void EdgeML::altMinSGD(
 #endif 
 
     if (fNew >= fOld * (1 + safeDiv(sgdTol*(FP_TYPE)log(3), (FP_TYPE)log(2 + i))))
-      etaW *= (FP_TYPE)0.7;
+      armijoW *= (FP_TYPE)0.7;
     else if (fNew <= fOld * (1 - safeDiv(3 * sgdTol*(FP_TYPE)log(3), (FP_TYPE)log(2 + i))))
-      etaW *= (FP_TYPE)1.1;
+      armijoW *= (FP_TYPE)1.1;
     else;
 
 #ifdef VERIFY
@@ -781,6 +808,20 @@ void EdgeML::altMinSGD(
     timer.nextTime("starting optimization w.r.t. Z");
     LOG_INFO("Optimizing w.r.t. prototype-label matrix (Z)...");
 
+#ifdef BTLS
+    etaZ = armijoZ * btls<ZMatType>
+      ([&model, &data, &WX]
+	(const ZMatType& Z, const Eigen::Index begin, const Eigen::Index end)
+	->FP_TYPE {return L(Z, data.Ytrain, gaussianKernel(model.params.B, WX, model.hyperParams.gamma, begin, end), begin, end); },
+	[&model, &data, &WX]
+	(const ZMatType& Z, const Eigen::Index begin, const Eigen::Index end)
+	->MatrixXuf
+      {return gradL_Z(Z, data.Ytrain,
+		      gaussianKernel(model.params.B, WX, model.hyperParams.gamma, begin, end),
+		      begin, end); },
+	std::bind(hardThrsd, std::placeholders::_1, model.hyperParams.lambdaZ),
+       model.params.Z, n, bs, (etaZ/armijoZ)*2);
+#else
     for (auto j = 0; j < eta.size(); ++j) { //eta.size(); ++j) {
       Eigen::Index idx1 = (j*(Eigen::Index)hessianbs) % n;
       Eigen::Index idx2 = ((j + 1)*(Eigen::Index)hessianbs) % n;
@@ -810,9 +851,10 @@ void EdgeML::altMinSGD(
         eta(j) = safeDiv((Ztmp - model.params.Z).norm(), gtmpZ.norm());
     }
     std::sort(eta.data(), eta.data() + eta.size());
-    eta_ = hessianAdjustment * etaZ * eta(4);
-    //LOG_INFO("Step-length estimate for gradZ = " + std::to_string(eta_));
-
+    etaZ = armijoZ * eta(4);
+#endif
+    LOG_INFO("Step-length estimate for gradZ = " + std::to_string(etaZ));
+    
     accProxSGD<ZMatType>
       (//[&model.params.B, &data.Ytrain, &WX, &model.hyperParams] 
         [&model, &data, &WX]
@@ -826,9 +868,9 @@ void EdgeML::altMinSGD(
       gaussianKernel(model.params.B, WX, model.hyperParams.gamma, begin, end),
       begin, end); },
       std::bind(hardThrsd, std::placeholders::_1, model.hyperParams.lambdaZ),
-      model.params.Z, epochs, n, bs, eta_, etaUpdate);
+      model.params.Z, epochs, n, bs, etaZ, etaUpdate);
     timer.nextTime("ending gradZ");
-    //LOG_INFO("Final step-length for gradZ = " + std::to_string(eta_));
+    //LOG_INFO("Final step-length for gradZ = " + std::to_string(etaZ));
 
     fOld = fNew;
 #ifdef XML
@@ -838,9 +880,9 @@ void EdgeML::altMinSGD(
 #endif
 
     if (fNew >= fOld * (1 + safeDiv(sgdTol*(FP_TYPE)log(3), (FP_TYPE)log(2 + i))))
-      etaZ *= (FP_TYPE)0.7;
+      armijoZ *= (FP_TYPE)0.7;
     else if (fNew <= fOld * (1 - safeDiv(3 * (FP_TYPE)sgdTol*(FP_TYPE)log(3), (FP_TYPE)log(2 + i))))
-      etaZ *= (FP_TYPE)1.1;
+      armijoZ *= (FP_TYPE)1.1;
     else;
 
 #ifdef VERIFY
@@ -859,6 +901,20 @@ void EdgeML::altMinSGD(
     timer.nextTime("starting optimization w.r.t. B");
     LOG_INFO("Optimizing w.r.t. prototype matrix (B)...");
 
+#ifdef BTLS
+    etaB = armijoB * btls<BMatType>
+      ([&model, &data, &WX]
+       (const BMatType& B, const Eigen::Index begin, const Eigen::Index end)
+       ->FP_TYPE {return L(model.params.Z, data.Ytrain, gaussianKernel(B, WX, model.hyperParams.gamma, begin, end), begin, end); },
+       [&model, &data, &WX]
+       (const BMatType& B, const Eigen::Index begin, const Eigen::Index end)
+       ->MatrixXuf
+      {return gradL_B(B, data.Ytrain, model.params.Z, WX,
+		      gaussianKernel(B, WX, model.hyperParams.gamma, begin, end),
+		      model.hyperParams.gamma, begin, end); },
+       std::bind(hardThrsd, std::placeholders::_1, model.hyperParams.lambdaB),
+       model.params.B, n, bs, (etaB/armijoB)*2);
+#else    
     for (auto j = 0; j < eta.size(); ++j) {
       Eigen::Index idx1 = (j*(Eigen::Index)hessianbs) % n;
       Eigen::Index idx2 = ((j + 1)*(Eigen::Index)hessianbs) % n;
@@ -886,8 +942,9 @@ void EdgeML::altMinSGD(
     }
 
     std::sort(eta.data(), eta.data() + eta.size());
-    eta_ = hessianAdjustment * etaB * eta(4);
-    //LOG_INFO("Step-length estimate for gradB = " + std::to_string(eta_));
+    etaB = armijoB * eta(4);
+#endif
+    LOG_INFO("Step-length estimate for gradB = " + std::to_string(etaB));
 
     accProxSGD<BMatType>
       (//[&model.params.Z, &data.Ytrain, &WX, &model.hyperParams] 
@@ -902,9 +959,9 @@ void EdgeML::altMinSGD(
       gaussianKernel(B, WX, model.hyperParams.gamma, begin, end),
       model.hyperParams.gamma, begin, end); },
       std::bind(hardThrsd, std::placeholders::_1, model.hyperParams.lambdaB),
-      model.params.B, epochs, n, bs, eta_, etaUpdate);
+      model.params.B, epochs, n, bs, etaB, etaUpdate);
     timer.nextTime("ending gradB");
-    //LOG_INFO("Final step-length for gradB = " + std::to_string(eta_));
+    //LOG_INFO("Final step-length for gradB = " + std::to_string(etaB));
 
     fOld = fNew;
 #ifdef XML
@@ -914,9 +971,9 @@ void EdgeML::altMinSGD(
 #endif
 
     if (fNew >= fOld * (1 + safeDiv(sgdTol*(FP_TYPE)log(3), (FP_TYPE)log(2 + i))))
-      etaB *= (FP_TYPE)0.7;
+      armijoB *= (FP_TYPE)0.7;
     else if (fNew <= fOld * (1 - safeDiv(3 * sgdTol*(FP_TYPE)log(3), (FP_TYPE)log(2 + i))))
-      etaB *= (FP_TYPE)1.1;
+      armijoB *= (FP_TYPE)1.1;
     else;
 
 #ifdef VERIFY
@@ -1023,6 +1080,58 @@ FP_TYPE EdgeML::accuracy(
 
 
 template<class ParamType>
+FP_TYPE EdgeML::btls(std::function<FP_TYPE(const ParamType&,
+  const Eigen::Index, const Eigen::Index)> f,
+  std::function<MatrixXuf(const ParamType&,
+    const Eigen::Index, const Eigen::Index)> gradf,
+  std::function<void(MatrixXuf&)> prox,
+  ParamType& param,
+  const dataCount_t& n,
+  const dataCount_t& bs,
+  FP_TYPE initialStepSizeEstimate)
+{
+  Timer timer("btls");
+  Logger logger("btls");
+
+  const FP_TYPE beta = 0.7;
+  FP_TYPE stepSize = 0.0; 
+  if (initialStepSizeEstimate < 0) stepSize = 1.0;
+  else stepSize = initialStepSizeEstimate; 
+
+  if (bs > n) {
+    LOG_INFO("btls called with batch-size more than #train points.");
+    assert(bs <= n);
+  }
+
+  MatrixXuf effectiveStep = MatrixXuf::Zero(param.rows(), param.cols());
+  ParamType paramNew = param; 
+  FP_TYPE f1, f2, gradIp;
+  
+  Eigen::Index randStartIndex = rand()%(n-bs);
+  Eigen::Index randEndIndex = randStartIndex + bs; 
+  MatrixXuf gradParam = gradf(param, randStartIndex, randEndIndex);
+  FP_TYPE fParam = f(param, randStartIndex, randEndIndex); 
+
+  while (true){
+    effectiveStep = -stepSize * gradParam;
+    effectiveStep += param;
+    prox(effectiveStep);
+    effectiveStep = param - effectiveStep;
+    //effectiveStep += param; 
+    //effectiveStep /= stepSize; 
+
+    paramNew = param - effectiveStep; 
+    f1 = f(paramNew, randStartIndex, randEndIndex); 
+    gradIp = gradParam.cwiseProduct(effectiveStep).sum(); 
+    f2 = fParam - gradIp + (0.5/stepSize)*effectiveStep.squaredNorm(); 
+    if (f1 <= f2) break;
+    else stepSize = beta * stepSize; 
+  }
+
+  return stepSize; 
+}
+
+template<class ParamType>
 void EdgeML::accProxSGD(std::function<FP_TYPE(const ParamType&,
   const Eigen::Index, const Eigen::Index)> f,
   std::function<MatrixXuf(const ParamType&,
@@ -1032,7 +1141,7 @@ void EdgeML::accProxSGD(std::function<FP_TYPE(const ParamType&,
   const int& epochs,
   const dataCount_t& n,
   const dataCount_t& bs,
-  FP_TYPE& eta,
+  FP_TYPE eta,
   const int& etaUpdate)
 {
   Timer timer("accProxSGD");
@@ -1040,9 +1149,9 @@ void EdgeML::accProxSGD(std::function<FP_TYPE(const ParamType&,
 
   ParamType paramTailAverage = param;                              // Stores the tail averaged gradient that is finally returned 
   MatrixXuf temp = MatrixXuf::Zero(param.rows(), param.cols());    // A dense matrix to hold intermediate param-sized matrices
-  ParamType curUpdate = param;                                     // Stores momentum term for accProxSGD; corresponds to vanilla gradient 
-                                                                   // descent update for previous iterate
-  ParamType prevUpdate;                                            // A matrix to hold intermediate values for param0 matrix (below)
+  ParamType currentUpdate;                                         // Stores momentum term for accProxSGD; corresponds to vanilla gradient 
+                                                                   // descent update for current iterate
+  ParamType prevUpdate = param;                                    // A matrix to hold previous update (ie, currentUpdate value of last iteration)
 
   int burnPeriod = 50;
   FP_TYPE gamma0 = 1;
@@ -1053,6 +1162,7 @@ void EdgeML::accProxSGD(std::function<FP_TYPE(const ParamType&,
     LOG_INFO("accelerated proximal gradient descent called with batch-size more than #train points.");
     assert(bs <= n);
   }
+  
   uint64_t iters_ = ((uint64_t)n*(uint64_t)epochs) / (uint64_t)bs;
   assert(iters_ < 0x7fffffff);
   auto iters = iters_;

@@ -185,7 +185,18 @@ namespace EdgeML
     const int& epochs,
     const dataCount_t& n,
     const dataCount_t& bs,
-    FP_TYPE& eta,
+    FP_TYPE eta,
     const int& etaUpdate);
+
+  template<class ParamType>
+    FP_TYPE btls(std::function<FP_TYPE(const ParamType&,
+      const Eigen::Index, const Eigen::Index)> f,
+    std::function<MatrixXuf(const ParamType&,
+      const Eigen::Index, const Eigen::Index)> gradf,
+    std::function<void(MatrixXuf&)> prox,
+    ParamType& param,
+    const dataCount_t& n,
+    const dataCount_t& bs,
+    FP_TYPE initialStepSizeEstimate);
 }
 #endif
