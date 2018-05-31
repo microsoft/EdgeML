@@ -48,6 +48,7 @@ For Linux, in the <EDGEML_ROOT> directory:
 
 ```mkdir build
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<MKL_PATH>
+mkdir build
 cd build
 cmake ..
 make -Bj
