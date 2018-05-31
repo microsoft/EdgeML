@@ -46,9 +46,9 @@ Sample data to try these executables is not included in this repository, but ins
 
 For Linux, in the <EDGEML_ROOT> directory:
 
-```mkdir build
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<MKL_PATH>
+```bash
 mkdir build
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<MKL_PATH>
 cd build
 cmake ..
 make -Bj
