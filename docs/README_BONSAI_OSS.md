@@ -37,9 +37,9 @@ When given an input feature vector X, Bonsai gives the prediction as follows :
 
 ## Usage
 
-Bonsai
+BonsaiTrain
 
-    ./Bonsai [Options] DataFolder
+    ./BonsaiTrain [Options] DataFolder
     Options:
 
     -F    : [Required] Number of features in the data.
@@ -68,12 +68,6 @@ Bonsai
     DataFolder : [Required] Path to folder containing data with filenames being 'train.txt' and 'test.txt' in the folder."
     
     Note - Both libsvm_format and Space/Tab separated format can be either Zero or One Indexed in labels. To use Zero Index enable ZERO_BASED_IO flag in config.mk and recompile Bonsai
-      
-
-
-BonsaiTrain:
-
-    Follows exactly same options as Bonsai but the executable is changed to "BonsaiTrain" instead of "Bonsai"
 
 BonsaiPredict:
 
@@ -93,12 +87,7 @@ BonsaiPredict:
 
 ## Running on USPS-10
 
-Following the instructions in the [common readme](README.md) will give you a binary for Bonsai and a folder called usps10 with train and test datasets.
-Now run the script
-```bash
-sh run_Bonsai_usps10.sh
-```
-This should give you output as described in the next section. Test accuracy will be about 94.07% with the specified parameters.
+Following the instructions in the [common readme](../README.md) will give you a binaries for BonsaiTrain and BonsaiTest along with a folder called usps10 with train and test datasets.
 
 For running Training separately followed by prediction
 ```bash
@@ -110,6 +99,7 @@ use "ln -s <model-dir> current_model" to set a soft alias(shortcut) if you wish 
 
 sh run_BonsaiPredict_usps10.sh
 ```
+This should give you output as described in the next section. Test accuracy will be about 94.07% with the specified parameters.
 
 ## Output
 
