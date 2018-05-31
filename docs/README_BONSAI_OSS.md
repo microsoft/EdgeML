@@ -71,7 +71,7 @@ BonsaiTrain
 
 BonsaiPredict:
 
-    ./BonsaiPredictor [Options]
+    ./BonsaiPredict [Options]
 
     Options:
     -f    : [Required] Input format. Takes two values [0 and 1]. 0 is for libsvmFormat(default), 1 is for tab/space separated input.
@@ -87,7 +87,7 @@ BonsaiPredict:
 
 ## Running on USPS-10
 
-Following the instructions in the [common readme](../README.md) will give you a binaries for BonsaiTrain and BonsaiTest along with a folder called usps10 with train and test datasets.
+Following the instructions in the [common readme](../README.md) will give you a binaries for BonsaiTrain and BonsaiPredict along with a folder called usps10 with train and test datasets.
 
 For running Training separately followed by prediction
 ```bash
