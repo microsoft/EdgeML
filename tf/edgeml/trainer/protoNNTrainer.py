@@ -1,5 +1,7 @@
 import tensorflow as tf
 import numpy as np
+import sys
+import edgeml.utils as utils
 
 
 class ProtoNNTrainer:
@@ -28,17 +30,23 @@ class ProtoNNTrainer:
         self.__lR = learningRate
         self.X = X
         self.Y = Y
+        self.sparseTraining = True
+        if (sparcityW == 1.0) and (sparcityB == 1.0) and (sparcityZ == 1.0):
+            self.parseTraining = False
+            print("Sparse training disabled.", file=sys.stderr)
+        # Define placeholders for sparse training
+        self.W_th = None
+        self.B_th = None
+        self.Z_th = None
+
         self.__lossType = lossType
         self.__validInit = False
         self.__validInit = self.__validateInit()
         self.__protoNNOut = protoNNObj(X, Y)
         self.loss = self.__lossGraph()
         self.trainStep = self.__trainGraph()
+        self.__hthOp = self.__getHardThresholdOp()
         self.accuracy = protoNNObj.getAccuracyOp()
-        '''
-        assert for sparcity and dimensions of X
-        and Y
-        '''
 
     def __validateInit(self):
         self.__validInit = False
@@ -89,11 +97,23 @@ class ProtoNNTrainer:
             trainStep = trainStep.minimize(self.loss)
         return trainStep
 
+    def __getHardThresholdOp(self):
+        W, B, Z, _ = self.protoNNObj.getModelMatrices()
+        self.W_th = tf.placeholder(tf.float32, name='W_th')
+        self.B_th = tf.placeholder(tf.float32, name='B_th')
+        self.Z_th = tf.placeholder(tf.float32, name='Z_th')
+        with tf.name_scope('hard-threshold-assignments'):
+            hard_thrsd_W = W.assign(self.W_th) 
+            hard_thrsd_B = B.assign(self.B_th)
+            hard_thrsd_Z = Z.assign(self.Z_th)
+            hard_thrsd_op = tf.group(hard_thrsd_W, hard_thrsd_B, hard_thrsd_Z)
+        return hard_thrsd_op
+
     def train(self, batchSize, totalEpochs, sess,
               x_train, x_val, y_train, y_val,
               noInit=False, redirFile=None, printStep=10):
         '''
-        Dense training of ProtoNN
+        Dense + IHT training of ProtoNN
         noInit: if not to perform initialization (reuse previous init)
         printStep: Number of batches after which loss is to be printed
         TODO: Implement dense - IHT - sparse
@@ -123,6 +143,7 @@ class ProtoNNTrainer:
         if not noInit:
             sess.run(tf.global_variables_initializer())
         X, Y = self.X, self.Y
+        W, B, Z, _ = self.protoNNObj.getModelMatrices()
         for epoch in range(totalEpochs):
             for i in range(len(x_train_batches)):
                 batch_x = x_train_batches[i]
@@ -138,6 +159,17 @@ class ProtoNNTrainer:
                     msg = "Epoch: %3d Batch: %3d" % (epoch, i)
                     msg += " Loss: %3.5f Accuracy: %2.5f" % (loss, acc)
                     print(msg, file=redirFile)
+
+            # Perform Hard thresholding
+            if self.sparseTraining:
+                W_, B_, Z_ = sess.run([W, B, Z])
+                fd_thrsd = {
+                    self.W_th: utils.hardThreshold(W_, self.__sW),
+                    self.B_th: utils.hardThreshold(B_, self.__sB),
+                    self.Z_th: utils.hardThreshold(Z_, self.__sZ)
+                }
+                sess.run(self.__hthOp, feed_dict=fd_thrsd) 
+
             if (epoch + 1) % 3 == 0:
                 acc = 0.0
                 loss = 0.0
@@ -155,6 +187,4 @@ class ProtoNNTrainer:
                 acc /= len(y_val_batches)
                 loss /= len(y_val_batches)
                 print("Test Loss: %2.5f Accuracy: %2.5f" % (loss, acc))
-
-
 
