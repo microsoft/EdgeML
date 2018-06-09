@@ -53,13 +53,13 @@ def main():
     # -----------------
     DATA_DIR = './curet/'
 
-    PROJECTION_DIM = 60 
-    NUM_PROTOTYPES = 100 
-    GAMMA = 0.02
+    PROJECTION_DIM = 60
+    NUM_PROTOTYPES = 80
+    GAMMA = 0.0015
 
-    REG_W = 0.005
-    REG_B = 0.0001
-    REG_Z = 0.0001
+    REG_W = 0.000
+    REG_B = 0.000
+    REG_Z = 0.000
     SPAR_W = 1.0
     SPAR_B = 1.0
     SPAR_Z = 1.0
@@ -82,7 +82,8 @@ def main():
                              SPAR_W, SPAR_B, SPAR_Z,
                              LEARNING_RATE, X, Y, lossType='xentropy')
     sess = tf.Session()
-    trainer.train(16, 150, sess, x_train, x_test, y_train, y_test)
+    trainer.train(16, 150, sess, x_train, x_test, y_train, y_test,
+                  printStep=100)
 
 
 if __name__ == '__main__':
