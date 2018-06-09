@@ -31,10 +31,10 @@ class ProtoNNTrainer:
         self.__lossType = lossType
         self.__validInit = False
         self.__validInit = self.__validateInit()
-        self.__protoNNOut = protoNNObj(X)
+        self.__protoNNOut = protoNNObj(X, Y)
         self.loss = self.__lossGraph()
         self.trainStep = self.__trainGraph()
-        self.accuracy = self.__accGraph()
+        self.accuracy = protoNNObj.getAccuracyOp()
         '''
         assert for sparcity and dimensions of X
         and Y
@@ -88,14 +88,6 @@ class ProtoNNTrainer:
             trainStep = tf.train.AdamOptimizer(self.__lR)
             trainStep = trainStep.minimize(self.loss)
         return trainStep
-
-    def __accGraph(self):
-        with tf.name_scope('protonn-accuracy'):
-            predictions = tf.argmax(self.__protoNNOut, 1)
-            target = tf.argmax(self.Y, 1)
-            correctPrediction = tf.equal(predictions, target)
-            acc = tf.reduce_mean(tf.cast(correctPrediction, tf.float32))
-        return acc
 
     def train(self, batchSize, totalEpochs, sess,
               x_train, x_val, y_train, y_val,
