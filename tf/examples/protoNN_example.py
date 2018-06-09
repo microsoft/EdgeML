@@ -5,8 +5,42 @@ import numpy as np
 import tensorflow as tf
 from edgeml.trainer.protoNNTrainer import ProtoNNTrainer
 from edgeml.graph.protoNN import ProtoNN
+import edgeml.utils as utils
 
-os.environ["CUDA_VISIBLE_DEVICES"] = ''
+def getModelSize(matrixList, sparcityList, expected=True, bytesPerVar=4):
+    '''
+    expected: Expected size according to the parameters set. The number of
+        zeros could actually be more than the applied sparcity constraint.
+    '''
+    nnzList, sizeList, isSparseList = [], [], []
+    hasSparse = False
+    for i in range(len(matrixList)):
+        A, s = matrixList[i], sparcityList[i]
+        assert A.ndim == 2
+        assert s >= 0
+        assert s <= 1
+        nnz, size, sparse = utils.countnnZ(A, s, bytesPerVar=bytesPerVar)
+        nnzList.append(nnz)
+        sizeList.append(size)
+        hasSparse = (hasSparse or sparse)
+
+    totalnnZ = np.sum(nnzList)
+    totalSize = np.sum(sizeList)
+    if expected:
+        return totalnnZ, totalSize, hasSparse
+    numNonZero = 0
+    totalSize = 0
+    hasSparse = False
+    for i in range(len(matrixList)):
+        A, s = matrixList[i], sparcityList[i]
+        numNonZero_ = np.count_nonzero(A)
+        numNonZero += numNonZero_
+        hasSparse = (hasSparse or (s < 0.5))
+        if s <= 0.5:
+            totalSize += numNonZero_ * 2 * bytesPerVar
+        else:
+            totalSize += A.size* bytesPerVar
+    return numNonZero, totalSize, hasSparse
 
 
 def loadData(dataDir):
@@ -59,10 +93,10 @@ def main():
     REG_W = 0.000005
     REG_B = 0.000
     REG_Z = 0.00005
-    SPAR_W = .9   # 1.0 implies dense matrix. 
-    SPAR_B = .9
-    SPAR_Z = 1.0
-    LEARNING_RATE = 0.1
+    SPAR_W = .8   # 1.0 implies dense matrix. 
+    SPAR_B = 1.0 
+    SPAR_Z = 1.0 
+    LEARNING_RATE = 0.05
     NUM_EPOCHS = 1000
     # -----------------
     # End configuration
@@ -85,9 +119,16 @@ def main():
     trainer.train(16, NUM_EPOCHS, sess, x_train, x_test, y_train, y_test,
                   printStep=200)
     acc = sess.run(protoNN.accuracy, feed_dict={X: x_test, Y:y_test})
+    W, B, Z, _ = protoNN.getModelMatrices()
+    matrixList = sess.run([W, B, Z])
+    sparcityList = [SPAR_W, SPAR_B, SPAR_Z]
+    nnz, size, sparse = getModelSize(matrixList, sparcityList)
     print("Final test accuracy", acc)
-    print("Model Size")
-    print("Fraction non-zeros")
+    print("Model size constraint (Bytes): ", size)
+    print("Number of non-zeros: ", nnz)
+    nnz, size, sparse = getModelSize(matrixList, sparcityList, expected=False)
+    print("Actual model size: ", size)
+    print("Actual non-zeros: ", nnz)
 
 
 if __name__ == '__main__':
