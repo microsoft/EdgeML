@@ -54,16 +54,17 @@ def main():
     DATA_DIR = './curet/'
 
     PROJECTION_DIM = 60
-    NUM_PROTOTYPES = 80
+    NUM_PROTOTYPES = 60
     GAMMA = 0.0015
 
-    REG_W = 0.000
+    REG_W = 0.000005
     REG_B = 0.000
-    REG_Z = 0.000
-    SPAR_W = 1.0
-    SPAR_B = 1.0
+    REG_Z = 0.00005
+    SPAR_W = .9   # 1.0 implies dense matrix. 
+    SPAR_B = .9
     SPAR_Z = 1.0
     LEARNING_RATE = 0.1
+    NUM_EPOCHS = 1000
     # -----------------
     # End configuration
     # -----------------
@@ -82,8 +83,12 @@ def main():
                              SPAR_W, SPAR_B, SPAR_Z,
                              LEARNING_RATE, X, Y, lossType='xentropy')
     sess = tf.Session()
-    trainer.train(16, 150, sess, x_train, x_test, y_train, y_test,
-                  printStep=100)
+    trainer.train(16, NUM_EPOCHS, sess, x_train, x_test, y_train, y_test,
+                  printStep=200)
+    acc = sess.run(protoNN.accuracy, feed_dict={X: x_test, Y:y_test})
+    print("Final test accuracy", acc)
+    print("Model Size")
+    print("Fraction non-zeros")
 
 
 if __name__ == '__main__':
@@ -94,4 +99,17 @@ NOTES:
     1. Curet:
         Data dimension: 610
         num Classes: 61
+        Reasonable parameters:
+            Projection_Dim = 60
+            PROJECTION_DIM = 60
+            NUM_PROTOTYPES = 80
+            GAMMA = 0.0015
+            REG_W = 0.000
+            REG_B = 0.000
+            REG_Z = 0.000
+            SPAR_W = 1.0
+            SPAR_B = 1.0
+            SPAR_Z = 1.0
+            LEARNING_RATE = 0.1
+            Expected test accuracy: 87-88%
 '''
