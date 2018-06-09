@@ -98,11 +98,12 @@ class ProtoNNTrainer:
         return acc
 
     def train(self, batchSize, totalEpochs, sess,
-              x_train, x_test, y_train, y_test,
-              noInit=False, redirFile=None):
+              x_train, x_val, y_train, y_val,
+              noInit=False, redirFile=None, printStep=10):
         '''
         Dense training of ProtoNN
-        noInit: if not to perform initialization
+        noInit: if not to perform initialization (reuse previous init)
+        printStep: Number of batches after which loss is to be printed
         TODO: Implement dense - IHT - sparse
         '''
         d, d_cap, m, L, gamma = self.protoNNObj.getHyperParams()
@@ -110,23 +111,23 @@ class ProtoNNTrainer:
         assert totalEpochs >= 1, 'Total epochs should be psotive integer'
         assert x_train.ndim == 2, 'Expected training data to be of rank 2'
         assert x_train.shape[1] == d, 'Expected x_train to be [-1, %d]' % d
-        assert x_test.ndim == 2, 'Expected testing data to be of rank 2'
-        assert x_test.shape[1] == d, 'Expected x_test to be [-1, %d]' % d
+        assert x_val.ndim == 2, 'Expected validation data to be of rank 2'
+        assert x_val.shape[1] == d, 'Expected x_val to be [-1, %d]' % d
         assert y_train.ndim == 2, 'Expected training labels to be of rank 2'
         assert y_train.shape[1] == L, 'Expected y_train to be [-1, %d]' % L
-        assert y_test.ndim == 2, 'Expected testing labels to be of rank 2'
-        assert y_test.shape[1] == L, 'Expected y_test to be [-1, %d]' % L
+        assert y_val.ndim == 2, 'Expected valing labels to be of rank 2'
+        assert y_val.shape[1] == L, 'Expected y_val to be [-1, %d]' % L
 
         # Numpy will throw asserts for arrays
         if sess is None:
             raise ValueError('sess must be valid tensorflow session.')
 
         trainNumBatches = int(np.ceil(len(x_train) / batchSize))
-        testNumBatches = int(np.ceil(len(x_test) / batchSize))
+        valNumBatches = int(np.ceil(len(x_val) / batchSize))
         x_train_batches = np.array_split(x_train, trainNumBatches)
         y_train_batches = np.array_split(y_train, trainNumBatches)
-        x_test_batches = np.array_split(x_test, testNumBatches)
-        y_test_batches = np.array_split(y_test, testNumBatches)
+        x_val_batches = np.array_split(x_val, valNumBatches)
+        y_val_batches = np.array_split(y_val, valNumBatches)
         if not noInit:
             sess.run(tf.global_variables_initializer())
         X, Y = self.X, self.Y
@@ -139,7 +140,7 @@ class ProtoNNTrainer:
                     Y: batch_y
                 }
                 sess.run(self.trainStep, feed_dict=feed_dict)
-                if i % 10 == 0:
+                if i % printStep == 0:
                     loss, acc = sess.run([self.loss, self.accuracy],
                                          feed_dict=feed_dict)
                     msg = "Epoch: %3d Batch: %3d" % (epoch, i)
@@ -148,9 +149,9 @@ class ProtoNNTrainer:
             if (epoch + 1) % 3 == 0:
                 acc = 0.0
                 loss = 0.0
-                for j in range(len(x_test_batches)):
-                    batch_x = x_test_batches[j]
-                    batch_y = y_test_batches[j]
+                for j in range(len(x_val_batches)):
+                    batch_x = x_val_batches[j]
+                    batch_y = y_val_batches[j]
                     feed_dict = {
                         X: batch_x,
                         Y: batch_y
@@ -159,8 +160,8 @@ class ProtoNNTrainer:
                                            feed_dict=feed_dict)
                     acc += acc_
                     loss += loss_
-                acc /= len(y_test_batches)
-                loss /= len(y_test_batches)
+                acc /= len(y_val_batches)
+                loss /= len(y_val_batches)
                 print("Test Loss: %2.5f Accuracy: %2.5f" % (loss, acc))
 
 
