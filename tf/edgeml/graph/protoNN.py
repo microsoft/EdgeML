@@ -42,6 +42,8 @@ class ProtoNN:
         self.__initGamma()
         self.__validateInit()
         self.protoNNOut = None
+        self.predictions = None
+        self.accuracy = None
 
     def __validateInit(self):
         self.__validInit = False
@@ -108,11 +110,14 @@ class ProtoNN:
     def getModelMatrices(self):
         return self.W, self.B, self.Z, self.gamma
 
-    def __call__(self, X):
+    def __call__(self, X, Y=None):
         '''
         Returns a protoNN graph
-        Returned y is of dimension [-1, L]
+        Returned y is of dimension [-1, numLabels]
+
         X is [-1, d]
+        Y is [-1, numLabels] . Y is optional; if provided will beused
+            to create an accuracy computation operator.
         '''
         # This should never execute
         assert self.__validInit is True, "Initialization failed!"
@@ -138,4 +143,20 @@ class ProtoNN:
             y = tf.multiply(Z, M)
             y = tf.reduce_sum(y, 2, name='protoNNScoreOut')
             self.protoNNOut = y
+            self.predictions = tf.argmax(y, 1, name='protoNNPredictions')
+            if Y is not None:
+                target = tf.argmax(self.Y, 1)
+                correctPrediction = tf.equal(predictions, target)
+                acc = tf.reduce_mean(tf.cast(correctPrediction, tf.float32),
+                                     name='protoNNAccuracy')
+                self.accuracy = acc
         return y
+
+    def getPredictionsOp(self):
+        return self.predictions
+
+    def getAccuracyOp(self):
+        msg = "Accuracy operator not defined in graph. Did you provide Y as an"
+        msg += " argument to _call_?"
+        assert self.accuracy is not None, msg
+        return self.accuracy
