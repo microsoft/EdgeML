@@ -146,7 +146,7 @@ class ProtoNN:
             self.predictions = tf.argmax(y, 1, name='protoNNPredictions')
             if Y is not None:
                 target = tf.argmax(Y, 1)
-                correctPrediction = tf.equal(predictions, target)
+                correctPrediction = tf.equal(self.predictions, target)
                 acc = tf.reduce_mean(tf.cast(correctPrediction, tf.float32),
                                      name='protoNNAccuracy')
                 self.accuracy = acc
