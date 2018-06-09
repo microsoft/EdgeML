@@ -153,4 +153,16 @@ NOTES:
             SPAR_Z = 1.0
             LEARNING_RATE = 0.1
             Expected test accuracy: 87-88%
+
+            PROJECTION_DIM = 60
+            NUM_PROTOTYPES = 60
+            GAMMA = 0.0015
+            REG_W = 0.000005
+            REG_B = 0.000
+            REG_Z = 0.00005
+            SPAR_W = .8
+            SPAR_B = 1.0
+            SPAR_Z = 1.0
+            LEARNING_RATE = 0.05
+            Expected test accuracy: 89-90%
 '''
