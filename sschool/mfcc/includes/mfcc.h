@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
 #pragma once
 
 #include <math.h>
@@ -20,8 +22,6 @@ typedef float FPTYPE;
 #define WINLEN 400
 #define STRIDE 160
 #define NODCT 0
-// #define FRAMESIZE 26032
-// #define NUMFRAMES FRAMESIZE/STRIDE
 
 void mfcc(FPTYPE* mfcc_result, FPTYPE *data, int samplingRate, int nfilt, int numcep, int nfft, int ceplifter, int appendEnergy, int window, int numentries, int doDCT);
 void get_filterbank_parameters(FPTYPE *fbank, int nfilt, int samplingRate, int nfft);
