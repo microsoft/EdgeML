@@ -15,7 +15,7 @@ namespace EdgeML
 
   enum ProblemFormat
   {
-    undefinedProblem, binary, multiclass, multilabel
+    undefinedProblem, binary, multiclass, multilabel, regression
   };
 
   enum InitializationFormat

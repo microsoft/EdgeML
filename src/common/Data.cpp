@@ -94,6 +94,7 @@ void Data::loadDataFromFile(
     }
   }
   else if (format == interfaceIngestFormat) {
+    assert(formatParams.numLabels != 0); 
     labelCount_t *label = new labelCount_t[1];
     if (!infileTrain.empty()) {
       LOG_INFO("Reading train data...");
@@ -252,7 +253,7 @@ void Data::finalizeData()
   // 3. getnnzs(Ytest) == 0
   // 4. getnnzs(Ytrain) == 0
   // If these conditions are true, then we set these sparse matrices to their dense counter-parts
-  // Additionally, we deallocate the dense matrices. ProtoNN only uses the sparse data and label matrices.
+  // Additionally, we deallocate the dense matrices. ProtoNN] only uses the sparse data and label matrices.
   //
   if (getnnzs(Xtest) == 0) {
     Xtest = testData.sparseView();
