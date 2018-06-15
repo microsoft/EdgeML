@@ -137,8 +137,13 @@ class FastRNNCell(RNNCell):
         super(FastRNNCell, self).__init__()
         self._hidden_size = hidden_size
         self._update_non_linearity = update_non_linearity
+        self._num_weight_matrices = 2
         self._wRank = wRank
         self._uRank = uRank
+        if wRank is not None:
+            self._num_weight_matrices += 1
+        if uRank is not None:
+            self._num_weight_matrices += 1
 
     @property
     def state_size(self):
@@ -159,6 +164,10 @@ class FastRNNCell(RNNCell):
     @property
     def uRank(self):
         return self._uRank
+
+    @property
+    def num_weight_matrices(self):
+        return self._num_weight_matrices
 
     def call(self, inputs, state):
         with vs.variable_scope("FastRNNcell"):
