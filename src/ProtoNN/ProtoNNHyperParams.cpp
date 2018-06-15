@@ -69,6 +69,15 @@ void ProtoNNModel::ProtoNNHyperParams::finalizeHyperParams()
 {
   LOG_INFO("Running sanity checks on hyper-parameter values. If an assert fails, re-check the hyper-parameter value passed as argument to ProtoNN.");
 
+  assert(problemType != undefinedProblem && "problem not specified as binary, multiclass or multilabel or regression. Please use -C flag. ");
+  if(problemType != regression){
+    assert(l >= 1 && "number of labels not specified, use -l flag");
+  }
+  else{
+    assert(l == 0 && "number of labels needs to be 0 when using regression");
+    assert(initializationType == overallKmeans && "initilization type needs to be overall k-means when using regression"); 
+  }
+
   if (initializationType == perClassKmeans) {
     assert(k >= 1 && "number of prototypes per class should be >= 1");
     m = k*l;
@@ -80,7 +89,6 @@ void ProtoNNModel::ProtoNNHyperParams::finalizeHyperParams()
   assert(gammaNumerator > 0 && "gammaNumerator should be >= 1");
   assert(d >= 1 && "projection dimension should be >= 1");
   assert(D >= 1 && "data dimension not specified, please use -D flag");
-  assert(l >= 1 && "number of labels not specified, use -l flag");
   assert(batchSize >= 1 && "batch-siez should be >= 1");
   assert(iters >= 1 && "number of iters should be >= 1");
   assert(m >= 1 && "number of prototypes should be >= 1");
@@ -100,7 +108,6 @@ void ProtoNNModel::ProtoNNHyperParams::finalizeHyperParams()
   assert(lambdaW <= 1.0L && "sparsity ratio of W should be <= 1.0");
   assert(lambdaZ <= 1.0L && "sparsity ratio of Z should be <= 1.0");
   assert(lambdaB <= 1.0L && "sparsity ratio of B should be <= 0.0");
-  assert(problemType != undefinedProblem && "problem not specified as binary, multiclass or multilabel. Please use -C flag. ");
   assert(normalizationType != undefinedNormalization);
 
   srand(seed);
@@ -143,6 +150,7 @@ void ProtoNNModel::ProtoNNHyperParams::setHyperParamsFromArgs(const int argc, co
         if (argv[i][0] == '0') problemType = binary;
         else if (argv[i][0] == '1') problemType = multiclass;
         else if (argv[i][0] == '2') problemType = multilabel;
+	else if (argv[i][0] == '3') problemType = regression;
         else assert(false); //Problem type unknown
         break;
       case 'W':

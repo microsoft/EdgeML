@@ -1,0 +1,1 @@
+Bonsai doesn't use the -l flags. Just sets the problem type to multiclass (this also covers binary).
