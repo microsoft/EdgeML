@@ -1,5 +1,7 @@
 import tensorflow as tf
 import numpy as np
+from tensorflow.python.ops import math_ops
+from tensorflow.python.ops import gen_math_ops
 
 
 def multiClassHingeLoss(logits, label, batch_th):
@@ -20,7 +22,8 @@ def multiClassHingeLoss(logits, label, batch_th):
 
 def crossEntropyLoss(logits, label):
     '''
-    Cross Entropy loss for MultiClass case in joint training for faster convergence
+    Cross Entropy loss for MultiClass case in joint training for
+    faster convergence
     '''
     return tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=label))
@@ -50,7 +53,7 @@ def copySupport(src, dest):
     return dest
 
 
-def countnnZ(A, s, bytesPerVar = 4):
+def countnnZ(A, s, bytesPerVar=4):
     '''
     Returns # of nonzeros and represnetative size of the tensor
     Uses dense for s >= 0.5 - 4 byte
@@ -67,3 +70,22 @@ def countnnZ(A, s, bytesPerVar = 4):
     else:
         nnZ = params
         return nnZ, nnZ * bytesPerVar, hasSparse
+
+
+def gen_non_linearity(A, non_linearity):
+    '''
+    Returns required activation for a tensor based on the inputs
+    '''
+    if non_linearity == "tanh":
+        return math_ops.tanh(A)
+    elif non_linearity == "sigmoid":
+        return math_ops.sigmoid(A)
+    elif non_linearity == "relu":
+        return gen_math_ops.maximum(A, 0.0)
+    elif non_linearity == "quantTanh":
+        return gen_math_ops.maximum(gen_math_ops.minimum(A, 1.0), -1.0)
+    elif non_linearity == "quantSigm":
+        A = (A + 1.0) / 2.0
+        return gen_math_ops.maximum(gen_math_ops.minimum(A, 1.0), 0.0)
+    else:
+        return math_ops.tanh(A)
