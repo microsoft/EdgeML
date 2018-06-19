@@ -5,11 +5,11 @@ import shutil
 import time
 import sys
 import os
-from common.utils import getConfusionMatrix, printFormattedConfusionMatrix
-from common.utils import getPrecisionRecall
-from common.utils import getMacroMicroFScore
-from common.utils import getMacroPrecisionRecall
-from common.utils import getMicroPrecisionRecall
+from edgeml.utils import getConfusionMatrix, printFormattedConfusionMatrix
+from edgeml.utils import getPrecisionRecall
+from edgeml.utils import getMacroMicroFScore
+from edgeml.utils import getMacroPrecisionRecall
+from edgeml.utils import getMicroPrecisionRecall
 
 def getEarlySaving(predictionStep, numTimeSteps, returnTotal=False):
     predictionStep = predictionStep + 1
