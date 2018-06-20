@@ -99,10 +99,10 @@ class FastGRNNCell(RNNCell):
                 uComp = math_ops.matmul(
                     math_ops.matmul(inputs, self.U1), self.U2)
 
-            zeta_init = init_ops.constant_initializer(6.0, dtype=tf.float32)
+            zeta_init = init_ops.constant_initializer(1.0, dtype=tf.float32)
             self.zeta = vs.get_variable("zeta", [1, 1], initializer=zeta_init)
 
-            nu_init = init_ops.constant_initializer(-6.0, dtype=tf.float32)
+            nu_init = init_ops.constant_initializer(-4.0, dtype=tf.float32)
             self.nu = vs.get_variable("nu", [1, 1], initializer=nu_init)
 
             pre_comp = wComp + uComp
