@@ -98,7 +98,7 @@ class FastGRNNCell(RNNCell):
                     initializer=U_matrix_2_init)
                 uComp = math_ops.matmul(
                     math_ops.matmul(state, self.U1), self.U2)
-
+            # Init zeta to 6.0 and nu to -6.0 if this doesn't give good results. The ints are hyper-params.
             zeta_init = init_ops.constant_initializer(1.0, dtype=tf.float32)
             self.zeta = vs.get_variable("zeta", [1, 1], initializer=zeta_init)
 
