@@ -97,7 +97,7 @@ class FastGRNNCell(RNNCell):
                     "U2", [self._uRank, self._hidden_size],
                     initializer=U_matrix_2_init)
                 uComp = math_ops.matmul(
-                    math_ops.matmul(inputs, self.U1), self.U2)
+                    math_ops.matmul(state, self.U1), self.U2)
 
             zeta_init = init_ops.constant_initializer(1.0, dtype=tf.float32)
             self.zeta = vs.get_variable("zeta", [1, 1], initializer=zeta_init)
@@ -212,7 +212,7 @@ class FastRNNCell(RNNCell):
                     "U2", [self._uRank, self._hidden_size],
                     initializer=U_matrix_2_init)
                 uComp = math_ops.matmul(
-                    math_ops.matmul(inputs, self.U1), self.U2)
+                    math_ops.matmul(state, self.U1), self.U2)
 
             alpha_init = init_ops.constant_initializer(-3.0, dtype=tf.float32)
             self.alpha = vs.get_variable(
