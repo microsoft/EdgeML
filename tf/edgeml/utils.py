@@ -21,6 +21,9 @@ def medianHeuristic(data, projectionDimension, numPrototypes, W_init=None):
     data needs to be [-1, numFeats]
     If using this method to initialize gamma, please use the W and B as well.
 
+    TODO: Return estimate of Z (prototype labels) based on cluster centroids
+    andand labels
+
     W [dxd_cap]
     B [d_cap, m]
     returns gamma, W, B
