@@ -89,14 +89,17 @@ def main():
 
     PROJECTION_DIM = 60
     NUM_PROTOTYPES = 60
-    GAMMA = 0.0015
+    # If gamma is none, will be estimated
+    # by median heuristic
+    # GAMMA = 0.0015
+    GAMMA = None
 
     REG_W = 0.000005
     REG_B = 0.000
     REG_Z = 0.00005
     SPAR_W = .8   # 1.0 implies dense matrix. 
-    SPAR_B = 1.0 
-    SPAR_Z = 1.0 
+    SPAR_B = 1.0
+    SPAR_Z = 1.0
     LEARNING_RATE = 0.05
     NUM_EPOCHS = 1000
     # -----------------
@@ -110,9 +113,18 @@ def main():
 
     X = tf.placeholder(tf.float32, [None, dataDimension], name='X')
     Y = tf.placeholder(tf.float32, [None, numClasses], name='Y')
+    if GAMMA is None:
+        print("Using median heuristc to estimate gamma")
+        gamma, W, B = utils.medianHeuristic(x_train, PROJECTION_DIM,
+                                            NUM_PROTOTYPES)
+        print("Gamma estimate is: %f" % gamma)
+    else:
+        gamma = GAMMA
+        W, B = None, None
+
     protoNN = ProtoNN(dataDimension, PROJECTION_DIM,
                       NUM_PROTOTYPES, numClasses,
-                      GAMMA)
+                      gamma, W=W, B=B)
     trainer = ProtoNNTrainer(protoNN, REG_W, REG_B, REG_Z,
                              SPAR_W, SPAR_B, SPAR_Z,
                              LEARNING_RATE, X, Y, lossType='xentropy')

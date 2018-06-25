@@ -2,7 +2,49 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import gen_math_ops
+import numpy as np
+import scipy.cluster
+import scipy.spatial
 
+
+def medianHeuristic(data, projectionDimension, numPrototypes, W_init=None):
+    '''
+    This method can be used to estimate gamma for ProtoNN. An approximate
+    median-heuristc approach is used here;
+    1. First the data is collapsed into the projectionDimension by W_init. If
+    W_init is not provided, it is initiallzed from a random normal(0, 1)
+    2. Prototype are computed by running a  k-means clustering on the projected
+    data.
+    3. The median distance is then estimated by calculating median distance
+    between prototypes and projected data points.
+
+    data needs to be [-1, numFeats]
+    If using this method to initialize gamma, please use the W and B as well.
+
+    W [dxd_cap]
+    B [d_cap, m]
+    returns gamma, W, B
+    '''
+    assert data.ndim == 2
+    X = data
+    featDim = data.shape[1]
+    if W_init is None:
+        W_init = np.random.normal(size=[featDim, projectionDimension])
+    W = W_init
+    XW = np.matmul(X, W)
+    assert XW.shape[1] == projectionDimension
+    assert XW.shape[0] == len(X)
+    # Requires [N x d_cap] data matrix of N observations of d_cap-dimension and
+    # the number of centroids m. Returns, [n x d_cap] centroids and
+    # elementwise center information.
+    B, centers = scipy.cluster.vq.kmeans2(XW, numPrototypes)
+    # Requires two matrices. Number of observations x dimension of observation
+    # space. Distances[i,j] is the distance between XW[i] and B[j]
+    distances = scipy.spatial.distance.cdist(XW, B, metric='euclidean')
+    distances = np.reshape(distances, [-1])
+    gamma = np.median(distances)
+    gamma = 1 / (2.5 * gamma)
+    return gamma.astype('float32'), W.astype('float32'), B.T.astype('float32')
 
 def multiClassHingeLoss(logits, label, batch_th):
     '''
