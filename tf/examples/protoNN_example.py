@@ -1,22 +1,30 @@
+import argparse
+import protoNNpreprocess
+import datetime
+import pickle
 import sys
 import os
+import pandas as pd
 sys.path.insert(0, '../')
 import numpy as np
 import tensorflow as tf
 from edgeml.trainer.protoNNTrainer import ProtoNNTrainer
 from edgeml.graph.protoNN import ProtoNN
+import matplotlib.pyplot as plt
 import edgeml.utils as utils
+np.random.seed(42)
 
 def getModelSize(matrixList, sparcityList, expected=True, bytesPerVar=4):
     '''
     expected: Expected size according to the parameters set. The number of
-        zeros could actually be more than the applied sparcity constraint.
+              zeros could actually be more than the applied sparsity constraint.
     '''
     nnzList, sizeList, isSparseList = [], [], []
     hasSparse = False
     for i in range(len(matrixList)):
         A, s = matrixList[i], sparcityList[i]
         assert A.ndim == 2
+        # 's - sparsity factor' should be between 0 and 1.
         assert s >= 0
         assert s <= 1
         nnz, size, sparse = utils.countnnZ(A, s, bytesPerVar=bytesPerVar)
@@ -26,8 +34,10 @@ def getModelSize(matrixList, sparcityList, expected=True, bytesPerVar=4):
 
     totalnnZ = np.sum(nnzList)
     totalSize = np.sum(sizeList)
+    #By default, go into this part, fails only when the bytesPerVar need to be changed or the sparsity factor.
     if expected:
         return totalnnZ, totalSize, hasSparse
+
     numNonZero = 0
     totalSize = 0
     hasSparse = False
@@ -53,17 +63,28 @@ def loadData(dataDir):
     x_test = test[:, 1:dataDimension + 1]
     y_test_ = test[:, 0]
 
-    numClasses = max(y_train_) - min(y_train_) + 1
-    numClasses = max(numClasses, max(y_test_) - min(y_test_) + 1)
-    numClasses = int(numClasses)
+    #numClasses = max(y_train_) - min(y_train_) + 1
+    #numClasses = max(numClasses, max(y_test_) - min(y_test_) + 1)
+    #numClasses = int(numClasses)
 
-    # mean-var
+    #To use as a regressor.
+    numClasses = 1
+
+    # mean-var normalization.
     mean = np.mean(x_train, 0)
     std = np.std(x_train, 0)
     std[std[:] < 0.000001] = 1
     x_train = (x_train - mean) / std
     x_test = (x_test - mean) / std
 
+    print ("Inside loadData.")
+    print ("Mean : ",mean)
+    print ("Std  : ",std)
+
+    #print ("Xtrain : ",x_train[:5,:])
+    #print ("Xtrain : ",x_test[:5,:])
+
+    """
     # one hot y-train
     lab = y_train_.astype('uint8')
     lab = np.array(lab) - min(lab)
@@ -77,62 +98,90 @@ def loadData(dataDir):
     lab_ = np.zeros((x_test.shape[0], numClasses))
     lab_[np.arange(x_test.shape[0]), lab] = 1
     y_test = lab_
+    """
 
-    return dataDimension, numClasses, x_train, y_train, x_test, y_test
+    #Add a bias term, when going for regression.
+    trainBias = np.ones([x_train.shape[0], 1])
+    x_train = np.append(x_train, trainBias, axis=1)
+    testBias = np.ones([x_test.shape[0], 1])
+    x_test = np.append(x_test, testBias, axis=1)
+    print ("After adding bias term, the shapes of the input features : ",x_train.shape , x_test.shape)
+
+    # Don's original piece of line.
+    #return dataDimension, numClasses, x_train, y_train, x_test, y_test
+
+    return dataDimension + 1, numClasses, x_train, y_train_.reshape((-1,1)), x_test, y_test_.reshape((-1,1)),mean,std
 
 
-def main():
+def main(**kwargs):
     # -----------------
     # Configuration
     # -----------------
-    DATA_DIR = './curet/'
-    PROJECTION_DIM = 60
-    NUM_PROTOTYPES = 60
-    # If gamma is none, will be estimated
-    # by median heuristic
-    # GAMMA = 0.0015
-    GAMMA = None
+    #Get the directory path, as a command line argument.
 
-    REG_W = 0.000005
-    REG_B = 0.000
-    REG_Z = 0.00005
-    SPAR_W = .8   # 1.0 implies dense matrix. 
+    args = protoNNpreprocess.getArgs()
+    DATA_DIR = args.data_dir
+
+    PROJECTION_DIM = args.projDim
+    NUM_PROTOTYPES = args.num_proto
+    GAMMA = args.gamma
+
+    REG_W = args.rW
+    REG_B = args.rB
+    REG_Z = args.rZ
+
+    # 1.0 implies dense matrix.
+    SPAR_W = 1.0
     SPAR_B = 1.0
     SPAR_Z = 1.0
-    LEARNING_RATE = 0.05
-    NUM_EPOCHS = 1000
+    batchSize = args.batchSize
+
+    LEARNING_RATE = args.learningRate
+    NUM_EPOCHS = args.num_epochs
     # -----------------
     # End configuration
     # -----------------
+
+    #if GAMMA is None:
+    #else:
+#        gamma = GAMMA
+#        W, B = None, None
+
     out = loadData(DATA_DIR)
     dataDimension = out[0]
     numClasses = out[1]
     x_train, y_train = out[2], out[3]
     x_test, y_test = out[4], out[5]
+    print("Using median heuristc to estimate gamma")
+    centers , gamma, W, B = utils.medianHeuristic(x_train, PROJECTION_DIM,
+                                        NUM_PROTOTYPES,) #W_init=np.eye(PROJECTION_DIM))
+    #print ("gamma : ",gamma)
+    #gamma =  0.0156096
+    print ("Before run : ",np.linalg.norm(B,ord="fro"))
 
     X = tf.placeholder(tf.float32, [None, dataDimension], name='X')
     Y = tf.placeholder(tf.float32, [None, numClasses], name='Y')
-    if GAMMA is None:
-        print("Using median heuristc to estimate gamma")
-        gamma, W, B = utils.medianHeuristic(x_train, PROJECTION_DIM,
-                                            NUM_PROTOTYPES)
-        print("Gamma estimate is: %f" % gamma)
-    else:
-        gamma = GAMMA
-        W, B = None, None
 
     protoNN = ProtoNN(dataDimension, PROJECTION_DIM,
                       NUM_PROTOTYPES, numClasses,
-                      gamma, W=W, B=B)
-    trainer = ProtoNNTrainer(protoNN, REG_W, REG_B, REG_Z,
+                      gamma,W=W,B=B)
+
+    trainer = ProtoNNTrainer(DATA_DIR,protoNN, REG_W, REG_B, REG_Z,
                              SPAR_W, SPAR_B, SPAR_Z,
-                             LEARNING_RATE, X, Y, lossType='xentropy')
+                             LEARNING_RATE, X, Y,lossType='l2')
     sess = tf.Session()
-    trainer.train(16, NUM_EPOCHS, sess, x_train, x_test, y_train, y_test,
-                  printStep=200)
-    acc = sess.run(protoNN.accuracy, feed_dict={X: x_test, Y:y_test})
+    sess.run(tf.group(tf.initialize_all_variables(),
+                      tf.initialize_variables(tf.local_variables())))
+    ndict = trainer.train(DATA_DIR,batchSize, NUM_EPOCHS, sess, x_train, x_test, y_train, y_test,
+                  DATA_DIR,printStep=200)
+    acc,g0 = sess.run([protoNN.accuracy,protoNN.gamma], feed_dict={X: x_test, Y:y_test})
+    print ("Final Value of gamma : ",g0)
     W, B, Z, _ = protoNN.getModelMatrices()
     matrixList = sess.run([W, B, Z])
+    print ("B : ",np.transpose(matrixList[1]))
+    print ("\n\n")
+    print ("Z : ",np.transpose(matrixList[2]))
+    '''
     sparcityList = [SPAR_W, SPAR_B, SPAR_Z]
     nnz, size, sparse = getModelSize(matrixList, sparcityList)
     print("Final test accuracy", acc)
@@ -141,8 +190,7 @@ def main():
     nnz, size, sparse = getModelSize(matrixList, sparcityList, expected=False)
     print("Actual model size: ", size)
     print("Actual non-zeros: ", nnz)
-
-
+    '''
 if __name__ == '__main__':
     main()
 

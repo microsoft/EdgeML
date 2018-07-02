@@ -1,3 +1,4 @@
+from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 from tensorflow.python.ops import math_ops
@@ -30,6 +31,7 @@ def medianHeuristic(data, projectionDimension, numPrototypes, W_init=None):
     '''
     assert data.ndim == 2
     X = data
+    #Added '+1' to incorporate the bias term.
     featDim = data.shape[1]
     if W_init is None:
         W_init = np.random.normal(size=[featDim, projectionDimension])
@@ -47,7 +49,7 @@ def medianHeuristic(data, projectionDimension, numPrototypes, W_init=None):
     distances = np.reshape(distances, [-1])
     gamma = np.median(distances)
     gamma = 1 / (2.5 * gamma)
-    return gamma.astype('float32'), W.astype('float32'), B.T.astype('float32')
+    return centers , gamma.astype('float32'), W.astype('float32'), B.T.astype('float32')
 
 def multiClassHingeLoss(logits, label, batch_th):
     '''
@@ -137,7 +139,7 @@ def gen_non_linearity(A, non_linearity):
 
 
 # Auxiliary methods for EMI-RNN
-# Will probably be moved out 
+# Will probably be moved out
 
 def getConfusionMatrix(predicted, target, numClasses):
     '''
@@ -147,7 +149,7 @@ def getConfusionMatrix(predicted, target, numClasses):
     assert(predicted.ndim == 1)
     assert(target.ndim == 1)
     arr = np.zeros([numClasses, numClasses])
-    
+
     for i in range(len(predicted)):
         arr[predicted[i]][target[i]] += 1
     return arr
@@ -165,14 +167,14 @@ def printFormattedConfusionMatrix(matrix):
     for i in range(matrix.shape[0]):
         print("%7d|" % i, end='')
     print("%s|" % 'Precision')
-    
+
     print("|%s|"% ('-'* len(RECALL)), end='')
     for i in range(matrix.shape[0]):
         print("%s|" % ('-'* 7), end='')
     print("%s|" % ('-'* len(PRECISION)))
-    
+
     precisionlist = np.sum(matrix, axis=1)
-    recalllist = np.sum(matrix, axis=0) 
+    recalllist = np.sum(matrix, axis=0)
     precisionlist = [matrix[i][i]/ x if x != 0 else -1 for i,x in enumerate(precisionlist)]
     recalllist = [matrix[i][i]/x if x != 0 else -1for i,x in enumerate(recalllist)]
     for i in range(matrix.shape[0]):
@@ -185,22 +187,22 @@ def printFormattedConfusionMatrix(matrix):
             print("%1.5f|" % precisionlist[i])
         else:
             print("%7s|" % "nan")
-    
+
     print("|%s|"% ('-'* len(RECALL)), end='')
     for i in range(matrix.shape[0]):
         print("%s|" % ('-'* 7), end='')
     print("%s|" % ('-'*len(PRECISION)))
     print("|%s|"% ('Recall'), end='')
-    
+
     for i in range(matrix.shape[0]):
         if recalllist[i] != -1:
             print("%1.5f|" % (recalllist[i]), end='')
         else:
             print("%7s|" % "nan", end='')
 
-    print('%s|' % (' ' * len(PRECISION)))    
-    
-    
+    print('%s|' % (' ' * len(PRECISION)))
+
+
 def getPrecisionRecall(cmatrix, label=1):
     trueP = cmatrix[label][label]
     denom = np.sum(cmatrix, axis=0)[label]
@@ -232,7 +234,7 @@ def getMicroPrecisionRecall(cmatrix):
     # TP + FP
     precisionlist = np.sum(cmatrix, axis=1)
     # TP + FN
-    recalllist = np.sum(cmatrix, axis=0) 
+    recalllist = np.sum(cmatrix, axis=0)
     num =0.0
     for i in range(len(cmatrix)):
         num += cmatrix[i][i]
@@ -248,7 +250,7 @@ def getMacroMicroFScore(cmatrix):
     Refer: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.104.8244&rep=rep1&type=pdf
     '''
     precisionlist = np.sum(cmatrix, axis=1)
-    recalllist = np.sum(cmatrix, axis=0) 
+    recalllist = np.sum(cmatrix, axis=0)
     precisionlist__ = [cmatrix[i][i]/ x if x != 0 else 0 for i,x in enumerate(precisionlist)]
     recalllist__ = [cmatrix[i][i]/x if x != 0 else 0 for i,x in enumerate(recalllist)]
     macro = 0.0
@@ -259,7 +261,7 @@ def getMacroMicroFScore(cmatrix):
             denom = 1
         macro += numer / denom
     macro /= len(precisionlist)
-    
+
     num = 0.0
     for i in range(len(precisionlist)):
         num += cmatrix[i][i]

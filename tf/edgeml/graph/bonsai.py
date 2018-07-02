@@ -3,6 +3,8 @@ import numpy as np
 
 
 class Bonsai:
+
+    #Constructor.
     def __init__(self, numClasses, dataDimension, projectionDimension,
                  treeDepth, sigma,
                  W=None, T=None, V=None, Z=None):
@@ -18,7 +20,6 @@ class Bonsai:
         internalNodes = 2**treeDepth - 1
         totalNodes = 2*internalNodes + 1
 
-        sigma - tanh nonlinearity
         sigmaI - Indicator function for node probs
         sigmaI - has to be set to infinity(1e9 for practicality)
         while doing testing/inference
@@ -27,6 +28,7 @@ class Bonsai:
 
         self.dataDimension = dataDimension
         self.projectionDimension = projectionDimension
+        #self.projectionDimension = dataDimension
 
         if numClasses == 2:
             self.numClasses = 1
@@ -52,10 +54,12 @@ class Bonsai:
         self.X_ = None
         self.prediction = None
 
+    # Use an indentity matrix for Z, only for low dimensional
     def initZ(self, Z):
         if Z is None:
-            Z = tf.random_normal(
-                [self.projectionDimension, self.dataDimension])
+            Z = tf.random_normal([self.projectionDimension, self.dataDimension])
+            #print (self.projectionDimension , self.dataDimension)
+            #Z = tf.eye(self.dataDimension)
         Z = tf.Variable(Z, name='Z', dtype=tf.float32)
         return Z
 
@@ -93,9 +97,10 @@ class Bonsai:
         if self.score is not None:
             return self.score, self.X_
 
-        X_ = tf.divide(tf.matmul(self.Z, X, transpose_b=True),
-                       self.projectionDimension)
+        X_ = tf.divide(tf.matmul(self.Z, X, transpose_b=True) ,  self.projectionDimension)
+        #X_ = tf.divide(tf.transpose(X),self.projectionDimension)
 
+        print (X_.shape)
         W_ = self.W[0:(self.numClasses)]
         V_ = self.V[0:(self.numClasses)]
 
@@ -134,28 +139,41 @@ class Bonsai:
         if self.numClasses > 2:
             self.prediction = tf.argmax(tf.transpose(self.score), 1)
         else:
-            self.prediction = tf.argmax(
-                tf.concat([tf.transpose(self.score),
-                           0 * tf.transpose(self.score)], 1), 1)
+            #self.prediction = tf.argmax(
+            #    tf.concat([tf.transpose(self.score),
+            #               0 * tf.transpose(self.score)], 1), 1)
+
+            #Scores are the predictions, just return them.
+            self.prediction = self.score
 
         return self.prediction
 
-    def saveModel(self, currDir):
+    def saveModel(self, currDir,mean,std):
         '''
         Saved the model params as separate numpy dumps
         HyperParam dict as a numpy dump
         '''
+        print ("Saving the model !!")
+        print (currDir)
         paramDir = currDir + '/'
-        np.save(paramDir + "W.npy", self.W.eval())
-        np.save(paramDir + "V.npy", self.V.eval())
-        np.save(paramDir + "T.npy", self.T.eval())
-        np.save(paramDir + "Z.npy", self.Z.eval())
-        hyperParamDict = {'dataDim': self.dataDimension,
-                          'projDim': self.projectionDimension,
-                          'numClasses': self.numClasses,
-                          'depth': self.treeDepth, 'sigma': self.sigma}
-        hyperParamFile = paramDir + 'hyperParam.npy'
-        np.save(hyperParamFile, hyperParamDict)
+        print ("----------------------")
+        try:
+            np.save(paramDir + "W.npy", self.W.eval())
+            np.save(paramDir + "V.npy", self.V.eval())
+            np.save(paramDir + "T.npy", self.T.eval())
+            np.save(paramDir + "Z.npy", self.Z.eval())
+            hyperParamDict = {'dataDim': self.dataDimension,
+                              'projDim': self.projectionDimension,
+                              'numClasses': self.numClasses,
+                              'depth': self.treeDepth, 'sigma': self.sigma,
+                              'mean' : mean,
+                              'std'  : std
+                              }
+            hyperParamFile = paramDir + 'hyperParam.npy'
+            np.save(hyperParamFile, hyperParamDict)
+        except:
+            print ("Some error occurred !!")
+            exit(0)
 
     def loadModel(self, currDir):
         '''
@@ -183,8 +201,10 @@ class Bonsai:
         assert self.W.shape[0] == self.numClasses * self.totalNodes, errW
         assert self.W.shape[1] == self.projectionDimension, errW
         errZ = "Z is [projectionDimension, dataDimension]"
-        assert self.Z.shape[0] == self.projectionDimension, errZ
-        assert self.Z.shape[1] == self.dataDimension, errZ
+        #assert self.Z.shape[0] == self.projectionDimension, errZ
+        #assert self.Z.shape[1] == self.projectionDimension, errZ
+        #assert self.Z.shape[1] == self.dataDimension, errZ
+        #assert self.Z.shape[1] == self.dataDimension, errZ
         errT = "T is [internalNodes, projectionDimension]"
         assert self.T.shape[0] == self.internalNodes, errT
         assert self.T.shape[1] == self.projectionDimension, errT

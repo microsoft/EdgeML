@@ -34,7 +34,7 @@ def checkFloatNneg(value):
 
 def checkFloatPos(value):
     fvalue = float(value)
-    if fvalue <= 0:
+    if fvalue < 0:
         raise argparse.ArgumentTypeError(
             "%s is an invalid positive float value" % value)
     return fvalue
@@ -52,8 +52,8 @@ def getArgs():
 
     parser.add_argument('-d', '--depth', type=checkIntNneg, default=2,
                         help='Depth of Bonsai Tree (default: 2 try: [0, 1, 3])')
-    parser.add_argument('-p', '--projDim', type=checkIntPos, default=10,
-                        help='Projection Dimension (default: 20 try: [5, 10, 30])')
+    parser.add_argument('-p', '--projDim', type=checkIntPos, default=5,
+                        help='Projection Dimension (default: 10 try: [5, 20, 30])')
     parser.add_argument('-s', '--sigma', type=float, default=1.0,
                         help='Parameter for sigmoid sharpness (default: 1.0 try: [3.0, 0.05, 0.1]')
     parser.add_argument('-e', '--epochs', type=checkIntPos, default=42,
@@ -61,7 +61,7 @@ def getArgs():
     parser.add_argument('-b', '--batchSize', type=checkIntPos,
                         help='Batch Size to be used (default: max(100, sqrt(train_samples)))')
     parser.add_argument('-lr', '--learningRate', type=checkFloatPos, default=0.01,
-                        help='Initial Learning rate for Adam Oprimizer (default: 0.01)')
+                        help='Initial Learning rate for Adam Optimizer (default: 0.01)')
 
     parser.add_argument('-rW', type=float, default=0.0001,
                         help='Regularizer for predictor parameter W  (default: 0.0001 try: [0.01, 0.001, 0.00001])')
@@ -78,7 +78,9 @@ def getArgs():
                         help='Sparsity for predictor parameter V  (default: For Binary classification 1.0 else 0.2 try: [0.1, 0.3, 0.5])')
     parser.add_argument('-sT', type=checkFloatPos,
                         help='Sparsity for branching parameter Theta  (default: For Binary classification 1.0 else 0.2 try: [0.1, 0.3, 0.5])')
-    parser.add_argument('-sZ', type=checkFloatPos, default=0.2,
+
+    #Sparsity Factor of 1 , denotes that a dense matrix is learnt.
+    parser.add_argument('-sZ', type=checkFloatPos, default=1.0,
                         help='Sparsity for projection parameter Z  (default: 0.2 try: [0.1, 0.3, 0.5])')
     parser.add_argument('-oF', '--output_file', default=None,
                         help='Output file for dumping the program output, (default: stdout)')
@@ -98,14 +100,18 @@ def preProcessData(data_dir):
 
     dataDimension = int(train.shape[1]) - 1
 
+    #Xtrain = train[:, 1:dataDimension + 1]
     Xtrain = train[:, 1:dataDimension + 1]
     Ytrain_ = train[:, 0]
-    numClasses = max(Ytrain_) - min(Ytrain_) + 1
+    #numClasses = max(Ytrain_) - min(Ytrain_) + 1
 
+    #Xtest = test[:, 1:dataDimension + 1]
     Xtest = test[:, 1:dataDimension + 1]
     Ytest_ = test[:, 0]
 
-    numClasses = int(max(numClasses, max(Ytest_) - min(Ytest_) + 1))
+    #numClasses = int(max(numClasses, max(Ytest_) - min(Ytest_) + 1))
+
+    numClasses=1
 
     # Mean Var Normalisation
     mean = np.mean(Xtrain, 0)
@@ -116,6 +122,7 @@ def preProcessData(data_dir):
     Xtest = (Xtest - mean) / std
     # End Mean Var normalisation
 
+    """
     lab = Ytrain_.astype('uint8')
     lab = np.array(lab) - min(lab)
 
@@ -125,7 +132,9 @@ def preProcessData(data_dir):
         Ytrain = np.reshape(lab, [-1, 1])
     else:
         Ytrain = lab_
+    """
 
+    """
     lab = Ytest_.astype('uint8')
     lab = np.array(lab) - min(lab)
 
@@ -135,13 +144,15 @@ def preProcessData(data_dir):
         Ytest = np.reshape(lab, [-1, 1])
     else:
         Ytest = lab_
+    """
 
     trainBias = np.ones([Xtrain.shape[0], 1])
     Xtrain = np.append(Xtrain, trainBias, axis=1)
     testBias = np.ones([Xtest.shape[0], 1])
     Xtest = np.append(Xtest, testBias, axis=1)
 
-    return dataDimension + 1, numClasses, Xtrain, Ytrain, Xtest, Ytest
+    #Return dataDimension + 1, to factor in the bias term.
+    return dataDimension + 1 , numClasses, Xtrain, Ytrain_.reshape((-1,1)), Xtest, Ytest_.reshape((-1,1)),mean,std
 
 
 def createDir(dataDir):

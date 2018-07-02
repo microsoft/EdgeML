@@ -10,11 +10,11 @@ sys.path.insert(0, '../')
 from edgeml.trainer.bonsaiTrainer import BonsaiTrainer
 from edgeml.graph.bonsai import Bonsai
 
-# Fixing seeds for reproducibility
-tf.set_random_seed(42)
-np.random.seed(42)
-
 def model_create():
+
+    # Fixing seeds for reproducibility
+    tf.set_random_seed(42)
+    np.random.seed(42)
 
     # Hyper Param pre-processing
     args = bonsaipreprocess.getArgs()
@@ -42,7 +42,7 @@ def model_create():
     print ("outFile : ",outFile)
 
     (dataDimension, numClasses,
-        Xtrain, Ytrain, Xtest, Ytest,mean , std) = bonsaipreprocess.preProcessData(data_dir)
+        Xtrain, Ytrain, Xtest, Ytest) = bonsaipreprocess.preProcessData(data_dir)
 
     sparZ = args.sZ
 
@@ -87,7 +87,7 @@ def model_create():
     type = 1 -> Test only on test data.
     type = 2 -> Test on entire data.
     """
-    type = 1
+    type = 2
 
     split = int(0.8*(np.vstack((Xtrain,Xtest)).shape[0]))
     print ("Total Size : ",np.vstack((Xtrain,Xtest)).shape)
@@ -107,25 +107,20 @@ def model_create():
 
     print("DONE")
     dict = bonsaiTrainer.train(batchSize, totalEpochs, sess,
-                        Xtrain, Xtest, Ytrain, Ytest, split,data_dir, currDir,mean,std,type)
+                        Xtrain, Xtest, Ytrain, Ytest, split,data_dir, currDir,type)
 
-
-    '''
-    Part : Code to visualize the decision boundary of Bonsai.
-
-    x_test = np.array(np.arange(-1,1,0.1))
-    x_test = np.concatenate((x_test,np.array(np.arange(-1,1,0.1)),np.array(np.arange(-1,1,0.1)),np.array(np.arange(-1,1,0.1)),np.array(np.arange(-1,1,0.1)),np.array(np.arange(-1,1,0.1))),axis=1)
-    print ("Shape of xtest : ",x_test.shape)
-    bonsai_preds = bonsaiTrainer.Bonsai_Predictions(x_test,Ytest,sess)
-    bonsai_actuals = Ytest
-    '''
 
     sess.close()
+
     sys.stdout.close()
-    return dict
+    f = open("bonsai_data1_s2.txt","a+")
+    f.write("\n")
+    f.write("R2 : " + str(dict["r2"])+" , MAE : "+str(dict["mae"])+" , RMSE : "+str(dict["rmse"])+" , e : "+str(totalEpochs)+" , d : "+str(depth)+" , p : "+str(projectionDimension) +" , b : "+str(batchSize)+" , s : "+str(sigma)+" , lr : "+str(learningRate)+" , rW : "+str(regW)+" , rZ : "+str(regZ) )
+    f.close()
+
+     return dict
 
 ndict = model_create()
-#pickle.dump(ndict,open("bonsai_data1_s1.pkl","a+"))
 
 #bonsaiObj.saveModel(currDir)
 
