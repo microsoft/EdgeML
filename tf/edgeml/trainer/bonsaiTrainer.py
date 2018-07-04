@@ -8,7 +8,7 @@ import sys
 
 class BonsaiTrainer:
     def __init__(self, bonsaiObj, lW, lT, lV, lZ, sW, sT, sV, sZ,
-                 learningRate, X, Y, useMCHLoss=True, outFile=None):
+                 learningRate, X, Y, useMCHLoss=False, outFile=None):
         '''
         bonsaiObj - Initialised Bonsai Object and Graph
         lW, lT, lV and lZ are regularisers to Bonsai Params
