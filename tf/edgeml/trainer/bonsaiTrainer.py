@@ -47,7 +47,9 @@ class BonsaiTrainer:
 
         self.assertInit()
 
-        self.score, self.X_ = self.bonsaiObj(self.X)
+        self.sigmaI = tf.placeholder(tf.float32, name='sigmaI')
+
+        self.score, self.X_ = self.bonsaiObj(self.X, self.sigmaI)
 
         self.loss, self.marginLoss, self.regLoss = self.lossGraph()
 
@@ -274,13 +276,14 @@ class BonsaiTrainer:
                 if self.bonsaiObj.numClasses > 2:
                     if self.useMCHLoss is True:
                         _feed_dict = {self.X: batchX, self.Y: batchY,
-                                      self.batch_th: batchY.shape[0], self.bonsaiObj.sigmaI: bonsaiObjSigmaI}
+                                      self.batch_th: batchY.shape[0],
+                                      self.sigmaI: bonsaiObjSigmaI}
                     else:
                         _feed_dict = {self.X: batchX, self.Y: batchY,
-                                      self.bonsaiObj.sigmaI: bonsaiObjSigmaI}
+                                      self.sigmaI: bonsaiObjSigmaI}
                 else:
                     _feed_dict = {self.X: batchX, self.Y: batchY,
-                                  self.bonsaiObj.sigmaI: bonsaiObjSigmaI}
+                                  self.sigmaI: bonsaiObjSigmaI}
 
                 # Mini-batch training
                 _, batchLoss, batchAcc = sess.run(
@@ -319,13 +322,14 @@ class BonsaiTrainer:
             if self.bonsaiObj.numClasses > 2:
                 if self.useMCHLoss is True:
                     _feed_dict = {self.X: Xtest, self.Y: Ytest,
-                                  self.batch_th: Ytest.shape[0], self.bonsaiObj.sigmaI: bonsaiObjSigmaI}
+                                  self.batch_th: Ytest.shape[0],
+                                  self.sigmaI: bonsaiObjSigmaI}
                 else:
                     _feed_dict = {self.X: Xtest, self.Y: Ytest,
-                                  self.bonsaiObj.sigmaI: bonsaiObjSigmaI}
+                                  self.sigmaI: bonsaiObjSigmaI}
             else:
                 _feed_dict = {self.X: Xtest, self.Y: Ytest,
-                              self.bonsaiObj.sigmaI: bonsaiObjSigmaI}
+                              self.sigmaI: bonsaiObjSigmaI}
 
             # This helps in direct testing instead of extracting the model out
 
