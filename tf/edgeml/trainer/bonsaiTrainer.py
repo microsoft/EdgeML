@@ -211,6 +211,8 @@ class BonsaiTrainer:
 
         totalBatches = numIters * totalEpochs
 
+        bonsaiObjSigmaI = 1
+
         counter = 0
         if self.bonsaiObj.numClasses > 2:
             trimlevel = 15
@@ -234,7 +236,7 @@ class BonsaiTrainer:
                 # Updating the indicator sigma
                 if ((counter == 0) or (counter == int(totalBatches / 3)) or
                         (counter == int(2 * totalBatches / 3))):
-                    self.bonsaiObj.sigmaI = 1
+                    bonsaiObjSigmaI = 1
                     itersInPhase = 0
 
                 elif (itersInPhase % 100 == 0):
@@ -261,7 +263,7 @@ class BonsaiTrainer:
                         1000, sum_tr * (2**(float(itersInPhase) /
                                             (float(totalBatches) / 30.0))))
 
-                    self.bonsaiObj.sigmaI = sum_tr
+                    bonsaiObjSigmaI = sum_tr
 
                 itersInPhase += 1
                 batchX = Xtrain[j * batchSize:(j + 1) * batchSize]
@@ -272,11 +274,13 @@ class BonsaiTrainer:
                 if self.bonsaiObj.numClasses > 2:
                     if self.useMCHLoss is True:
                         _feed_dict = {self.X: batchX, self.Y: batchY,
-                                      self.batch_th: batchY.shape[0]}
+                                      self.batch_th: batchY.shape[0], self.bonsaiObj.sigmaI: bonsaiObjSigmaI}
                     else:
-                        _feed_dict = {self.X: batchX, self.Y: batchY}
+                        _feed_dict = {self.X: batchX, self.Y: batchY,
+                                      self.bonsaiObj.sigmaI: bonsaiObjSigmaI}
                 else:
-                    _feed_dict = {self.X: batchX, self.Y: batchY}
+                    _feed_dict = {self.X: batchX, self.Y: batchY,
+                                  self.bonsaiObj.sigmaI: bonsaiObjSigmaI}
 
                 # Mini-batch training
                 _, batchLoss, batchAcc = sess.run(
@@ -309,18 +313,21 @@ class BonsaiTrainer:
             print("Train accuracy " + str(trainAcc / numIters),
                   file=self.outFile)
 
+            oldSigmaI = bonsaiObjSigmaI
+            bonsaiObjSigmaI = 1e9
+
             if self.bonsaiObj.numClasses > 2:
                 if self.useMCHLoss is True:
                     _feed_dict = {self.X: Xtest, self.Y: Ytest,
-                                  self.batch_th: Ytest.shape[0]}
+                                  self.batch_th: Ytest.shape[0], self.bonsaiObj.sigmaI: bonsaiObjSigmaI}
                 else:
-                    _feed_dict = {self.X: Xtest, self.Y: Ytest}
+                    _feed_dict = {self.X: Xtest, self.Y: Ytest,
+                                  self.bonsaiObj.sigmaI: bonsaiObjSigmaI}
             else:
-                _feed_dict = {self.X: Xtest, self.Y: Ytest}
+                _feed_dict = {self.X: Xtest, self.Y: Ytest,
+                              self.bonsaiObj.sigmaI: bonsaiObjSigmaI}
 
             # This helps in direct testing instead of extracting the model out
-            oldSigmaI = self.bonsaiObj.sigmaI
-            self.bonsaiObj.sigmaI = 1e9
 
             testAcc, testLoss, regTestLoss = sess.run(
                 [self.accuracy, self.loss, self.regLoss], feed_dict=_feed_dict)
@@ -338,11 +345,11 @@ class BonsaiTrainer:
                   file=self.outFile)
             self.outFile.flush()
 
-            self.bonsaiObj.sigmaI = oldSigmaI
+            bonsaiObjSigmaI = oldSigmaI
 
         # sigmaI has to be set to infinity to ensure
         # only a single path is used in inference
-        self.bonsaiObj.sigmaI = 1e9
+        bonsaiObjSigmaI = 1e9
         print("Maximum Test accuracy at compressed" +
               " model size(including early stopping): " +
               str(maxTestAcc) + " at Epoch: " +
