@@ -152,53 +152,53 @@ def getConfusionMatrix(predicted, target, numClasses):
         arr[predicted[i]][target[i]] += 1
     return arr
 
-def printFormattedConfusionMatrix(matrix):
-    '''
-    Given a 2D confusion matrix, prints it in a formatte
-    way
-    '''
-    assert(matrix.ndim == 2)
-    assert(matrix.shape[0] == matrix.shape[1])
-    RECALL = 'Recall'
-    PRECISION = 'PRECISION'
-    print("|%s|"% ('True->'), end='')
-    for i in range(matrix.shape[0]):
-        print("%7d|" % i, end='')
-    print("%s|" % 'Precision')
+# def printFormattedConfusionMatrix(matrix):
+#     '''
+#     Given a 2D confusion matrix, prints it in a formatte
+#     way
+#     '''
+#     assert(matrix.ndim == 2)
+#     assert(matrix.shape[0] == matrix.shape[1])
+#     RECALL = 'Recall'
+#     PRECISION = 'PRECISION'
+#     print("|%s|"% ('True->'), end='')
+#     for i in range(matrix.shape[0]):
+#         print("%7d|" % i, end='')
+#     print("%s|" % 'Precision')
     
-    print("|%s|"% ('-'* len(RECALL)), end='')
-    for i in range(matrix.shape[0]):
-        print("%s|" % ('-'* 7), end='')
-    print("%s|" % ('-'* len(PRECISION)))
+#     print("|%s|"% ('-'* len(RECALL)), end='')
+#     for i in range(matrix.shape[0]):
+#         print("%s|" % ('-'* 7), end='')
+#     print("%s|" % ('-'* len(PRECISION)))
     
-    precisionlist = np.sum(matrix, axis=1)
-    recalllist = np.sum(matrix, axis=0) 
-    precisionlist = [matrix[i][i]/ x if x != 0 else -1 for i,x in enumerate(precisionlist)]
-    recalllist = [matrix[i][i]/x if x != 0 else -1for i,x in enumerate(recalllist)]
-    for i in range(matrix.shape[0]):
-        # len recall = 6
-        print("|%6d|"% (i), end='')
-        for j in range(matrix.shape[0]):
-            print("%7d|" % (matrix[i][j]), end='')
-        print("%s" % (" " * (len(PRECISION) - 7)), end='')
-        if precisionlist[i] != -1:
-            print("%1.5f|" % precisionlist[i])
-        else:
-            print("%7s|" % "nan")
+#     precisionlist = np.sum(matrix, axis=1)
+#     recalllist = np.sum(matrix, axis=0) 
+#     precisionlist = [matrix[i][i]/ x if x != 0 else -1 for i,x in enumerate(precisionlist)]
+#     recalllist = [matrix[i][i]/x if x != 0 else -1for i,x in enumerate(recalllist)]
+#     for i in range(matrix.shape[0]):
+#         # len recall = 6
+#         print("|%6d|"% (i), end='')
+#         for j in range(matrix.shape[0]):
+#             print("%7d|" % (matrix[i][j]), end='')
+#         print("%s" % (" " * (len(PRECISION) - 7)), end='')
+#         if precisionlist[i] != -1:
+#             print("%1.5f|" % precisionlist[i])
+#         else:
+#             print("%7s|" % "nan")
     
-    print("|%s|"% ('-'* len(RECALL)), end='')
-    for i in range(matrix.shape[0]):
-        print("%s|" % ('-'* 7), end='')
-    print("%s|" % ('-'*len(PRECISION)))
-    print("|%s|"% ('Recall'), end='')
+#     print("|%s|"% ('-'* len(RECALL)), end='')
+#     for i in range(matrix.shape[0]):
+#         print("%s|" % ('-'* 7), end='')
+#     print("%s|" % ('-'*len(PRECISION)))
+#     print("|%s|"% ('Recall'), end='')
     
-    for i in range(matrix.shape[0]):
-        if recalllist[i] != -1:
-            print("%1.5f|" % (recalllist[i]), end='')
-        else:
-            print("%7s|" % "nan", end='')
+#     for i in range(matrix.shape[0]):
+#         if recalllist[i] != -1:
+#             print("%1.5f|" % (recalllist[i]), end='')
+#         else:
+#             print("%7s|" % "nan", end='')
 
-    print('%s|' % (' ' * len(PRECISION)))    
+#     print('%s|' % (' ' * len(PRECISION)))    
     
     
 def getPrecisionRecall(cmatrix, label=1):
