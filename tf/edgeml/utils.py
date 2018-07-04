@@ -49,18 +49,22 @@ def medianHeuristic(data, projectionDimension, numPrototypes, W_init=None):
     gamma = 1 / (2.5 * gamma)
     return gamma.astype('float32'), W.astype('float32'), B.T.astype('float32')
 
+
 def multiClassHingeLoss(logits, label, batch_th):
     '''
     MultiClassHingeLoss to match C++ Version - No TF internal version
     '''
     flatLogits = tf.reshape(logits, [-1, ])
-    correctId = tf.range(0, batch_th) * logits.shape[1] + label
+    label_ = tf.argmax(label, 1)
+
+    correctId = tf.range(0, batch_th) * label.shape[1] + label_
     correctLogit = tf.gather(flatLogits, correctId)
 
     maxLabel = tf.argmax(logits, 1)
     top2, _ = tf.nn.top_k(logits, k=2, sorted=True)
 
-    wrongMaxLogit = tf.where(tf.equal(maxLabel, label), top2[:, 1], top2[:, 0])
+    wrongMaxLogit = tf.where(
+        tf.equal(maxLabel, label_), top2[:, 1], top2[:, 0])
 
     return tf.reduce_mean(tf.nn.relu(1. + wrongMaxLogit - correctLogit))
 
@@ -137,7 +141,7 @@ def gen_non_linearity(A, non_linearity):
 
 
 # Auxiliary methods for EMI-RNN
-# Will probably be moved out 
+# Will probably be moved out
 
 def getConfusionMatrix(predicted, target, numClasses):
     '''
@@ -147,60 +151,60 @@ def getConfusionMatrix(predicted, target, numClasses):
     assert(predicted.ndim == 1)
     assert(target.ndim == 1)
     arr = np.zeros([numClasses, numClasses])
-    
+
     for i in range(len(predicted)):
         arr[predicted[i]][target[i]] += 1
     return arr
 
-# def printFormattedConfusionMatrix(matrix):
-#     '''
-#     Given a 2D confusion matrix, prints it in a formatte
-#     way
-#     '''
-#     assert(matrix.ndim == 2)
-#     assert(matrix.shape[0] == matrix.shape[1])
-#     RECALL = 'Recall'
-#     PRECISION = 'PRECISION'
-#     print("|%s|"% ('True->'), end='')
-#     for i in range(matrix.shape[0]):
-#         print("%7d|" % i, end='')
-#     print("%s|" % 'Precision')
-    
-#     print("|%s|"% ('-'* len(RECALL)), end='')
-#     for i in range(matrix.shape[0]):
-#         print("%s|" % ('-'* 7), end='')
-#     print("%s|" % ('-'* len(PRECISION)))
-    
-#     precisionlist = np.sum(matrix, axis=1)
-#     recalllist = np.sum(matrix, axis=0) 
-#     precisionlist = [matrix[i][i]/ x if x != 0 else -1 for i,x in enumerate(precisionlist)]
-#     recalllist = [matrix[i][i]/x if x != 0 else -1for i,x in enumerate(recalllist)]
-#     for i in range(matrix.shape[0]):
-#         # len recall = 6
-#         print("|%6d|"% (i), end='')
-#         for j in range(matrix.shape[0]):
-#             print("%7d|" % (matrix[i][j]), end='')
-#         print("%s" % (" " * (len(PRECISION) - 7)), end='')
-#         if precisionlist[i] != -1:
-#             print("%1.5f|" % precisionlist[i])
-#         else:
-#             print("%7s|" % "nan")
-    
-#     print("|%s|"% ('-'* len(RECALL)), end='')
-#     for i in range(matrix.shape[0]):
-#         print("%s|" % ('-'* 7), end='')
-#     print("%s|" % ('-'*len(PRECISION)))
-#     print("|%s|"% ('Recall'), end='')
-    
-#     for i in range(matrix.shape[0]):
-#         if recalllist[i] != -1:
-#             print("%1.5f|" % (recalllist[i]), end='')
-#         else:
-#             print("%7s|" % "nan", end='')
+def printFormattedConfusionMatrix(matrix):
+    '''
+    Given a 2D confusion matrix, prints it in a formatte
+    way
+    '''
+    assert(matrix.ndim == 2)
+    assert(matrix.shape[0] == matrix.shape[1])
+    RECALL = 'Recall'
+    PRECISION = 'PRECISION'
+    print("|%s|"% ('True->'), end='')
+    for i in range(matrix.shape[0]):
+        print("%7d|" % i, end='')
+    print("%s|" % 'Precision')
 
-#     print('%s|' % (' ' * len(PRECISION)))    
-    
-    
+    print("|%s|"% ('-'* len(RECALL)), end='')
+    for i in range(matrix.shape[0]):
+        print("%s|" % ('-'* 7), end='')
+    print("%s|" % ('-'* len(PRECISION)))
+
+    precisionlist = np.sum(matrix, axis=1)
+    recalllist = np.sum(matrix, axis=0)
+    precisionlist = [matrix[i][i]/ x if x != 0 else -1 for i,x in enumerate(precisionlist)]
+    recalllist = [matrix[i][i]/x if x != 0 else -1for i,x in enumerate(recalllist)]
+    for i in range(matrix.shape[0]):
+        # len recall = 6
+        print("|%6d|"% (i), end='')
+        for j in range(matrix.shape[0]):
+            print("%7d|" % (matrix[i][j]), end='')
+        print("%s" % (" " * (len(PRECISION) - 7)), end='')
+        if precisionlist[i] != -1:
+            print("%1.5f|" % precisionlist[i])
+        else:
+            print("%7s|" % "nan")
+
+    print("|%s|"% ('-'* len(RECALL)), end='')
+    for i in range(matrix.shape[0]):
+        print("%s|" % ('-'* 7), end='')
+    print("%s|" % ('-'*len(PRECISION)))
+    print("|%s|"% ('Recall'), end='')
+
+    for i in range(matrix.shape[0]):
+        if recalllist[i] != -1:
+            print("%1.5f|" % (recalllist[i]), end='')
+        else:
+            print("%7s|" % "nan", end='')
+
+    print('%s|' % (' ' * len(PRECISION)))
+
+
 def getPrecisionRecall(cmatrix, label=1):
     trueP = cmatrix[label][label]
     denom = np.sum(cmatrix, axis=0)[label]
@@ -219,8 +223,10 @@ def getMacroPrecisionRecall(cmatrix):
     precisionlist = np.sum(cmatrix, axis=1)
     # TP + FN
     recalllist = np.sum(cmatrix, axis=0)
-    precisionlist__ = [cmatrix[i][i]/ x if x!= 0 else 0 for i,x in enumerate(precisionlist)]
-    recalllist__ = [cmatrix[i][i]/x if x!=0 else 0 for i,x in enumerate(recalllist)]
+    precisionlist__ = [cmatrix[i][i] / x if x !=
+                       0 else 0 for i, x in enumerate(precisionlist)]
+    recalllist__ = [cmatrix[i][i] / x if x !=
+                    0 else 0 for i, x in enumerate(recalllist)]
     precision = np.sum(precisionlist__)
     precision /= len(precisionlist__)
     recall = np.sum(recalllist__)
@@ -232,8 +238,8 @@ def getMicroPrecisionRecall(cmatrix):
     # TP + FP
     precisionlist = np.sum(cmatrix, axis=1)
     # TP + FN
-    recalllist = np.sum(cmatrix, axis=0) 
-    num =0.0
+    recalllist = np.sum(cmatrix, axis=0)
+    num = 0.0
     for i in range(len(cmatrix)):
         num += cmatrix[i][i]
 
@@ -248,9 +254,11 @@ def getMacroMicroFScore(cmatrix):
     Refer: http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.104.8244&rep=rep1&type=pdf
     '''
     precisionlist = np.sum(cmatrix, axis=1)
-    recalllist = np.sum(cmatrix, axis=0) 
-    precisionlist__ = [cmatrix[i][i]/ x if x != 0 else 0 for i,x in enumerate(precisionlist)]
-    recalllist__ = [cmatrix[i][i]/x if x != 0 else 0 for i,x in enumerate(recalllist)]
+    recalllist = np.sum(cmatrix, axis=0)
+    precisionlist__ = [cmatrix[i][i] / x if x !=
+                       0 else 0 for i, x in enumerate(precisionlist)]
+    recalllist__ = [cmatrix[i][i] / x if x !=
+                    0 else 0 for i, x in enumerate(recalllist)]
     macro = 0.0
     for i in range(len(precisionlist)):
         denom = precisionlist__[i] + recalllist__[i]
@@ -259,7 +267,7 @@ def getMacroMicroFScore(cmatrix):
             denom = 1
         macro += numer / denom
     macro /= len(precisionlist)
-    
+
     num = 0.0
     for i in range(len(precisionlist)):
         num += cmatrix[i][i]

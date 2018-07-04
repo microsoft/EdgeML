@@ -58,7 +58,7 @@ if args.batchSize is None:
 else:
     batchSize = args.batchSize
 
-useMCHLoss = True
+useMCHLoss = False
 
 if numClasses == 2:
     numClasses = 1
@@ -86,15 +86,23 @@ bonsaiTrainer.train(batchSize, totalEpochs, sess,
                     Xtrain, Xtest, Ytrain, Ytest, data_dir, currDir)
 
 # For the following command:
-# Data - Curet
-# python train.py -dir ./curet/ -d 2 -p 22 -rW 0.00001 -rZ 0.0000001 -rV 0.00001 -rT 0.000001 -sZ 0.4 -sW 0.5 -sV 0.5 -sT 1 -e 300 -s 0.1 -b 20
-# Final Output
-# Maximum Test accuracy at compressed model size(including early stopping): 0.94583 at Epoch: 157
-# Final Test Accuracy: 0.92516
-# Non-Zeros: 118696 Model Size: 115.9140625 KB
+# Data - Curet 
+# python bonsai_example.py -dir ./curet/ -d 2 -p 22 -rW 0.00001 -rZ 0.0000001 -rV 0.00001 -rT 0.000001 -sZ 0.4 -sW 0.5 -sV 0.5 -sT 1 -e 300 -s 0.1 -b 20
+# Final Output - useMCHLoss = False
+# Maximum Test accuracy at compressed model size(including early stopping): 0.93799 at Epoch: 280
+# Final Test Accuracy: 0.924448
+
+# Non-Zeros: 24231.0 Model Size: 115.65625 KB hasSparse: True
+
+# Final Output - useMCHLoss = True
+# Maximum Test accuracy at compressed model size(including early stopping): 0.933713 at Epoch: 276
+# Final Test Accuracy: 0.916607
+
+# Non-Zeros: 24231.0 Model Size: 115.65625 KB hasSparse: True
 
 # Data - usps2
-# python train.py -dir ../../../../../../deepBonsai/DeepBonsai/Bonsai_tf/data/usps2/ -d 2 -p 22 -rW 0.00001 -rZ 0.0000001 -rV 0.00001 -rT 0.000001 -sZ 0.4 -sW 0.5 -sV 0.5 -sT 1 -e 300 -s 0.1 -b 20
-# Maximum Test accuracy at compressed model size(including early stopping): 0.960638 at Epoch: 249
-# Final Test Accuracy: 0.951171
-# Non-Zeros: 19592.0 Model Size: 19.1328125 KB hasSparse: True
+# python bonsai_example.py -dir usps2/ -d 2 -p 22 -rW 0.00001 -rZ 0.0000001 -rV 0.00001 -rT 0.000001 -sZ 0.4 -sW 0.5 -sV 0.5 -sT 1 -e 300 -s 0.1 -b 20
+# Maximum Test accuracy at compressed model size(including early stopping): 0.960638 at Epoch: 183
+# Final Test Accuracy: 0.956153
+
+# Non-Zeros: 2636.0 Model Size: 19.1328125 KB hasSparse: True

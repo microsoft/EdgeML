@@ -73,7 +73,7 @@ class BonsaiTrainer:
             if self.useMCHLoss is True:
                 self.batch_th = tf.placeholder(tf.int64, name='batch_th')
                 self.marginLoss = utils.multiClassHingeLoss(
-                    tf.transpose(self.score), tf.argmax(self.Y, 1),
+                    tf.transpose(self.score), self.Y,
                     self.batch_th)
             else:
                 self.marginLoss = utils.crossEntropyLoss(
