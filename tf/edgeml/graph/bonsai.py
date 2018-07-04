@@ -44,7 +44,7 @@ class Bonsai:
         self.T = self.initT(T)
         self.Z = self.initZ(Z)
 
-        self.sigmaI = 1.0
+        self.sigmaI = tf.placeholder(tf.float32, name='sigmaI')
 
         self.assertInit()
 
