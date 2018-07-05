@@ -106,13 +106,13 @@ class Bonsai:
             W_ = self.W[i * self.numClasses:((i + 1) * self.numClasses)]
             V_ = self.V[i * self.numClasses:((i + 1) * self.numClasses)]
 
-            T_ = tf.reshape(self.T[int(np.ceil(i / 2) - 1)],
+            T_ = tf.reshape(self.T[int(np.ceil(i / 2.0) - 1.0)],
                             [-1, self.projectionDimension])
             prob = (1 + ((-1)**(i + 1)) *
                     tf.tanh(tf.multiply(sigmaI, tf.matmul(T_, X_))))
 
             prob = tf.divide(prob, 2)
-            prob = self.__nodeProb[int(np.ceil(i / 2) - 1)] * prob
+            prob = self.__nodeProb[int(np.ceil(i / 2.0) - 1.0)] * prob
             self.__nodeProb.append(prob)
             score_ += self.__nodeProb[i] * tf.multiply(
                 tf.matmul(W_, X_), tf.tanh(self.sigma * tf.matmul(V_, X_)))
