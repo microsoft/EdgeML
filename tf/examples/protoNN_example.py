@@ -12,6 +12,7 @@ from edgeml.trainer.protoNNTrainer import ProtoNNTrainer
 from edgeml.graph.protoNN import ProtoNN
 import matplotlib.pyplot as plt
 import edgeml.utils as utils
+
 np.random.seed(42)
 
 def getModelSize(matrixList, sparcityList, expected=True, bytesPerVar=4):
@@ -70,6 +71,7 @@ def loadData(dataDir):
     #To use as a regressor.
     numClasses = 1
 
+
     # mean-var normalization.
     mean = np.mean(x_train, 0)
     std = np.std(x_train, 0)
@@ -80,6 +82,7 @@ def loadData(dataDir):
     print ("Inside loadData.")
     print ("Mean : ",mean)
     print ("Std  : ",std)
+
 
     #print ("Xtrain : ",x_train[:5,:])
     #print ("Xtrain : ",x_test[:5,:])
@@ -100,17 +103,10 @@ def loadData(dataDir):
     y_test = lab_
     """
 
-    #Add a bias term, when going for regression.
-    trainBias = np.ones([x_train.shape[0], 1])
-    x_train = np.append(x_train, trainBias, axis=1)
-    testBias = np.ones([x_test.shape[0], 1])
-    x_test = np.append(x_test, testBias, axis=1)
-    print ("After adding bias term, the shapes of the input features : ",x_train.shape , x_test.shape)
-
     # Don's original piece of line.
     #return dataDimension, numClasses, x_train, y_train, x_test, y_test
 
-    return dataDimension + 1, numClasses, x_train, y_train_.reshape((-1,1)), x_test, y_test_.reshape((-1,1)),mean,std
+    return dataDimension, numClasses, x_train, y_train_.reshape((-1,1)), x_test, y_test_.reshape((-1,1)),mean,std
 
 
 def main(**kwargs):
@@ -152,11 +148,18 @@ def main(**kwargs):
     numClasses = out[1]
     x_train, y_train = out[2], out[3]
     x_test, y_test = out[4], out[5]
+
     print("Using median heuristc to estimate gamma")
     centers , gamma, W, B = utils.medianHeuristic(x_train, PROJECTION_DIM,
                                         NUM_PROTOTYPES,) #W_init=np.eye(PROJECTION_DIM))
+
+    print ("Mean : ",out[-2])
+    print ("Std  : ",out[-1])
+
     #print ("gamma : ",gamma)
     #gamma =  0.0156096
+    #gamma = 0
+
     print ("Before run : ",np.linalg.norm(B,ord="fro"))
 
     X = tf.placeholder(tf.float32, [None, dataDimension], name='X')
@@ -172,16 +175,14 @@ def main(**kwargs):
     sess = tf.Session()
     sess.run(tf.group(tf.initialize_all_variables(),
                       tf.initialize_variables(tf.local_variables())))
+
     ndict = trainer.train(DATA_DIR,batchSize, NUM_EPOCHS, sess, x_train, x_test, y_train, y_test,
                   DATA_DIR,printStep=200)
     acc,g0 = sess.run([protoNN.accuracy,protoNN.gamma], feed_dict={X: x_test, Y:y_test})
-    print ("Final Value of gamma : ",g0)
+
     W, B, Z, _ = protoNN.getModelMatrices()
+    print ("Final value of gamma : ",g0)
     matrixList = sess.run([W, B, Z])
-    print ("B : ",np.transpose(matrixList[1]))
-    print ("\n\n")
-    print ("Z : ",np.transpose(matrixList[2]))
-    '''
     sparcityList = [SPAR_W, SPAR_B, SPAR_Z]
     nnz, size, sparse = getModelSize(matrixList, sparcityList)
     print("Final test accuracy", acc)
@@ -190,6 +191,22 @@ def main(**kwargs):
     nnz, size, sparse = getModelSize(matrixList, sparcityList, expected=False)
     print("Actual model size: ", size)
     print("Actual non-zeros: ", nnz)
+    print ("Prototypes (B) : ",matrixList[1])
+    '''
+    #Save the value of the 'Gamma' in the dictionary.
+    #ndict["g"] = gamma
+    #B : num_prototypes.
+    print ("Prototypes (B) : ",matrixList[1].shape)
+    #Z : what it predicts.
+    print ("Z : ",matrixList[2].shape)
+    #print ("Z : ",matrixList[2])
+    #(np.save("B.npy",matrixList[1]))
+    #print ("B : ",matrixList[1])
+    print ("After run : ",np.linalg.norm(matrixList[1],ord="fro"))
+    pd.DataFrame(matrixList[1]).to_csv("B.csv")
+    pd.DataFrame(matrixList[2]).to_csv("Z.csv")
+    B = pd.DataFrame(matrixList[1])
+    print ("W : ",matrixList[0])
     '''
 if __name__ == '__main__':
     main()

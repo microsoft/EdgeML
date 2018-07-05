@@ -42,7 +42,7 @@ def model_create():
     print ("outFile : ",outFile)
 
     (dataDimension, numClasses,
-        Xtrain, Ytrain, Xtest, Ytest,mean , std) = bonsaipreprocess.preProcessData(data_dir)
+        Xtrain, Ytrain, Xtest, Ytest,mean,std) = bonsaipreprocess.preProcessData(data_dir)
 
     sparZ = args.sZ
 
@@ -109,16 +109,6 @@ def model_create():
     dict = bonsaiTrainer.train(batchSize, totalEpochs, sess,
                         Xtrain, Xtest, Ytrain, Ytest, split,data_dir, currDir,mean,std,type)
 
-
-    '''
-    Part : Code to visualize the decision boundary of Bonsai.
-
-    x_test = np.array(np.arange(-1,1,0.1))
-    x_test = np.concatenate((x_test,np.array(np.arange(-1,1,0.1)),np.array(np.arange(-1,1,0.1)),np.array(np.arange(-1,1,0.1)),np.array(np.arange(-1,1,0.1)),np.array(np.arange(-1,1,0.1))),axis=1)
-    print ("Shape of xtest : ",x_test.shape)
-    bonsai_preds = bonsaiTrainer.Bonsai_Predictions(x_test,Ytest,sess)
-    bonsai_actuals = Ytest
-    '''
 
     sess.close()
     sys.stdout.close()

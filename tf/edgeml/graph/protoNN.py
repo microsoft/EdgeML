@@ -240,7 +240,7 @@ class ProtoNN:
 
             #Divide by reduce_sum(M) , to renormalize 'W' again.
             y = tf.divide(y,tf.reduce_sum(M,2,name='Renormalize'))
-            #print ("Test : ",tf.reduce_sum(M,2,name='Renormalize').shape.as_list() )
+            print ("Renormalization part : ",tf.reduce_sum(M,2,name='Renormalize').shape.as_list())
             print ("Shape of y ",y.shape.as_list())
             self.protoNNOut = y
 

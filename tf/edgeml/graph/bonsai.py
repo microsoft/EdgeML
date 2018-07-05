@@ -46,8 +46,6 @@ class Bonsai:
         self.T = self.initT(T)
         self.Z = self.initZ(Z)
 
-        self.sigmaI = 1.0
-
         self.assertInit()
 
         self.score = None
@@ -84,7 +82,7 @@ class Bonsai:
         T = tf.Variable(T, name='T', dtype=tf.float32)
         return T
 
-    def __call__(self, X):
+    def __call__(self, X, sigmaI):
         '''
         Function to build the Bonsai Tree graph
         Expected Dimensions
@@ -98,7 +96,6 @@ class Bonsai:
             return self.score, self.X_
 
         X_ = tf.divide(tf.matmul(self.Z, X, transpose_b=True) ,  self.projectionDimension)
-        #X_ = tf.divide(tf.transpose(X),self.projectionDimension)
 
         print (X_.shape)
         W_ = self.W[0:(self.numClasses)]
@@ -113,16 +110,17 @@ class Bonsai:
             W_ = self.W[i * self.numClasses:((i + 1) * self.numClasses)]
             V_ = self.V[i * self.numClasses:((i + 1) * self.numClasses)]
 
-            T_ = tf.reshape(self.T[int(np.ceil(i / 2) - 1)],
-                            [-1, self.projectionDimension])
+            T_ = tf.reshape(self.T[int(np.ceil(i / 2) - 1)],[-1, self.projectionDimension])
             prob = (1 + ((-1)**(i + 1)) *
-                    tf.tanh(tf.multiply(self.sigmaI, tf.matmul(T_, X_))))
+                    tf.tanh(tf.multiply(sigmaI, tf.matmul(T_, X_))))
 
             prob = tf.divide(prob, 2)
             prob = self.__nodeProb[int(np.ceil(i / 2) - 1)] * prob
             self.__nodeProb.append(prob)
             score_ += self.__nodeProb[i] * tf.multiply(
                 tf.matmul(W_, X_), tf.tanh(self.sigma * tf.matmul(V_, X_)))
+
+        self.probs_list = tf.stack((self.__nodeProb))
 
         self.score = score_
         self.X_ = X_

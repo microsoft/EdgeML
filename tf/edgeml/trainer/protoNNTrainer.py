@@ -161,6 +161,9 @@ class ProtoNNTrainer:
 		train_preds = []
 		train_test = []
 
+		epoch_list = []
+		test_r2 = []
+
 		train_loss = []
 		test_loss = []
 
@@ -211,9 +214,6 @@ class ProtoNNTrainer:
 			print ("Epoch : ",epoch)
 			if self.sparseTraining:
 				W_, B_, Z_ = sess.run([W, B, Z])
-				print ("W : ",np.isnan(W_))
-				print ("B : ",np.isnan(B_))
-				print ("Z : ",np.isnan(Z_))
 				fd_thrsd = {
 					self.W_th: utils.hardThreshold(W_, self.__sW),
 					self.B_th: utils.hardThreshold(B_, self.__sB),
@@ -221,7 +221,6 @@ class ProtoNNTrainer:
 				}
 				sess.run(self.__hthOp, feed_dict=fd_thrsd)
 			train_loss.append(trainloss)
-
 			del preds[:]
 			del test [:]
 			#if (epoch + 1) % 3 == 0:
@@ -247,7 +246,16 @@ class ProtoNNTrainer:
 				testloss /= len(y_val_batches)
 				test_loss.append(testloss)
 				print("Test Loss: %2.5f Accuracy: %2.5f" % (testloss, acc))
-
+				#Metrics only on the test set.
+				print ("Metrics")
+				arr_preds = np.concatenate(preds,axis=0)
+				arr_test = np.concatenate(test,axis=0)
+				epoch_list.append(epoch)
+				test_r2.append(r2_score(arr_test,arr_preds))
+				print ("R2 : ",r2_score(arr_test,arr_preds))
+				print ("MAE : ",mean_absolute_error(arr_test,arr_preds))
+				print ("RMSE : ",np.sqrt(mean_squared_error(arr_test,arr_preds)))
+				print ("---------------------------------------------")
 
 		#---------Saving the loss across training and validation set-----------#
 		print ("Saving both train and test losses.")
@@ -256,6 +264,11 @@ class ProtoNNTrainer:
 		np.save("train_loss.npy",np.array(train_loss))
 		np.save("test_loss.npy",np.array(test_loss))
 		print ("Saved the train and test losses.")
+
+		print ("Saving epochs and r2_score.")
+		np.save("epoch_list",np.array(epoch_list))
+		np.save("r2_score",np.array(test_r2))
+
 		'''
 		print ("Plots of train and validation losses.")
 		plt.figure(figsize=(10,10))
@@ -264,6 +277,7 @@ class ProtoNNTrainer:
 		plt.legend(["Train Loss","Test Loss"])
 		plt.show()
 		'''
+		
 		print ("Combining both train and test preds. ")
 		print ("Lens : ",len(train_preds) , len(train_test))
 		split = np.concatenate(train_preds,axis=0).shape[0]
@@ -279,6 +293,8 @@ class ProtoNNTrainer:
 		preds = np.concatenate(preds,axis=0)
 		test = np.concatenate(test,axis=0)
 		print ("---------------------------------------------")
+
+		#Metrics only on the test set.
 		print ("Metrics")
 		print ("R2 : ",r2_score(test,preds))
 		ndict["r2"] = r2_score(test,preds)
@@ -288,13 +304,13 @@ class ProtoNNTrainer:
 		ndict["rmse"] = np.sqrt(mean_squared_error(test,preds))
 		print ("---------------------------------------------")
 
-
+		'''
 		fig, ax = plt.subplots( nrows=1, ncols=1)
 		plt.grid(True)
 		ax.plot(preds)
 		ax.plot(test)
 		ax.legend(["Preds","Test"])
 		plt.show()
-
+		'''
 
 		return saver[:,0].reshape((-1,1)) , saver[:,1].reshape((-1,1))

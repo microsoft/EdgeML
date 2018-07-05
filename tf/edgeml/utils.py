@@ -31,12 +31,12 @@ def medianHeuristic(data, projectionDimension, numPrototypes, W_init=None):
     '''
     assert data.ndim == 2
     X = data
-    #Added '+1' to incorporate the bias term.
     featDim = data.shape[1]
     if W_init is None:
         W_init = np.random.normal(size=[featDim, projectionDimension])
     W = W_init
     XW = np.matmul(X, W)
+    print ("Shape of XW : ",XW.shape)
     assert XW.shape[1] == projectionDimension
     assert XW.shape[0] == len(X)
     # Requires [N x d_cap] data matrix of N observations of d_cap-dimension and
