@@ -91,8 +91,8 @@ def getJointPredictions(softmaxOut, earlyPolicy, **kwargs):
 
 class NetworkJoint:
     class SupportedCellTypes:
-        LSTM, GRU = 'lstm', 'gru'
-        allCells = [LSTM, GRU]
+        LSTM, GRU, FastGRNN, FastRNN = 'lstm', 'gru', 'fastgrnn', 'fastrnn'
+        allCells = [LSTM, GRU, FastGRNN, FastRNN]
 
     def __init__(self, numSubinstance, numFeats, numTimeSteps,
                  numHidden, numFC, numOutput, prefetchNum=10,
@@ -113,6 +113,10 @@ class NetworkJoint:
             self.cellType = NetworkJoint.SupportedCellTypes.LSTM
         elif cellType == 'gru':
             self.cellType = NetworkJoint.SupportedCellTypes.GRU
+        elif cellType == 'fastgrnn':
+            self.cellType = NetworkJoint.SupportedCellTypes.FastGRNN
+        elif cellType == 'fastrnn':
+            self.cellType = NetworkJoint.SupportedCellTypes.FastRNN
 
         self.useDropout = useDropout
         self.useEmbeddings = useEmbeddings
@@ -226,6 +230,12 @@ class NetworkJoint:
         elif self.cellType is NetworkJoint.SupportedCellTypes.GRU:
             self.cell = tf.nn.rnn_cell.GRUCell(self.numHidden, name='GRUcell')
             print('GRU')
+        elif self.cellType is NetworkJoint.SupportedCellTypes.FastGRNN:
+            self.cell = tf.nn.rnn_cell.FastGRNNCell(self.numHidden, name='FastGRNNCell')
+            print('FastGRNN')
+        elif self.cellType is NetworkJoint.SupportedCellTypes.FastRNNCell:
+            self.cell = tf.nn.rnn_cell.FastRNNCell(self.numHidden, name='FastRNNCell')
+            print('FastRNN')
         else:
             pass
 
@@ -401,6 +411,7 @@ class NetworkJoint:
             self.sess = tf.Session()
             print("Running kernel and bias assignment operations", file=redirFile)
             graph = tf.get_default_graph()
+            # TODO: This has to be fixed for Non LSTM cells as Parameters are not the same
             if self.cellType is NetworkJoint.SupportedCellTypes.LSTM:
                 k_ = graph.get_tensor_by_name('rnn/LSTMcell/kernel:0')
                 b_ = graph.get_tensor_by_name('rnn/LSTMcell/bias:0')
@@ -535,6 +546,7 @@ class NetworkJoint:
         self.W1 = graph.get_tensor_by_name('W1:0')
         self.W2 = graph.get_tensor_by_name('W2:0')
         self.B2 = graph.get_tensor_by_name('B2:0')
+        # TODO: This has to be fixed for non LSTM Cells as the params are not the same
         if self.cellType == NetworkJoint.SupportedCellTypes.LSTM:
             kernel = graph.get_tensor_by_name("rnn/LSTMcell/kernel:0")
             bias = graph.get_tensor_by_name("rnn/LSTMcell/bias:0")
@@ -547,6 +559,7 @@ class NetworkJoint:
         self.__graphCreated = True
         return graph
 
+    # TODO: Has to be fixed for non LSTM Cells
     def exportNPY(self, outFolder=None):
         W1, B1, W2, B2 = self.W1, self.B1, self.W2, self.B2
         lstmKernel, lstmBias = self.LSTMVars
