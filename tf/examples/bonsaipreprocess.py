@@ -72,13 +72,13 @@ def getArgs():
     parser.add_argument('-rZ', type=float, default=0.00001,
                         help='Regularizer for projection parameter Z  (default: 0.00001 try: [0.001, 0.0001, 0.000001])')
 
+    # 's' Sparsity factors actually determine how sparse a model, is learnt.
     parser.add_argument('-sW', type=checkFloatPos,
                         help='Sparsity for predictor parameter W  (default: For Binary classification 1.0 else 0.2 try: [0.1, 0.3, 0.5])')
     parser.add_argument('-sV', type=checkFloatPos,
                         help='Sparsity for predictor parameter V  (default: For Binary classification 1.0 else 0.2 try: [0.1, 0.3, 0.5])')
     parser.add_argument('-sT', type=checkFloatPos,
                         help='Sparsity for branching parameter Theta  (default: For Binary classification 1.0 else 0.2 try: [0.1, 0.3, 0.5])')
-
     #Sparsity Factor of 1 , denotes that a dense matrix is learnt.
     parser.add_argument('-sZ', type=checkFloatPos, default=1.0,
                         help='Sparsity for projection parameter Z  (default: 0.2 try: [0.1, 0.3, 0.5])')
@@ -109,50 +109,25 @@ def preProcessData(data_dir):
     Xtest = test[:, 1:dataDimension + 1]
     Ytest_ = test[:, 0]
 
-    #numClasses = int(max(numClasses, max(Ytest_) - min(Ytest_) + 1))
-
-    numClasses=1
+    #The number of classes for regression will be 1.
+    numClasses = 1
 
     # Mean Var Normalisation
     mean = np.mean(Xtrain, 0)
     std = np.std(Xtrain, 0)
     std[std[:] < 0.000001] = 1
     Xtrain = (Xtrain - mean) / std
-
     Xtest = (Xtest - mean) / std
     # End Mean Var normalisation
 
-    """
-    lab = Ytrain_.astype('uint8')
-    lab = np.array(lab) - min(lab)
-
-    lab_ = np.zeros((Xtrain.shape[0], numClasses))
-    lab_[np.arange(Xtrain.shape[0]), lab] = 1
-    if (numClasses == 2):
-        Ytrain = np.reshape(lab, [-1, 1])
-    else:
-        Ytrain = lab_
-    """
-
-    """
-    lab = Ytest_.astype('uint8')
-    lab = np.array(lab) - min(lab)
-
-    lab_ = np.zeros((Xtest.shape[0], numClasses))
-    lab_[np.arange(Xtest.shape[0]), lab] = 1
-    if (numClasses == 2):
-        Ytest = np.reshape(lab, [-1, 1])
-    else:
-        Ytest = lab_
-    """
-
+    #Add bias units to the train and test sets.
     trainBias = np.ones([Xtrain.shape[0], 1])
     Xtrain = np.append(Xtrain, trainBias, axis=1)
     testBias = np.ones([Xtest.shape[0], 1])
     Xtest = np.append(Xtest, testBias, axis=1)
 
     #Return dataDimension + 1, to factor in the bias term.
-    return dataDimension + 1 , numClasses, Xtrain, Ytrain_.reshape((-1,1)), Xtest, Ytest_.reshape((-1,1)),mean,std
+    return dataDimension + 1 , numClasses, Xtrain, Ytrain_.reshape((-1,1)), Xtest, Ytest_.reshape((-1,1)), mean, std
 
 
 def createDir(dataDir):

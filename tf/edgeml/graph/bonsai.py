@@ -23,7 +23,7 @@ class Bonsai:
         sigmaI - Indicator function for node probs
         sigmaI - has to be set to infinity(1e9 for practicality)
         while doing testing/inference
-        numClasses will be reset to 1 in binary case
+        numClasses will be set to 1, for regression.
         '''
 
         self.dataDimension = dataDimension
@@ -51,7 +51,6 @@ class Bonsai:
         self.X_ = None
         self.prediction = None
 
-    # Use an indentity matrix for Z, only for low dimensional
     def initZ(self, Z):
         if Z is None:
             Z = tf.random_normal([self.projectionDimension, self.dataDimension])
@@ -80,6 +79,7 @@ class Bonsai:
         return T
 
     def __call__(self, X, sigmaI):
+
         '''
         Function to build the Bonsai Tree graph
         Expected Dimensions
@@ -87,6 +87,7 @@ class Bonsai:
         X is [_, self.dataDimension]
         '''
         errmsg = "Dimension Mismatch, X is [_, self.dataDimension]"
+
         assert (len(X.shape) == 2 and int(
             X.shape[1]) == self.dataDimension), errmsg
         if self.score is not None:
@@ -125,7 +126,7 @@ class Bonsai:
 
     def getPrediction(self):
         '''
-        Takes in a score tensor and outputs a integer class for each datapoint
+        Takes in a score tensor and returns a prediction for each datapoint
         '''
 
         if self.prediction is not None:
@@ -134,11 +135,7 @@ class Bonsai:
         if self.numClasses > 2:
             self.prediction = tf.argmax(tf.transpose(self.score), 1)
         else:
-            #self.prediction = tf.argmax(
-            #    tf.concat([tf.transpose(self.score),
-            #               0 * tf.transpose(self.score)], 1), 1)
-
-            #Scores are the predictions, just return them.
+            #For regression , scores are the actual predictions, just return them.
             self.prediction = self.score
 
         return self.prediction
@@ -196,10 +193,10 @@ class Bonsai:
         assert self.W.shape[0] == self.numClasses * self.totalNodes, errW
         assert self.W.shape[1] == self.projectionDimension, errW
         errZ = "Z is [projectionDimension, dataDimension]"
-        #assert self.Z.shape[0] == self.projectionDimension, errZ
-        #assert self.Z.shape[1] == self.projectionDimension, errZ
-        #assert self.Z.shape[1] == self.dataDimension, errZ
-        #assert self.Z.shape[1] == self.dataDimension, errZ
+        assert self.Z.shape[0] == self.projectionDimension, errZ
+        assert self.Z.shape[1] == self.projectionDimension, errZ
+        assert self.Z.shape[1] == self.dataDimension, errZ
+        assert self.Z.shape[1] == self.dataDimension, errZ
         errT = "T is [internalNodes, projectionDimension]"
         assert self.T.shape[0] == self.internalNodes, errT
         assert self.T.shape[1] == self.projectionDimension, errT

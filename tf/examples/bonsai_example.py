@@ -7,6 +7,10 @@ import sys
 import pickle
 sys.path.insert(0, '../')
 
+'''
+Bonsai Example for Regression.
+'''
+
 from edgeml.trainer.bonsaiTrainer import BonsaiTrainer
 from edgeml.graph.bonsai import Bonsai
 
@@ -114,8 +118,8 @@ def model_create():
     sys.stdout.close()
     return dict
 
+#Returns a dictionary of parameters from the bonsai_Trainer.
 ndict = model_create()
-#pickle.dump(ndict,open("bonsai_data1_s1.pkl","a+"))
 
 #bonsaiObj.saveModel(currDir)
 
