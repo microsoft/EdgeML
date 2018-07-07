@@ -5,7 +5,6 @@ from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
 from tensorflow.contrib.learn.python import learn
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import os
 import subprocess
 import sys
@@ -236,7 +235,7 @@ class BonsaiTrainer:
 		The Dense - IHT - Sparse Retrain Routine for Bonsai Training
 		'''
 		result_dict = {}
-		#resultFile = open(dataDir + '/BonsaiResults.txt', 'a+')
+		resultFile = open(dataDir + '/BonsaiResults.txt', 'a+')
 		numIters = Xtrain.shape[0] / batchSize
 
 		totalBatches = numIters * totalEpochs
@@ -407,14 +406,6 @@ class BonsaiTrainer:
 					df.columns = ["Predictions","Truth"]
 					df.to_csv(currDir + "/" + "preds" + ".csv",index=False)
 
-
-		print ("Saving the predictions.")
-		plt.figure(figsize=(5,5))
-		plt.plot(Ytest)
-		plt.plot(np.array(pred[0]))
-		plt.legend(["test","pred"])
-		plt.show()
-
 		print("Test accuracy %g" , (testAcc[0]+testAcc[1])/2.0, file=self.outFile)
 		print("MarginLoss + RegLoss: " + str(testLoss - regTestLoss) +
 			  " + " + str(regTestLoss) + " = " + str(testLoss) + "\n",
@@ -438,7 +429,7 @@ class BonsaiTrainer:
 
 
 
-		"""
+
 		resultFile.write("MaxTestAcc: " + str(maxTestAcc) +
 						 " at Epoch(totalEpochs): " +
 						 str(maxTestAccEpoch + 1) +
@@ -449,7 +440,7 @@ class BonsaiTrainer:
 						 str(os.path.abspath(currDir)) + "\n")
 
 		resultFile.close()
-		"""
+
 		self.bonsaiObj.saveModel(currDir,mean,std)
 		self.outFile.flush()
 		self.outFile.close()

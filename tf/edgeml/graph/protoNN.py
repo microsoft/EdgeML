@@ -38,6 +38,7 @@ class ProtoNN:
         self.__inB = B
         self.__inZ = Z
         self.__inGamma = gamma
+
         # The tf.Variables
         self.W, self.B, self.Z = None, None, None
         self.gamma = None
@@ -59,8 +60,8 @@ class ProtoNN:
         assert self.W.shape[1] == d_cap, errmsg
         assert self.B.shape[0] == d_cap, errmsg
         assert self.B.shape[1] == m, errmsg
-        #assert self.Z.shape[0] == L, errmsg
-        #assert self.Z.shape[1] == m, errmsg
+        assert self.Z.shape[0] == L, errmsg
+        assert self.Z.shape[1] == m, errmsg
         self.__validInit = True
 
     def __initWBZ(self):

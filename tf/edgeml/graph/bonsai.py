@@ -194,8 +194,6 @@ class Bonsai:
         assert self.W.shape[1] == self.projectionDimension, errW
         errZ = "Z is [projectionDimension, dataDimension]"
         assert self.Z.shape[0] == self.projectionDimension, errZ
-        assert self.Z.shape[1] == self.projectionDimension, errZ
-        assert self.Z.shape[1] == self.dataDimension, errZ
         assert self.Z.shape[1] == self.dataDimension, errZ
         errT = "T is [internalNodes, projectionDimension]"
         assert self.T.shape[0] == self.internalNodes, errT
