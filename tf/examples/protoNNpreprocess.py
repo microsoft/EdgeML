@@ -6,7 +6,6 @@ import argparse
 import numpy as np
 import datetime
 import os
-#import edgeml.utils as utils
 
 def checkIntPos(value):
     ivalue = int(value)
@@ -51,21 +50,29 @@ def getArgs():
 
     parser.add_argument('-p', '--projDim', type=checkIntPos, default=5,
                         help='Projection Dimension (default: 5 try: [5, 20, 30])')
-    parser.add_argument('-np', '--num_proto', type=int, default=150,
+
+    parser.add_argument('-np', '--num_proto', type=int, default=80,
                         help='Parameter for number of prototypes. (default: 60 try: [45,75,100]')
+
     parser.add_argument('-g', '--gamma', type=float, default = 0.0015,
                         help='Gamma (default: 0.0015)')
-    parser.add_argument('-e', '--num_epochs', type=int, default=200,
+
+    parser.add_argument('-e', '--num_epochs', type=int, default=100,
                         help='Num of epochs to be used (default : 200)')
+
     parser.add_argument('-lr', '--learningRate', type=checkFloatPos, default=0.05,
                         help='Initial Learning rate for Adam Optimizer (default: 0.05)')
+
     parser.add_argument('-b', '--batchSize', type=checkIntPos, default = 32,
                             help='Batch Size to be used (default: 32)')
+
     parser.add_argument('-rW', type=float, default=0.0,
-                        help='Regularizer for predictor parameter W  (default: 0.0001 try: [0.01, 0.001, 0.00001])')
+                        help='Regularizer for W  (default: 0.0001 try: [0.01, 0.001, 0.00001])')
+
     parser.add_argument('-rB', type=float, default=0.0,
-                        help='Regularizer for branching parameter Theta  (default: 0.0001 try: [0.01, 0.001, 0.00001])')
+                        help='Regularizer for B  (default: 0.0001 try: [0.01, 0.001, 0.00001])')
+
     parser.add_argument('-rZ', type=float, default=0.0,
-                        help='Regularizer for projection parameter Z  (default: 0.00001 try: [0.001, 0.0001, 0.000001])')
+                        help='Regularizer for Z  (default: 0.00001 try: [0.001, 0.0001, 0.000001])')
 
     return parser.parse_args()

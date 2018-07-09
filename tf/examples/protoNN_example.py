@@ -64,13 +64,8 @@ def loadData(dataDir):
     x_test = test[:, 1:dataDimension + 1]
     y_test_ = test[:, 0]
 
-    #numClasses = max(y_train_) - min(y_train_) + 1
-    #numClasses = max(numClasses, max(y_test_) - min(y_test_) + 1)
-    #numClasses = int(numClasses)
-
     #To use as a regressor.
     numClasses = 1
-
 
     # mean-var normalization.
     mean = np.mean(x_train, 0)
@@ -78,33 +73,6 @@ def loadData(dataDir):
     std[std[:] < 0.000001] = 1
     x_train = (x_train - mean) / std
     x_test = (x_test - mean) / std
-
-    print ("Inside loadData.")
-    print ("Mean : ",mean)
-    print ("Std  : ",std)
-
-
-    #print ("Xtrain : ",x_train[:5,:])
-    #print ("Xtrain : ",x_test[:5,:])
-
-    """
-    # one hot y-train
-    lab = y_train_.astype('uint8')
-    lab = np.array(lab) - min(lab)
-    lab_ = np.zeros((x_train.shape[0], numClasses))
-    lab_[np.arange(x_train.shape[0]), lab] = 1
-    y_train = lab_
-
-    # one hot y-test
-    lab = y_test_.astype('uint8')
-    lab = np.array(lab) - min(lab)
-    lab_ = np.zeros((x_test.shape[0], numClasses))
-    lab_[np.arange(x_test.shape[0]), lab] = 1
-    y_test = lab_
-    """
-
-    # Don's original piece of line.
-    #return dataDimension, numClasses, x_train, y_train, x_test, y_test
 
     return dataDimension, numClasses, x_train, y_train_.reshape((-1,1)), x_test, y_test_.reshape((-1,1)),mean,std
 
@@ -149,25 +117,12 @@ def main(**kwargs):
     x_train, y_train = out[2], out[3]
     x_test, y_test = out[4], out[5]
 
-    print("Using median heuristc to estimate gamma")
-    centers , gamma, W, B = utils.medianHeuristic(x_train, PROJECTION_DIM,
-                                        NUM_PROTOTYPES,) #W_init=np.eye(PROJECTION_DIM))
-
-    print ("Mean : ",out[-2])
-    print ("Std  : ",out[-1])
-
-    #print ("gamma : ",gamma)
-    #gamma =  0.0156096
-    #gamma = 0
-
-    print ("Before run : ",np.linalg.norm(B,ord="fro"))
-
     X = tf.placeholder(tf.float32, [None, dataDimension], name='X')
     Y = tf.placeholder(tf.float32, [None, numClasses], name='Y')
 
     protoNN = ProtoNN(dataDimension, PROJECTION_DIM,
                       NUM_PROTOTYPES, numClasses,
-                      gamma,W=W,B=B)
+                      GAMMA)
 
     trainer = ProtoNNTrainer(DATA_DIR,protoNN, REG_W, REG_B, REG_Z,
                              SPAR_W, SPAR_B, SPAR_Z,
@@ -189,25 +144,9 @@ def main(**kwargs):
     print("Model size constraint (Bytes): ", size)
     print("Number of non-zeros: ", nnz)
     nnz, size, sparse = getModelSize(matrixList, sparcityList, expected=False)
-    print("Actual model size: ", size)
+    print("Actual model size: (KB) ", size/1024.0)
     print("Actual non-zeros: ", nnz)
-    print ("Prototypes (B) : ",matrixList[1])
-    '''
-    #Save the value of the 'Gamma' in the dictionary.
-    #ndict["g"] = gamma
-    #B : num_prototypes.
-    print ("Prototypes (B) : ",matrixList[1].shape)
-    #Z : what it predicts.
-    print ("Z : ",matrixList[2].shape)
-    #print ("Z : ",matrixList[2])
-    #(np.save("B.npy",matrixList[1]))
-    #print ("B : ",matrixList[1])
-    print ("After run : ",np.linalg.norm(matrixList[1],ord="fro"))
-    pd.DataFrame(matrixList[1]).to_csv("B.csv")
-    pd.DataFrame(matrixList[2]).to_csv("Z.csv")
-    B = pd.DataFrame(matrixList[1])
-    print ("W : ",matrixList[0])
-    '''
+
 if __name__ == '__main__':
     main()
 
