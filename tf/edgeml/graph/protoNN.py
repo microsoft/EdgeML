@@ -30,9 +30,7 @@ class ProtoNN:
         self.__L = numOutputLabels
 
         self.__np_gamma = gamma
-        print ("Init value of gamma : ",gamma)
         self.__X = None
-        print ("Inside ProtoNN init : ",type(gamma))
 
         self.__inW = W
         self.__inB = B
@@ -81,9 +79,7 @@ class ProtoNN:
             Z = self.__inZ
             if Z is None:
                 Z = tf.random_normal_initializer()
-                #One dimension of Z will be equal to the data dimension, with a bias term.
-                #Z = Z([self.__L, self.__m])
-                Z = Z([self.__d, self.__m])
+                Z = Z([self.__L, self.__m])
             Z = tf.Variable(Z, name='Z', dtype=tf.float32)
             self.Z = Z
         return self.W, self.B, self.Z
@@ -111,15 +107,13 @@ class ProtoNN:
             print ("W : ",matrixList[0].shape)
             x_train = np.matmul(x_train,matrixList[0])
             print ("XW : ",x_train.shape)
-            #print (B)
+
             #----------------------------------#
             cdist_ = distance.cdist(B,x_train,'minkowski',p=1)
             print ("Shape of cdist : ",cdist_.shape)
             new_gamma = np.mean(np.median(cdist_,axis=1))
             new_gamma = 1 / (2.5 * new_gamma)
             print ("Updated Value of gamma : ",new_gamma)
-
-            #----------------------------------#
             self.__np_gamma = new_gamma
             self.__inGamma = new_gamma
             print ("Before Updation ,  Gamma Value inside updateGamma : ",sess.run(self.gamma))
@@ -127,6 +121,7 @@ class ProtoNN:
             sess.run(update_Gamma)
             print ("Updated Gamma Value inside updateGamma : ",sess.run(self.gamma))
             print ("---------------------------------------")
+            #----------------------------------#
 
     def __initGamma(self):
         with tf.name_scope(self.__nscope):
@@ -192,71 +187,14 @@ class ProtoNN:
             self.l2sim = l2sim
             gammal2sim = (-1 * gamma * gamma) * l2sim
             M = tf.exp(gammal2sim)
-            '''
-            To get the shape, as a list of ints.
-            Append an extra dimension to reshape Z.
-
             dim = [1] + Z.shape.as_list()
-            Z = tf.reshape(Z, dim)
-            print ("Shape of Z : ",Z.shape.as_list())
-            print ("Shape of M : ",M.shape.as_list())
-            y = tf.multiply(Z, M)
-            print ("Shape of y : ",y.shape.as_list())
-            y = tf.reduce_sum(y, 2, name='protoNNScoreOut')
-            self.protoNNOut = y
-            print ("Check")
-
-            self.predictions = tf.argmax(y, 1, name='protoNNPredictions')
-            if Y is not None:
-                target = tf.argmax(Y, 1)
-                correctPrediction = tf.equal(self.predictions, target)
-                acc = tf.reduce_mean(tf.cast(correctPrediction, tf.float32),
-                        name='protoNNAccuracy')
-            '''
-            print ("Shape of Z , before Dim : ",Z.shape.as_list())
-            #dim = [1] + Z.shape.as_list()
-            print ("X : ",X.shape.as_list())
-            print ("Z : ",Z.shape.as_list())
-            print ("M : ",M.shape.as_list())
-            Z = tf.matmul(X,Z)
-            print ("Z , After multiplication : ",Z.shape.as_list())
-            dim = [1] + Z.shape.as_list()
-            '''
-            This fix is necessary, to ensure that a dimension can be added before a 'None' dimension.
-            It returns a scalar value.
-            '''
-            dim[1] = tf.shape(Z)[0]
-            print ("Dim : ",dim)
-
-            #Renormalize back the Ws.
             Z = tf.reshape(Z,dim)
-            #Reshape the dimensions , so that it is now of the shape , [None , 1, 50]
-            Z = tf.transpose(Z,[1,0,2])
-            print ("Z , ( after reshape) After multiplication : ",Z.shape.as_list())
-            #Returns a tensor of the same dimensions of X.
             y = tf.multiply(Z,M)
-
-            print ("Shape of y before reduce sum : ",y.shape.as_list())
             y = tf.reduce_sum(y, 2, name='protoNNScoreOut')
-
-            #Divide by reduce_sum(M) , to renormalize 'W' again.
-            y = tf.divide(y,tf.reduce_sum(M,2,name='Renormalize'))
-            print ("Renormalization part : ",tf.reduce_sum(M,2,name='Renormalize').shape.as_list())
-            print ("Shape of y ",y.shape.as_list())
             self.protoNNOut = y
-
             self.predictions = self.protoNNOut
-            #self.predictions = tf.argmax(y, 1, name='protoNNPredictions')
             if Y is not None:
-                #target = tf.argmax(Y, 1)
-                #correctPrediction = tf.equal(self.predictions, target)
-                #acc = tf.reduce_mean(tf.cast(correctPrediction, tf.float32),
-                                     #name='protoNNAccuracy')
-                #self.accuracy = acc
-                print ("Acc : ",Y.shape.as_list() )
-                print ("Predictions : ",self.predictions.shape.as_list())
                 self.accuracy = tf.metrics.mean_absolute_error(Y,self.predictions)
-                #self.accuracy = tf.metrics.mean_absolute_error(tf.reshape(self.Y,[-1,1]),tf.reshape(self.score,[-1,1]))
         return y
 
     def getPredictionsOp(self):

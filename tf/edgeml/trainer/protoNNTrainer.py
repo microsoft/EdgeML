@@ -81,8 +81,6 @@ class ProtoNNTrainer:
 		W, B, Z, _ = self.protoNNObj.getModelMatrices()
 		if self.__lossType == 'l2':
 			with tf.name_scope('protonn-l2-loss'):
-				#Maybe a huber loss ?
-				#loss_0 = tf.nn.l2_loss(self.Y - pnnOut)
 				loss_0 = tf.losses.huber_loss(self.Y , pnnOut)
 				reg = l1 * tf.nn.l2_loss(W) + l2 * tf.nn.l2_loss(B)
 				reg += l3 * tf.nn.l2_loss(Z)
@@ -160,10 +158,6 @@ class ProtoNNTrainer:
 		test = []
 		train_preds = []
 		train_test = []
-
-		epoch_list = []
-		test_r2 = []
-
 		train_loss = []
 		test_loss = []
 
@@ -172,7 +166,7 @@ class ProtoNNTrainer:
 			'''
 			Gamma value will be computed inside the function and updated.
 			'''
-			self.protoNNObj.updateGamma(sess = sess,x_train = x_train)
+			#self.protoNNObj.updateGamma(sess = sess,x_train = x_train)
 
 			ntrain_p = []
 			ntrain_t = []
@@ -223,8 +217,6 @@ class ProtoNNTrainer:
 			train_loss.append(trainloss)
 			del preds[:]
 			del test [:]
-			#if (epoch + 1) % 3 == 0:
-			#if(epoch == totalEpochs-1):
 			if (True):
 			#Print the validation loss after every epcoh.
 				acc = 0.0
@@ -250,8 +242,6 @@ class ProtoNNTrainer:
 				print ("Metrics")
 				arr_preds = np.concatenate(preds,axis=0)
 				arr_test = np.concatenate(test,axis=0)
-				epoch_list.append(epoch)
-				test_r2.append(r2_score(arr_test,arr_preds))
 				print ("R2 : ",r2_score(arr_test,arr_preds))
 				print ("MAE : ",mean_absolute_error(arr_test,arr_preds))
 				print ("RMSE : ",np.sqrt(mean_squared_error(arr_test,arr_preds)))
@@ -259,25 +249,10 @@ class ProtoNNTrainer:
 
 		#---------Saving the loss across training and validation set-----------#
 		print ("Saving both train and test losses.")
-		#pickle.dump(train_loss,open("train_loss.pkl","wb"))
-		#pickle.dump(test_loss,open("test_loss.pkl","wb"))
 		np.save("train_loss.npy",np.array(train_loss))
 		np.save("test_loss.npy",np.array(test_loss))
 		print ("Saved the train and test losses.")
 
-		print ("Saving epochs and r2_score.")
-		np.save("epoch_list",np.array(epoch_list))
-		np.save("r2_score",np.array(test_r2))
-
-		'''
-		print ("Plots of train and validation losses.")
-		plt.figure(figsize=(10,10))
-		plt.plot(train_loss)
-		plt.plot(test_loss)
-		plt.legend(["Train Loss","Test Loss"])
-		plt.show()
-		'''
-		
 		print ("Combining both train and test preds. ")
 		print ("Lens : ",len(train_preds) , len(train_test))
 		split = np.concatenate(train_preds,axis=0).shape[0]
@@ -303,14 +278,5 @@ class ProtoNNTrainer:
 		print ("RMSE : ",np.sqrt(mean_squared_error(test,preds)))
 		ndict["rmse"] = np.sqrt(mean_squared_error(test,preds))
 		print ("---------------------------------------------")
-
-		'''
-		fig, ax = plt.subplots( nrows=1, ncols=1)
-		plt.grid(True)
-		ax.plot(preds)
-		ax.plot(test)
-		ax.legend(["Preds","Test"])
-		plt.show()
-		'''
 
 		return saver[:,0].reshape((-1,1)) , saver[:,1].reshape((-1,1))

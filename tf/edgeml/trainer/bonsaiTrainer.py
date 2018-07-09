@@ -290,7 +290,6 @@ class BonsaiTrainer:
 						sum_tr = 0.1 / sum_tr
 					else:
 						sum_tr = 0.1
-					print ("Sum tr : ",sum_tr)
 					sum_tr = min(
 						1000, sum_tr * (2**(float(itersInPhase) /
 											(float(totalBatches) / 30.0))))
@@ -335,7 +334,7 @@ class BonsaiTrainer:
 						(counter >= int(2 * totalBatches / 3))):
 					self.runSparseTraining(sess)
 					if counter == int(2 * totalBatches / 3):
-						msg = " Sprase Retraining Phase Started "
+						msg = " Sparse Retraining Phase Started "
 						print("\n%s%s%s\n" %
 							  (header, msg, header), file=self.outFile)
 				counter += 1
@@ -360,10 +359,6 @@ class BonsaiTrainer:
 					_feed_dict = {self.X: Xtest, self.Y: Ytest,self.sigmaI : bonsaiObjSigmaI}
 
 
-			print ("-------------------------------------------")
-			print ("TESTING")
-			print ("-------------------------------------------")
-
 			testAcc, testLoss, regTestLoss, pred = sess.run(
 				[self.accuracy, self.loss, self.regLoss,self.prediction], feed_dict=_feed_dict)
 
@@ -376,6 +371,8 @@ class BonsaiTrainer:
 					maxTestAcc = testAcc
 
 			if(i == totalEpochs-1):
+				print ("TESTING")
+				print ("-------------------------------------------")
 				if(type==2):
 					print ("Type : ",type)
 					print ("------------------------------------------")
