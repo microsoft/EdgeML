@@ -104,6 +104,12 @@ def main():
     # -----------------
     # End configuration
     # -----------------
+    if GAMMA is None:
+        if PROJECTION_DIM > dataDimension:
+            print("Projection dimension > data dimension. gamma")
+            print("estimation due to median heuristic could fail.")
+            print("To retain the projection dataDimension, provide")
+            print("a value for gamma.")
     out = loadData(DATA_DIR)
     dataDimension = out[0]
     numClasses = out[1]
