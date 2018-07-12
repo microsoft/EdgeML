@@ -1,6 +1,3 @@
-'''
-ProtoNN Graph construction
-'''
 import numpy as np
 import tensorflow as tf
 
@@ -84,21 +81,6 @@ class ProtoNN:
         with tf.name_scope(self.__nscope):
             gamma = self.__inGamma
             self.gamma = tf.constant(gamma, name='gamma')
-
-    def getModelSize(self, bytesPerVar = 4):
-        # TODO: Use Bonsai's util method
-        sZ, sW, sB = self.sparcity_Z, self.sparcity_W, self.sparcity_B
-        d, d_cap, m, L = self.getHyperParams()
-        nnzZ = np.ceil(int(m * L) * sZ)
-        nnzW = np.ceil(int(d * d_cap) * sW)
-        nnzB = np.ceil(int(d_cap * m) * sB)
-        if sZ < 0.5:
-            nnzZ *= 2
-        if sW < 0.5:
-            nnzW *= 2
-        if sB < 0.5:
-            nnzB *= 2
-        return (nnzZ + nnzW + nnzB) * bytesPerVar
 
     def getHyperParams(self):
         d = self.__d
