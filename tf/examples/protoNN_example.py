@@ -1,8 +1,8 @@
 import sys
 import os
-sys.path.insert(0, '../')
 import numpy as np
 import tensorflow as tf
+sys.path.insert(0, '../')
 from edgeml.trainer.protoNNTrainer import ProtoNNTrainer
 from edgeml.graph.protoNN import ProtoNN
 import edgeml.utils as utils
@@ -45,6 +45,20 @@ def getModelSize(matrixList, sparcityList, expected=True, bytesPerVar=4):
             totalSize += A.size* bytesPerVar
     return numNonZero, totalSize, hasSparse
 
+
+def getGamma(gammaInit, projectionDim, dataDim, numPrototypes, x_train):
+    if gammaInit is None:
+        if projectionDim > dataDim:
+            print("Warning: Projection dimension > data dimension. Gamma")
+            print("\t estimation due to median heuristic could fail.")
+            print("\tTo retain the projection dataDimension, provide")
+            print("\ta value for gamma.")
+        print("Using median heuristc to estimate gamma.")
+        gamma, W, B = utils.medianHeuristic(x_train, projectionDim,
+                                            numPrototypes)
+        print("Gamma estimate is: %f" % gamma)
+        return W, B, gamma
+    return None, None, gammaInit
 
 def loadData(dataDir):
     '''
@@ -100,7 +114,6 @@ def main():
     DATA_DIR =  config.data_dir
     PROJECTION_DIM = config.projection_dim
     NUM_PROTOTYPES = config.num_prototypes
-    GAMMA = config.gamma
     REG_W = config.rW
     REG_B = config.rB
     REG_Z = config.rZ
@@ -117,23 +130,12 @@ def main():
     x_train, y_train = out[2], out[3]
     x_test, y_test = out[4], out[5]
 
-    # Setup input
+    W, B, gamma = getGamma(config.gamma, PROJECTION_DIM, dataDimension,
+                           NUM_PROTOTYPES, x_train)
+
+    # Setup input and train protoNN
     X = tf.placeholder(tf.float32, [None, dataDimension], name='X')
     Y = tf.placeholder(tf.float32, [None, numClasses], name='Y')
-    if GAMMA is None:
-        if PROJECTION_DIM > dataDimension:
-            print("Projection dimension > data dimension. gamma")
-            print("estimation due to median heuristic could fail.")
-            print("To retain the projection dataDimension, provide")
-            print("a value for gamma.")
-        print("Using median heuristc to estimate gamma")
-        gamma, W, B = utils.medianHeuristic(x_train, PROJECTION_DIM,
-                                            NUM_PROTOTYPES)
-        print("Gamma estimate is: %f" % gamma)
-    else:
-        gamma = GAMMA
-        W, B = None, None
-
     protoNN = ProtoNN(dataDimension, PROJECTION_DIM,
                       NUM_PROTOTYPES, numClasses,
                       gamma, W=W, B=B)
@@ -143,7 +145,10 @@ def main():
     sess = tf.Session()
     trainer.train(16, NUM_EPOCHS, sess, x_train, x_test, y_train, y_test,
                   printStep=200)
+
+    # Print some summary metrics
     acc = sess.run(protoNN.accuracy, feed_dict={X: x_test, Y:y_test})
+    # W, B, Z are tensorflow graph nodes
     W, B, Z, _ = protoNN.getModelMatrices()
     matrixList = sess.run([W, B, Z])
     sparcityList = [SPAR_W, SPAR_B, SPAR_Z]
@@ -173,6 +178,6 @@ NOTES:
             --projection-dim 60 --num-prototypes 60 --gamma 0.0015 \
             -rW 0.000005  -rB 0.0 -rZ 0.00005 -sW 0.8 \
             -sB 1.0 -sZ 1.0 \
-            --learning-rate 0.05 --epochs 300
+            --learning-rate 0.05 --epochs 800
         Expected test accuracy: 89-90%
 '''
