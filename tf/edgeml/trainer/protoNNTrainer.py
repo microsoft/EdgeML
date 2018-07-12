@@ -81,8 +81,8 @@ class ProtoNNTrainer:
                 loss = loss_0 + reg
         elif self.__lossType == 'xentropy':
             with tf.name_scope('protonn-xentropy-loss'):
-                loss_0 = tf.nn.softmax_cross_entropy_with_logits(logits=pnnOut,
-                                                                 labels=self.Y)
+                loss_0 = tf.nn.softmax_cross_entropy_with_logits_v2(logits=pnnOut,
+                                                                 labels=tf.stop_gradient(self.Y))
                 loss_0 = tf.reduce_mean(loss_0)
                 reg = l1 * tf.nn.l2_loss(W) + l2 * tf.nn.l2_loss(B)
                 reg += l3 * tf.nn.l2_loss(Z)

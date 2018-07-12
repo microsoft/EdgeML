@@ -116,7 +116,7 @@ class ProtoNN:
             B = tf.reshape(B, dim)
             l2sim = B - WX
             l2sim = tf.pow(l2sim, 2)
-            l2sim = tf.reduce_sum(l2sim, 1, keep_dims=True)
+            l2sim = tf.reduce_sum(l2sim, 1, keepdims=True)
             self.l2sim = l2sim
             gammal2sim = (-1 * gamma * gamma) * l2sim
             M = tf.exp(gammal2sim)
