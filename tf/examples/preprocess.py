@@ -61,7 +61,7 @@ def getBonsaiArgs():
     parser.add_argument('-b', '--batch-size', type=checkIntPos,
                         help='Batch Size to be used (default: max(100, sqrt(train_samples)))')
     parser.add_argument('-lr', '--learning-rate', type=checkFloatPos, default=0.01,
-                        help='Initial Learning rate for Adam Oprimizer (default: 0.01)')
+                        help='Initial Learning rate for Adam Optimizer (default: 0.01)')
 
     parser.add_argument('-rW', type=float, default=0.0001,
                         help='Regularizer for predictor parameter W  (default: 0.0001 try: [0.01, 0.001, 0.00001])')
@@ -106,7 +106,7 @@ def getProtoNNArgs():
     parser.add_argument('-p', '--num-prototypes', type=checkIntPos, default=20,
                         help='Number of prototypes.')
     parser.add_argument('-g', '--gamma', type=checkFloatPos, default=None,
-                        help='Gamma for gaussian kernal. If not provided, ' +
+                        help='Gamma for Gaussian kernel. If not provided, ' +
                         'median heuristic will be used to estimate gamma.')
 
     parser.add_argument('-e', '--epochs', type=checkIntPos, default=100,
@@ -115,7 +115,7 @@ def getProtoNNArgs():
                         help='Batch size for each pass.')
     parser.add_argument('-r', '--learning-rate', type=checkFloatPos,
                         default=0.001,
-                        help='Initial Learning rate for ADAM Oprimizer.')
+                        help='Initial Learning rate for ADAM Optimizer.')
 
     parser.add_argument('-rW', type=float, default=0.000,
                         help='Coefficient for l2 regularizer for predictor parameter W ' +

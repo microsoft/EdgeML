@@ -98,7 +98,7 @@ class ProtoNN:
         Returned y is of dimension [-1, numLabels]
 
         X is [-1, d]
-        Y is [-1, numLabels] . Y is optional; if provided will beused
+        Y is [-1, numLabels] . Y is optional; if provided will be used
             to create an accuracy computation operator.
         '''
         # This should never execute
