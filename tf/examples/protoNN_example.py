@@ -12,8 +12,8 @@ import preprocess
 def getModelSize(matrixList, sparcityList, expected=True, bytesPerVar=4):
     '''
     expected: Expected size according to the parameters set. The number of
-        zeros could actually be more than that is requied to satisfy the
-        sparcity constraint.
+        zeros could actually be more than that is required to satisfy the
+        sparsity constraint.
     '''
     nnzList, sizeList, isSparseList = [], [], []
     hasSparse = False
@@ -53,7 +53,7 @@ def getGamma(gammaInit, projectionDim, dataDim, numPrototypes, x_train):
             print("\t estimation due to median heuristic could fail.")
             print("\tTo retain the projection dataDimension, provide")
             print("\ta value for gamma.")
-        print("Using median heuristc to estimate gamma.")
+        print("Using median heuristic to estimate gamma.")
         gamma, W, B = utils.medianHeuristic(x_train, projectionDim,
                                             numPrototypes)
         print("Gamma estimate is: %f" % gamma)
