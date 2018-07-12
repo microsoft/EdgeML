@@ -55,4 +55,5 @@ we assume the labels are integers from 0 through N-1.
 
 **Tested With:** Tensorflow >1.6 with Python 2 and Python 3
 
-Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
+Copyright (c) Microsoft Corporation. All rights reserved.
+Licensed under the MIT license.
