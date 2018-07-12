@@ -130,7 +130,7 @@ if args.batch_size is None:
 else:
     batchSize = args.batch_size
 
-useMCHLoss = False
+useMCHLoss = True
 
 if numClasses == 2:
     numClasses = 1
@@ -152,8 +152,10 @@ bonsaiTrainer = BonsaiTrainer(bonsaiObj,
                               learningRate, X, Y, useMCHLoss, outFile)
 
 sess = tf.InteractiveSession()
-sess.run(tf.group(tf.initialize_all_variables(),
-                  tf.initialize_variables(tf.local_variables())))
+init = tf.global_variables_initializer()
+sess.run(init)
+# sess.run(tf.group(tf.initialize_all_variables(),
+                  # tf.initialize_variables(tf.local_variables())))
 saver = tf.train.Saver()
 
 bonsaiTrainer.train(batchSize, totalEpochs, sess,
