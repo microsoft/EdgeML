@@ -1,4 +1,6 @@
-# Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
+
 from __future__ import print_function
 import sys
 import os
@@ -44,7 +46,7 @@ def getModelSize(matrixList, sparcityList, expected=True, bytesPerVar=4):
         if s <= 0.5:
             totalSize += numNonZero_ * 2 * bytesPerVar
         else:
-            totalSize += A.size* bytesPerVar
+            totalSize += A.size * bytesPerVar
     return numNonZero, totalSize, hasSparse
 
 
@@ -61,6 +63,7 @@ def getGamma(gammaInit, projectionDim, dataDim, numPrototypes, x_train):
         print("Gamma estimate is: %f" % gamma)
         return W, B, gamma
     return None, None, gammaInit
+
 
 def loadData(dataDir):
     '''
@@ -113,7 +116,7 @@ def loadData(dataDir):
 def main():
     config = preprocess.getProtoNNArgs()
     # Get hyper parameters
-    DATA_DIR =  config.data_dir
+    DATA_DIR = config.data_dir
     PROJECTION_DIM = config.projection_dim
     NUM_PROTOTYPES = config.num_prototypes
     REG_W = config.rW
@@ -149,7 +152,7 @@ def main():
                   printStep=200)
 
     # Print some summary metrics
-    acc = sess.run(protoNN.accuracy, feed_dict={X: x_test, Y:y_test})
+    acc = sess.run(protoNN.accuracy, feed_dict={X: x_test, Y: y_test})
     # W, B, Z are tensorflow graph nodes
     W, B, Z, _ = protoNN.getModelMatrices()
     matrixList = sess.run([W, B, Z])

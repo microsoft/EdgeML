@@ -1,8 +1,10 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
+
 '''
  Functions to check sanity of input arguments
  for the example script.
 '''
-# Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
 import argparse
 import numpy as np
 import datetime
