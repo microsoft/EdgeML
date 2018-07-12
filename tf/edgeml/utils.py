@@ -79,7 +79,8 @@ def crossEntropyLoss(logits, label):
     faster convergence
     '''
     return tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=label))
+        tf.nn.softmax_cross_entropy_with_logits_v2(logits=logits,
+                                                   labels=tf.stop_gradient(label)))
 
 
 def hardThreshold(A, s):

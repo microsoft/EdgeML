@@ -21,11 +21,19 @@ For detailed usage instructions of the example, in `examples` directory, please 
 
     python protoNN_example.py -h
 
+Note that, `protoNN_example.py` assumes that data is in a specific format.
+It is assumed that train and test data is contained in two files,
+`train.npy` and `test.npy`. Each containing a 2D numpy array of dimension
+`[numberOfExamples, numberOfFeatures + 1]`. The first column of each
+matrix is assumed to contain label information.  For an N-Class problem,
+we assume the labels are integers from 0 through N-1.
+
+
 ## Bonsai
 `edgeml.graph.Bonsai` implements the Bonsai prediction graph in tensorflow.
-The three phase training routine for Bonsai is decoupled from the forward graph to
-facilitate a plug and play behaviour wherein Bonsai can be combined with or
-used as a final layer classifier for other architectures (RNNs, CNNs).
+Similar to ProtoNN, the three phase training routine for Bonsai is decoupled from
+the forward graph to facilitate a plug and play behaviour wherein Bonsai can be
+combined with or used as a final layer classifier for other architectures (RNNs, CNNs).
 
 For training vanilla Bonsai, `edgeml.trainer.BonsaiTrainer` implements the
 Bonsai training routine in Tensorflow. A simple example,
@@ -35,8 +43,11 @@ For detailed usage instructions of the example, in `examples` directory, please 
 
     python bonsai_example.py -h
 
-Note that bonsai_example.py expects the data to be in specific format:
-Expects .npy files having [lbl feats] form for each datapoint and is a part of the bigger matrix (train or test) in a row-wise fashion
-`train.npy` and `test.npy` should be present in the data directory being passed as an argument
 
-
+Note that, similar to `protoNN_example.py`, `bonsai_example.py` 
+assumes that data is in a specific format.
+It is assumed that train and test data is contained in two files,
+`train.npy` and `test.npy`. Each containing a 2D numpy array of dimension
+`[numberOfExamples, numberOfFeatures + 1]`. The first column of each
+matrix is assumed to contain label information.  For an N-Class problem,
+we assume the labels are integers from 0 through N-1.

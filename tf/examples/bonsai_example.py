@@ -130,7 +130,7 @@ if args.batch_size is None:
 else:
     batchSize = args.batch_size
 
-useMCHLoss = True
+useMCHLoss = False
 
 if numClasses == 2:
     numClasses = 1
