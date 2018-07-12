@@ -86,6 +86,58 @@ def getBonsaiArgs():
     return parser.parse_args()
 
 
+def getProtoNNArgs():
+    '''
+    Parse protoNN commandline arguments
+    '''
+    parser = argparse.ArgumentParser(description='Hyperparameters for ProtoNN Algorithm')
+
+    msg = 'Data directory containing train and test data. The '
+    msg += 'data is assumed to be saved as 2-D numpy matrices with '
+    msg += 'names `train.npy` and `test.npy`, of dimensions\n'
+    msg +='\t[numberOfInstances, numberOfFeatures + 1].\n'
+    msg +='The first column of each file is assumed to contain label information.'
+    msg +=' For a N-class problem, labels are assumed to be integers from 0 to'
+    msg +=' N-1 (inclusive).'
+    parser.add_argument('-d', '--data-dir', required=True, help=msg)
+    parser.add_argument('-l', '--projection-dim', type=checkIntPos, default=10,
+                        help='Projection Dimension.')
+    parser.add_argument('-p', '--num-prototypes', type=checkIntPos, default=20,
+                        help='Number of prototypes.')
+    parser.add_argument('-g', '--gamma', type=checkFloatPos, default=None,
+                        help='Gamma for gaussian kernal. If not provided, ' +
+                        'median heuristic will be used to estimate gamma.')
+
+    parser.add_argument('-e', '--epochs', type=checkIntPos, default=100,
+                        help='Total training epochs.')
+    parser.add_argument('-b', '--batch-size', type=checkIntPos, default=32,
+                        help='Batch size for each pass.')
+    parser.add_argument('-r', '--learning-rate', type=checkFloatPos,
+                        default=0.001,
+                        help='Initial Learning rate for ADAM Oprimizer.')
+
+    parser.add_argument('-rW', type=float, default=0.000,
+                        help='Coefficient for l2 regularizer for predictor parameter W ' +
+                        '(default = 0.0).')
+    parser.add_argument('-rB', type=float, default=0.00,
+                        help='Coefficient for l2 regularizer for predictor parameter B ' +
+                        '(default = 0.0).')
+    parser.add_argument('-rZ', type=float, default=0.00,
+                        help='Coefficient for l2 regularizer for predictor parameter Z ' +
+                        '(default = 0.0).')
+
+    parser.add_argument('-sW', type=float, default=1.000,
+                        help='Sparcity constraint for predictor parameter W ' +
+                        '(default = 1.0, i.e. dense matrix).')
+    parser.add_argument('-sB', type=float, default=1.00,
+                        help='Sparcity constraint for predictor parameter B ' +
+                        '(default = 1.0, i.e. dense matrix).')
+    parser.add_argument('-sZ', type=float, default=1.00,
+                        help='Sparcity constraint for predictor parameter Z ' +
+                        '(default = 1.0, i.e. dense matrix).')
+    return parser.parse_args()
+
+
 def createTimeStampDir(dataDir):
     '''
     Creates a Directory with timestamp as it's name
