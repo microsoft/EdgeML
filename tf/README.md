@@ -10,12 +10,12 @@ Tensorflow:
 ## ProtoNN
 `edgeml.graph.protoNN` implements the ProtoNN prediction graph in tensorflow.
 The training routine for ProtoNN is decoupled from the forward graph to
-facilitate a plug and play behaviour wherein protoNN can be combined with or
+facilitate a plug and play behaviour wherein ProtoNN can be combined with or
 used as a final layer classifier for other architectures (RNNs, CNNs).
 
 For training vanilla ProtoNN, `edgeml.trainer.protoNNTrainer` implements the
 ProtoNN training routine in Tensorflow. A simple example,
-`examples/protoNN_example.py` illustrates the usage the trainer.
+`examples/protoNN_example.py` is provided to illustrate its usage.
 
 For detailed usage instructions of the example, in `examples` directory, please use
 
