@@ -28,6 +28,7 @@ It is assumed that train and test data is contained in two files,
 matrix is assumed to contain label information.  For an N-Class problem,
 we assume the labels are integers from 0 through N-1.
 
+**Tested With:** Tensorflow >1.6 and Python >3.5
 
 ## Bonsai
 `edgeml.graph.Bonsai` implements the Bonsai prediction graph in tensorflow.
@@ -51,5 +52,7 @@ It is assumed that train and test data is contained in two files,
 `[numberOfExamples, numberOfFeatures + 1]`. The first column of each
 matrix is assumed to contain label information.  For an N-Class problem,
 we assume the labels are integers from 0 through N-1.
+
+**Tested With:** Tensorflow >1.8 with Python 2 and Python 3
 
 Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
