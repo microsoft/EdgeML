@@ -1,3 +1,4 @@
+# Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
 from __future__ import print_function
 import tensorflow as tf
 import edgeml.utils as utils
