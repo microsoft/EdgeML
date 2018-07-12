@@ -40,9 +40,9 @@ def checkFloatPos(value):
     return fvalue
 
 
-def getArgs():
+def getBonsaiArgs():
     '''
-    Function to parse arguments
+    Function to parse arguments for Bonsai Algorithm
     '''
     parser = argparse.ArgumentParser(
         description='HyperParams for Bonsai Algorithm')
@@ -86,70 +86,17 @@ def getArgs():
     return parser.parse_args()
 
 
-def preProcessData(data_dir):
-    '''
-    Function to pre-process input data
-    Expects a .npy file of form [lbl feats] for each datapoint
-    Outputs a train and test set datapoints appended with 1 for Bias induction
-    dataDimension, numClasses are inferred directly
-    '''
-    train = np.load(data_dir + '/train.npy')
-    test = np.load(data_dir + '/test.npy')
-
-    dataDimension = int(train.shape[1]) - 1
-
-    Xtrain = train[:, 1:dataDimension + 1]
-    Ytrain_ = train[:, 0]
-    numClasses = max(Ytrain_) - min(Ytrain_) + 1
-
-    Xtest = test[:, 1:dataDimension + 1]
-    Ytest_ = test[:, 0]
-
-    numClasses = int(max(numClasses, max(Ytest_) - min(Ytest_) + 1))
-
-    # Mean Var Normalisation
-    mean = np.mean(Xtrain, 0)
-    std = np.std(Xtrain, 0)
-    std[std[:] < 0.000001] = 1
-    Xtrain = (Xtrain - mean) / std
-
-    Xtest = (Xtest - mean) / std
-    # End Mean Var normalisation
-
-    lab = Ytrain_.astype('uint8')
-    lab = np.array(lab) - min(lab)
-
-    lab_ = np.zeros((Xtrain.shape[0], numClasses))
-    lab_[np.arange(Xtrain.shape[0]), lab] = 1
-    if (numClasses == 2):
-        Ytrain = np.reshape(lab, [-1, 1])
-    else:
-        Ytrain = lab_
-
-    lab = Ytest_.astype('uint8')
-    lab = np.array(lab) - min(lab)
-
-    lab_ = np.zeros((Xtest.shape[0], numClasses))
-    lab_[np.arange(Xtest.shape[0]), lab] = 1
-    if (numClasses == 2):
-        Ytest = np.reshape(lab, [-1, 1])
-    else:
-        Ytest = lab_
-
-    trainBias = np.ones([Xtrain.shape[0], 1])
-    Xtrain = np.append(Xtrain, trainBias, axis=1)
-    testBias = np.ones([Xtest.shape[0], 1])
-    Xtest = np.append(Xtest, testBias, axis=1)
-
-    return dataDimension + 1, numClasses, Xtrain, Ytrain, Xtest, Ytest
-
-
-def createDir(dataDir):
+def createTimeStampDir(dataDir):
     '''
     Creates a Directory with timestamp as it's name
     '''
     currDir = datetime.datetime.now().strftime("%H_%M_%S_%d_%m_%y")
     if os.path.isdir(dataDir + '/' + currDir) is False:
-        os.mkdir(dataDir + '/' + currDir)
-        return (dataDir + '/' + currDir)
+        try:
+            os.mkdir(dataDir + '/' + currDir)
+        except OSError:
+            print("Creation of the directory %s failed" %
+                  dataDir + '/' + currDir)
+        else:
+            return (dataDir + '/' + currDir)
     return None

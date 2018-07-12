@@ -111,7 +111,7 @@ class Bonsai:
             prob = (1 + ((-1)**(i + 1)) *
                     tf.tanh(tf.multiply(sigmaI, tf.matmul(T_, X_))))
 
-            prob = tf.divide(prob, 2)
+            prob = tf.divide(prob, 2.0)
             prob = self.__nodeProb[int(np.ceil(i / 2.0) - 1.0)] * prob
             self.__nodeProb.append(prob)
             score_ += self.__nodeProb[i] * tf.multiply(

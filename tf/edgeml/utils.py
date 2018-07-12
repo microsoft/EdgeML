@@ -123,4 +123,3 @@ def countnnZ(A, s, bytesPerVar=4):
     else:
         nnZ = params
         return nnZ, nnZ * bytesPerVar, hasSparse
-

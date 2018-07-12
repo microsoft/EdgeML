@@ -191,8 +191,16 @@ class BonsaiTrainer:
         assert (len(self.Y.shape) == 2 and
                 self.Y.shape[1] == self.bonsaiObj.numClasses), errMsg + errCont
 
-    # Function to get aimed model size
+    def saveParams(self, currDir):
+        '''
+        Function to save Parameter matrices
+        '''
+        self.bonsaiObj.saveModel(currDir)
+
     def getModelSize(self):
+        '''
+        Function to get aimed model size
+        '''
         nnzZ, sizeZ, sparseZ = utils.countnnZ(self.bonsaiObj.Z, self.sZ)
         nnzW, sizeW, sparseW = utils.countnnZ(self.bonsaiObj.W, self.sW)
         nnzV, sizeV, sparseV = utils.countnnZ(self.bonsaiObj.V, self.sV)
@@ -236,8 +244,8 @@ class BonsaiTrainer:
                           (header, msg, header), file=self.outFile)
 
                 # Updating the indicator sigma
-                if ((counter == 0) or (counter == int(totalBatches / 3)) or
-                        (counter == int(2 * totalBatches / 3))):
+                if ((counter == 0) or (counter == int(totalBatches / 3.0)) or
+                        (counter == int(2 * totalBatches / 3.0))):
                     bonsaiObjSigmaI = 1
                     itersInPhase = 0
 
@@ -293,8 +301,8 @@ class BonsaiTrainer:
                 trainAcc += batchAcc
 
                 # Training routine involving IHT and sparse retraining
-                if (counter >= int(totalBatches / 3) and
-                        (counter < int(2 * totalBatches / 3)) and
+                if (counter >= int(totalBatches / 3.0) and
+                        (counter < int(2 * totalBatches / 3.0)) and
                         counter % trimlevel == 0):
                     self.runHardThrsd(sess)
                     if ihtDone == 0:
@@ -302,12 +310,12 @@ class BonsaiTrainer:
                         print("\n%s%s%s\n" %
                               (header, msg, header), file=self.outFile)
                     ihtDone = 1
-                elif ((ihtDone == 1 and counter >= int(totalBatches / 3) and
-                       (counter < int(2 * totalBatches / 3)) and
+                elif ((ihtDone == 1 and counter >= int(totalBatches / 3.0) and
+                       (counter < int(2 * totalBatches / 3.0)) and
                        counter % trimlevel != 0) or
-                        (counter >= int(2 * totalBatches / 3))):
+                        (counter >= int(2 * totalBatches / 3.0))):
                     self.runSparseTraining(sess)
-                    if counter == int(2 * totalBatches / 3):
+                    if counter == int(2 * totalBatches / 3.0):
                         msg = " Sprase Retraining Phase Started "
                         print("\n%s%s%s\n" %
                               (header, msg, header), file=self.outFile)
@@ -371,6 +379,8 @@ class BonsaiTrainer:
                          " KB hasSparse: " + str(self.getModelSize()[2]) +
                          " Param Directory: " +
                          str(os.path.abspath(currDir)) + "\n")
+        self.saveParams(currDir)
+
         resultFile.close()
         self.outFile.flush()
         self.outFile.close()
