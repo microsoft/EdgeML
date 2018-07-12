@@ -6,6 +6,7 @@ import tensorflow as tf
 from edgeml.trainer.protoNNTrainer import ProtoNNTrainer
 from edgeml.graph.protoNN import ProtoNN
 import edgeml.utils as utils
+import preprocess
 
 def getModelSize(matrixList, sparcityList, expected=True, bytesPerVar=4):
     '''
@@ -82,34 +83,29 @@ def loadData(dataDir):
 
 
 def main():
+    config = preprocess.getProtoNNArgs()
     # -----------------
     # Configuration
     # -----------------
-    DATA_DIR = './curet/'
-    PROJECTION_DIM = 60
-    NUM_PROTOTYPES = 60
+    DATA_DIR =  config.data_dir
+    PROJECTION_DIM = config.projection_dim
+    NUM_PROTOTYPES = config.num_prototypes
     # If gamma is none, will be estimated
     # by median heuristic
     # GAMMA = 0.0015
-    GAMMA = None
+    GAMMA = config.gamma
 
-    REG_W = 0.000005
-    REG_B = 0.000
-    REG_Z = 0.00005
-    SPAR_W = .8   # 1.0 implies dense matrix. 
-    SPAR_B = 1.0
-    SPAR_Z = 1.0
-    LEARNING_RATE = 0.05
-    NUM_EPOCHS = 1000
+    REG_W = config.rW
+    REG_B = config.rB
+    REG_Z = config.rZ
+    SPAR_W = config.sW
+    SPAR_B = config.sB
+    SPAR_Z = config.sZ
+    LEARNING_RATE = config.learning_rate
+    NUM_EPOCHS = config.epochs
     # -----------------
     # End configuration
     # -----------------
-    if GAMMA is None:
-        if PROJECTION_DIM > dataDimension:
-            print("Projection dimension > data dimension. gamma")
-            print("estimation due to median heuristic could fail.")
-            print("To retain the projection dataDimension, provide")
-            print("a value for gamma.")
     out = loadData(DATA_DIR)
     dataDimension = out[0]
     numClasses = out[1]
@@ -119,6 +115,11 @@ def main():
     X = tf.placeholder(tf.float32, [None, dataDimension], name='X')
     Y = tf.placeholder(tf.float32, [None, numClasses], name='Y')
     if GAMMA is None:
+        if PROJECTION_DIM > dataDimension:
+            print("Projection dimension > data dimension. gamma")
+            print("estimation due to median heuristic could fail.")
+            print("To retain the projection dataDimension, provide")
+            print("a value for gamma.")
         print("Using median heuristc to estimate gamma")
         gamma, W, B = utils.medianHeuristic(x_train, PROJECTION_DIM,
                                             NUM_PROTOTYPES)
