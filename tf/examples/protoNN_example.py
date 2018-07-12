@@ -8,10 +8,12 @@ from edgeml.graph.protoNN import ProtoNN
 import edgeml.utils as utils
 import preprocess
 
+
 def getModelSize(matrixList, sparcityList, expected=True, bytesPerVar=4):
     '''
     expected: Expected size according to the parameters set. The number of
-        zeros could actually be more than the applied sparcity constraint.
+        zeros could actually be more than that is requied to satisfy the
+        sparcity constraint.
     '''
     nnzList, sizeList, isSparseList = [], [], []
     hasSparse = False
@@ -45,6 +47,16 @@ def getModelSize(matrixList, sparcityList, expected=True, bytesPerVar=4):
 
 
 def loadData(dataDir):
+    '''
+    Loads data from the dataDir and does some initial preprocessing
+    steps. Data is assumed to be contained in two files,
+    train.npy and test.npy. Each containing a 2D numpy array of dimension
+    [numberOfExamples, numberOfFeatures + 1]. The first column of each
+    matrix is assumed to contain label information.
+
+    For an N-Class problem, we assume the labels are integers from 0 through
+    N-1.
+    '''
     train = np.load(dataDir + '/train.npy')
     test = np.load(dataDir + '/test.npy')
 
@@ -84,17 +96,11 @@ def loadData(dataDir):
 
 def main():
     config = preprocess.getProtoNNArgs()
-    # -----------------
-    # Configuration
-    # -----------------
+    # Get hyper parameters
     DATA_DIR =  config.data_dir
     PROJECTION_DIM = config.projection_dim
     NUM_PROTOTYPES = config.num_prototypes
-    # If gamma is none, will be estimated
-    # by median heuristic
-    # GAMMA = 0.0015
     GAMMA = config.gamma
-
     REG_W = config.rW
     REG_B = config.rB
     REG_Z = config.rZ
@@ -103,15 +109,15 @@ def main():
     SPAR_Z = config.sZ
     LEARNING_RATE = config.learning_rate
     NUM_EPOCHS = config.epochs
-    # -----------------
-    # End configuration
-    # -----------------
+
+    # Load data
     out = loadData(DATA_DIR)
     dataDimension = out[0]
     numClasses = out[1]
     x_train, y_train = out[2], out[3]
     x_test, y_test = out[4], out[5]
 
+    # Setup input
     X = tf.placeholder(tf.float32, [None, dataDimension], name='X')
     Y = tf.placeholder(tf.float32, [None, numClasses], name='Y')
     if GAMMA is None:
@@ -156,31 +162,17 @@ if __name__ == '__main__':
 '''
 NOTES:
     1. Curet:
-        Data dimension: 610
-        num Classes: 61
-        Reasonable parameters:
-            Projection_Dim = 60
-            PROJECTION_DIM = 60
-            NUM_PROTOTYPES = 80
-            GAMMA = 0.0015
-            REG_W = 0.000
-            REG_B = 0.000
-            REG_Z = 0.000
-            SPAR_W = 1.0
-            SPAR_B = 1.0
-            SPAR_Z = 1.0
-            LEARNING_RATE = 0.1
-            Expected test accuracy: 87-88%
+        python protoNN_example.py \
+            --data-dir ./curet \
+            --projection-dim 60 --num-prototypes 80 --gamma 0.0015 \
+            --learning-rate 0.1 --epochs 200
+        Expected test accuracy: 88%
 
-            PROJECTION_DIM = 60
-            NUM_PROTOTYPES = 60
-            GAMMA = 0.0015
-            REG_W = 0.000005
-            REG_B = 0.000
-            REG_Z = 0.00005
-            SPAR_W = .8
-            SPAR_B = 1.0
-            SPAR_Z = 1.0
-            LEARNING_RATE = 0.05
-            Expected test accuracy: 89-90%
+        python protoNN_example.py \
+            --data-dir ./curet \
+            --projection-dim 60 --num-prototypes 60 --gamma 0.0015 \
+            -rW 0.000005  -rB 0.0 -rZ 0.00005 -sW 0.8 \
+            -sB 1.0 -sZ 1.0 \
+            --learning-rate 0.05 --epochs 300
+        Expected test accuracy: 89-90%
 '''
