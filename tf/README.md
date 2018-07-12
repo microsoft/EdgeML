@@ -17,7 +17,7 @@ For training vanilla ProtoNN, `edgeml.trainer.protoNNTrainer` implements the
 ProtoNN training routine in Tensorflow. A simple example,
 `examples/protoNN_example.py` is provided to illustrate its usage.
 
-For detailed usage instructions of the example, in `examples` directory, please use
+For detailed usage instructions of the example, in the `examples` directory, please use
 
     python protoNN_example.py -h
 
@@ -31,7 +31,7 @@ we assume the labels are integers from 0 through N-1.
 
 ## Bonsai
 `edgeml.graph.Bonsai` implements the Bonsai prediction graph in tensorflow.
-Similar to ProtoNN, the three phase training routine for Bonsai is decoupled from
+Similar to ProtoNN, the three-phase training routine for Bonsai is decoupled from
 the forward graph to facilitate a plug and play behaviour wherein Bonsai can be
 combined with or used as a final layer classifier for other architectures (RNNs, CNNs).
 
@@ -39,7 +39,7 @@ For training vanilla Bonsai, `edgeml.trainer.BonsaiTrainer` implements the
 Bonsai training routine in Tensorflow. A simple example,
 `examples/bonsai_example.py` is provided to illustrate its usage.
 
-For detailed usage instructions of the example, in `examples` directory, please use
+For detailed usage instructions of the example, in the `examples` directory, please use
 
     python bonsai_example.py -h
 

@@ -152,10 +152,8 @@ bonsaiTrainer = BonsaiTrainer(bonsaiObj,
                               learningRate, X, Y, useMCHLoss, outFile)
 
 sess = tf.InteractiveSession()
-init = tf.global_variables_initializer()
-sess.run(init)
-# sess.run(tf.group(tf.initialize_all_variables(),
-                  # tf.initialize_variables(tf.local_variables())))
+sess.run(tf.global_variables_initializer())
+
 saver = tf.train.Saver()
 
 bonsaiTrainer.train(batchSize, totalEpochs, sess,
@@ -165,20 +163,15 @@ bonsaiTrainer.train(batchSize, totalEpochs, sess,
 # Data - Curet
 # python2 bonsai_example.py -dir ./curet/ -d 2 -p 22 -rW 0.00001 -rZ 0.0000001 -rV 0.00001 -rT 0.000001 -sZ 0.4 -sW 0.5 -sV 0.5 -sT 1 -e 300 -s 0.1 -b 20
 # Final Output - useMCHLoss = True
-# Maximum Test accuracy at compressed model size(including early stopping): 0.940128 at Epoch: 278
-# Final Test Accuracy: 0.926586
+# Maximum Test accuracy at compressed model size(including early stopping): 0.93727726 at Epoch: 297
+# Final Test Accuracy: 0.9337135
 
 # Non-Zeros: 24231.0 Model Size: 115.65625 KB hasSparse: True
 
 # Data - usps2
-# python2 bonsai_example.py -dir usps2/ -d 2 -p 22 -rW 0.00001 -rZ 0.0000001 -rV 0.00001 -rT 0.000001 -sZ 0.4 -sW 0.5 -sV 0.5 -sT 1 -e 300 -s 0.1 -b 20
-# Maximum Test accuracy at compressed model size(including early stopping): 0.95715 at Epoch: 299
-# Final Test Accuracy: 0.952167
+# python2 bonsai_example.py -dir /mnt/c/Users/t-vekusu/Downloads/datasets/usps-binary/ -d 2 -p 22 -rW 0.00001 -rZ 0.0000001 -rV 0.00001 -rT 0.000001 -sZ 0.4 -sW 0.5 -sV 0.5 -sT 1 -e 300 -s 0.1 -b 20
+# Maximum Test accuracy at compressed model size(including early stopping): 0.9521674 at Epoch: 246
+# Final Test Accuracy: 0.94170403
 
 # Non-Zeros: 2636.0 Model Size: 19.1328125 KB hasSparse: True
 
-# python3 bonsai_example.py -dir usps2/ -d 2 -p 22 -rW 0.00001 -rZ 0.0000001 -rV 0.00001 -rT 0.000001 -sZ 0.4 -sW 0.5 -sV 0.5 -sT 1 -e 300 -s 0.1 -b 20
-# Maximum Test accuracy at compressed model size(including early stopping): 0.96113604 at Epoch: 163
-# Final Test Accuracy: 0.94967616
-
-# Non-Zeros: 2636.0 Model Size: 19.1328125 KB hasSparse: True
