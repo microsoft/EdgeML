@@ -46,21 +46,21 @@ def getBonsaiArgs():
     '''
     parser = argparse.ArgumentParser(
         description='HyperParams for Bonsai Algorithm')
-    parser.add_argument('-dir', '--data_dir', required=True,
+    parser.add_argument('-dir', '--data-dir', required=True,
                         help='Data directory containing' +
                         'train.npy and test.npy')
 
     parser.add_argument('-d', '--depth', type=checkIntNneg, default=2,
                         help='Depth of Bonsai Tree (default: 2 try: [0, 1, 3])')
-    parser.add_argument('-p', '--projDim', type=checkIntPos, default=10,
+    parser.add_argument('-p', '--proj-dim', type=checkIntPos, default=10,
                         help='Projection Dimension (default: 20 try: [5, 10, 30])')
     parser.add_argument('-s', '--sigma', type=float, default=1.0,
                         help='Parameter for sigmoid sharpness (default: 1.0 try: [3.0, 0.05, 0.1]')
     parser.add_argument('-e', '--epochs', type=checkIntPos, default=42,
                         help='Total Epochs (default: 42 try:[100, 150, 60])')
-    parser.add_argument('-b', '--batchSize', type=checkIntPos,
+    parser.add_argument('-b', '--batch-size', type=checkIntPos,
                         help='Batch Size to be used (default: max(100, sqrt(train_samples)))')
-    parser.add_argument('-lr', '--learningRate', type=checkFloatPos, default=0.01,
+    parser.add_argument('-lr', '--learning-rate', type=checkFloatPos, default=0.01,
                         help='Initial Learning rate for Adam Oprimizer (default: 0.01)')
 
     parser.add_argument('-rW', type=float, default=0.0001,
@@ -80,7 +80,7 @@ def getBonsaiArgs():
                         help='Sparsity for branching parameter Theta  (default: For Binary classification 1.0 else 0.2 try: [0.1, 0.3, 0.5])')
     parser.add_argument('-sZ', type=checkFloatPos, default=0.2,
                         help='Sparsity for projection parameter Z  (default: 0.2 try: [0.1, 0.3, 0.5])')
-    parser.add_argument('-oF', '--output_file', default=None,
+    parser.add_argument('-oF', '--output-file', default=None,
                         help='Output file for dumping the program output, (default: stdout)')
 
     return parser.parse_args()
@@ -90,15 +90,16 @@ def getProtoNNArgs():
     '''
     Parse protoNN commandline arguments
     '''
-    parser = argparse.ArgumentParser(description='Hyperparameters for ProtoNN Algorithm')
+    parser = argparse.ArgumentParser(
+        description='Hyperparameters for ProtoNN Algorithm')
 
     msg = 'Data directory containing train and test data. The '
     msg += 'data is assumed to be saved as 2-D numpy matrices with '
     msg += 'names `train.npy` and `test.npy`, of dimensions\n'
-    msg +='\t[numberOfInstances, numberOfFeatures + 1].\n'
-    msg +='The first column of each file is assumed to contain label information.'
-    msg +=' For a N-class problem, labels are assumed to be integers from 0 to'
-    msg +=' N-1 (inclusive).'
+    msg += '\t[numberOfInstances, numberOfFeatures + 1].\n'
+    msg += 'The first column of each file is assumed to contain label information.'
+    msg += ' For a N-class problem, labels are assumed to be integers from 0 to'
+    msg += ' N-1 (inclusive).'
     parser.add_argument('-d', '--data-dir', required=True, help=msg)
     parser.add_argument('-l', '--projection-dim', type=checkIntPos, default=10,
                         help='Projection Dimension.')
@@ -127,13 +128,13 @@ def getProtoNNArgs():
                         '(default = 0.0).')
 
     parser.add_argument('-sW', type=float, default=1.000,
-                        help='Sparcity constraint for predictor parameter W ' +
+                        help='Sparsity constraint for predictor parameter W ' +
                         '(default = 1.0, i.e. dense matrix).')
     parser.add_argument('-sB', type=float, default=1.00,
-                        help='Sparcity constraint for predictor parameter B ' +
+                        help='Sparsity constraint for predictor parameter B ' +
                         '(default = 1.0, i.e. dense matrix).')
     parser.add_argument('-sZ', type=float, default=1.00,
-                        help='Sparcity constraint for predictor parameter Z ' +
+                        help='Sparsity constraint for predictor parameter Z ' +
                         '(default = 1.0, i.e. dense matrix).')
     return parser.parse_args()
 

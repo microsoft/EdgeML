@@ -8,15 +8,15 @@ from edgeml.trainer.bonsaiTrainer import BonsaiTrainer
 from edgeml.graph.bonsai import Bonsai
 
 
-def preProcessData(data_dir):
+def preProcessData(dataDir):
     '''
     Function to pre-process input data
     Expects a .npy file of form [lbl feats] for each datapoint
     Outputs a train and test set datapoints appended with 1 for Bias induction
     dataDimension, numClasses are inferred directly
     '''
-    train = np.load(data_dir + '/train.npy')
-    test = np.load(data_dir + '/test.npy')
+    train = np.load(dataDir + '/train.npy')
+    test = np.load(dataDir + '/test.npy')
 
     dataDimension = int(train.shape[1]) - 1
 
@@ -90,7 +90,7 @@ args = preprocess.getBonsaiArgs()
 sigma = args.sigma
 depth = args.depth
 
-projectionDimension = args.projDim
+projectionDimension = args.proj_dim
 regZ = args.rZ
 regT = args.rT
 regW = args.rW
@@ -98,14 +98,14 @@ regV = args.rV
 
 totalEpochs = args.epochs
 
-learningRate = args.learningRate
+learningRate = args.learning_rate
 
-data_dir = args.data_dir
+dataDir = args.data_dir
 
 outFile = args.output_file
 
 (dataDimension, numClasses,
-    Xtrain, Ytrain, Xtest, Ytest) = preProcessData(data_dir)
+    Xtrain, Ytrain, Xtest, Ytest) = preProcessData(dataDir)
 
 sparZ = args.sZ
 
@@ -125,10 +125,10 @@ if args.sV is not None:
 if args.sT is not None:
     sparT = args.sT
 
-if args.batchSize is None:
+if args.batch_size is None:
     batchSize = np.maximum(100, int(np.ceil(np.sqrt(Ytrain.shape[0]))))
 else:
-    batchSize = args.batchSize
+    batchSize = args.batch_size
 
 useMCHLoss = True
 
@@ -138,7 +138,7 @@ if numClasses == 2:
 X = tf.placeholder("float32", [None, dataDimension])
 Y = tf.placeholder("float32", [None, numClasses])
 
-currDir = preprocess.createTimeStampDir(data_dir)
+currDir = preprocess.createTimeStampDir(dataDir)
 
 dumpCommand(sys.argv, currDir)
 
@@ -157,7 +157,7 @@ sess.run(tf.group(tf.initialize_all_variables(),
 saver = tf.train.Saver()
 
 bonsaiTrainer.train(batchSize, totalEpochs, sess,
-                    Xtrain, Xtest, Ytrain, Ytest, data_dir, currDir)
+                    Xtrain, Xtest, Ytrain, Ytest, dataDir, currDir)
 
 # For the following command:
 # Data - Curet
