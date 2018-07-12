@@ -13,7 +13,7 @@ def medianHeuristic(data, projectionDimension, numPrototypes, W_init=None):
     This method can be used to estimate gamma for ProtoNN. An approximation to
     median heuristic is used here.
     1. First the data is collapsed into the projectionDimension by W_init. If
-    W_init is not provided, it is initiallzed from a random normal(0, 1). Hence
+    W_init is not provided, it is initialized from a random normal(0, 1). Hence
     data normalization is essential.
     2. Prototype are computed by running a  k-means clustering on the projected
     data.
@@ -26,7 +26,7 @@ def medianHeuristic(data, projectionDimension, numPrototypes, W_init=None):
     TODO: Return estimate of Z (prototype labels) based on cluster centroids
     andand labels
 
-    TODO: Cluestering fails due to singularity error if projecting upwards
+    TODO: Clustering fails due to singularity error if projecting upwards
 
     W [dxd_cap]
     B [d_cap, m]
@@ -85,7 +85,7 @@ def crossEntropyLoss(logits, label):
 
 def hardThreshold(A, s):
     '''
-    Hard Thresholding function on Tensor A with sparsity s
+    Hard thresholding function on Tensor A with sparsity s
     '''
     A_ = np.copy(A)
     A_ = A_.ravel()
@@ -109,7 +109,7 @@ def copySupport(src, dest):
 
 def countnnZ(A, s, bytesPerVar=4):
     '''
-    Returns # of nonzeros and represnetative size of the tensor
+    Returns # of non-zeros and representative size of the tensor
     Uses dense for s >= 0.5 - 4 byte
     Else uses sparse - 8 byte
     '''

@@ -13,7 +13,7 @@ class ProtoNNTrainer:
             will be trained.
         regW, regB, regZ: Regularization constants for W, B, and
             Z matrices of protoNN.
-        sparcityW, sparcityB, sparcityZ: Sparcity constraints
+        sparcityW, sparcityB, sparcityZ: Sparsity constraints
             for W, B and Z matrices.
         X, Y : Placeholders for data and labels.
             X [-1, featureDimension]
@@ -49,7 +49,7 @@ class ProtoNNTrainer:
 
     def __validateInit(self):
         self.__validInit = False
-        msg = "Sparcity value should be between"
+        msg = "Sparsity value should be between"
         msg += " 0 and 1 (both inclusive)."
         assert self.__sW >= 0. and self.__sW <= 1., 'W:' + msg
         assert self.__sB >= 0. and self.__sB <= 1., 'B:' + msg
@@ -119,19 +119,19 @@ class ProtoNNTrainer:
         '''
         d, d_cap, m, L, gamma = self.protoNNObj.getHyperParams()
         assert batchSize >= 1, 'Batch size should be positive integer'
-        assert totalEpochs >= 1, 'Total epochs should be psotive integer'
+        assert totalEpochs >= 1, 'Total epochs should be positive integer'
         assert x_train.ndim == 2, 'Expected training data to be of rank 2'
         assert x_train.shape[1] == d, 'Expected x_train to be [-1, %d]' % d
         assert x_val.ndim == 2, 'Expected validation data to be of rank 2'
         assert x_val.shape[1] == d, 'Expected x_val to be [-1, %d]' % d
         assert y_train.ndim == 2, 'Expected training labels to be of rank 2'
         assert y_train.shape[1] == L, 'Expected y_train to be [-1, %d]' % L
-        assert y_val.ndim == 2, 'Expected valing labels to be of rank 2'
+        assert y_val.ndim == 2, 'Expected validation labels to be of rank 2'
         assert y_val.shape[1] == L, 'Expected y_val to be [-1, %d]' % L
 
         # Numpy will throw asserts for arrays
         if sess is None:
-            raise ValueError('sess must be valid tensorflow session.')
+            raise ValueError('sess must be valid Tensorflow session.')
 
         trainNumBatches = int(np.ceil(len(x_train) / batchSize))
         valNumBatches = int(np.ceil(len(x_val) / batchSize))
