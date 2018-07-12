@@ -32,13 +32,12 @@ class ProtoNNTrainer:
         self.Y = Y
         self.sparseTraining = True
         if (sparcityW == 1.0) and (sparcityB == 1.0) and (sparcityZ == 1.0):
-            self.parseTraining = False
+            self.sparseTraining = False
             print("Sparse training disabled.", file=sys.stderr)
         # Define placeholders for sparse training
         self.W_th = None
         self.B_th = None
         self.Z_th = None
-
         self.__lossType = lossType
         self.__validInit = False
         self.__validInit = self.__validateInit()
