@@ -8,7 +8,7 @@ Tensorflow:
 2. [Bonsai](https://github.com/Microsoft/EdgeML/blob/master/publications/Bonsai.pdf)
 
 ## ProtoNN
-`edgeml.graph.protoNN` implements the ProtoNN prediction graph in tensorflow.
+`edgeml.graph.protoNN` implements the ProtoNN prediction graph in Tensorflow.
 The training routine for ProtoNN is decoupled from the forward graph to
 facilitate a plug and play behaviour wherein ProtoNN can be combined with or
 used as a final layer classifier for other architectures (RNNs, CNNs).
@@ -30,7 +30,7 @@ we assume the labels are integers from 0 through N-1.
 
 
 ## Bonsai
-`edgeml.graph.Bonsai` implements the Bonsai prediction graph in tensorflow.
+`edgeml.graph.Bonsai` implements the Bonsai prediction graph in Tensorflow.
 Similar to ProtoNN, the three phase training routine for Bonsai is decoupled from
 the forward graph to facilitate a plug and play behaviour wherein Bonsai can be
 combined with or used as a final layer classifier for other architectures (RNNs, CNNs).

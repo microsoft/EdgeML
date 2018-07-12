@@ -18,8 +18,8 @@ class Bonsai:
         internalNodes = 2**treeDepth - 1
         totalNodes = 2*internalNodes + 1
 
-        sigma - tanh nonlinearity
-        sigmaI - Indicator function for node probs
+        sigma - tanh non-linearity
+        sigmaI - Indicator function for node probabilities
         sigmaI - has to be set to infinity(1e9 for practicality)
         while doing testing/inference
         numClasses will be reset to 1 in binary case
@@ -123,7 +123,7 @@ class Bonsai:
 
     def getPrediction(self):
         '''
-        Takes in a score tensor and outputs a integer class for each datapoint
+        Takes in a score tensor and outputs a integer class for each data point
         '''
 
         if self.prediction is not None:
@@ -141,7 +141,7 @@ class Bonsai:
     def saveModel(self, currDir):
         '''
         Saved the model params as separate numpy dumps
-        HyperParam dict as a numpy dump
+        Hyper param dict as a numpy dump
         '''
         paramDir = currDir + '/'
         np.save(paramDir + "W.npy", self.W.eval())
