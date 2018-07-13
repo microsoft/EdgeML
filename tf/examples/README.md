@@ -18,7 +18,7 @@ bzip2 -d usps.bz2
 bzip2 -d usps.t.bz2
 mv usps train.txt
 mv usps.t test.txt
-cd <EDGEML_TF_EXP>
+cd ..
 python dataCleanup.py usps10
 ```
 
