@@ -8,10 +8,11 @@ import sys
 import edgeml.utils as utils
 
 class EMI_RNNTrainer:
-    def __init__(self, emiObjOut, X, Y, lossIndicator, numTimeSteps,
+    def __init__(self, emiObj, X, Y, lossIndicator, numTimeSteps,
                  numOutput, stepSize=0.001, lossType='l2', optimizer='Adam',
                  automode=True):
         '''
+        FIX DOC
         emi_graph: The forward pass graph that includes EMI_RNN implementation.
         X, Y : are inputs in appropriate shapes (TODO: Define)
         lossType: ['l2', 'xentropy']
@@ -26,10 +27,11 @@ class EMI_RNNTrainer:
             createOpCollections()
 
         X, Y are outputs from some iterator. We assume to be able to get a
-        iterator like behaviour on multiple calls to sess.run() . Refer to
-        trian method for details
+        iterator like behaviour on multiple calls to sess.run(). Specically, we
+        expect a tf.erors.OutOfRangeError at the end of iterations
         '''
-        self.emiObjOut = emiObjOut
+        self.emiObj = emiObj
+        self.emiObjOut = emiObj(X)
         self.lossType = lossType
         self.X = X
         self.Y = Y
@@ -126,3 +128,34 @@ class EMI_RNNTrainer:
     def createOpCollections(self):
         tf.add_to_collection('train-op', self.trainOp)
         tf.add_to_collection('loss-op', self.lossOp)
+
+    def __echoCB(self, sess, feedDict, currentBatch, redirFile, **kwargs):
+        _, loss = sess.run([emiObj.trainOp, emiObj.lossOp],
+                                feed_dict=feedDict)
+        print("\rBatch %5d Loss %2.5f" % (currentBatch, loss),
+              end='', file=redirFile)
+
+    def trainModel(self, sess, redirFile=None, reuse=False,
+                   echoInterval=15, echoCB=self.__echoCB,
+                   feedDict=None, **kwargs):
+        # TODO: IMPORTANT: Case about self.initVarList Line 608
+        # TODO: IMPORTANT: Implement accuracy printing
+        init = tf.global_variables_initializer()
+        if reuse is False:
+            sess.run(init)
+        else:
+            print("Reuse is True. Not performing initialization.",
+                  file=redirFile)
+
+        currentBatch = 0
+        while True:
+            try:
+                if currentBatch % echoInterval == 0:
+                    echoCB(sess, currentBatch, redirFile, **kwargs)
+                else:
+                    sess.run([emiObj.trainOp], feed_dict=feedDict)
+                currentBatch += 1
+            except tf.errors.OutOfRangeError:
+                break
+
+
