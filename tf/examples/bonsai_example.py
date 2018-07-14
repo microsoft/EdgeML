@@ -141,7 +141,7 @@ if numClasses == 2:
 X = tf.placeholder("float32", [None, dataDimension])
 Y = tf.placeholder("float32", [None, numClasses])
 
-currDir = preprocess.createTimeStampDir(dataDir)
+currDir = preprocess.createTimeStampDirBonsai(dataDir)
 
 dumpCommand(sys.argv, currDir)
 

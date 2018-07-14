@@ -142,11 +142,18 @@ def getProtoNNArgs():
     return parser.parse_args()
 
 
-def createTimeStampDir(dataDir):
+def createTimeStampDirBonsai(dataDir):
     '''
     Creates a Directory with timestamp as it's name
     '''
-    currDir = datetime.datetime.now().strftime("%H_%M_%S_%d_%m_%y")
+    if os.path.isdir(dataDir + '/TFBonsaiResults') is False:
+        try:
+            os.mkdir(dataDir + '/TFBonsaiResults')
+        except OSError:
+            print("Creation of the directory %s failed" %
+                  dataDir + '/TFBonsaiResults')
+
+    currDir = 'TFBonsaiResults/' + datetime.datetime.now().strftime("%H_%M_%S_%d_%m_%y")
     if os.path.isdir(dataDir + '/' + currDir) is False:
         try:
             os.mkdir(dataDir + '/' + currDir)

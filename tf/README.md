@@ -55,5 +55,8 @@ we assume the labels are integers from 0 through N-1.
 
 **Tested With:** Tensorflow >1.6 with Python 2 and Python 3
 
+## Using EdgeML TF Library on a sample public dataset
+Please refer to the [Usage Readme for Examples](examples/README.md) for complete end to end setup for usage of USPS10 public dataset
+
 Copyright (c) Microsoft Corporation. All rights reserved. 
 Licensed under the MIT license.
