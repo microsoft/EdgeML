@@ -8,7 +8,7 @@ import sys
 import edgeml.utils as utils
 
 class EMI_RNNTrainer:
-    def __init__(self, emiObj, X, Y, lossIndicator, numTimeSteps,
+    def __init__(self, predicted, X, Y, lossIndicator, numTimeSteps,
                  numOutput, stepSize=0.001, lossType='l2', optimizer='Adam',
                  automode=True):
         '''
@@ -30,8 +30,7 @@ class EMI_RNNTrainer:
         iterator like behaviour on multiple calls to sess.run(). Specically, we
         expect a tf.erors.OutOfRangeError at the end of iterations
         '''
-        self.emiObj = emiObj
-        self.emiObjOut = emiObj(X)
+        self.predicted = predicted
         self.lossType = lossType
         self.X = X
         self.Y = Y
@@ -48,11 +47,12 @@ class EMI_RNNTrainer:
         # Input validation
         self.supportedLosses = ['xentropy', 'l2']
         self.supportedOptimizers = ['Adam']
-        assert lossTYpe in self.supportedLosses
+        assert lossType in self.supportedLosses
         assert optimizer in self.supportedOptimizers
-        self.__vallidInit = self.__validateInit()
+        self.__validInit = self.__validateInit()
         # Construct the remaining graph
-        self.lossOp = self.__createLossOp(self.emiObjOut, self.Y)
+        self.target = self.__transformY(self.Y)
+        self.lossOp = self.__createLossOp(self.predicted, self.target)
         self.trainOp = self.__createTrainOp()
         if self.automode:
             self.createOpCollections()
@@ -61,12 +61,12 @@ class EMI_RNNTrainer:
         # We need not make any assumptions about X, the only
         # think we need is that the final outputs are comparable
         msg = 'Number of classes are different'
-        assert self.emiObjOut.shape[-1] == self.Y.shape[-1], msg
+        assert self.predicted.shape[-1] == self.Y.shape[-1], msg
         # TODO: Validate arguments to init
         idx = self.__findIndicatorStart(self.lossIndicator)
         assert idx >= 0, "invalid lossIndicator passed"
         self.__verifyLossIndicator(self.lossIndicator, idx)
-        return False
+        return True
 
     def __findIndicatorStart(self, lossIndicator):
         assert lossIndicator.ndim == 2
@@ -74,6 +74,14 @@ class EMI_RNNTrainer:
             if lossIndicator[i, 0] == 1:
                 return i
         return -1
+
+    def __transformY(self, Y):
+        '''
+        Because we need output from each step and not just the last step
+        '''
+        A_ = tf.expand_dims(Y, axis=2)
+        A__ = tf.tile(A_, [1, 1, self.numTimeSteps, 1])
+        return A__
 
     def __verifyLossIndicator(self, lossIndicator, idx):
         numOutput = lossIndicator.shape[1]
@@ -94,12 +102,12 @@ class EMI_RNNTrainer:
         restore accordingly
         '''
         assert self.__validInit is True, 'Initialization failure'
-        self.lossIndicator = lossIndicator.astype('float32')
-        self.lossIndicatorTensor = tf.Variable(self.lossIndiator,
+        self.lossIndicator = self.lossIndicator.astype('float32')
+        self.lossIndicatorTensor = tf.Variable(self.lossIndicator,
                                                name='lossIndicator',
                                                trainable=False)
 
-        # pred of dim [-1, numSubinstance, numTimeSteps, numOutput]
+        # predicted of dim [-1, numSubinstance, numTimeSteps, numOutput]
         logits__ = tf.reshape(predicted, [-1, self.numTimeSteps, self.numOutput])
         labels__ = tf.reshape(target, [-1, self.numTimeSteps, self.numOutput])
         diff = (logits__ - labels__)
@@ -122,7 +130,7 @@ class EMI_RNNTrainer:
         return lossOp
 
     def __createTrainOp(self):
-        tst = tf.train.AdamOptimizer(self.stpeSize).minimize(lossOp)
+        tst = tf.train.AdamOptimizer(self.stepSize).minimize(self.lossOp)
         return tst
 
     def createOpCollections(self):
@@ -130,13 +138,13 @@ class EMI_RNNTrainer:
         tf.add_to_collection('loss-op', self.lossOp)
 
     def __echoCB(self, sess, feedDict, currentBatch, redirFile, **kwargs):
-        _, loss = sess.run([emiObj.trainOp, emiObj.lossOp],
+        _, loss = sess.run([self.trainOp, self.lossOp],
                                 feed_dict=feedDict)
         print("\rBatch %5d Loss %2.5f" % (currentBatch, loss),
               end='', file=redirFile)
 
     def trainModel(self, sess, redirFile=None, reuse=False,
-                   echoInterval=15, echoCB=self.__echoCB,
+                   echoInterval=15, echoCB=None,
                    feedDict=None, **kwargs):
         # TODO: IMPORTANT: Case about self.initVarList Line 608
         # TODO: IMPORTANT: Implement accuracy printing
@@ -144,16 +152,17 @@ class EMI_RNNTrainer:
         if reuse is False:
             sess.run(init)
         else:
-            print("Reuse is True. Not performing initialization.",
-                  file=redirFile)
+            print("Reuse is True. Not performing initialization.", file=redirFile)
+        if echoCB is None:
+            echoCB = self.__echoCB
 
         currentBatch = 0
         while True:
             try:
                 if currentBatch % echoInterval == 0:
-                    echoCB(sess, currentBatch, redirFile, **kwargs)
+                    echoCB(sess, feedDict, currentBatch, redirFile, **kwargs)
                 else:
-                    sess.run([emiObj.trainOp], feed_dict=feedDict)
+                    sess.run([self.trainOp], feed_dict=feedDict)
                 currentBatch += 1
             except tf.errors.OutOfRangeError:
                 break
