@@ -236,7 +236,10 @@ class EMI_BasicLSTM(EMI_RNN):
         assert self.graphCreated is False
         msg = 'X should be of form [-1, numSubinstance, numTimeSteps, numFeatures]'
         assert X.get_shape().ndims == 4, msg
-        # Reshape into 3D such that the first dimension is -1 * numSubinstance
+        assert X.shape[1] == self.numSubinstance
+        assert X.shape[2] == self.numTimesteps
+        assert X.shape[3] == self.numFeats
+        # Reshape into 3D suself.h that the first dimension is -1 * numSubinstance
         # where each numSubinstance segment corresponds to one bag
         # then shape it back in into 4D
         scope = self.__scope
