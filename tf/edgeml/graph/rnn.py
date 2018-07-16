@@ -5,13 +5,59 @@ import numpy as np
 import tensorflow as tf
 
 class EMI_DataPipeline():
-    '''The datainput block for EMI-RNN training
+    '''The datainput block for EMI-RNN training. Since EMI-RNN is an expensive
+    algorithm due to the multiple rounds of updates that are to be performed,
+    we avoid using the feed dict to feed data into tensorflow and rather,
+    exploit the dataset API. This class abstracts most of the details of these
+    implementations. This class uses iterators to iterate over the data in
+    batches.
 
-    TODO: Define a data pipeline base to layout the assumptions (implicit and
-    explicit that you have made)
+    This class uses reinitializable iterators. Please refer to the dataset API
+    docs for more information.
+
+    This class supports resuming from checkpoint files. Provide the restored
+    meta graph as an argument to __init__ to enable this behaviour
+
+    Usage:
+        Step 1: Create a data input pipeline object and obtain the x_batch and
+        y_batch tensors. These shoudl be fed to other parts of the graph which
+        acts on the input data.
+        ```
+            inputPipeline = EMI_DataPipeline(NUM_SUBINSTANCE, NUM_TIMESTEPS,
+                                             NUM_FEATS, NUM_OUTPUT)
+            x_batch, y_batch = inputPipeline()
+            # feed to emiLSTM or some other computation subgraph
+            y_cap = emiLSTM(x_batch)
+        ```
+
+        Step 2:  Create other parts of the computation graph (loss operations,
+        training ops etc). After initializing the tensorflow grpah with
+        global_variables_initializer, initialize the iterator with the input
+        data by calling:
+            inputPipeline.runInitializer(x_train, y_trian..)
+
+        Step 3: You can now iterate over batches by runing some computation
+        operation. At the end of the data, tf.errors.OutOfRangeError will be
+        thrown.
+        ```
+        while True:
+            try:
+                sess.run(y_cap)
+            except tf.errors.OutOfRangeError:
+                break
+        ```
     '''
     def __init__(self, numSubinstance, numTimesteps, numFeats, numOutput,
                  graph=None, prefetchNum =5):
+        '''
+        numSubinstance, numTimeSteps, numFeats, numOutput:
+            Dataset characteristis. Please refer to the associated EMI_RNN
+            publication for more information.
+        graph: This module supports resuming/restoring from a saved metagraph. To
+            enable this behaviour, pass the restored graph as an argument.
+        prefetchNum: The number of asynchrenous prefetch to do when iterating over
+            the data. Please refer to 'prefetching' in tensorflow dataset API
+        '''
 
         self.numSubinstance = numSubinstance
         self.numTimesteps = numTimesteps
@@ -28,7 +74,6 @@ class EMI_DataPipeline():
         self.dataset_init = None
         self.x_batch = None
         self.y_batch = None
-
         # Internal
         self.scope = 'EMI/'
 
@@ -88,6 +133,14 @@ class EMI_DataPipeline():
         return self.x_batch, self.y_batch
 
     def runInitializer(self, sess, x_data, y_data, batchSize, numEpochs):
+        '''
+        Initializes the dataset API with the input data (x_data, y_data).
+
+        x_data, y_data, batchSize: Self explanatory
+        numEpochs: The dataset API implements epochs by appending the data to
+            itself numEpochs times and then iterating over the resulting data as if
+            it was a single data set.
+        '''
         assert self.graphCreated is True
         msg = 'X shape should be [-1, numSubinstance, numTimesteps, numFeats]'
         assert x_data.ndim == 4, msg
