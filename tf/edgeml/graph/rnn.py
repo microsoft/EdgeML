@@ -120,7 +120,13 @@ class EMI_DataPipeline():
         self.numEpochs = graph.get_tensor_by_name(scope + "num-epochs:0")
         self.dataset_init = graph.get_operation_by_name(scope + "dataset-init")
         self.x_batch = graph.get_collection('next-x-batch')
-        self.y_batch = graph.get_collection(scope + 'next-y-batch')
+        self.y_batch = graph.get_collection('next-y-batch')
+        msg ='More than one tensor named next-x-batch/next-y-batch. '
+        msg += 'Are you not resetting your graph?'
+        assert len(self.x_batch) == 1, msg
+        assert len(self.y_batch) == 1, msg
+        self.x_batch = self.x_batch[0]
+        self.y_batch = self.y_batch[0]
         self.graphCreated = True
 
     def __call__(self):
