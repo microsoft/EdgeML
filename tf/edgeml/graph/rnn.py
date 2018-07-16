@@ -6,6 +6,9 @@ import tensorflow as tf
 
 class EMI_DataPipeline():
     '''The datainput block for EMI-RNN training
+
+    TODO: Define a data pipeline base to layout the assumptions (implicit and
+    explicit that you have made)
     '''
     def __init__(self, numSubinstance, numTimesteps, numFeats, numOutput,
                  graph=None, prefetchNum =5):
@@ -118,18 +121,25 @@ class EMI_RNN():
         self.graphCreated = False
         # Model specific matrices, parameter should be saved
         self.varList = []
-        self.lossOp = None
-        self.trainOp = None
+        self.output = None
         raise NotImplementedError("This is intended to act similar to an " +
                                   "abstract class. Instantiating is not " +
                                   "allowed.")
-    def __call__(self, X, *args, **kwargs):
-        raise NotImplementedError("Subclass does not implement this method")
+    def __call__(self, *args, **kwargs):
+        if self.graphCreated is True:
+            assert self.output is not None
+            return self.output
+        if self.graph is None:
+            self._createGraph(*args, **kwargs)
+        else:
+            self._restoreGraph(*args, **kwargs)
+        assert self.graphCreated is True
+        return self.output
 
     def getHyperParams(self):
         raise NotImplementedError("Subclass does not implement this method")
 
-    def restoreModel(self, graph, *args, **kwargs):
+    def _restoreGraph(self, *args, **kwargs):
         '''
         TODO: Note that this is slightly different from the original
         importModelTF. Here you take a graph that the user has already created
@@ -138,7 +148,10 @@ class EMI_RNN():
         '''
         raise NotImplementedError("Subclass does not implement this method")
 
-    def initModel(self, initVarList, sess, *args, **kwargs):
+    def _createGraph(self, *args, **kwargs):
+        raise NotImplementedError("Subclass does not implement this method")
+
+    def assignToGraph(self, sess, initVarList, *args, **kwargs):
         '''
         Initializes model from corresponding matrices
         '''
@@ -159,61 +172,78 @@ class EMI_BasicLSTM(EMI_RNN):
         self.numSubinstance = numSubinstance
         self.graph = graph
         self.graphCreated = False
-
-        self.cell = None
+        # Restore or initialize
         self.keep_prob = None
         self.varList = []
         self.output = None
+        # Internal
+        self.__scope = 'EMI/BasicLSTM/'
 
-    def __createGraph(self, X):
+    def _createGraph(self, X):
         assert self.graphCreated is False
         msg = 'X should be of form [-1, numSubinstance, numTimeSteps, numFeatures]'
         assert X.get_shape().ndims == 4, msg
         # Reshape into 3D such that the first dimension is -1 * numSubinstance
         # where each numSubinstance segment corresponds to one bag
         # then shape it back in into 4D
-        x = tf.reshape(X, [-1, self.numTimeSteps, self.numFeats])
-        x = tf.unstack(x, num=self.numTimeSteps, axis=1)
-        # Get the LSTM output
-        with tf.name_scope('EMI-BasicLSTM'):
-            self.cell = tf.nn.rnn_cell.BasicLSTMCell(self.numHidden,
+        scope = self.__scope
+        keep_prob = None
+        with tf.name_scope(scope):
+            x = tf.reshape(X, [-1, self.numTimeSteps, self.numFeats])
+            x = tf.unstack(x, num=self.numTimeSteps, axis=1)
+            # Get the LSTM output
+            cell = tf.nn.rnn_cell.BasicLSTMCell(self.numHidden,
                                                      forget_bias=self.forgetBias,
-                                                     name='EMI-BasicLSTM')
-            wrapped_cell = self.cell
+                                                     name='EMI-LSTM-Cell')
+            wrapped_cell = cell
             if self.useDropout is True:
-                keep_prob = tf.placeholder(dtype=tf.float32, name='keep_prob')
-                wrapped_cell = tf.contrib.rnn.DropoutWrapper(self.cell,
+                keep_prob = tf.placeholder(dtype=tf.float32, name='keep-prob')
+                wrapped_cell = tf.contrib.rnn.DropoutWrapper(cell,
                                                              input_keep_prob=keep_prob,
                                                              output_keep_prob=keep_prob)
-                self.keep_prob = keep_prob
             outputs__, states = tf.nn.static_rnn(wrapped_cell, x, dtype=tf.float32)
-        outputs = []
-        for output in outputs__:
-            outputs.append(tf.expand_dims(output, axis=1))
-        # Convert back to bag form
-        with tf.name_scope("final_output"):
+            outputs = []
+            for output in outputs__:
+                outputs.append(tf.expand_dims(output, axis=1))
+            # Convert back to bag form
             outputs = tf.concat(outputs, axis=1, name='concat-output')
             dims = [-1, self.numSubinstance, self.numTimeSteps, self.numHidden]
-            self.output = tf.reshape(outputs, dims, name='bag_output')
+            output = tf.reshape(outputs, dims, name='bag-output')
 
-        LSTMVars = self.cell.variables
+        LSTMVars = cell.variables
         self.varList.extend(LSTMVars)
+        if self.useDropout:
+            self.keep_prob = keep_prob
+        self.output = output
         self.graphCreated = True
         return self.output
 
-    def __call__(self, X):
-        if self.graphCreated is True:
-            assert self.output is not None
-            return self.output
-        if self.graph is None:
-            self.__createGraph()
-        else:
-            raise NotImplementedError()
-        assert self.graphCreated is True
-        return self.output
-
+    def _restoreGraph(self, X):
+        assert self.graphCreated is False
+        assert self.graph is not None
+        graph = self.graph
+        scope = self.__scope
+        if self.useDropout:
+            self.keep_prob = graph.get_tensor_by_name(scope + 'keep-prob:0')
+        self.output = graph.get_tensor_by_name(scope + 'bag-output:0')
+        kernel = graph.get_tensor_by_name("rnn/EMI-LSTM-Cell/kernel:0")
+        bias = graph.get_tensor_by_name("rnn/EMI-LSTM-Cell/bias:0")
+        assert len(self.varList) is 0
+        self.varList = [kernel, bias]
+        self.graphCreated = True
 
     def getHyperParams(self):
         assert self.graphCreated is True, "Graph is not created"
         assert len(self.varList) == 2
         return self.varList
+
+    def assignToGraph(self, sess, initVarList):
+        assert initVarList is not None
+        assert len(initVarList) == 2
+        graph = tf.get_default_graph()
+        k_ = graph.get_tensor_by_name('rnn/EMI-LSTM-Cell/kernel:0')
+        b_ = graph.get_tensor_by_name('rnn/EMI-LSTM-Cell/bias:0')
+        kernel, bias = initVarList[-2], initVarList[-1]
+        k_op = tf.assign(k_, kernel)
+        b_op = tf.assign(b_, bias)
+        sess.run([k_op, b_op])
