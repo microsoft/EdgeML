@@ -540,7 +540,7 @@ class NetworkV2:
         self.__graphCreated = True
         return graph
     
-        def exportNPY(self, outFolder=None):
+    def exportNPY(self, outFolder=None):
         W1, B1, W2, B2 = self.W1, self.B1, self.W2, self.B2
         lstmKernel, lstmBias = self.LSTMVars
         W1, B1, W2, B2, lstmKernel, lstmBias = self.sess.run([W1, B1, W2, B2, lstmKernel, lstmBias])
