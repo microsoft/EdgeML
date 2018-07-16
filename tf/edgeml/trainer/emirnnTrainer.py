@@ -49,6 +49,8 @@ class EMI_RNNTrainer:
         self.supportedOptimizers = ['Adam']
         assert lossType in self.supportedLosses
         assert optimizer in self.supportedOptimizers
+        # Internal
+        self.scope = 'EMI/Trainer/'
 
     def __findIndicatorStart(self, lossIndicator):
         assert lossIndicator.ndim == 2
@@ -65,7 +67,11 @@ class EMI_RNNTrainer:
         assert predicted.shape[1] == target.shape[1], msg
         assert len(target.shape) == 3
         assert target.shape[2] == self.numOutput
-        msg = "Invalid lossIndicator passed"
+        msg = "Invalid lossIndicator"
+        if lossIndicator is None:
+            # Loss indicator can be None when restoring
+            self.__validInit = True
+            return
         assert lossIndicator.ndim == 2, msg
         idx = self.__findIndicatorStart(lossIndicator)
         assert idx >= 0, msg
@@ -82,6 +88,7 @@ class EMI_RNNTrainer:
         self.__validateInit(predicted, target, lossIndicator)
         assert self.__validInit is True
         if self.graph is None:
+            assert lossIndicator is not None, 'Invalid lossindicator'
             self._createGraph(predicted, target, lossIndicator)
         else:
             self._restoreGraph(predicted, target, lossIndicator)
@@ -94,38 +101,42 @@ class EMI_RNNTrainer:
         Currently we just tile the target to each step. This method can be
         exteneded/overridden to allow more complex behaviours
         '''
-        A_ = tf.expand_dims(target, axis=2)
-        A__ = tf.tile(A_, [1, 1, self.numTimeSteps, 1])
+        with tf.name_scope(self.scope):
+            A_ = tf.expand_dims(target, axis=2)
+            A__ = tf.tile(A_, [1, 1, self.numTimeSteps, 1])
         return A__
 
     def __createLossOp(self, predicted, target, lossIndicator):
         assert self.__validInit is True, 'Initialization failure'
-        lossIndicator = lossIndicator.astype('float32')
-        self.lossIndicatorTensor = tf.Variable(lossIndicator,
-                                               name='lossIndicator',
-                                               trainable=False)
-        # predicted of dim [-1, numSubinstance, numTimeSteps, numOutput]
-        logits__ = tf.reshape(predicted, [-1, self.numTimeSteps, self.numOutput])
-        labels__ = tf.reshape(target, [-1, self.numTimeSteps, self.numOutput])
-        diff = (logits__ - labels__)
-        diff = tf.multiply(self.lossIndicatorTensor, diff)
-        # take loss only for the timesteps indicated by lossIndicator for softmax
-        idx = self.__findIndicatorStart(lossIndicator)
-        logits__ = logits__[:, idx:, :]
-        labels__ = labels__[:, idx:, :]
-        logits__ = tf.reshape(logits__, [-1, self.numOutput])
-        labels__ = tf.reshape(labels__, [-1, self.numOutput])
-        # Regular softmax
-        if self.lossType == 'xentropy':
-            softmax1 = tf.nn.softmax_cross_entropy_with_logits_v2(labels=labels__,
-                                                                  logits=logits__)
-            lossOp = tf.reduce_mean(softmax1, name='xentropy-loss')
-        elif self.lossType == 'l2':
-            lossOp = tf.nn.l2_loss(diff, name='l2-loss')
+        with tf.name_scope(self.scope):
+            lossIndicator = lossIndicator.astype('float32')
+            self.lossIndicatorTensor = tf.Variable(lossIndicator,
+                                                   name='lossIndicator',
+                                                   trainable=False)
+            # predicted of dim [-1, numSubinstance, numTimeSteps, numOutput]
+            dims = [-1, self.numTimeSteps, self.numOutput]
+            logits__ = tf.reshape(predicted, dims)
+            labels__ = tf.reshape(target, dims)
+            diff = (logits__ - labels__)
+            diff = tf.multiply(self.lossIndicatorTensor, diff)
+            # take loss only for the timesteps indicated by lossIndicator for softmax
+            idx = self.__findIndicatorStart(lossIndicator)
+            logits__ = logits__[:, idx:, :]
+            labels__ = labels__[:, idx:, :]
+            logits__ = tf.reshape(logits__, [-1, self.numOutput])
+            labels__ = tf.reshape(labels__, [-1, self.numOutput])
+            # Regular softmax
+            if self.lossType == 'xentropy':
+                softmax1 = tf.nn.softmax_cross_entropy_with_logits_v2(labels=labels__,
+                                                                      logits=logits__)
+                lossOp = tf.reduce_mean(softmax1, name='xentropy-loss')
+            elif self.lossType == 'l2':
+                lossOp = tf.nn.l2_loss(diff, name='l2-loss')
         return lossOp
 
     def __createTrainOp(self):
-        tst = tf.train.AdamOptimizer(self.stepSize).minimize(self.lossOp)
+        with tf.name_scope(self.scope):
+            tst = tf.train.AdamOptimizer(self.stepSize).minimize(self.lossOp)
         return tst
 
     def _createGraph(self, predicted, target, lossIndicator):
@@ -134,6 +145,24 @@ class EMI_RNNTrainer:
         self.trainOp = self.__createTrainOp()
         if self.automode:
             self.createOpCollections()
+        self.graphCreated = True
+
+    def _restoreGraph(self, predicted, target, lossIndicator=None):
+        assert self.graphCreated is False
+        self.__validateInit(predicted, target, lossIndicator)
+        assert self.__validInit is True
+        scope = self.scope
+        graph = self.graph
+        self.trainOp = tf.get_collection('EMI-train-op')
+        self.lossOp = tf.get_collection('EMI-loss-op')
+        self.lossIndicatorTensor = graph.get_tensor_by_name(scope +
+                                                            'lossIndicator:0')
+        msg = 'Multiple tensors with the same name in the graph. Are you not'
+        msg +=' resetting your graph?'
+        assert len(self.trainOp) == 1, msg
+        assert len(self.lossOp) == 1, msg
+        self.trainOp = self.trainOp[0]
+        self.lossOp = self.lossOp[0]
         self.graphCreated = True
 
     def createOpCollections(self):
