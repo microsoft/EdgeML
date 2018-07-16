@@ -540,6 +540,31 @@ class NetworkV2:
         self.__graphCreated = True
         return graph
     
+    def exportNPY(self, outFolder=None):
+        W1, B1, W2, B2 = self.W1, self.B1, self.W2, self.B2
+        lstmKernel, lstmBias = self.LSTMVars
+        W1, B1, W2, B2, lstmKernel, lstmBias = self.sess.run([W1, B1, W2, B2, lstmKernel, lstmBias])
+        FCW = np.matmul(W2.T, W1.T)
+        FCB = np.matmul(W2.T, B1) + B2
+        lstmKernel = lstmKernel.T
+        lstmBias = lstmBias.T
+        if outFolder is None:
+            return lstmKernel, lstmBias, FCW, FCB
+        lstmKernel_f = outFolder + '/' + 'lstmKernel.npy'
+        lstmBias_f = outFolder + '/' + 'lstmBias.npy'
+        FCB_f = outFolder + '/' + 'fcb.npy'
+        FCW_f = outFolder + '/' + 'fcw.npy'
+        assert os.path.isdir(outFolder)
+        assert os.path.isfile(lstmKernel_f) is False
+        assert os.path.isfile(lstmBias_f) is False
+        assert os.path.isfile(FCB_f) is False
+        assert os.path.isfile(FCW_f) is False
+        np.save(lstmKernel_f, lstmKernel)
+        np.save(lstmBias_f, lstmBias)
+        np.save(FCW_f, FCW)
+        np.save(FCB_f, FCB)
+        return lstmKernel, lstmBias, FCW, FCB
+
     def __trainingSetup(self, reuse, gpufrac, redirFile):
         if self.sess is None:
             if gpufrac is not None:
