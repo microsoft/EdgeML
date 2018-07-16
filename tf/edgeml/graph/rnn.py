@@ -23,54 +23,79 @@ class EMI_DataPipeline():
         self.batchSize = None
         self.numEpochs = None
         self.dataset_init = None
-        self.dataset_next = None
+        self.x_batch = None
+        self.y_batch = None
+
+        # Internal
+        self.scope = 'EMI/'
 
     def __createGraph(self):
         assert self.graphCreated is False
         dim = [None, self.numSubinstance, self.numTimesteps, self.numFeats]
-        X = tf.placeholder(tf.float32, dim, name='EMI/inpX')
-        Y = tf.placeholder(tf.float32, [None, self.numSubinstance,
-                                       self.numOutput], name='EMI/inpY')
-        batchSize = tf.placeholder(tf.int64, name='EMI/batch-size')
-        numEpochs = tf.placeholder(tf.int64, name='EMI/num-epochs')
+        scope = self.scope + 'input-pipeline/'
+        with tf.name_scope(scope):
+            X = tf.placeholder(tf.float32, dim, name='inpX')
+            Y = tf.placeholder(tf.float32, [None, self.numSubinstance,
+                                           self.numOutput], name='inpY')
+            batchSize = tf.placeholder(tf.int64, name='batch-size')
+            numEpochs = tf.placeholder(tf.int64, name='num-epochs')
 
-        dataset_x_target = tf.data.Dataset.from_tensor_slices(X)
-        dataset_y_target = tf.data.Dataset.from_tensor_slices(Y)
-        couple = (dataset_x_target, dataset_y_target)
-        ds_target = tf.data.Dataset.zip(couple).repeat(numEpochs)
-        ds_target = ds_target.batch(batchSize)
-        ds_target = ds_target.prefetch(self.prefetchNum)
-        ds_iterator_target = tf.data.Iterator.from_structure(ds_target.output_types,
-                                                    ds_target.output_shapes)
-        ds_next_target = ds_iterator_target.get_next()
-        ds_init_target = ds_iterator_target.make_initializer(ds_target,
-                                                             name='EMI/dataset-init')
+            dataset_x_target = tf.data.Dataset.from_tensor_slices(X)
+            dataset_y_target = tf.data.Dataset.from_tensor_slices(Y)
+            couple = (dataset_x_target, dataset_y_target)
+            ds_target = tf.data.Dataset.zip(couple).repeat(numEpochs)
+            ds_target = ds_target.batch(batchSize)
+            ds_target = ds_target.prefetch(self.prefetchNum)
+            ds_iterator_target = tf.data.Iterator.from_structure(ds_target.output_types,
+                                                        ds_target.output_shapes)
+            ds_next_target = ds_iterator_target
+            ds_init_target = ds_iterator_target.make_initializer(ds_target,
+                                                                 name='dataset-init')
+            x_batch, y_batch = ds_iterator_target.get_next()
+            tf.add_to_collection('next-x-batch', x_batch)
+            tf.add_to_collection('next-y-batch', y_batch)
         self.X = X
         self.Y = Y
         self.batchSize = batchSize
         self.numEpochs = numEpochs
         self.dataset_init = ds_init_target
-        self.dataset_next = ds_next_target
+        self.x_batch, self.y_batch = x_batch, y_batch
+        self.graphCreated = True
+
+    def __restoreGraph(self):
+        assert self.graphCreated is False
+        graph = self.graph
+        scope = 'EMI/input-pipeline/'
+        self.X = graph.get_tensor_by_name(scope + "inpX:0")
+        self.Y = graph.get_tensor_by_name(scope + "inpY:0")
+        self.batchSize = graph.get_tensor_by_name(scope + "batch-size:0")
+        self.numEpochs = graph.get_tensor_by_name(scope + "num-epochs:0")
+        self.dataset_init = graph.get_operation_by_name(scope + "dataset-init")
+        self.x_batch = graph.get_collection('next-x-batch')
+        self.y_batch = graph.get_collection(scope + 'next-y-batch')
         self.graphCreated = True
 
     def __call__(self):
         if self.graphCreated is True:
-            return self.datset_next
+            return self.x_batch, self.y_batch
         if self.graph is None:
             self.__createGraph()
         else:
             self.__restoreGraph()
-        return self.dataset_next
+        return self.x_batch, self.y_batch
 
     def runInitializer(self, sess, x_data, y_data, batchSize, numEpochs):
         assert self.graphCreated is True
-        assert x_data.ndim == 4
-        assert x_data.shape[1] == self.numSubinstance
-        assert x_data.shape[2] == self.numTimesteps
-        assert x_data.shape[2] == self.numFeats
-        assert y_data.shape[0] == x_data.shape[0]
-        assert y_data.shape[1] == self.numSubinstance
-        assert y_data.shape[2] == self.numOutput
+        msg = 'X shape should be [-1, numSubinstance, numTimesteps, numFeats]'
+        assert x_data.ndim == 4, msg
+        assert x_data.shape[1] == self.numSubinstance, msg
+        assert x_data.shape[2] == self.numTimesteps, msg
+        assert x_data.shape[3] == self.numFeats, msg
+        msg = 'X and Y sould have same first dimension'
+        assert y_data.shape[0] == x_data.shape[0], msg
+        msg ='Y shape should be [-1, numSubinstance, numOutput]'
+        assert y_data.shape[1] == self.numSubinstance, msg
+        assert y_data.shape[2] == self.numOutput, msg
         feed_dict = {
             self.X: x_data,
             self.Y: y_data,
@@ -125,13 +150,14 @@ class EMI_BasicLSTM(EMI_RNN):
     """
 
     def __init__(self, numSubinstance, numHidden, numTimeSteps,
-                 numFeats, forgetBias=1.0, useDropout=False):
+                 numFeats, graph=None, forgetBias=1.0, useDropout=False):
         self.numHidden = numHidden
         self.numTimeSteps = numTimeSteps
         self.numFeats = numFeats
         self.useDropout = useDropout
         self.forgetBias = forgetBias
         self.numSubinstance = numSubinstance
+        self.graph = graph
         self.graphCreated = False
 
         self.cell = None
@@ -139,9 +165,8 @@ class EMI_BasicLSTM(EMI_RNN):
         self.varList = []
         self.output = None
 
-    def __call__(self, X):
-        msg = 'EMI_BasicLSTM already part of existing graph.'
-        assert self.graphCreated is False, msg
+    def __createGraph(self, X):
+        assert self.graphCreated is False
         msg = 'X should be of form [-1, numSubinstance, numTimeSteps, numFeatures]'
         assert X.get_shape().ndims == 4, msg
         # Reshape into 3D such that the first dimension is -1 * numSubinstance
@@ -175,6 +200,18 @@ class EMI_BasicLSTM(EMI_RNN):
         self.varList.extend(LSTMVars)
         self.graphCreated = True
         return self.output
+
+    def __call__(self, X):
+        if self.graphCreated is True:
+            assert self.output is not None
+            return self.output
+        if self.graph is None:
+            self.__createGraph()
+        else:
+            raise NotImplementedError()
+        assert self.graphCreated is True
+        return self.output
+
 
     def getHyperParams(self):
         assert self.graphCreated is True, "Graph is not created"
