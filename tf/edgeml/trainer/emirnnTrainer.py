@@ -7,7 +7,7 @@ import numpy as np
 import sys
 import edgeml.utils as utils
 
-class EMI_RNNTrainer:
+class EMI_Trainer:
     def __init__(self, numTimeSteps, numOutput, graph=None,
                  stepSize=0.001, lossType='l2', optimizer='Adam',
                  automode=True):
@@ -44,6 +44,8 @@ class EMI_RNNTrainer:
         self.lossOp = None
         self.trainOp = None
         self.lossIndicatorTensor = None
+        self.softmaxPredictions = None
+        self.accTilda = None
         # Input validation
         self.supportedLosses = ['xentropy', 'l2']
         self.supportedOptimizers = ['Adam']
@@ -141,6 +143,18 @@ class EMI_RNNTrainer:
 
     def _createGraph(self, predicted, target, lossIndicator):
         target = self.__transformY(target)
+        with tf.name_scope(self.scope):
+            self.softmaxPredictions = tf.nn.softmax(predicted, axis=3,
+                                                    name='softmaxed-prediction')
+            pred = self.softmaxPredictions[:, :, -1, :]
+            actu = target[:, :, -1, :]
+            resPred = tf.reshape(pred, [-1, self.numOutput])
+            resActu = tf.reshape(actu, [-1, self.numOutput])
+            equal = tf.equal(tf.argmax(resPred, axis=1), tf.argmax(resActu,
+                                                                   axis=1))
+            self.accTilda = tf.reduce_mean(tf.cast(equal, tf.float32),
+                                           name='acc-tilda')
+
         self.lossOp = self.__createLossOp(predicted, target, lossIndicator)
         self.trainOp = self.__createTrainOp()
         if self.automode:
@@ -163,6 +177,10 @@ class EMI_RNNTrainer:
         assert len(self.lossOp) == 1, msg
         self.trainOp = self.trainOp[0]
         self.lossOp = self.lossOp[0]
+        name = scope + 'softmaxed-prediction:0'
+        self.softmaxPredictions = graph.get_tensor_by_name(name)
+        name = scope + 'acc-tilda:0'
+        self.accTilda = graph.get_tensor_by_name(name)
         self.graphCreated = True
 
     def createOpCollections(self):
@@ -191,4 +209,54 @@ class EMI_RNNTrainer:
             except tf.errors.OutOfRangeError:
                 break
 
+class EMI_Driver:
+    def __init__(self, emiDataPipeline, emiTrainer,
+                 max_to_keep=1000, globalStepStart=1000):
+        self.__dataPipe = emiDataPipeline
+        self.__emiTrainer = emiTrainer
+        # assert False, 'Not implemented: Check all three objects are properly'
+        # 'conconstructed'
+        self.__globalStep = globalStepStart
+        self.__saver = tf.train.Saver(max_to_keep=max_to_keep,
+                                      save_relative_paths=True)
+        self.__graphManager = utils.GraphManager()
 
+    def fancyEcho(self, sess, feedDict, currentBatch, redirFile, **kwargs):
+        _, loss, acc = sess.run([self.__emiTrainer.trainOp,
+                                 self.__emiTrainer.lossOp,
+                                 self.__emiTrainer.accTilda],
+                                feed_dict=feedDict)
+        print("\rBatch %5d Loss %2.5f Acc %2.5f" % (currentBatch, loss, acc),
+              end='', file=redirFile)
+
+
+    def run(self, sess, x_train, y_train, x_val, y_val, numIter,
+            numRounds, batchSize, numEpochs, updatePolicy=None,
+            echoCB=None, redirFile=None, modelPrefix='/tmp/model'):
+        '''
+        TODO: Check that max_to_keep > numIter
+        TODO: Check that no model with globalStepStart exists; or, print a
+        warning that we override these methods.
+
+        Automatically run MI-RNN for 70%% of the rounds and emi for the rest
+        Allow option for only MI mode
+        '''
+        for cround in range(numRounds):
+            print("Round: %d" % cround, file=redirFile)
+            for citer in range(numIter):
+                self.__dataPipe.runInitializer(sess, x_train, y_train, batchSize,
+                                               numEpochs)
+                # TODO: Implement custo print function 
+                self.__emiTrainer.trainModel(sess, echoCB=self.fancyEcho)
+                print(file=redirFile)
+                self.__graphManager.checkpointModel(self.__saver, sess,
+                                                    modelPrefix,
+                                                    self.__globalStep,
+                                                    redirFile=redirFile)
+                self.__globalStep += 1
+
+                '''print some stats'''
+                ''' save model'''
+                '''keep track of saved models'''
+            '''restore best model'''
+            '''reinitialize graph and stuff'''
