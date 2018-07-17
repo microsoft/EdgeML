@@ -5,7 +5,7 @@ import numpy as np
 class Bonsai:
     def __init__(self, numClasses, dataDimension, projectionDimension,
                  treeDepth, sigma,
-                 W=None, T=None, V=None, Z=None):
+                 W=None, T=None, V=None, Z=None,isRegression=None):
         '''
         Expected Dimensions:
 
@@ -24,10 +24,9 @@ class Bonsai:
         while doing testing/inference
         numClasses will be reset to 1 in binary case
         '''
-
         self.dataDimension = dataDimension
         self.projectionDimension = projectionDimension
-
+        self.isRegression = isRegression
         if numClasses == 2:
             self.numClasses = 1
         else:
@@ -38,6 +37,8 @@ class Bonsai:
 
         self.internalNodes = 2**self.treeDepth - 1
         self.totalNodes = 2 * self.internalNodes + 1
+
+        self.isRegression = isRegression
 
         self.W = self.initW(W)
         self.V = self.initV(V)
@@ -126,15 +127,21 @@ class Bonsai:
         Takes in a score tensor and outputs a integer class for each datapoint
         '''
 
-        if self.prediction is not None:
-            return self.prediction
+        #Classification.
+        if (self.isRegression == False):
+            if self.prediction is not None:
+                return self.prediction
 
-        if self.numClasses > 2:
-            self.prediction = tf.argmax(tf.transpose(self.score), 1)
-        else:
-            self.prediction = tf.argmax(
-                tf.concat([tf.transpose(self.score),
-                           0 * tf.transpose(self.score)], 1), 1)
+            if self.numClasses > 2:
+                self.prediction = tf.argmax(tf.transpose(self.score), 1)
+            else:
+                self.prediction = tf.argmax(
+                    tf.concat([tf.transpose(self.score),
+                            0 * tf.transpose(self.score)], 1), 1)
+        #Regression.
+        elif (self.isRegression == True):
+            #For regression , scores are the actual predictions, just return them.
+            self.prediction = self.score
 
         return self.prediction
 
@@ -143,17 +150,25 @@ class Bonsai:
         Saved the model params as separate numpy dumps
         HyperParam dict as a numpy dump
         '''
+        print ("Saving the model !!")
+        print (currDir)
         paramDir = currDir + '/'
-        np.save(paramDir + "W.npy", self.W.eval())
-        np.save(paramDir + "V.npy", self.V.eval())
-        np.save(paramDir + "T.npy", self.T.eval())
-        np.save(paramDir + "Z.npy", self.Z.eval())
-        hyperParamDict = {'dataDim': self.dataDimension,
-                          'projDim': self.projectionDimension,
-                          'numClasses': self.numClasses,
-                          'depth': self.treeDepth, 'sigma': self.sigma}
-        hyperParamFile = paramDir + 'hyperParam.npy'
-        np.save(hyperParamFile, hyperParamDict)
+        print ("----------------------")
+        try:
+            np.save(paramDir + "W.npy", self.W.eval())
+            np.save(paramDir + "V.npy", self.V.eval())
+            np.save(paramDir + "T.npy", self.T.eval())
+            np.save(paramDir + "Z.npy", self.Z.eval())
+            hyperParamDict = {'dataDim': self.dataDimension,
+                              'projDim': self.projectionDimension,
+                              'numClasses': self.numClasses,
+                              'depth': self.treeDepth, 'sigma': self.sigma
+                              }
+            hyperParamFile = paramDir + 'hyperParam.npy'
+            np.save(hyperParamFile, hyperParamDict)
+        except:
+            print ("Some error occurred !!")
+            exit(0)
 
     def loadModel(self, currDir):
         '''
