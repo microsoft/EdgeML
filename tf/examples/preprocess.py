@@ -34,13 +34,60 @@ def checkFloatNneg(value):
 
 def checkFloatPos(value):
     fvalue = float(value)
-    if fvalue < 0:
+    if fvalue <= 0:
         raise argparse.ArgumentTypeError(
             "%s is an invalid positive float value" % value)
     return fvalue
 
+def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
-def getArgs():
+def protoNN_getArgs():
+    '''
+    Function to parse arguments
+    '''
+    parser = argparse.ArgumentParser(
+        description='HyperParams for ProtoNN Algorithm')
+    parser.add_argument('-dir', '--data_dir', required=True,
+                        help='Data directory containing' +
+                        'train.npy and test.npy')
+
+    parser.add_argument('-p', '--projDim', type=checkIntPos, default=5,
+                        help='Projection Dimension (default: 5 try: [5, 20, 30])')
+
+    parser.add_argument('-np', '--num_proto', type=int, default=80,
+                        help='Parameter for number of prototypes. (default: 60 try: [45,75,100]')
+
+    parser.add_argument('-g', '--gamma', type=float, default = 0.0015,
+                        help='Gamma (default: 0.0015)')
+
+    parser.add_argument('-e', '--num_epochs', type=int, default=100,
+                        help='Num of epochs to be used (default : 200)')
+
+    parser.add_argument('-lr', '--learningRate', type=checkFloatPos, default=0.05,
+                        help='Initial Learning rate for Adam Optimizer (default: 0.05)')
+
+    parser.add_argument('-b', '--batchSize', type=checkIntPos, default = 32,
+                            help='Batch Size to be used (default: 32)')
+
+    parser.add_argument('-rW', type=float, default=0.0,
+                        help='Regularizer for W  (default: 0.0001 try: [0.01, 0.001, 0.00001])')
+
+    parser.add_argument('-rB', type=float, default=0.0,
+                        help='Regularizer for B  (default: 0.0001 try: [0.01, 0.001, 0.00001])')
+
+    parser.add_argument('-rZ', type=float, default=0.0,
+                        help='Regularizer for Z  (default: 0.00001 try: [0.001, 0.0001, 0.000001])')
+
+    return parser.parse_args()
+
+
+def bonsai_getArgs():
     '''
     Function to parse arguments
     '''
@@ -52,8 +99,8 @@ def getArgs():
 
     parser.add_argument('-d', '--depth', type=checkIntNneg, default=2,
                         help='Depth of Bonsai Tree (default: 2 try: [0, 1, 3])')
-    parser.add_argument('-p', '--projDim', type=checkIntPos, default=5,
-                        help='Projection Dimension (default: 10 try: [5, 20, 30])')
+    parser.add_argument('-p', '--projDim', type=checkIntPos, default=10,
+                        help='Projection Dimension (default: 20 try: [5, 10, 30])')
     parser.add_argument('-s', '--sigma', type=float, default=1.0,
                         help='Parameter for sigmoid sharpness (default: 1.0 try: [3.0, 0.05, 0.1]')
     parser.add_argument('-e', '--epochs', type=checkIntPos, default=42,
@@ -61,7 +108,7 @@ def getArgs():
     parser.add_argument('-b', '--batchSize', type=checkIntPos,
                         help='Batch Size to be used (default: max(100, sqrt(train_samples)))')
     parser.add_argument('-lr', '--learningRate', type=checkFloatPos, default=0.01,
-                        help='Initial Learning rate for Adam Optimizer (default: 0.01)')
+                        help='Initial Learning rate for Adam Oprimizer (default: 0.01)')
 
     parser.add_argument('-rW', type=float, default=0.0001,
                         help='Regularizer for predictor parameter W  (default: 0.0001 try: [0.01, 0.001, 0.00001])')
@@ -72,61 +119,22 @@ def getArgs():
     parser.add_argument('-rZ', type=float, default=0.00001,
                         help='Regularizer for projection parameter Z  (default: 0.00001 try: [0.001, 0.0001, 0.000001])')
 
-    # 's' Sparsity factors actually determine how sparse a model, is learnt.
     parser.add_argument('-sW', type=checkFloatPos,
                         help='Sparsity for predictor parameter W  (default: For Binary classification 1.0 else 0.2 try: [0.1, 0.3, 0.5])')
     parser.add_argument('-sV', type=checkFloatPos,
                         help='Sparsity for predictor parameter V  (default: For Binary classification 1.0 else 0.2 try: [0.1, 0.3, 0.5])')
     parser.add_argument('-sT', type=checkFloatPos,
                         help='Sparsity for branching parameter Theta  (default: For Binary classification 1.0 else 0.2 try: [0.1, 0.3, 0.5])')
-
-    #Sparsity Factor of 1 , denotes that a dense matrix is learnt.
-    parser.add_argument('-sZ', type=checkFloatPos, default=1.0,
+    parser.add_argument('-sZ', type=checkFloatPos, default=0.2,
                         help='Sparsity for projection parameter Z  (default: 0.2 try: [0.1, 0.3, 0.5])')
     parser.add_argument('-oF', '--output_file', default=None,
                         help='Output file for dumping the program output, (default: stdout)')
 
+    parser.add_argument('-regression', type=str2bool , help = 'boolean argument which controls whether to perform regression or classification.')
+
+    parser.add_argument('-loss', type=str , help = 'Huber Loss or L2 Loss.')
+
     return parser.parse_args()
-
-
-def preProcessData(data_dir):
-    '''
-    Function to pre-process input data
-    Expects a .npy file of form [lbl feats] for each datapoint
-    Outputs a train and test set datapoints appended with 1 for Bias induction
-    dataDimension, numClasses are inferred directly
-    '''
-    train = np.load(data_dir + '/train.npy')
-    test = np.load(data_dir + '/test.npy')
-
-    dataDimension = int(train.shape[1]) - 1
-
-    Xtrain = train[:, 1:dataDimension + 1]
-    Ytrain_ = train[:, 0]
-
-    Xtest = test[:, 1:dataDimension + 1]
-    Ytest_ = test[:, 0]
-
-    #The number of classes for regression will be 1.
-    numClasses = 1
-
-    # Mean Var Normalisation
-    mean = np.mean(Xtrain, 0)
-    std = np.std(Xtrain, 0)
-    std[std[:] < 0.000001] = 1
-    Xtrain = (Xtrain - mean) / std
-    Xtest = (Xtest - mean) / std
-    # End Mean Var normalisation
-
-    #Add bias units to the train and test sets.
-    trainBias = np.ones([Xtrain.shape[0], 1])
-    Xtrain = np.append(Xtrain, trainBias, axis=1)
-    testBias = np.ones([Xtest.shape[0], 1])
-    Xtest = np.append(Xtest, testBias, axis=1)
-
-    #Return dataDimension + 1, to factor in the bias term.
-    return dataDimension + 1 , numClasses, Xtrain, Ytrain_.reshape((-1,1)), Xtest, Ytest_.reshape((-1,1)), mean, std
-
 
 def createDir(dataDir):
     '''
