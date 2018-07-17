@@ -81,9 +81,9 @@ def preProcessData(dataDir,isRegression = False):
     Xtest = np.append(Xtest, testBias, axis=1)
 
     if (isRegression == False):
-        return dataDimension + 1, numClasses, Xtrain, Ytrain, Xtest, Ytest, mean, std
+        return dataDimension + 1, numClasses, Xtrain, Ytrain, Xtest, Ytest
     elif (isRegression ==True):
-        return dataDimension + 1, numClasses, Xtrain, Ytrain.reshape((-1,1)), Xtest, Ytest.reshape((-1,1)), mean, std
+        return dataDimension + 1, numClasses, Xtrain, Ytrain.reshape((-1,1)), Xtest, Ytest.reshape((-1,1))
 
 
 def dumpCommand(list, currDir):
@@ -100,7 +100,7 @@ def dumpCommand(list, currDir):
     commandFile.close()
 
 # Hyper Param pre-processing
-args = preprocess.bonsai_getArgs()
+args = preprocess.getBonsaiArgs()
 isRegression = None
 
 # The only argument that needs to be changed to change between regression and classification is , 'isRegression'.
@@ -114,13 +114,9 @@ depth = args.depth
 
 projectionDimension = args.projDim
 regZ = args.rZ
-#regT = args.rT
-regT = args.rW
-
+regT = args.rT
 regW = args.rW
-
-#regV = args.rV
-regV = args.rW
+regV = args.rV
 
 totalEpochs = args.epochs
 
@@ -132,7 +128,7 @@ outFile = args.output_file
 print ("outFile : ",outFile)
 
 (dataDimension, numClasses,
-    Xtrain, Ytrain, Xtest, Ytest,mean,std) = preProcessData(data_dir,isRegression)
+    Xtrain, Ytrain, Xtest, Ytest) = preProcessData(data_dir,isRegression)
 
 sparZ = args.sZ
 
@@ -157,10 +153,9 @@ if args.batchSize is None:
 else:
     batchSize = args.batchSize
 
-useMCHLoss = False
+useMCHLoss = True
 
 loss = args.loss
-print ("Loss : ",loss)
 
 if numClasses == 2:
     numClasses = 1
@@ -176,15 +171,10 @@ print ("Num of classes : ",numClasses)
 bonsaiObj = Bonsai(numClasses, dataDimension,
                    projectionDimension, depth, sigma,isRegression = isRegression)
 
-
-split = int(0.8*(np.vstack((Xtrain,Xtest)).shape[0]))
-print ("Total Size : ",np.vstack((Xtrain,Xtest)).shape)
-print ("Split : ",split,"\n\n")
-
 bonsaiTrainer = BonsaiTrainer(bonsaiObj,
                               regW, regT, regV, regZ,
                               sparW, sparT, sparV, sparZ,
-                              learningRate, X, Y, split,useMCHLoss, outFile, isRegression = isRegression,reg_loss = loss)
+                              learningRate, X, Y, useMCHLoss, outFile, reg_loss = loss)
 
 sess = tf.InteractiveSession()
 sess.run(tf.group(tf.initialize_all_variables(),
@@ -193,7 +183,7 @@ saver = tf.train.Saver()
 
 print("DONE")
 dict = bonsaiTrainer.train(batchSize, totalEpochs, sess,
-                    Xtrain, Xtest, Ytrain, Ytest, split,data_dir, currDir,mean,std)
+                    Xtrain, Xtest, Ytrain, Ytest, data_dir, currDir)
 
 
 sess.close()
