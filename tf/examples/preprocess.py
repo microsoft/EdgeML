@@ -47,7 +47,7 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-def protoNN_getArgs():
+def getProtoNNArgs():
     '''
     Function to parse arguments
     '''
@@ -87,7 +87,7 @@ def protoNN_getArgs():
     return parser.parse_args()
 
 
-def bonsai_getArgs():
+def getBonsaiArgs():
     '''
     Function to parse arguments
     '''
@@ -130,9 +130,9 @@ def bonsai_getArgs():
     parser.add_argument('-oF', '--output_file', default=None,
                         help='Output file for dumping the program output, (default: stdout)')
 
-    parser.add_argument('-regression', type=str2bool , help = 'boolean argument which controls whether to perform regression or classification.')
+    parser.add_argument('-regression', type=str2bool , default='False', help = 'boolean argument which controls whether to perform regression or classification.')
 
-    parser.add_argument('-loss', type=str , help = 'Huber Loss or L2 Loss.')
+    parser.add_argument('-loss', type=str , default='huber', help = 'Huber Loss or L2 Loss.')
 
     return parser.parse_args()
 
