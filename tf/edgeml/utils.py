@@ -276,3 +276,34 @@ def getMacroMicroFScore(cmatrix):
         denom = 1
     micro = 2 * pi * rho / denom
     return macro, micro
+
+class GraphManager:
+    '''
+    Manages saving and restoring graphs. Designed to be used with EMI-RNN
+    though is general enough to be useful otherwise as well.
+    '''
+    def __init__(self):
+        pass
+
+    def checkpointModel(self, saver, sess, modelPrefix,
+                        globalStep=1000, redirFile=None):
+        saver.save(sess, modelPrefix, global_step=globalStep)
+        print('Model saved to %s, global_step %d' % (modelPrefix, globalStep),
+              file=redirFile)
+
+    def loadCheckpoint(self, saver, sess, modelPrefix, globalStep,
+                       redirFile=None):
+        metaname = modelPrefix + '-%d.meta' % global_step
+        basename = os.path.basename(metaname)
+        fileList = os.listdir(os.path.dirname(modelPrefix))
+        fileList = [x for x in fileList if x.startswith(basename)]
+        assert len(fileList) > 0, 'Checkpoint file not found'
+        msg = 'Too many or too few checkpoint files for global_step: %d' % globalStep
+        assert len(fileList) is 1, msg
+        chkpt = basename + '/' + fileList[0]
+        metaname = metname[:-5]
+        saver.restore(sess, metaname)
+        print('Restoring %s, global_step: %d' % (metaname, globalStep),
+              file=redirFile)
+        graph = tf.get_default_graph()
+        return graph
