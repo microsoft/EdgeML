@@ -9,6 +9,7 @@ from tensorflow.python.ops import gen_math_ops
 import numpy as np
 import scipy.cluster
 import scipy.spatial
+import os
 
 
 def medianHeuristic(data, projectionDimension, numPrototypes, W_init=None):
@@ -291,19 +292,20 @@ class GraphManager:
         print('Model saved to %s, global_step %d' % (modelPrefix, globalStep),
               file=redirFile)
 
-    def loadCheckpoint(self, saver, sess, modelPrefix, globalStep,
+    def loadCheckpoint(self, sess, modelPrefix, globalStep,
                        redirFile=None):
-        metaname = modelPrefix + '-%d.meta' % global_step
+        metaname = modelPrefix + '-%d.meta' % globalStep
         basename = os.path.basename(metaname)
         fileList = os.listdir(os.path.dirname(modelPrefix))
         fileList = [x for x in fileList if x.startswith(basename)]
         assert len(fileList) > 0, 'Checkpoint file not found'
-        msg = 'Too many or too few checkpoint files for global_step: %d' % globalStep
+        msg = 'Too many or too few checkpoint files for globalStep: %d' % globalStep
         assert len(fileList) is 1, msg
         chkpt = basename + '/' + fileList[0]
-        metaname = metname[:-5]
+        saver = tf.train.import_meta_graph(metaname)
+        metaname = metaname[:-5]
         saver.restore(sess, metaname)
-        print('Restoring %s, global_step: %d' % (metaname, globalStep),
+        print('Restoring %s, globalStep: %d' % (metaname, globalStep),
               file=redirFile)
         graph = tf.get_default_graph()
         return graph
