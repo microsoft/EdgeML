@@ -177,11 +177,11 @@ class EMI_RNN():
     to support in both python 2 and 3
     """
     def __init__(self, *args, **kwargs):
-        # Set to true on first call to __call__
         self.graphCreated = False
         # Model specific matrices, parameter should be saved
         self.varList = []
         self.output = None
+        self.assignOps = []
         raise NotImplementedError("This is intended to act similar to an " +
                                   "abstract class. Instantiating is not " +
                                   "allowed.")
@@ -190,32 +190,44 @@ class EMI_RNN():
             assert self.output is not None
             return self.output
         if self.graph is None:
-            self._createGraph(*args, **kwargs)
+            output = self._createBaseGraph(*args, **kwargs)
+            assert self.graphCreated is False
+            self._createExtendedGraph(output, *args, **kwargs)
         else:
-            self._restoreGraph(*args, **kwargs)
+            self._restoreBaseGraph(self.graph, *args, **kwargs)
+            assert self.graphCreated is False
+            self._restoreExtendedGraph(self.graph, *args, **kwargs)
         assert self.graphCreated is True
         return self.output
+
+    def reloadFromGraph(self, graph, *args, **kwargs):
+        self.graphCreated = False
+        self.graph = graph
+        self._restoreBaseGraph(self.graph, *args, **kwargs)
+        assert self.graphCreated is False
+        self._restoreExtendedGraph(self.graph, *args, **kwargs)
+        assert self.graphCreated is True
 
     def getHyperParams(self):
         raise NotImplementedError("Subclass does not implement this method")
 
-    def _restoreGraph(self, *args, **kwargs):
-        '''
-        TODO: Note that this is slightly different from the original
-        importModelTF. Here you take a graph that the user has already created
-        potentially with other models (protoNN etc) and you only restore the
-        EMI_RNN part of the graph and ignore everything else
-        '''
+    def _createBaseGraph(self, *args, **kwargs):
         raise NotImplementedError("Subclass does not implement this method")
 
-    def _createGraph(self, *args, **kwargs):
+    def _createExtendedGraph(self, baseOutput, *args, **kwargs):
         raise NotImplementedError("Subclass does not implement this method")
 
-    def assignToGraph(self, sess, initVarList, *args, **kwargs):
-        '''
-        Initializes model from corresponding matrices
-        '''
-        pass
+    def _restoreExtendedGraph(self, graph, *args, **kwargs):
+        raise NotImplementedError("Subclass does not implement this method")
+
+    def _restoreBaseGraph(self, graph, *args, **kwargs):
+        raise NotImplementedError("Subclass does not implement this method")
+
+    def addBaseAssignOps(self, *args, **kwargs):
+        raise NotImplementedError("Subclass does not implement this method")
+
+    def addExtendedAssignOps(self, *args, **kwargs):
+        raise NotImplementedError("Subclass does not implement this method")
 
 
 class EMI_BasicLSTM(EMI_RNN):
@@ -237,9 +249,9 @@ class EMI_BasicLSTM(EMI_RNN):
         self.varList = []
         self.output = None
         # Internal
-        self.__scope = 'EMI/BasicLSTM/'
+        self._scope = 'EMI/BasicLSTM/'
 
-    def _createGraph(self, X):
+    def _createBaseGraph(self, X):
         assert self.graphCreated is False
         msg = 'X should be of form [-1, numSubinstance, numTimeSteps, numFeatures]'
         assert X.get_shape().ndims == 4, msg
@@ -249,7 +261,7 @@ class EMI_BasicLSTM(EMI_RNN):
         # Reshape into 3D suself.h that the first dimension is -1 * numSubinstance
         # where each numSubinstance segment corresponds to one bag
         # then shape it back in into 4D
-        scope = self.__scope
+        scope = self._scope
         keep_prob = None
         with tf.name_scope(scope):
             x = tf.reshape(X, [-1, self.numTimeSteps, self.numFeats])
@@ -278,14 +290,12 @@ class EMI_BasicLSTM(EMI_RNN):
         if self.useDropout:
             self.keep_prob = keep_prob
         self.output = output
-        self.graphCreated = True
         return self.output
 
-    def _restoreGraph(self, X):
+    def _restoreBaseGraph(self, graph, X):
         assert self.graphCreated is False
         assert self.graph is not None
-        graph = self.graph
-        scope = self.__scope
+        scope = self._scope
         if self.useDropout:
             self.keep_prob = graph.get_tensor_by_name(scope + 'keep-prob:0')
         self.output = graph.get_tensor_by_name(scope + 'bag-output:0')
@@ -300,13 +310,13 @@ class EMI_BasicLSTM(EMI_RNN):
         assert len(self.varList) == 2
         return self.varList
 
-    def assignToGraph(self, sess, initVarList):
+    def assignToBaseGraph(self, initVarList):
         assert initVarList is not None
         assert len(initVarList) == 2
-        graph = tf.get_default_graph()
         k_ = graph.get_tensor_by_name('rnn/EMI-LSTM-Cell/kernel:0')
         b_ = graph.get_tensor_by_name('rnn/EMI-LSTM-Cell/bias:0')
         kernel, bias = initVarList[-2], initVarList[-1]
         k_op = tf.assign(k_, kernel)
         b_op = tf.assign(b_, bias)
-        sess.run([k_op, b_op])
+        self.assignOps.extend([k_op, b_op])
+
