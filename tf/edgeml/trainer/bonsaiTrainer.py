@@ -233,9 +233,7 @@ class BonsaiTrainer:
 		result_dict = {}
 		resultFile = open(dataDir + '/BonsaiResults.txt', 'a+')
 		numIters = Xtrain.shape[0] / batchSize
-		maxTestAcc = 0.0
-		maxTestAccEpoch = 0.0
-		testAcc = 0.0
+
 		totalBatches = numIters * totalEpochs
 
 		bonsaiObjSigmaI = 1
@@ -367,13 +365,26 @@ class BonsaiTrainer:
 
 			testAcc, testLoss, regTestLoss, pred = sess.run(
 				[self.accuracy, self.loss, self.regLoss,self.prediction], feed_dict=_feed_dict)
+
 			if ihtDone == 0:
-				maxTestAcc = -10000
-				maxTestAccEpoch = i
-			else:
-				if maxTestAcc <= testAcc:
+				if (self.bonsaiObj.isRegression == False):
+					maxTestAcc = -10000
 					maxTestAccEpoch = i
+				elif (self.bonsaiObj.isRegression == True):
 					maxTestAcc = testAcc
+					maxTestAccEpoch = i
+
+			else:
+				if (self.bonsaiObj.isRegression == False):
+					if maxTestAcc <= testAcc:
+						maxTestAccEpoch = i
+						maxTestAcc = testAcc
+				elif (self.bonsaiObj.isRegression == True):
+					print ("MaxTestAcc : ",maxTestAcc)
+					if maxTestAcc >= testAcc:
+						#For regression , we're more interested in the minimum MAE.
+						maxTestAccEpoch = i
+						maxTestAcc = testAcc
 
 			if(i == totalEpochs-1):
 				print ("TESTING")
@@ -402,6 +413,7 @@ class BonsaiTrainer:
 				testAcc = np.mean(testAcc)
 			else:
 				testAcc = testAcc
+				maxTestAcc = maxTestAcc
 
 			print("Test accuracy : " ,testAcc, file=self.outFile)
 			print("MarginLoss + RegLoss: " + str(testLoss - regTestLoss) +
@@ -415,23 +427,38 @@ class BonsaiTrainer:
 		# only a single path is used in inference
 		bonsaiObjSigmaI = 1e9
 
+		print("\nNon-Zero : " + str(self.getModelSize()[0]) + " Model Size: " +
+		  str(float(self.getModelSize()[1]) / 1024.0) + " KB hasSparse: " +
+		  str(self.getModelSize()[2]) + "\n", file=self.outFile)
+
+		if (self.bonsaiObj.isRegression == True):
+			maxTestAcc = np.mean(maxTestAcc)
+
 		print("Maximum Test accuracy at compressed" +
 			  " model size(including early stopping): " +
 			  str(maxTestAcc) + " at Epoch: " +
 			  str(maxTestAccEpoch + 1) + "\nFinal Test" +
 			  " Accuracy: " + str(testAcc), file=self.outFile)
-		print("\nNon-Zero : " + str(self.getModelSize()[0]) + " Model Size: " +
-		  str(float(self.getModelSize()[1]) / 1024.0) + " KB hasSparse: " +
-		  str(self.getModelSize()[2]) + "\n", file=self.outFile)
 
-		resultFile.write("MaxTestAcc: " + str(maxTestAcc) +
-					 " at Epoch(totalEpochs): " +
-					 str(maxTestAccEpoch + 1) +
-					 "(" + str(totalEpochs) + ")" + " ModelSize: " +
-					 str(float(self.getModelSize()[1]) / 1024.0) +
-					 " KB hasSparse: " + str(self.getModelSize()[2]) +
-					 " Param Directory: " +
-					 str(os.path.abspath(currDir)) + "\n")
+		if (self.bonsaiObj.isRegression == False):
+			resultFile.write("MaxTestAcc: " + str(maxTestAcc) +
+						 " at Epoch(totalEpochs): " +
+						 str(maxTestAccEpoch + 1) +
+						 "(" + str(totalEpochs) + ")" + " ModelSize: " +
+						 str(float(self.getModelSize()[1]) / 1024.0) +
+						 " KB hasSparse: " + str(self.getModelSize()[2]) +
+						 " Param Directory: " +
+						 str(os.path.abspath(currDir)) + "\n")
+
+		elif (self.bonsaiObj.isRegression == True):
+			 resultFile.write("MinTestMAE: " + str(maxTestAcc) +
+							 " at Epoch(totalEpochs): " +
+							 str(maxTestAccEpoch + 1) +
+							 "(" + str(totalEpochs) + ")" + " ModelSize: " +
+							 str(float(self.getModelSize()[1]) / 1024.0) +
+							 " KB hasSparse: " + str(self.getModelSize()[2]) +
+							 " Param Directory: " +
+							 str(os.path.abspath(currDir)) + "\n")
 
 		resultFile.close()
 
