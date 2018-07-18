@@ -136,6 +136,7 @@ class EMI_DataPipeline():
             self.__createGraph()
         else:
             self.__restoreGraph()
+        assert self.graphCreated is True
         return self.x_batch, self.y_batch
 
     def runInitializer(self, sess, x_data, y_data, batchSize, numEpochs):
