@@ -220,6 +220,7 @@ class EMI_Driver:
         self.__saver = tf.train.Saver(max_to_keep=max_to_keep,
                                       save_relative_paths=True)
         self.__graphManager = utils.GraphManager()
+        self.__sess = None
 
     def fancyEcho(self, sess, feedDict, currentBatch, redirFile,
                   numBatches=None):
@@ -233,10 +234,32 @@ class EMI_Driver:
               (epoch, batch, currentBatch, loss, acc),
               end='', file=redirFile)
 
-    def run(self, sess, x_train, y_train, x_val, y_val, numIter,
-            numRounds, batchSize, numEpochs, feedDict=None, infFeedDict=None,
-            updatePolicy=None,
-            echoCB=None, redirFile=None, modelPrefix='/tmp/model'):
+    def assignToGraph(self, initVarList):
+        '''
+        This method should deal with restoring the entire grpah
+        now'''
+        raise NotImplementedError()
+
+    def initializeSession(self, graph, reuse=False, feedDict=None):
+        sess = self.__sess
+        if sess is not None:
+           sess.close()
+        with graph.as_default():
+            sess = tf.Session()
+        if reuse is False:
+            with graph.as_default():
+                init = tf.global_variables_initializer()
+            sess.run(init)
+        self.__sess = sess
+
+    def getCurrentSession(self):
+        return self.__sess
+
+    def run(self, x_train, y_train, bag_train, x_val, y_val, bag_val,
+            numIter, numRounds, batchSize, numEpochs,
+            feedDict=None, infFeedDict=None, choCB=None,
+            redirFile=None, modelPrefix='/tmp/model',
+            updatePolicy='top-k', *args, **kwargs):
         '''
         TODO: Check that max_to_keep > numIter
         TODO: Check that no model with globalStepStart exists; or, print a
@@ -245,13 +268,23 @@ class EMI_Driver:
         Automatically run MI-RNN for 70%% of the rounds and emi for the rest
         Allow option for only MI mode
         '''
+        assert self.__sess is not None, 'No sessions initialized'
+        sess = self.__sess
+        assert updatePolicy in ['prune-ends', 'top-k']
+        if updatePolicy is 'prune-ends':
+            updatePolicyFoo = self.__policyTopK
+        else:
+            updatePolicyFoo = self.__policyPrune
+
         if infFeedDict is None:
             infFeedDict = feedDict
+        curr_y = np.array(y_train)
         for cround in range(numRounds):
             valAccList, globalStepList = [], []
             print("Round: %d" % cround, file=redirFile)
+            # Train the best model for the current round
             for citer in range(numIter):
-                self.__dataPipe.runInitializer(sess, x_train, y_train,
+                self.__dataPipe.runInitializer(sess, x_train, curr_y,
                                                batchSize, numEpochs)
                 numBatches = int(np.ceil(len(x_train) / batchSize))
                 self.__emiTrainer.trainModel(sess, echoCB=self.fancyEcho,
@@ -260,7 +293,7 @@ class EMI_Driver:
                 self.__dataPipe.runInitializer(sess, x_val, y_val,
                                                batchSize, numEpochs=1)
                 acc = sess.run(self.__emiTrainer.accTilda, feed_dict=infFeedDict)
-                print(" acc %2.5f | " % acc, end='')
+                print(" Val acc %2.5f | " % acc, end='')
                 self.__graphManager.checkpointModel(self.__saver, sess,
                                                     modelPrefix,
                                                     self.__globalStep,
@@ -269,6 +302,88 @@ class EMI_Driver:
                 globalStepList.append((modelPrefix, self.__globalStep))
                 self.__globalStep += 1
 
+            # Update y for the current round
             argAcc = np.argmax(valAccList)
-            print('max acc', globalStepList[argAcc])
+            resPrefix, resStep = globalStepList[argAcc]
+            tf.reset_default_graph()
 
+    def __policyPrune(currentY, softMaxOut, bagLabel, numClases):
+        pass
+
+    def __policyTopK(currentY, softMaxOut, bagLabel, numClasses, k):
+        '''
+        currentY: [-1, numsubinstance, numClass]
+        softmaxOut: [-1, numsubinstance, numClass]
+        bagLabel [-1]
+        k: minimum length of continuous non-zero examples
+
+        Check which is the longest continuous label for each bag
+        If this label is the same as the bagLabel, and if the length is at least k:
+            find all the strings with this longest length
+            apart from the string having maximum summation of probabilities
+            for that class label, label all other instances as 0
+        '''
+        assert currentY.ndim == 3
+        assert k <= currentY.shape[1]
+        assert k > 0
+        # predicted label for each instance is max of softmax
+        predictedLabels = np.argmax(softMaxOut, axis=2)
+        scoreList = []
+        # classScores[i] is a 2d array where a[j,k] is the longest
+        # string of consecutive class labels i in bag j ending at instance k
+        classScores = [-1]
+        for i in range(1, numClasses):
+            scores = getLengthScores(predictedLabels, val=i)
+            classScores.append(scores)
+            length = np.max(scores, axis=1)
+            scoreList.append(length)
+        scoreList = np.array(scoreList)
+        scoreList = scoreList.T
+        # longestContinuousClass[i] is the class label having
+        # longest substring in bag i
+        longestContinuousClass = np.argmax(scoreList, axis=1) + 1
+        # longestContinuousClassLength[i] is length of 
+        # longest class substring in bag i
+        longestContinuousClassLength = np.max(scoreList, axis=1)
+        assert longestContinuousClass.ndim == 1
+        assert longestContinuousClass.shape[0] == bagLabel.shape[0]
+        assert longestContinuousClassLength.ndim == 1
+        assert longestContinuousClassLength.shape[0] == bagLabel.shape[0]
+        newY = np.array(currentY)
+        index = (bagLabel != 0)
+        indexList = np.where(index)[0]
+        # iterate through all non-zero bags
+        for i in indexList:
+            # longest continuous class for this bag
+            lcc = longestContinuousClass[i]
+            # length of longest continuous class for this bag
+            lccl = int(longestContinuousClassLength[i])
+            # if bagLabel is not the same as longest continuous
+            # class, don't update
+            if lcc != bagLabel[i]:
+                continue
+            # we check for longest string to be at least k
+            if lccl < k:
+                continue
+            lengths = classScores[lcc][i]
+            assert np.max(lengths) == lccl
+            possibleCandidates = np.where(lengths == lccl)[0]
+            # stores (candidateIndex, sum of probabilities
+            # over window for this index) pairs
+            sumProbsAcrossLongest = {}
+            for candidate in possibleCandidates:
+                sumProbsAcrossLongest[candidate] = 0.0
+                # sum the probabilities over the continuous substring
+                for j in range(0, lccl):
+                    sumProbsAcrossLongest[candidate] += softMaxOut[i, candidate-j, lcc]
+            # we want only the one with maximum sum of
+            # probabilities; sort dict by value
+            sortedProbs = sorted(sumProbsAcrossLongest.items(),key=lambda x: x[1], reverse=True)
+            bestCandidate = sortedProbs[0][0]
+            # apart from (bestCanditate-lcc,bestCandidate] label
+            # everything else as 0
+            newY[i, :, :] = 0
+            newY[i, :, 0] = 1
+        newY[i, bestCandidate-lccl+1:bestCandidate+1, 0] = 0
+        newY[i, bestCandidate-lccl+1:bestCandidate+1, lcc] = 1
+        return newY
