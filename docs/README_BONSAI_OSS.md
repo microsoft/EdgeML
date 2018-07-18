@@ -30,7 +30,7 @@ We use simple Batch Gradient Descent as the solver with Armijo rule as the step 
 
 ## Prediction
 
-When given an input feature vector X, Bonsai gives the prediction as follows :
+When given an input feature vector X, Bonsai gives the prediction as follows:
 
         (a) We project the data onto a low dimensional space by computing x^ = Zx
         (b) The final bonsai prediction score is the non linear scores (wx^ * tanh(sigma*vx^) ) predicted by each of the individual nodes along the path traversed by the Bonsai tree
@@ -103,7 +103,7 @@ This should give you output as described in the next section. Test accuracy will
 
 ## Output
 
-The DataFolder will have a new forlder named "BonsaiResults" with the following files in it:
+The DataFolder will have a new folder named "BonsaiResults" with the following files in it:
 
     (a) A directory for each run with the signature hrs_min_sec_day_month with the following in it:
         (1) loadableModel - Char file which can be directly loaded using the inbuilt load model functions
