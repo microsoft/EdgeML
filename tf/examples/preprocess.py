@@ -132,8 +132,6 @@ def getBonsaiArgs():
 
     parser.add_argument('-regression', type=str2bool , default='False', help = 'boolean argument which controls whether to perform regression or classification.')
 
-    parser.add_argument('-loss', type=str , default='huber', help = 'Huber Loss or L2 Loss.')
-
     return parser.parse_args()
 
 def createDir(dataDir):

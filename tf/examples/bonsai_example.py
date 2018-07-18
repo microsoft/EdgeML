@@ -71,6 +71,7 @@ def preProcessData(dataDir,isRegression = False):
             Ytest = lab_
 
     elif (isRegression == True):
+        #The number of classes is always 1, for regression.
         numClasses = 1
         Ytrain = Ytrain_
         Ytest = Ytest_
@@ -155,8 +156,6 @@ else:
 
 useMCHLoss = True
 
-loss = args.loss
-
 if numClasses == 2:
     numClasses = 1
 
@@ -174,7 +173,7 @@ bonsaiObj = Bonsai(numClasses, dataDimension,
 bonsaiTrainer = BonsaiTrainer(bonsaiObj,
                               regW, regT, regV, regZ,
                               sparW, sparT, sparV, sparZ,
-                              learningRate, X, Y, useMCHLoss, outFile, reg_loss = loss)
+                              learningRate, X, Y, useMCHLoss, outFile)
 
 sess = tf.InteractiveSession()
 sess.run(tf.group(tf.initialize_all_variables(),
