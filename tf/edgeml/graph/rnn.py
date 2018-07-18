@@ -110,9 +110,8 @@ class EMI_DataPipeline():
         self.x_batch, self.y_batch = x_batch, y_batch
         self.graphCreated = True
 
-    def __restoreGraph(self):
+    def __restoreGraph(self, graph):
         assert self.graphCreated is False
-        graph = self.graph
         scope = 'EMI/input-pipeline/'
         self.X = graph.get_tensor_by_name(scope + "inpX:0")
         self.Y = graph.get_tensor_by_name(scope + "inpY:0")
@@ -135,9 +134,15 @@ class EMI_DataPipeline():
         if self.graph is None:
             self.__createGraph()
         else:
-            self.__restoreGraph()
+            self.__restoreGraph(self.graph)
         assert self.graphCreated is True
         return self.x_batch, self.y_batch
+
+    def restoreFromGraph(self, graph, *args, **kwargs):
+        self.graphCreated = False
+        self.graph = graph
+        self.__restoreGraph(graph)
+        assert self.graphCreated is True
 
     def runInitializer(self, sess, x_data, y_data, batchSize, numEpochs):
         '''
@@ -179,12 +184,14 @@ class EMI_RNN():
     def __init__(self, *args, **kwargs):
         self.graphCreated = False
         # Model specific matrices, parameter should be saved
+        self.graph = None
         self.varList = []
         self.output = None
         self.assignOps = []
         raise NotImplementedError("This is intended to act similar to an " +
                                   "abstract class. Instantiating is not " +
                                   "allowed.")
+
     def __call__(self, *args, **kwargs):
         if self.graphCreated is True:
             assert self.output is not None
@@ -200,8 +207,11 @@ class EMI_RNN():
         assert self.graphCreated is True
         return self.output
 
-    def reloadFromGraph(self, graph, *args, **kwargs):
+    def restoreFromGraph(self, graph, *args, **kwargs):
         self.graphCreated = False
+        self.varList = []
+        self.output = None
+        self.assignOps = []
         self.graph = graph
         self._restoreBaseGraph(self.graph, *args, **kwargs)
         assert self.graphCreated is False
@@ -303,7 +313,6 @@ class EMI_BasicLSTM(EMI_RNN):
         bias = graph.get_tensor_by_name("rnn/EMI-LSTM-Cell/bias:0")
         assert len(self.varList) is 0
         self.varList = [kernel, bias]
-        self.graphCreated = True
 
     def getHyperParams(self):
         assert self.graphCreated is True, "Graph is not created"
@@ -319,4 +328,3 @@ class EMI_BasicLSTM(EMI_RNN):
         k_op = tf.assign(k_, kernel)
         b_op = tf.assign(b_, bias)
         self.assignOps.extend([k_op, b_op])
-
