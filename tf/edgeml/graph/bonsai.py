@@ -1,7 +1,6 @@
 import tensorflow as tf
 import numpy as np
 
-
 class Bonsai:
     def __init__(self, numClasses, dataDimension, projectionDimension,
                  treeDepth, sigma,
