@@ -305,7 +305,5 @@ class GraphManager:
         saver = tf.train.import_meta_graph(metaname)
         metaname = metaname[:-5]
         saver.restore(sess, metaname)
-        print('Restoring %s, globalStep: %d' % (metaname, globalStep),
-              file=redirFile)
         graph = tf.get_default_graph()
         return graph

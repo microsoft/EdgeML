@@ -288,7 +288,7 @@ class EMI_Driver:
                 break
         return outList
 
-    def run(self, x_train, y_train, bag_train, x_val, y_val, bag_val,
+    def run(self, numClasses, x_train, y_train, bag_train, x_val, y_val, bag_val,
             numIter, numRounds, batchSize, numEpochs,
             feedDict=None, infFeedDict=None, choCB=None,
             redirFile=None, modelPrefix='/tmp/model',
@@ -304,10 +304,10 @@ class EMI_Driver:
         assert self.__sess is not None, 'No sessions initialized'
         sess = self.__sess
         assert updatePolicy in ['prune-ends', 'top-k']
-        if updatePolicy is 'prune-ends':
-            updatePolicyFoo = self.__policyTopK
+        if updatePolicy == 'top-k':
+            updatePolicyFunc = self.__policyTopK
         else:
-            updatePolicyFoo = self.__policyPrune
+            updatePolicyFunc = self.__policyPrune
 
         if infFeedDict is None:
             infFeedDict = feedDict
@@ -347,16 +347,37 @@ class EMI_Driver:
             self.__dataPipe.restoreFromGraph(graph)
             self.__emiGraph.restoreFromGraph(graph, None)
             self.__emiTrainer.restoreFromGraph(graph)
-            acc = self.runOps(sess, [self.__emiTrainer.accTilda],
-                              x_val, y_val, batchSize, feedDict)
-            acc = np.mean(np.reshape(np.array(acc), -1))
-            print(acc)
+            smxOut = self.runOps(sess, [self.__emiTrainer.softmaxPredictions],
+                                     x_train, y_train, batchSize, feedDict)
+            smxOut= [np.array(smxOut[i][0]) for i in range(len(smxOut))]
+            smxOut = np.concatenate(smxOut)[:, :, -1, :]
+            newY = updatePolicyFunc(curr_y, smxOut, bag_train,
+                                    numClasses, **kwargs)
+            currY = newY
 
+    def __getLengthScores(self, Y_predicted, val=1):
+        '''
+        Returns an matrix which contains the length of the longest positive
+        subsequence of val ending at that index.
+        Y_predicted: [-1, numSubinstance] Is the instance level class
+            labels.
+        '''
+        scores = np.zeros(Y_predicted.shape)
+        for i, bag in enumerate(Y_predicted):
+            for j, instance in enumerate(bag):
+                prev = 0
+                if j > 0:
+                    prev = scores[i, j-1]
+                if instance == val:
+                    scores[i, j] = prev + 1
+                else:
+                    scores[i, j] = 0
+        return scores
 
-    def __policyPrune(currentY, softMaxOut, bagLabel, numClases):
+    def __policyPrune(currentY, softmaxOut, bagLabel, numClases):
         pass
 
-    def __policyTopK(currentY, softMaxOut, bagLabel, numClasses, k):
+    def __policyTopK(self, currentY, softmaxOut, bagLabel, numClasses, k=1):
         '''
         currentY: [-1, numsubinstance, numClass]
         softmaxOut: [-1, numsubinstance, numClass]
@@ -373,13 +394,13 @@ class EMI_Driver:
         assert k <= currentY.shape[1]
         assert k > 0
         # predicted label for each instance is max of softmax
-        predictedLabels = np.argmax(softMaxOut, axis=2)
+        predictedLabels = np.argmax(softmaxOut, axis=2)
         scoreList = []
         # classScores[i] is a 2d array where a[j,k] is the longest
         # string of consecutive class labels i in bag j ending at instance k
         classScores = [-1]
         for i in range(1, numClasses):
-            scores = getLengthScores(predictedLabels, val=i)
+            scores = self.__getLengthScores(predictedLabels, val=i)
             classScores.append(scores)
             length = np.max(scores, axis=1)
             scoreList.append(length)
@@ -421,7 +442,7 @@ class EMI_Driver:
                 sumProbsAcrossLongest[candidate] = 0.0
                 # sum the probabilities over the continuous substring
                 for j in range(0, lccl):
-                    sumProbsAcrossLongest[candidate] += softMaxOut[i, candidate-j, lcc]
+                    sumProbsAcrossLongest[candidate] += softmaxOut[i, candidate-j, lcc]
             # we want only the one with maximum sum of
             # probabilities; sort dict by value
             sortedProbs = sorted(sumProbsAcrossLongest.items(),key=lambda x: x[1], reverse=True)
