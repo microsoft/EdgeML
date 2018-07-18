@@ -27,6 +27,7 @@ class Bonsai:
         self.dataDimension = dataDimension
         self.projectionDimension = projectionDimension
         self.isRegression = isRegression
+
         if numClasses == 2:
             self.numClasses = 1
         else:
@@ -186,6 +187,9 @@ class Bonsai:
         return paramDict, hyperParamDict
 
     def assertInit(self):
+        errmsg = "Number of Classes for regression can only be 1."
+        if (self.isRegression == True):
+            assert (self.numClasses == 1), errmsg
         errRank = "All Parameters must has only two dimensions shape = [a, b]"
         assert len(self.W.shape) == len(self.Z.shape), errRank
         assert len(self.W.shape) == len(self.T.shape), errRank
