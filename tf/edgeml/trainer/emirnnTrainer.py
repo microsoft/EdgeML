@@ -354,6 +354,7 @@ class EMI_Driver:
             newY = updatePolicyFunc(curr_y, smxOut, bag_train,
                                     numClasses, **kwargs)
             currY = newY
+        return currY
 
     def __getLengthScores(self, Y_predicted, val=1):
         '''
