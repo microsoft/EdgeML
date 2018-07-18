@@ -221,17 +221,21 @@ class EMI_Driver:
                                       save_relative_paths=True)
         self.__graphManager = utils.GraphManager()
 
-    def fancyEcho(self, sess, feedDict, currentBatch, redirFile, **kwargs):
+    def fancyEcho(self, sess, feedDict, currentBatch, redirFile,
+                  numBatches=None):
         _, loss, acc = sess.run([self.__emiTrainer.trainOp,
                                  self.__emiTrainer.lossOp,
                                  self.__emiTrainer.accTilda],
                                 feed_dict=feedDict)
-        print("\rBatch %5d Loss %2.5f Acc %2.5f" % (currentBatch, loss, acc),
+        epoch = int(currentBatch /  numBatches)
+        batch = int(currentBatch % max(numBatches, 1))
+        print("\rEpoch %3d Batch %5d (%5d) Loss %2.5f Acc %2.5f |" %
+              (epoch, batch, currentBatch, loss, acc),
               end='', file=redirFile)
 
-
     def run(self, sess, x_train, y_train, x_val, y_val, numIter,
-            numRounds, batchSize, numEpochs, updatePolicy=None,
+            numRounds, batchSize, numEpochs, feedDict=None, infFeedDict=None,
+            updatePolicy=None,
             echoCB=None, redirFile=None, modelPrefix='/tmp/model'):
         '''
         TODO: Check that max_to_keep > numIter
@@ -241,22 +245,30 @@ class EMI_Driver:
         Automatically run MI-RNN for 70%% of the rounds and emi for the rest
         Allow option for only MI mode
         '''
+        if infFeedDict is None:
+            infFeedDict = feedDict
         for cround in range(numRounds):
+            valAccList, globalStepList = [], []
             print("Round: %d" % cround, file=redirFile)
             for citer in range(numIter):
-                self.__dataPipe.runInitializer(sess, x_train, y_train, batchSize,
-                                               numEpochs)
-                # TODO: Implement custo print function 
-                self.__emiTrainer.trainModel(sess, echoCB=self.fancyEcho)
-                print(file=redirFile)
+                self.__dataPipe.runInitializer(sess, x_train, y_train,
+                                               batchSize, numEpochs)
+                numBatches = int(np.ceil(len(x_train) / batchSize))
+                self.__emiTrainer.trainModel(sess, echoCB=self.fancyEcho,
+                                             numBatches=numBatches,
+                                             feedDict=feedDict)
+                self.__dataPipe.runInitializer(sess, x_val, y_val,
+                                               batchSize, numEpochs=1)
+                acc = sess.run(self.__emiTrainer.accTilda, feed_dict=infFeedDict)
+                print(" acc %2.5f | " % acc, end='')
                 self.__graphManager.checkpointModel(self.__saver, sess,
                                                     modelPrefix,
                                                     self.__globalStep,
                                                     redirFile=redirFile)
+                valAccList.append(acc)
+                globalStepList.append((modelPrefix, self.__globalStep))
                 self.__globalStep += 1
 
-                '''print some stats'''
-                ''' save model'''
-                '''keep track of saved models'''
-            '''restore best model'''
-            '''reinitialize graph and stuff'''
+            argAcc = np.argmax(valAccList)
+            print('max acc', globalStepList[argAcc])
+
