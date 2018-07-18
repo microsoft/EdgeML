@@ -143,6 +143,7 @@ class EMI_Trainer:
 
     def _createGraph(self, predicted, target, lossIndicator):
         target = self.__transformY(target)
+        assert self.__validInit is True
         with tf.name_scope(self.scope):
             self.softmaxPredictions = tf.nn.softmax(predicted, axis=3,
                                                     name='softmaxed-prediction')
@@ -161,10 +162,9 @@ class EMI_Trainer:
             self.createOpCollections()
         self.graphCreated = True
 
-    def _restoreGraph(self, predicted, target, lossIndicator=None):
+    def _restoreGraph(self, predicted, target,
+                      lossIndicator=None):
         assert self.graphCreated is False
-        self.__validateInit(predicted, target, lossIndicator)
-        assert self.__validInit is True
         scope = self.scope
         graph = self.graph
         self.trainOp = tf.get_collection('EMI-train-op')
@@ -182,6 +182,7 @@ class EMI_Trainer:
         name = scope + 'acc-tilda:0'
         self.accTilda = graph.get_tensor_by_name(name)
         self.graphCreated = True
+        self.__validInit = True
 
     def createOpCollections(self):
         tf.add_to_collection('EMI-train-op', self.trainOp)
@@ -209,13 +210,30 @@ class EMI_Trainer:
             except tf.errors.OutOfRangeError:
                 break
 
+    def restoreFromGraph(self, graph):
+        self.graphCreated = False
+        self.lossOp = None
+        self.trainOp = None
+        self.lossIndicatorTensor = None
+        self.softmaxPredictions = None
+        self.accTilda = None
+        self.graph = graph
+        self.__validInit = True
+        assert self.graphCreated is False
+        self._restoreGraph(None, None, None)
+        assert self.graphCreated is True
+
+
 class EMI_Driver:
-    def __init__(self, emiDataPipeline, emiTrainer,
+    def __init__(self, emiDataPipeline, emiGraph, emiTrainer,
                  max_to_keep=1000, globalStepStart=1000):
         self.__dataPipe = emiDataPipeline
+        self.__emiGraph = emiGraph
         self.__emiTrainer = emiTrainer
         # assert False, 'Not implemented: Check all three objects are properly'
-        # 'conconstructed'
+        # 'conconstructed' according to the assumptions made in rnn.py.
+        # Specifically amake sure that the graphs are valid with all the
+        # variables filled up with corresponding operations
         self.__globalStep = globalStepStart
         self.__saver = tf.train.Saver(max_to_keep=max_to_keep,
                                       save_relative_paths=True)
@@ -255,6 +273,21 @@ class EMI_Driver:
     def getCurrentSession(self):
         return self.__sess
 
+    def setSession(self, sess):
+        self.__sess = sess
+
+    def runOps(self, sess, opList, X, Y, batchSize, feedDict=None):
+        self.__dataPipe.runInitializer(sess, X, Y, batchSize,
+                                       numEpochs=1)
+        outList = []
+        while True:
+            try:
+                resList = sess.run(opList, feed_dict=feedDict)
+                outList.append(resList)
+            except tf.errors.OutOfRangeError:
+                break
+        return outList
+
     def run(self, x_train, y_train, bag_train, x_val, y_val, bag_val,
             numIter, numRounds, batchSize, numEpochs,
             feedDict=None, infFeedDict=None, choCB=None,
@@ -290,9 +323,9 @@ class EMI_Driver:
                 self.__emiTrainer.trainModel(sess, echoCB=self.fancyEcho,
                                              numBatches=numBatches,
                                              feedDict=feedDict)
-                self.__dataPipe.runInitializer(sess, x_val, y_val,
-                                               batchSize, numEpochs=1)
-                acc = sess.run(self.__emiTrainer.accTilda, feed_dict=infFeedDict)
+                acc = self.runOps(sess, [self.__emiTrainer.accTilda],
+                                  x_val, y_val, batchSize, feedDict)
+                acc = np.mean(np.reshape(np.array(acc), -1))
                 print(" Val acc %2.5f | " % acc, end='')
                 self.__graphManager.checkpointModel(self.__saver, sess,
                                                     modelPrefix,
@@ -303,9 +336,22 @@ class EMI_Driver:
                 self.__globalStep += 1
 
             # Update y for the current round
+            ## Load the best val-acc model
             argAcc = np.argmax(valAccList)
             resPrefix, resStep = globalStepList[argAcc]
+            self.__sess.close()
             tf.reset_default_graph()
+            sess = tf.Session()
+            graph = self.__graphManager.loadCheckpoint(sess, resPrefix, resStep,
+                                                       redirFile=redirFile)
+            self.__dataPipe.restoreFromGraph(graph)
+            self.__emiGraph.restoreFromGraph(graph, None)
+            self.__emiTrainer.restoreFromGraph(graph)
+            acc = self.runOps(sess, [self.__emiTrainer.accTilda],
+                              x_val, y_val, batchSize, feedDict)
+            acc = np.mean(np.reshape(np.array(acc), -1))
+            print(acc)
+
 
     def __policyPrune(currentY, softMaxOut, bagLabel, numClases):
         pass
