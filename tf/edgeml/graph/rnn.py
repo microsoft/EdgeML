@@ -227,16 +227,16 @@ class EMI_RNN():
     def _createExtendedGraph(self, baseOutput, *args, **kwargs):
         raise NotImplementedError("Subclass does not implement this method")
 
-    def _restoreExtendedGraph(self, graph, *args, **kwargs):
-        raise NotImplementedError("Subclass does not implement this method")
-
     def _restoreBaseGraph(self, graph, *args, **kwargs):
         raise NotImplementedError("Subclass does not implement this method")
 
-    def addBaseAssignOps(self, *args, **kwargs):
+    def _restoreExtendedGraph(self, graph, *args, **kwargs):
         raise NotImplementedError("Subclass does not implement this method")
 
-    def addExtendedAssignOps(self, *args, **kwargs):
+    def addBaseAssignOps(self, graph, *args, **kwargs):
+        raise NotImplementedError("Subclass does not implement this method")
+
+    def addExtendedAssignOps(self, graph, *args, **kwargs):
         raise NotImplementedError("Subclass does not implement this method")
 
 
@@ -258,6 +258,7 @@ class EMI_BasicLSTM(EMI_RNN):
         self.keep_prob = None
         self.varList = []
         self.output = None
+        self.assignOps = []
         # Internal
         self._scope = 'EMI/BasicLSTM/'
 
@@ -319,7 +320,7 @@ class EMI_BasicLSTM(EMI_RNN):
         assert len(self.varList) == 2
         return self.varList
 
-    def assignToBaseGraph(self, initVarList):
+    def addBaseAssignOps(self, initVarList):
         assert initVarList is not None
         assert len(initVarList) == 2
         k_ = graph.get_tensor_by_name('rnn/EMI-LSTM-Cell/kernel:0')

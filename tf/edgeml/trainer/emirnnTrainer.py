@@ -43,9 +43,11 @@ class EMI_Trainer:
         # Operations to be restored
         self.lossOp = None
         self.trainOp = None
-        self.lossIndicatorTensor = None
         self.softmaxPredictions = None
         self.accTilda = None
+        self.lossIndicatorTensor = None
+        self.lossIndicatorPlaceholder = None
+        self.lossIndicatorAssignOp = None
         # Input validation
         self.supportedLosses = ['xentropy', 'l2']
         self.supportedOptimizers = ['Adam']
@@ -54,14 +56,7 @@ class EMI_Trainer:
         # Internal
         self.scope = 'EMI/Trainer/'
 
-    def __findIndicatorStart(self, lossIndicator):
-        assert lossIndicator.ndim == 2
-        for i in range(lossIndicator.shape[0]):
-            if lossIndicator[i, 0] == 1:
-                return i
-        return -1
-
-    def __validateInit(self, predicted, target, lossIndicator):
+    def __validateInit(self, predicted, target):
         msg = 'Predicted/Target tensors have incorrect dimension'
         assert len(predicted.shape) == 4, msg
         assert predicted.shape[3] == self.numOutput, msg
@@ -69,33 +64,22 @@ class EMI_Trainer:
         assert predicted.shape[1] == target.shape[1], msg
         assert len(target.shape) == 3
         assert target.shape[2] == self.numOutput
-        msg = "Invalid lossIndicator"
-        if lossIndicator is None:
-            # Loss indicator can be None when restoring
-            self.__validInit = True
-            return
-        assert lossIndicator.ndim == 2, msg
-        idx = self.__findIndicatorStart(lossIndicator)
-        assert idx >= 0, msg
-        assert np.sum(lossIndicator[:idx]) == 0, msg
-        expected = (len(lossIndicator) - idx) * self.numOutput
-        assert np.sum(lossIndicator[idx:]) == expected, msg
         self.__validInit = True
 
-    def __call__(self, predicted, target, lossIndicator):
+    def __call__(self, predicted, target):
         if self.graphCreated is True:
+            # TODO: These statements are redundant after self.validInit call
+            # A simple check to self.__validInit should suffice. Test this.
             assert self.lossOp is not None
             assert self.trainOp is not None
             return self.lossOp, self.trainOp
-        self.__validateInit(predicted, target, lossIndicator)
+        self.__validateInit(predicted, target)
         assert self.__validInit is True
         if self.graph is None:
-            assert lossIndicator is not None, 'Invalid lossindicator'
-            self._createGraph(predicted, target, lossIndicator)
+            self._createGraph(predicted, target)
         else:
-            self._restoreGraph(predicted, target, lossIndicator)
+            self._restoreGraph(predicted, target)
         assert self.graphCreated == True
-        return self.lossOp, self.trainOp
 
     def __transformY(self, target):
         '''
@@ -108,13 +92,23 @@ class EMI_Trainer:
             A__ = tf.tile(A_, [1, 1, self.numTimeSteps, 1])
         return A__
 
-    def __createLossOp(self, predicted, target, lossIndicator):
+    def __createLossOp(self, predicted, target):
         assert self.__validInit is True, 'Initialization failure'
         with tf.name_scope(self.scope):
-            lossIndicator = lossIndicator.astype('float32')
-            self.lossIndicatorTensor = tf.Variable(lossIndicator,
-                                                   name='lossIndicator',
-                                                   trainable=False)
+            # Loss indicator tensor
+            li = np.zeros([self.numTimeSteps, self.numOutput])
+            li[-1, :] = 1
+            liTensor = tf.Variable(li,
+                                   name='loss-indicator',
+                                   trainable=False)
+            name='loss-indicator-placeholder'
+            liPlaceholder = tf.placeholder(tf.float32,
+                                           name=name)
+            liAssignOp = tf.assign(liTensor, liPlaceholder,
+                                   name='loss-indicator-assign-op')
+            self.lossIndicatorTensor = liTensor
+            self.lossIndicatorPlaceholder = liPlaceholder
+            self.lossIndicatorAssignOp = liAssignOp
             # predicted of dim [-1, numSubinstance, numTimeSteps, numOutput]
             dims = [-1, self.numTimeSteps, self.numOutput]
             logits__ = tf.reshape(predicted, dims)
@@ -169,14 +163,18 @@ class EMI_Trainer:
         graph = self.graph
         self.trainOp = tf.get_collection('EMI-train-op')
         self.lossOp = tf.get_collection('EMI-loss-op')
-        self.lossIndicatorTensor = graph.get_tensor_by_name(scope +
-                                                            'lossIndicator:0')
-        msg = 'Multiple tensors with the same name in the graph. Are you not'
-        msg +=' resetting your graph?'
         assert len(self.trainOp) == 1, msg
         assert len(self.lossOp) == 1, msg
         self.trainOp = self.trainOp[0]
         self.lossOp = self.lossOp[0]
+        self.lossIndicatorTensor = graph.get_tensor_by_name(scope +
+                                                            'loss-indicator:0')
+        name = 'loss-indicator-placeholder:0'
+        self.lossIndicatorPlaceholder = graph.get_tensor_by_name(scope + name)
+        name = 'loss-indicator-assign-op:0'
+        self.lossIndicatorAssignOp = graph.get_tensor_by_name(scope + name)
+        msg = 'Multiple tensors with the same name in the graph. Are you not'
+        msg +=' resetting your graph?'
         name = scope + 'softmaxed-prediction:0'
         self.softmaxPredictions = graph.get_tensor_by_name(name)
         name = scope + 'acc-tilda:0'
@@ -300,6 +298,7 @@ class EMI_Driver:
 
         Automatically run MI-RNN for 70%% of the rounds and emi for the rest
         Allow option for only MI mode
+
         '''
         assert self.__sess is not None, 'No sessions initialized'
         sess = self.__sess
@@ -347,6 +346,7 @@ class EMI_Driver:
             self.__dataPipe.restoreFromGraph(graph)
             self.__emiGraph.restoreFromGraph(graph, None)
             self.__emiTrainer.restoreFromGraph(graph)
+            self.__sess = sess
             smxOut = self.runOps(sess, [self.__emiTrainer.softmaxPredictions],
                                      x_train, y_train, batchSize, feedDict)
             smxOut= [np.array(smxOut[i][0]) for i in range(len(smxOut))]
