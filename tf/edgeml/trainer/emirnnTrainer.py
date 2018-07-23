@@ -272,7 +272,8 @@ class EMI_Driver:
     def setSession(self, sess):
         self.__sess = sess
 
-    def runOps(self, sess, opList, X, Y, batchSize, feedDict=None):
+    def runOps(self, opList, X, Y, batchSize, feedDict=None):
+        sess = self.__sess
         self.__dataPipe.runInitializer(sess, X, Y, batchSize,
                                        numEpochs=1)
         outList = []
@@ -335,7 +336,7 @@ class EMI_Driver:
                 self.__emiTrainer.trainModel(sess, echoCB=self.fancyEcho,
                                              numBatches=numBatches,
                                              feedDict=feedDict)
-                acc = self.runOps(sess, [self.__emiTrainer.accTilda],
+                acc = self.runOps([self.__emiTrainer.accTilda],
                                   x_val, y_val, batchSize, feedDict)
                 acc = np.mean(np.reshape(np.array(acc), -1))
                 print(" Val acc %2.5f | " % acc, end='', file=redirFile)
@@ -360,7 +361,7 @@ class EMI_Driver:
             self.__emiGraph.restoreFromGraph(graph, None)
             self.__emiTrainer.restoreFromGraph(graph)
             self.__sess = sess
-            smxOut = self.runOps(sess, [self.__emiTrainer.softmaxPredictions],
+            smxOut = self.runOps([self.__emiTrainer.softmaxPredictions],
                                      x_train, y_train, batchSize, feedDict)
             smxOut= [np.array(smxOut[i][0]) for i in range(len(smxOut))]
             smxOut = np.concatenate(smxOut)[:, :, -1, :]
