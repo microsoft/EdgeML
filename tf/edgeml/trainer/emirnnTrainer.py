@@ -98,7 +98,7 @@ class EMI_Trainer:
             # Loss indicator tensor
             li = np.zeros([self.numTimeSteps, self.numOutput])
             li[-1, :] = 1
-            liTensor = tf.Variable(li,
+            liTensor = tf.Variable(li.astype('float32'),
                                    name='loss-indicator',
                                    trainable=False)
             name='loss-indicator-placeholder'
@@ -116,9 +116,8 @@ class EMI_Trainer:
             diff = (logits__ - labels__)
             diff = tf.multiply(self.lossIndicatorTensor, diff)
             # take loss only for the timesteps indicated by lossIndicator for softmax
-            idx = self.__findIndicatorStart(lossIndicator)
-            logits__ = logits__[:, idx:, :]
-            labels__ = labels__[:, idx:, :]
+            logits__ = tf.multiply(self.lossIndicatorTensor, logits__)
+            labels__ = tf.multiply(self.lossIndicatorTensor, labels__)
             logits__ = tf.reshape(logits__, [-1, self.numOutput])
             labels__ = tf.reshape(labels__, [-1, self.numOutput])
             # Regular softmax
@@ -135,7 +134,7 @@ class EMI_Trainer:
             tst = tf.train.AdamOptimizer(self.stepSize).minimize(self.lossOp)
         return tst
 
-    def _createGraph(self, predicted, target, lossIndicator):
+    def _createGraph(self, predicted, target):
         target = self.__transformY(target)
         assert self.__validInit is True
         with tf.name_scope(self.scope):
@@ -150,14 +149,13 @@ class EMI_Trainer:
             self.accTilda = tf.reduce_mean(tf.cast(equal, tf.float32),
                                            name='acc-tilda')
 
-        self.lossOp = self.__createLossOp(predicted, target, lossIndicator)
+        self.lossOp = self.__createLossOp(predicted, target)
         self.trainOp = self.__createTrainOp()
         if self.automode:
             self.createOpCollections()
         self.graphCreated = True
 
-    def _restoreGraph(self, predicted, target,
-                      lossIndicator=None):
+    def _restoreGraph(self, predicted, target):
         assert self.graphCreated is False
         scope = self.scope
         graph = self.graph
@@ -218,7 +216,7 @@ class EMI_Trainer:
         self.graph = graph
         self.__validInit = True
         assert self.graphCreated is False
-        self._restoreGraph(None, None, None)
+        self._restoreGraph(None, None)
         assert self.graphCreated is True
 
 
@@ -287,10 +285,10 @@ class EMI_Driver:
         return outList
 
     def run(self, numClasses, x_train, y_train, bag_train, x_val, y_val, bag_val,
-            numIter, numRounds, batchSize, numEpochs,
-            feedDict=None, infFeedDict=None, choCB=None,
-            redirFile=None, modelPrefix='/tmp/model',
-            updatePolicy='top-k', *args, **kwargs):
+            numIter, numRounds, batchSize, numEpochs, feedDict=None,
+            infFeedDict=None, choCB=None, redirFile=None,
+            modelPrefix='/tmp/model', updatePolicy='top-k', fracEMI=0.3,
+            lossIndicator=None, *args, **kwargs):
         '''
         TODO: Check that max_to_keep > numIter
         TODO: Check that no model with globalStepStart exists; or, print a
@@ -311,9 +309,24 @@ class EMI_Driver:
         if infFeedDict is None:
             infFeedDict = feedDict
         curr_y = np.array(y_train)
+        assert fracEMI >= 0
+        assert fracEMI <= 1
+        emiSteps = int(fracEMI * numRounds)
+        emiStep = numRounds - emiSteps
         for cround in range(numRounds):
-            valAccList, globalStepList = [], []
             print("Round: %d" % cround, file=redirFile)
+            if cround == emiStep:
+                print("Switching to EMI-Loss function", file=redirFile)
+                if lossIndicator is not None:
+                    raise NotImplementedError('TODO')
+                else:
+                    nTs = self.__emiTrainer.numTimeSteps
+                    nOut = self.__emiTrainer.numOutput
+                    lossIndicator = np.ones([nTs, nOut])
+                    sess.run(self.__emiTrainer.lossIndicatorAssignOp,
+                         feed_dict={self.__emiTrainer.lossIndicatorPlaceholder:
+                                    lossIndicator})
+            valAccList, globalStepList = [], []
             # Train the best model for the current round
             for citer in range(numIter):
                 self.__dataPipe.runInitializer(sess, x_train, curr_y,
@@ -325,7 +338,7 @@ class EMI_Driver:
                 acc = self.runOps(sess, [self.__emiTrainer.accTilda],
                                   x_val, y_val, batchSize, feedDict)
                 acc = np.mean(np.reshape(np.array(acc), -1))
-                print(" Val acc %2.5f | " % acc, end='')
+                print(" Val acc %2.5f | " % acc, end='', file=redirFile)
                 self.__graphManager.checkpointModel(self.__saver, sess,
                                                     modelPrefix,
                                                     self.__globalStep,
