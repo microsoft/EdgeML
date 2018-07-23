@@ -6,6 +6,7 @@ Tensorflow:
 
 1. [ProtoNN](https://github.com/Microsoft/EdgeML/blob/master/publications/ProtoNN.pdf)
 2. [Bonsai](https://github.com/Microsoft/EdgeML/blob/master/publications/Bonsai.pdf)
+3. [EMI-RNN]()
 
 ## ProtoNN
 `edgeml.graph.protoNN` implements the ProtoNN prediction graph in Tensorflow.
