@@ -920,7 +920,6 @@ class EMI_UGRNN(EMI_RNN):
             output = tf.reshape(outputs, dims, name='bag-output')
 
         UGRNNVars = cell.variables
-        print(UGRNNVars)
         self.varList.extend(UGRNNVars)
         if self.useDropout:
             self.keep_prob = keep_prob
