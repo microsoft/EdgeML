@@ -18,7 +18,7 @@ The parameters that need to be learnt include:
 
         (a) Z: the sparse projection matrix; 
         (b) θ = [θ1,...,θ2h−1]: the parameters of the branching function at each internal node
-        (c) W = [W1,...,W2h+1−1] and V = [V1,...,V2h+1−1]:the predictor parameters at each node
+        (c) W = [W1,...,W2h+1−1] and V = [V1,...,V2h+1−1]: the predictor parameters at each node
 
 We formulate a joint optimization problem to train all the parameters using the following three phase training routine:
 
@@ -30,7 +30,7 @@ We use simple Batch Gradient Descent as the solver with Armijo rule as the step 
 
 ## Prediction
 
-When given an input feature vector X, Bonsai gives the prediction as follows :
+When given an input feature vector X, Bonsai gives the prediction as follows:
 
         (a) We project the data onto a low dimensional space by computing x^ = Zx
         (b) The final bonsai prediction score is the non linear scores (wx^ * tanh(sigma*vx^) ) predicted by each of the individual nodes along the path traversed by the Bonsai tree
@@ -58,7 +58,7 @@ BonsaiTrain
     -lZ  : [Optional] lZ = regularizer for projection parameter Z  (Default: 0.00001 Try: [0.001, 0.0001, 0.000001]).
 
     Use Sparsity Params to vary your model size for a given tree depth and projection dimension
-    -sW  : [Optional] lambdaW = sparsity for predictor parameter W  (Default: For Binaay 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
+    -sW  : [Optional] lambdaW = sparsity for predictor parameter W  (Default: For Binary 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
     -sT  : [Optional] lambdaTheta = sparsity for branching parameter Theta  (Default: For Binary 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
     -sV  : [Optional] lambdaV = sparsity for predictor parameters V  (Default: For Binary 1.0 else 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
     -sZ  : [Optional] lambdaZ = sparsity for projection parameters Z  (Default: 0.2 Try: [0.1, 0.3, 0.4, 0.5]).
@@ -103,7 +103,7 @@ This should give you output as described in the next section. Test accuracy will
 
 ## Output
 
-The DataFolder will have a new forlder named "BonsaiResults" with the following files in it:
+The DataFolder will have a new folder named `BonsaiResults` with the following files in it:
 
     (a) A directory for each run with the signature hrs_min_sec_day_month with the following in it:
         (1) loadableModel - Char file which can be directly loaded using the inbuilt load model functions
