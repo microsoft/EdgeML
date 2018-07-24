@@ -7,7 +7,25 @@ from tensorflow.python.ops import init_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import variable_scope as vs
 from tensorflow.python.ops.rnn_cell_impl import RNNCell
-import edgeml.utils as utils
+
+
+def gen_non_linearity(A, non_linearity):
+    '''
+    Returns required activation for a tensor based on the inputs
+    '''
+    if non_linearity == "tanh":
+        return math_ops.tanh(A)
+    elif non_linearity == "sigmoid":
+        return math_ops.sigmoid(A)
+    elif non_linearity == "relu":
+        return gen_math_ops.maximum(A, 0.0)
+    elif non_linearity == "quantTanh":
+        return gen_math_ops.maximum(gen_math_ops.minimum(A, 1.0), -1.0)
+    elif non_linearity == "quantSigm":
+        A = (A + 1.0) / 2.0
+        return gen_math_ops.maximum(gen_math_ops.minimum(A, 1.0), 0.0)
+    else:
+        return math_ops.tanh(A)
 
 
 class FastGRNNCell(RNNCell):
@@ -115,14 +133,14 @@ class FastGRNNCell(RNNCell):
                 1.0, dtype=tf.float32)
             self.bias_gate = vs.get_variable(
                 "B_g", [1, self._hidden_size], initializer=bias_gate_init)
-            z = utils.gen_non_linearity(pre_comp + self.bias_gate,
+            z = gen_non_linearity(pre_comp + self.bias_gate,
                                         self._gate_non_linearity)
 
             bias_update_init = init_ops.constant_initializer(
                 1.0, dtype=tf.float32)
             self.bias_update = vs.get_variable(
                 "B_h", [1, self._hidden_size], initializer=bias_update_init)
-            c = utils.gen_non_linearity(
+            c = gen_non_linearity(
                 pre_comp + self.bias_update, self._update_non_linearity)
 
             new_h = z * state + (math_ops.sigmoid(self.zeta) * (1.0 - z) +
@@ -230,7 +248,7 @@ class FastRNNCell(RNNCell):
                 1.0, dtype=tf.float32)
             self.bias_update = vs.get_variable(
                 "B_h", [1, self._hidden_size], initializer=bias_update_init)
-            c = utils.gen_non_linearity(
+            c = gen_non_linearity(
                 pre_comp + self.bias_update, self._update_non_linearity)
 
             new_h = math_ops.sigmoid(self.beta) * \
@@ -562,3 +580,303 @@ class EMI_BasicLSTM(EMI_RNN):
         k_op = tf.assign(k_, kernel)
         b_op = tf.assign(b_, bias)
         self.assignOps.extend([k_op, b_op])
+
+
+class EMI_FastRNN(EMI_RNN):
+    """EMI-RNN/MI-RNN model using FastRNN.
+    """
+
+    def __init__(self, numSubinstance, numHidden, numTimeSteps,
+                 numFeats, graph=None, useDropout=False, update_non_linearity="tanh",
+                 wRank=None, uRank=None, alphaInit = -3.0, betaInit=3.0):
+        self.numHidden = numHidden
+        self.numTimeSteps = numTimeSteps
+        self.numFeats = numFeats
+        self.useDropout = useDropout
+        self.numSubinstance = numSubinstance
+        self.graph = graph
+
+        self.update_non_linearity = update_non_linearity
+        self.wRank = wRank
+        self.uRank = uRank
+        self.alphaInit = alphaInit
+        self.betaInit = betaInit
+
+        self.graphCreated = False
+        # Restore or initialize
+        self.keep_prob = None
+        self.varList = []
+        self.output = None
+        self.assignOps = []
+        # Internal
+        self._scope = 'EMI/FastRNN/'
+
+    def _createBaseGraph(self, X):
+        assert self.graphCreated is False
+        msg = 'X should be of form [-1, numSubinstance, numTimeSteps, numFeatures]'
+        assert X.get_shape().ndims == 4, msg
+        assert X.shape[1] == self.numSubinstance
+        assert X.shape[2] == self.numTimeSteps
+        assert X.shape[3] == self.numFeats
+        # Reshape into 3D suself.h that the first dimension is -1 * numSubinstance
+        # where each numSubinstance segment corresponds to one bag
+        # then shape it back in into 4D
+        scope = self._scope
+        keep_prob = None
+        with tf.name_scope(scope):
+            x = tf.reshape(X, [-1, self.numTimeSteps, self.numFeats])
+            x = tf.unstack(x, num=self.numTimeSteps, axis=1)
+            # Get the FastRNN output
+            cell = FastRNNCell(self.numHidden, self.update_non_linearity, 
+            	self.wRank, self.uRank, self.alphaInit, self.betaInit, name='EMI-FastRNN-Cell')
+            wrapped_cell = cell
+            if self.useDropout is True:
+                keep_prob = tf.placeholder(dtype=tf.float32, name='keep-prob')
+                wrapped_cell = tf.contrib.rnn.DropoutWrapper(cell,
+                                                             input_keep_prob=keep_prob,
+                                                             output_keep_prob=keep_prob)
+            outputs__, states = tf.nn.static_rnn(wrapped_cell, x, dtype=tf.float32)
+            outputs = []
+            for output in outputs__:
+                outputs.append(tf.expand_dims(output, axis=1))
+            # Convert back to bag form
+            outputs = tf.concat(outputs, axis=1, name='concat-output')
+            dims = [-1, self.numSubinstance, self.numTimeSteps, self.numHidden]
+            output = tf.reshape(outputs, dims, name='bag-output')
+
+        FastRNNVars = cell.variables
+        self.varList.extend(FastRNNVars)
+        if self.useDropout:
+            self.keep_prob = keep_prob
+        self.output = output
+        return self.output
+
+    def _restoreBaseGraph(self, graph, X):
+        assert self.graphCreated is False
+        assert self.graph is not None
+        scope = self._scope
+        if self.useDropout:
+            self.keep_prob = graph.get_tensor_by_name(scope + 'keep-prob:0')
+        self.output = graph.get_tensor_by_name(scope + 'bag-output:0')
+
+        assert len(self.varList) is 0
+        if self.wRank is None:
+        	W = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/W:0")
+        	self.varList = [W]
+    	else:
+    		W1 = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/W1:0")
+    		W2 = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/W2:0")
+        	self.varList = [W1, W2]
+
+        if self.uRank is None:
+        	U = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/U:0")
+        	self.varList.extend([U])
+    	else:
+    		U1 = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/U1:0")
+    		U2 = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/U2:0")
+        	self.varList.extend([U1, U2])
+
+        alpha = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/alpha:0")
+        beta = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/beta:0")
+        bias = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/B_h:0")
+        self.varList.extend([alpha, beta, bias])
+
+    def getHyperParams(self):
+        assert self.graphCreated is True, "Graph is not created"
+        return self.varList
+
+    def addBaseAssignOps(self, initVarList):
+        assert initVarList is not None
+        index = 0
+        if self.wRank is None:
+        	W_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/W:0")
+        	W = initVarList[0]
+        	w_op = tf.assign(W_, W)
+    		self.assignOps.extend([w_op])
+    		index += 1
+    	else:
+    		W1_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/W1:0")
+    		W2_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/W2:0")
+    		W1, W2 = initVarList[0], initVarList[1]
+        	w1_op = tf.assign(W1_, W1)
+        	w2_op = tf.assign(W2_, W2)
+    		self.assignOps.extend([w1_op, w2_op])
+    		index += 2
+
+        if self.uRank is None:
+        	U_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/U:0")
+        	U = initVarList[index]
+        	u_op = tf.assign(U_, U)
+    		self.assignOps.extend([u_op])
+    		index += 1
+    	else:
+    		U1_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/U1:0")
+    		U2_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/U2:0")
+    		U1, U2 = initVarList[index], initVarList[index+1]
+        	u1_op = tf.assign(U1_, U1)
+        	u2_op = tf.assign(U2_, U2)
+    		self.assignOps.extend([u1_op, u2_op])
+    		index += 2
+
+        alpha_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/alpha:0")
+        beta_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/beta:0")
+        bias_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/B_h:0")
+
+        alpha, beta, bias = initVarList[index], initVarList[index+1], initVarList[index+2]
+        alpha_op = tf.assign(alpha_, alpha)
+        beta_op = tf.assign(beta_, beta)
+        bias_op = tf.assign(bias_, bias)
+
+        self.assignOps.extend([alpha_op, beta_op, bias_op])
+
+
+class EMI_FastGRNN(EMI_RNN):
+    """EMI-RNN/MI-RNN model using FastGRNN.
+    """
+
+    def __init__(self, numSubinstance, numHidden, numTimeSteps,
+                 numFeats, graph=None, useDropout=False, gate_non_linearity="sigmoid",
+                 update_non_linearity="tanh", wRank=None, uRank=None, zetaInit=1.0, nuInit = -4.0):
+        self.numHidden = numHidden
+        self.numTimeSteps = numTimeSteps
+        self.numFeats = numFeats
+        self.useDropout = useDropout
+        self.numSubinstance = numSubinstance
+        self.graph = graph
+
+        self.gate_non_linearity = gate_non_linearity
+        self.update_non_linearity = update_non_linearity
+        self.wRank = wRank
+        self.uRank = uRank
+        self.zetaInit = zetaInit
+        self.nuInit = nuInit
+
+        self.graphCreated = False
+        # Restore or initialize
+        self.keep_prob = None
+        self.varList = []
+        self.output = None
+        self.assignOps = []
+        # Internal
+        self._scope = 'EMI/FastGRNN/'
+
+    def _createBaseGraph(self, X):
+        assert self.graphCreated is False
+        msg = 'X should be of form [-1, numSubinstance, numTimeSteps, numFeatures]'
+        assert X.get_shape().ndims == 4, msg
+        assert X.shape[1] == self.numSubinstance
+        assert X.shape[2] == self.numTimeSteps
+        assert X.shape[3] == self.numFeats
+        # Reshape into 3D suself.h that the first dimension is -1 * numSubinstance
+        # where each numSubinstance segment corresponds to one bag
+        # then shape it back in into 4D
+        scope = self._scope
+        keep_prob = None
+        with tf.name_scope(scope):
+            x = tf.reshape(X, [-1, self.numTimeSteps, self.numFeats])
+            x = tf.unstack(x, num=self.numTimeSteps, axis=1)
+            # Get the FastGRNN output
+            cell = FastGRNNCell(self.numHidden, self.gate_non_linearity, self.update_non_linearity, 
+            	self.wRank, self.uRank, self.zetaInit, self.nuInit, name='EMI-FastGRNN-Cell')
+            wrapped_cell = cell
+            if self.useDropout is True:
+                keep_prob = tf.placeholder(dtype=tf.float32, name='keep-prob')
+                wrapped_cell = tf.contrib.rnn.DropoutWrapper(cell,
+                                                             input_keep_prob=keep_prob,
+                                                             output_keep_prob=keep_prob)
+            outputs__, states = tf.nn.static_rnn(wrapped_cell, x, dtype=tf.float32)
+            outputs = []
+            for output in outputs__:
+                outputs.append(tf.expand_dims(output, axis=1))
+            # Convert back to bag form
+            outputs = tf.concat(outputs, axis=1, name='concat-output')
+            dims = [-1, self.numSubinstance, self.numTimeSteps, self.numHidden]
+            output = tf.reshape(outputs, dims, name='bag-output')
+
+        FastGRNNVars = cell.variables
+        self.varList.extend(FastGRNNVars)
+        if self.useDropout:
+            self.keep_prob = keep_prob
+        self.output = output
+        return self.output
+
+    def _restoreBaseGraph(self, graph, X):
+        assert self.graphCreated is False
+        assert self.graph is not None
+        scope = self._scope
+        if self.useDropout:
+            self.keep_prob = graph.get_tensor_by_name(scope + 'keep-prob:0')
+        self.output = graph.get_tensor_by_name(scope + 'bag-output:0')
+
+        assert len(self.varList) is 0
+        if self.wRank is None:
+        	W = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/W:0")
+        	self.varList = [W]
+    	else:
+    		W1 = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/W1:0")
+    		W2 = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/W2:0")
+        	self.varList = [W1, W2]
+
+        if self.uRank is None:
+        	U = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/U:0")
+        	self.varList.extend([U])
+    	else:
+    		U1 = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/U1:0")
+    		U2 = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/U2:0")
+        	self.varList.extend([U1, U2])
+
+        zeta = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/zeta:0")
+        nu = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/nu:0")
+        gate_bias = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_g:0")
+        update_bias = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_h:0")
+        self.varList.extend([zeta, nu, gate_bias, update_bias])
+
+    def getHyperParams(self):
+        assert self.graphCreated is True, "Graph is not created"
+        return self.varList
+
+    def addBaseAssignOps(self, initVarList):
+        assert initVarList is not None
+        index = 0
+        if self.wRank is None:
+        	W_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/W:0")
+        	W = initVarList[0]
+        	w_op = tf.assign(W_, W)
+    		self.assignOps.extend([w_op])
+    		index += 1
+    	else:
+    		W1_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/W1:0")
+    		W2_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/W2:0")
+    		W1, W2 = initVarList[0], initVarList[1]
+        	w1_op = tf.assign(W1_, W1)
+        	w2_op = tf.assign(W2_, W2)
+    		self.assignOps.extend([w1_op, w2_op])
+    		index += 2
+
+        if self.uRank is None:
+        	U_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/U:0")
+        	U = initVarList[index]
+        	u_op = tf.assign(U_, U)
+    		self.assignOps.extend([u_op])
+    		index += 1
+    	else:
+    		U1_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/U1:0")
+    		U2_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/U2:0")
+    		U1, U2 = initVarList[index], initVarList[index+1]
+        	u1_op = tf.assign(U1_, U1)
+        	u2_op = tf.assign(U2_, U2)
+    		self.assignOps.extend([u1_op, u2_op])
+    		index += 2
+
+        zeta_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/zeta:0")
+        nu_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/nu:0")
+        gate_bias_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_g:0")
+        update_bias_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_h:0")
+
+        zeta, nu, gate_bias, update_bias = initVarList[index], initVarList[index+1], initVarList[index+2], initVarList[index+3]
+        zeta_op = tf.assign(zeta_, zeta)
+        nu_op = tf.assign(nu_, nu)
+        gate_bias_op = tf.assign(gate_bias_, gate_bias)
+        update_bias_op = tf.assign(update_bias_, update_bias)
+
+        self.assignOps.extend([zeta_op, nu_op, gate_bias_op, update_bias_op])

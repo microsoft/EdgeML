@@ -129,24 +129,6 @@ def countnnZ(A, s, bytesPerVar=4):
         nnZ = params
         return nnZ, nnZ * bytesPerVar, hasSparse
 
-def gen_non_linearity(A, non_linearity):
-    '''
-    Returns required activation for a tensor based on the inputs
-    '''
-    if non_linearity == "tanh":
-        return math_ops.tanh(A)
-    elif non_linearity == "sigmoid":
-        return math_ops.sigmoid(A)
-    elif non_linearity == "relu":
-        return gen_math_ops.maximum(A, 0.0)
-    elif non_linearity == "quantTanh":
-        return gen_math_ops.maximum(gen_math_ops.minimum(A, 1.0), -1.0)
-    elif non_linearity == "quantSigm":
-        A = (A + 1.0) / 2.0
-        return gen_math_ops.maximum(gen_math_ops.minimum(A, 1.0), 0.0)
-    else:
-        return math_ops.tanh(A)
-
 
 def getConfusionMatrix(predicted, target, numClasses):
     '''
