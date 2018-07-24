@@ -863,6 +863,97 @@ class EMI_FastRNN(EMI_RNN):
         self.assignOps.extend([alpha_op, beta_op, bias_op])
 
 
+class EMI_UGRNN(EMI_RNN):
+    """EMI-RNN/MI-RNN model using UGRNN.
+    """
+
+    def __init__(self, numSubinstance, numHidden, numTimeSteps,
+                 numFeats, graph=None, forgetBias=1.0, useDropout=False):
+        self.numHidden = numHidden
+        self.numTimeSteps = numTimeSteps
+        self.numFeats = numFeats
+        self.useDropout = useDropout
+        self.forgetBias = forgetBias
+        self.numSubinstance = numSubinstance
+        self.graph = graph
+        self.graphCreated = False
+        # Restore or initialize
+        self.keep_prob = None
+        self.varList = []
+        self.output = None
+        self.assignOps = []
+        # Internal
+        self._scope = 'EMI/UGRNN/'
+
+    def _createBaseGraph(self, X):
+        assert self.graphCreated is False
+        msg = 'X should be of form [-1, numSubinstance, numTimeSteps, numFeatures]'
+        assert X.get_shape().ndims == 4, msg
+        assert X.shape[1] == self.numSubinstance
+        assert X.shape[2] == self.numTimeSteps
+        assert X.shape[3] == self.numFeats
+        # Reshape into 3D suself.h that the first dimension is -1 * numSubinstance
+        # where each numSubinstance segment corresponds to one bag
+        # then shape it back in into 4D
+        scope = self._scope
+        keep_prob = None
+        with tf.name_scope(scope):
+            x = tf.reshape(X, [-1, self.numTimeSteps, self.numFeats])
+            x = tf.unstack(x, num=self.numTimeSteps, axis=1)
+            # Get the UGRNN output
+            cell = tf.contrib.rnn.UGRNNCell(self.numHidden,
+                                                forget_bias=self.forgetBias)
+            wrapped_cell = cell
+            if self.useDropout is True:
+                keep_prob = tf.placeholder(dtype=tf.float32, name='keep-prob')
+                wrapped_cell = tf.contrib.rnn.DropoutWrapper(cell,
+                                                             input_keep_prob=keep_prob,
+                                                             output_keep_prob=keep_prob)
+            outputs__, states = tf.nn.static_rnn(
+                wrapped_cell, x, dtype=tf.float32)
+            outputs = []
+            for output in outputs__:
+                outputs.append(tf.expand_dims(output, axis=1))
+            # Convert back to bag form
+            outputs = tf.concat(outputs, axis=1, name='concat-output')
+            dims = [-1, self.numSubinstance, self.numTimeSteps, self.numHidden]
+            output = tf.reshape(outputs, dims, name='bag-output')
+
+        UGRNNVars = cell.variables
+        print(UGRNNVars)
+        self.varList.extend(UGRNNVars)
+        if self.useDropout:
+            self.keep_prob = keep_prob
+        self.output = output
+        return self.output
+
+    def _restoreBaseGraph(self, graph, X):
+        assert self.graphCreated is False
+        assert self.graph is not None
+        scope = self._scope
+        if self.useDropout:
+            self.keep_prob = graph.get_tensor_by_name(scope + 'keep-prob:0')
+        self.output = graph.get_tensor_by_name(scope + 'bag-output:0')
+        kernel = graph.get_tensor_by_name("rnn/ugrnn_cell/kernel:0")
+        bias = graph.get_tensor_by_name("rnn/ugrnn_cell/bias:0")
+        assert len(self.varList) is 0
+        self.varList = [kernel, bias]
+
+    def getHyperParams(self):
+        assert self.graphCreated is True, "Graph is not created"
+        assert len(self.varList) == 2
+        return self.varList
+
+    def addBaseAssignOps(self, initVarList):
+        assert initVarList is not None
+        assert len(initVarList) == 2
+        k_ = graph.get_tensor_by_name('rnn/ugrnn_cell/kernel:0')
+        b_ = graph.get_tensor_by_name('rnn/ugrnn_cell/bias:0')
+        kernel, bias = initVarList[-2], initVarList[-1]
+        k_op = tf.assign(k_, kernel)
+        b_op = tf.assign(b_, bias)
+        self.assignOps.extend([k_op, b_op])
+
 class EMI_FastGRNN(EMI_RNN):
     """EMI-RNN/MI-RNN model using FastGRNN.
     """
