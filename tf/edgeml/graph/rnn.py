@@ -681,32 +681,32 @@ class EMI_FastRNN(EMI_RNN):
         assert len(self.varList) is 0
         if self.wRank is None:
             W = graph.get_tensor_by_name(
-                "rnn/EMI-FastRNN-Cell/FastRNNcell/W:0")
+                "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/W:0")
             self.varList = [W]
         else:
             W1 = graph.get_tensor_by_name(
-                "rnn/EMI-FastRNN-Cell/FastRNNcell/W1:0")
+                "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/W1:0")
             W2 = graph.get_tensor_by_name(
-                "rnn/EMI-FastRNN-Cell/FastRNNcell/W2:0")
+                "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/W2:0")
             self.varList = [W1, W2]
 
         if self.uRank is None:
             U = graph.get_tensor_by_name(
-                "rnn/EMI-FastRNN-Cell/FastRNNcell/U:0")
+                "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/U:0")
             self.varList.extend([U])
         else:
             U1 = graph.get_tensor_by_name(
-                "rnn/EMI-FastRNN-Cell/FastRNNcell/U1:0")
+                "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/U1:0")
             U2 = graph.get_tensor_by_name(
-                "rnn/EMI-FastRNN-Cell/FastRNNcell/U2:0")
+                "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/U2:0")
             self.varList.extend([U1, U2])
 
         alpha = graph.get_tensor_by_name(
-            "rnn/EMI-FastRNN-Cell/FastRNNcell/alpha:0")
+            "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/alpha:0")
         beta = graph.get_tensor_by_name(
-            "rnn/EMI-FastRNN-Cell/FastRNNcell/beta:0")
+            "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/beta:0")
         bias = graph.get_tensor_by_name(
-            "rnn/EMI-FastRNN-Cell/FastRNNcell/B_h:0")
+            "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/B_h:0")
         self.varList.extend([alpha, beta, bias])
 
     def getHyperParams(self):
@@ -718,16 +718,16 @@ class EMI_FastRNN(EMI_RNN):
         index = 0
         if self.wRank is None:
             W_ = graph.get_tensor_by_name(
-                "rnn/EMI-FastRNN-Cell/FastRNNcell/W:0")
+                "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/W:0")
             W = initVarList[0]
             w_op = tf.assign(W_, W)
             self.assignOps.extend([w_op])
             index += 1
         else:
             W1_ = graph.get_tensor_by_name(
-                "rnn/EMI-FastRNN-Cell/FastRNNcell/W1:0")
+                "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/W1:0")
             W2_ = graph.get_tensor_by_name(
-                "rnn/EMI-FastRNN-Cell/FastRNNcell/W2:0")
+                "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/W2:0")
             W1, W2 = initVarList[0], initVarList[1]
             w1_op = tf.assign(W1_, W1)
             w2_op = tf.assign(W2_, W2)
@@ -736,16 +736,16 @@ class EMI_FastRNN(EMI_RNN):
 
         if self.uRank is None:
             U_ = graph.get_tensor_by_name(
-                "rnn/EMI-FastRNN-Cell/FastRNNcell/U:0")
+                "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/U:0")
             U = initVarList[index]
             u_op = tf.assign(U_, U)
             self.assignOps.extend([u_op])
             index += 1
         else:
             U1_ = graph.get_tensor_by_name(
-                "rnn/EMI-FastRNN-Cell/FastRNNcell/U1:0")
+                "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/U1:0")
             U2_ = graph.get_tensor_by_name(
-                "rnn/EMI-FastRNN-Cell/FastRNNcell/U2:0")
+                "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/U2:0")
             U1, U2 = initVarList[index], initVarList[index + 1]
             u1_op = tf.assign(U1_, U1)
             u2_op = tf.assign(U2_, U2)
@@ -753,11 +753,11 @@ class EMI_FastRNN(EMI_RNN):
             index += 2
 
         alpha_ = graph.get_tensor_by_name(
-            "rnn/EMI-FastRNN-Cell/FastRNNcell/alpha:0")
+            "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/alpha:0")
         beta_ = graph.get_tensor_by_name(
-            "rnn/EMI-FastRNN-Cell/FastRNNcell/beta:0")
+            "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/beta:0")
         bias_ = graph.get_tensor_by_name(
-            "rnn/EMI-FastRNN-Cell/FastRNNcell/B_h:0")
+            "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/B_h:0")
 
         alpha, beta, bias = initVarList[index], initVarList[
             index + 1], initVarList[index + 2]
@@ -851,34 +851,34 @@ class EMI_FastGRNN(EMI_RNN):
         assert len(self.varList) is 0
         if self.wRank is None:
             W = graph.get_tensor_by_name(
-                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/W:0")
+                "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/W:0")
             self.varList = [W]
         else:
             W1 = graph.get_tensor_by_name(
-                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/W1:0")
+                "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/W1:0")
             W2 = graph.get_tensor_by_name(
-                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/W2:0")
+                "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/W2:0")
             self.varList = [W1, W2]
 
         if self.uRank is None:
             U = graph.get_tensor_by_name(
-                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/U:0")
+                "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/U:0")
             self.varList.extend([U])
         else:
             U1 = graph.get_tensor_by_name(
-                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/U1:0")
+                "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/U1:0")
             U2 = graph.get_tensor_by_name(
-                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/U2:0")
+                "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/U2:0")
             self.varList.extend([U1, U2])
 
         zeta = graph.get_tensor_by_name(
-            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/zeta:0")
+            "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/zeta:0")
         nu = graph.get_tensor_by_name(
-            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/nu:0")
+            "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/nu:0")
         gate_bias = graph.get_tensor_by_name(
-            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_g:0")
+            "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/B_g:0")
         update_bias = graph.get_tensor_by_name(
-            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_h:0")
+            "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/B_h:0")
         self.varList.extend([zeta, nu, gate_bias, update_bias])
 
     def getHyperParams(self):
@@ -890,16 +890,16 @@ class EMI_FastGRNN(EMI_RNN):
         index = 0
         if self.wRank is None:
             W_ = graph.get_tensor_by_name(
-                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/W:0")
+                "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/W:0")
             W = initVarList[0]
             w_op = tf.assign(W_, W)
             self.assignOps.extend([w_op])
             index += 1
         else:
             W1_ = graph.get_tensor_by_name(
-                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/W1:0")
+                "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/W1:0")
             W2_ = graph.get_tensor_by_name(
-                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/W2:0")
+                "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/W2:0")
             W1, W2 = initVarList[0], initVarList[1]
             w1_op = tf.assign(W1_, W1)
             w2_op = tf.assign(W2_, W2)
@@ -908,16 +908,16 @@ class EMI_FastGRNN(EMI_RNN):
 
         if self.uRank is None:
             U_ = graph.get_tensor_by_name(
-                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/U:0")
+                "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/U:0")
             U = initVarList[index]
             u_op = tf.assign(U_, U)
             self.assignOps.extend([u_op])
             index += 1
         else:
             U1_ = graph.get_tensor_by_name(
-                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/U1:0")
+                "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/U1:0")
             U2_ = graph.get_tensor_by_name(
-                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/U2:0")
+                "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/U2:0")
             U1, U2 = initVarList[index], initVarList[index + 1]
             u1_op = tf.assign(U1_, U1)
             u2_op = tf.assign(U2_, U2)
@@ -925,13 +925,13 @@ class EMI_FastGRNN(EMI_RNN):
             index += 2
 
         zeta_ = graph.get_tensor_by_name(
-            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/zeta:0")
+            "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/zeta:0")
         nu_ = graph.get_tensor_by_name(
-            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/nu:0")
+            "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/nu:0")
         gate_bias_ = graph.get_tensor_by_name(
-            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_g:0")
+            "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/B_g:0")
         update_bias_ = graph.get_tensor_by_name(
-            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_h:0")
+            "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/B_h:0")
 
         zeta, nu, gate_bias, update_bias = initVarList[index], initVarList[
             index + 1], initVarList[index + 2], initVarList[index + 3]
