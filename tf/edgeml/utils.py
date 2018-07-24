@@ -4,9 +4,6 @@
 from __future__ import print_function
 import tensorflow as tf
 import numpy as np
-from tensorflow.python.ops import math_ops
-from tensorflow.python.ops import gen_math_ops
-import numpy as np
 import scipy.cluster
 import scipy.spatial
 import os
@@ -161,23 +158,25 @@ def printFormattedConfusionMatrix(matrix):
     assert(matrix.shape[0] == matrix.shape[1])
     RECALL = 'Recall'
     PRECISION = 'PRECISION'
-    print("|%s|"% ('True->'), end='')
+    print("|%s|" % ('True->'), end='')
     for i in range(matrix.shape[0]):
         print("%7d|" % i, end='')
     print("%s|" % 'Precision')
 
-    print("|%s|"% ('-'* len(RECALL)), end='')
+    print("|%s|" % ('-' * len(RECALL)), end='')
     for i in range(matrix.shape[0]):
-        print("%s|" % ('-'* 7), end='')
-    print("%s|" % ('-'* len(PRECISION)))
+        print("%s|" % ('-' * 7), end='')
+    print("%s|" % ('-' * len(PRECISION)))
 
     precisionlist = np.sum(matrix, axis=1)
     recalllist = np.sum(matrix, axis=0)
-    precisionlist = [matrix[i][i]/ x if x != 0 else -1 for i,x in enumerate(precisionlist)]
-    recalllist = [matrix[i][i]/x if x != 0 else -1 for i,x in enumerate(recalllist)]
+    precisionlist = [matrix[i][i] / x if x !=
+                     0 else -1 for i, x in enumerate(precisionlist)]
+    recalllist = [matrix[i][i] / x if x !=
+                  0 else -1 for i, x in enumerate(recalllist)]
     for i in range(matrix.shape[0]):
         # len recall = 6
-        print("|%6d|"% (i), end='')
+        print("|%6d|" % (i), end='')
         for j in range(matrix.shape[0]):
             print("%7d|" % (matrix[i][j]), end='')
         print("%s" % (" " * (len(PRECISION) - 7)), end='')
@@ -186,11 +185,11 @@ def printFormattedConfusionMatrix(matrix):
         else:
             print("%7s|" % "nan")
 
-    print("|%s|"% ('-'* len(RECALL)), end='')
+    print("|%s|" % ('-' * len(RECALL)), end='')
     for i in range(matrix.shape[0]):
-        print("%s|" % ('-'* 7), end='')
-    print("%s|" % ('-'*len(PRECISION)))
-    print("|%s|"% ('Recall'), end='')
+        print("%s|" % ('-' * 7), end='')
+    print("%s|" % ('-' * len(PRECISION)))
+    print("|%s|" % ('Recall'), end='')
 
     for i in range(matrix.shape[0]):
         if recalllist[i] != -1:
@@ -278,11 +277,13 @@ def getMacroMicroFScore(cmatrix):
     micro = 2 * pi * rho / denom
     return macro, micro
 
+
 class GraphManager:
     '''
     Manages saving and restoring graphs. Designed to be used with EMI-RNN
     though is general enough to be useful otherwise as well.
     '''
+
     def __init__(self):
         pass
 

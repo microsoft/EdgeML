@@ -6,6 +6,7 @@ import tensorflow as tf
 from tensorflow.python.ops import init_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import variable_scope as vs
+from tensorflow.python.ops import gen_math_ops
 from tensorflow.python.ops.rnn_cell_impl import RNNCell
 
 
@@ -35,7 +36,8 @@ class FastGRNNCell(RNNCell):
     '''
 
     def __init__(self, hidden_size, gate_non_linearity="sigmoid",
-                 update_non_linearity="tanh", wRank=None, uRank=None, zetaInit=1.0, nuInit = -4.0):
+                 update_non_linearity="tanh", wRank=None, uRank=None,
+                 zetaInit=1.0, nuInit=-4.0):
         super(FastGRNNCell, self).__init__()
         self._hidden_size = hidden_size
         self._gate_non_linearity = gate_non_linearity
@@ -43,6 +45,8 @@ class FastGRNNCell(RNNCell):
         self._num_weight_matrices = [1, 1]
         self._wRank = wRank
         self._uRank = uRank
+        self._zetaInit = zetaInit
+        self._nuInit = nuInit
         if wRank is not None:
             self._num_weight_matrices[0] += 1
         if uRank is not None:
@@ -120,11 +124,14 @@ class FastGRNNCell(RNNCell):
                     initializer=U_matrix_2_init)
                 uComp = math_ops.matmul(
                     math_ops.matmul(state, self.U1), self.U2)
-            # Init zeta to 6.0 and nu to -6.0 if this doesn't give good results. The ints are hyper-params.
-            zeta_init = init_ops.constant_initializer(zetaInit, dtype=tf.float32)
+            # Init zeta to 6.0 and nu to -6.0 if this doesn't give good
+            # results. The ints are hyper-params.
+            zeta_init = init_ops.constant_initializer(
+                self._zetaInit, dtype=tf.float32)
             self.zeta = vs.get_variable("zeta", [1, 1], initializer=zeta_init)
 
-            nu_init = init_ops.constant_initializer(nuInit, dtype=tf.float32)
+            nu_init = init_ops.constant_initializer(
+                self._nuInit, dtype=tf.float32)
             self.nu = vs.get_variable("nu", [1, 1], initializer=nu_init)
 
             pre_comp = wComp + uComp
@@ -134,7 +141,7 @@ class FastGRNNCell(RNNCell):
             self.bias_gate = vs.get_variable(
                 "B_g", [1, self._hidden_size], initializer=bias_gate_init)
             z = gen_non_linearity(pre_comp + self.bias_gate,
-                                        self._gate_non_linearity)
+                                  self._gate_non_linearity)
 
             bias_update_init = init_ops.constant_initializer(
                 1.0, dtype=tf.float32)
@@ -155,13 +162,15 @@ class FastRNNCell(RNNCell):
     '''
 
     def __init__(self, hidden_size, update_non_linearity="tanh",
-                 wRank=None, uRank=None, alphaInit = -3.0, betaInit=3.0):
+                 wRank=None, uRank=None, alphaInit=-3.0, betaInit=3.0):
         super(FastRNNCell, self).__init__()
         self._hidden_size = hidden_size
         self._update_non_linearity = update_non_linearity
         self._num_weight_matrices = [1, 1]
         self._wRank = wRank
         self._uRank = uRank
+        self._alphaInit = alphaInit
+        self._betaInit = betaInit
         if wRank is not None:
             self._num_weight_matrices[0] += 1
         if uRank is not None:
@@ -236,10 +245,13 @@ class FastRNNCell(RNNCell):
                 uComp = math_ops.matmul(
                     math_ops.matmul(state, self.U1), self.U2)
 
-            alpha_init = init_ops.constant_initializer(alphaInit, dtype=tf.float32)
-            self.alpha = vs.get_variable("alpha", [1, 1], initializer=alpha_init)
+            alpha_init = init_ops.constant_initializer(
+                self._alphaInit, dtype=tf.float32)
+            self.alpha = vs.get_variable(
+                "alpha", [1, 1], initializer=alpha_init)
 
-            beta_init = init_ops.constant_initializer(betaInit, dtype=tf.float32)
+            beta_init = init_ops.constant_initializer(
+                self._betaInit, dtype=tf.float32)
             self.beta = vs.get_variable("beta", [1, 1], initializer=beta_init)
 
             pre_comp = wComp + uComp
@@ -254,6 +266,7 @@ class FastRNNCell(RNNCell):
             new_h = math_ops.sigmoid(self.beta) * \
                 state + math_ops.sigmoid(self.alpha) * c
         return new_h, new_h
+
 
 class EMI_DataPipeline():
     '''The datainput block for EMI-RNN training. Since EMI-RNN is an expensive
@@ -298,8 +311,9 @@ class EMI_DataPipeline():
                 break
         ```
     '''
+
     def __init__(self, numSubinstance, numTimesteps, numFeats, numOutput,
-                 graph=None, prefetchNum =5):
+                 graph=None, prefetchNum=5):
         '''
         numSubinstance, numTimeSteps, numFeats, numOutput:
             Dataset characteristis. Please refer to the associated EMI_RNN
@@ -335,7 +349,7 @@ class EMI_DataPipeline():
         with tf.name_scope(scope):
             X = tf.placeholder(tf.float32, dim, name='inpX')
             Y = tf.placeholder(tf.float32, [None, self.numSubinstance,
-                                           self.numOutput], name='inpY')
+                                            self.numOutput], name='inpY')
             batchSize = tf.placeholder(tf.int64, name='batch-size')
             numEpochs = tf.placeholder(tf.int64, name='num-epochs')
 
@@ -346,7 +360,7 @@ class EMI_DataPipeline():
             ds_target = ds_target.batch(batchSize)
             ds_target = ds_target.prefetch(self.prefetchNum)
             ds_iterator_target = tf.data.Iterator.from_structure(ds_target.output_types,
-                                                        ds_target.output_shapes)
+                                                                 ds_target.output_shapes)
             ds_next_target = ds_iterator_target
             ds_init_target = ds_iterator_target.make_initializer(ds_target,
                                                                  name='dataset-init')
@@ -371,7 +385,7 @@ class EMI_DataPipeline():
         self.dataset_init = graph.get_operation_by_name(scope + "dataset-init")
         self.x_batch = graph.get_collection('next-x-batch')
         self.y_batch = graph.get_collection('next-y-batch')
-        msg ='More than one tensor named next-x-batch/next-y-batch. '
+        msg = 'More than one tensor named next-x-batch/next-y-batch. '
         msg += 'Are you not resetting your graph?'
         assert len(self.x_batch) == 1, msg
         assert len(self.y_batch) == 1, msg
@@ -412,7 +426,7 @@ class EMI_DataPipeline():
         assert x_data.shape[3] == self.numFeats, msg
         msg = 'X and Y sould have same first dimension'
         assert y_data.shape[0] == x_data.shape[0], msg
-        msg ='Y shape should be [-1, numSubinstance, numOutput]'
+        msg = 'Y shape should be [-1, numSubinstance, numOutput]'
         assert y_data.shape[1] == self.numSubinstance, msg
         assert y_data.shape[2] == self.numOutput, msg
         feed_dict = {
@@ -432,6 +446,7 @@ class EMI_RNN():
     Note: We are not using the PEP recommended abc module since it is difficult
     to support in both python 2 and 3
     """
+
     def __init__(self, *args, **kwargs):
         self.graphCreated = False
         # Model specific matrices, parameter should be saved
@@ -530,15 +545,16 @@ class EMI_BasicLSTM(EMI_RNN):
             x = tf.unstack(x, num=self.numTimeSteps, axis=1)
             # Get the LSTM output
             cell = tf.nn.rnn_cell.BasicLSTMCell(self.numHidden,
-                                                     forget_bias=self.forgetBias,
-                                                     name='EMI-LSTM-Cell')
+                                                forget_bias=self.forgetBias,
+                                                name='EMI-LSTM-Cell')
             wrapped_cell = cell
             if self.useDropout is True:
                 keep_prob = tf.placeholder(dtype=tf.float32, name='keep-prob')
                 wrapped_cell = tf.contrib.rnn.DropoutWrapper(cell,
                                                              input_keep_prob=keep_prob,
                                                              output_keep_prob=keep_prob)
-            outputs__, states = tf.nn.static_rnn(wrapped_cell, x, dtype=tf.float32)
+            outputs__, states = tf.nn.static_rnn(
+                wrapped_cell, x, dtype=tf.float32)
             outputs = []
             for output in outputs__:
                 outputs.append(tf.expand_dims(output, axis=1))
@@ -588,7 +604,7 @@ class EMI_FastRNN(EMI_RNN):
 
     def __init__(self, numSubinstance, numHidden, numTimeSteps,
                  numFeats, graph=None, useDropout=False, update_non_linearity="tanh",
-                 wRank=None, uRank=None, alphaInit = -3.0, betaInit=3.0):
+                 wRank=None, uRank=None, alphaInit=-3.0, betaInit=3.0):
         self.numHidden = numHidden
         self.numTimeSteps = numTimeSteps
         self.numFeats = numFeats
@@ -627,15 +643,16 @@ class EMI_FastRNN(EMI_RNN):
             x = tf.reshape(X, [-1, self.numTimeSteps, self.numFeats])
             x = tf.unstack(x, num=self.numTimeSteps, axis=1)
             # Get the FastRNN output
-            cell = FastRNNCell(self.numHidden, self.update_non_linearity, 
-            	self.wRank, self.uRank, self.alphaInit, self.betaInit, name='EMI-FastRNN-Cell')
+            cell = FastRNNCell(self.numHidden, self.update_non_linearity,
+                               self.wRank, self.uRank, self.alphaInit, self.betaInit, name='EMI-FastRNN-Cell')
             wrapped_cell = cell
             if self.useDropout is True:
                 keep_prob = tf.placeholder(dtype=tf.float32, name='keep-prob')
                 wrapped_cell = tf.contrib.rnn.DropoutWrapper(cell,
                                                              input_keep_prob=keep_prob,
                                                              output_keep_prob=keep_prob)
-            outputs__, states = tf.nn.static_rnn(wrapped_cell, x, dtype=tf.float32)
+            outputs__, states = tf.nn.static_rnn(
+                wrapped_cell, x, dtype=tf.float32)
             outputs = []
             for output in outputs__:
                 outputs.append(tf.expand_dims(output, axis=1))
@@ -661,24 +678,33 @@ class EMI_FastRNN(EMI_RNN):
 
         assert len(self.varList) is 0
         if self.wRank is None:
-        	W = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/W:0")
-        	self.varList = [W]
-    	else:
-    		W1 = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/W1:0")
-    		W2 = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/W2:0")
-        	self.varList = [W1, W2]
+            W = graph.get_tensor_by_name(
+                "rnn/EMI-FastRNN-Cell/FastRNNcell/W:0")
+            self.varList = [W]
+        else:
+            W1 = graph.get_tensor_by_name(
+                "rnn/EMI-FastRNN-Cell/FastRNNcell/W1:0")
+            W2 = graph.get_tensor_by_name(
+                "rnn/EMI-FastRNN-Cell/FastRNNcell/W2:0")
+            self.varList = [W1, W2]
 
         if self.uRank is None:
-        	U = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/U:0")
-        	self.varList.extend([U])
-    	else:
-    		U1 = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/U1:0")
-    		U2 = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/U2:0")
-        	self.varList.extend([U1, U2])
+            U = graph.get_tensor_by_name(
+                "rnn/EMI-FastRNN-Cell/FastRNNcell/U:0")
+            self.varList.extend([U])
+        else:
+            U1 = graph.get_tensor_by_name(
+                "rnn/EMI-FastRNN-Cell/FastRNNcell/U1:0")
+            U2 = graph.get_tensor_by_name(
+                "rnn/EMI-FastRNN-Cell/FastRNNcell/U2:0")
+            self.varList.extend([U1, U2])
 
-        alpha = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/alpha:0")
-        beta = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/beta:0")
-        bias = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/B_h:0")
+        alpha = graph.get_tensor_by_name(
+            "rnn/EMI-FastRNN-Cell/FastRNNcell/alpha:0")
+        beta = graph.get_tensor_by_name(
+            "rnn/EMI-FastRNN-Cell/FastRNNcell/beta:0")
+        bias = graph.get_tensor_by_name(
+            "rnn/EMI-FastRNN-Cell/FastRNNcell/B_h:0")
         self.varList.extend([alpha, beta, bias])
 
     def getHyperParams(self):
@@ -689,40 +715,50 @@ class EMI_FastRNN(EMI_RNN):
         assert initVarList is not None
         index = 0
         if self.wRank is None:
-        	W_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/W:0")
-        	W = initVarList[0]
-        	w_op = tf.assign(W_, W)
-    		self.assignOps.extend([w_op])
-    		index += 1
-    	else:
-    		W1_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/W1:0")
-    		W2_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/W2:0")
-    		W1, W2 = initVarList[0], initVarList[1]
-        	w1_op = tf.assign(W1_, W1)
-        	w2_op = tf.assign(W2_, W2)
-    		self.assignOps.extend([w1_op, w2_op])
-    		index += 2
+            W_ = graph.get_tensor_by_name(
+                "rnn/EMI-FastRNN-Cell/FastRNNcell/W:0")
+            W = initVarList[0]
+            w_op = tf.assign(W_, W)
+            self.assignOps.extend([w_op])
+            index += 1
+        else:
+            W1_ = graph.get_tensor_by_name(
+                "rnn/EMI-FastRNN-Cell/FastRNNcell/W1:0")
+            W2_ = graph.get_tensor_by_name(
+                "rnn/EMI-FastRNN-Cell/FastRNNcell/W2:0")
+            W1, W2 = initVarList[0], initVarList[1]
+            w1_op = tf.assign(W1_, W1)
+            w2_op = tf.assign(W2_, W2)
+            self.assignOps.extend([w1_op, w2_op])
+            index += 2
 
         if self.uRank is None:
-        	U_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/U:0")
-        	U = initVarList[index]
-        	u_op = tf.assign(U_, U)
-    		self.assignOps.extend([u_op])
-    		index += 1
-    	else:
-    		U1_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/U1:0")
-    		U2_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/U2:0")
-    		U1, U2 = initVarList[index], initVarList[index+1]
-        	u1_op = tf.assign(U1_, U1)
-        	u2_op = tf.assign(U2_, U2)
-    		self.assignOps.extend([u1_op, u2_op])
-    		index += 2
+            U_ = graph.get_tensor_by_name(
+                "rnn/EMI-FastRNN-Cell/FastRNNcell/U:0")
+            U = initVarList[index]
+            u_op = tf.assign(U_, U)
+            self.assignOps.extend([u_op])
+            index += 1
+        else:
+            U1_ = graph.get_tensor_by_name(
+                "rnn/EMI-FastRNN-Cell/FastRNNcell/U1:0")
+            U2_ = graph.get_tensor_by_name(
+                "rnn/EMI-FastRNN-Cell/FastRNNcell/U2:0")
+            U1, U2 = initVarList[index], initVarList[index + 1]
+            u1_op = tf.assign(U1_, U1)
+            u2_op = tf.assign(U2_, U2)
+            self.assignOps.extend([u1_op, u2_op])
+            index += 2
 
-        alpha_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/alpha:0")
-        beta_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/beta:0")
-        bias_ = graph.get_tensor_by_name("rnn/EMI-FastRNN-Cell/FastRNNcell/B_h:0")
+        alpha_ = graph.get_tensor_by_name(
+            "rnn/EMI-FastRNN-Cell/FastRNNcell/alpha:0")
+        beta_ = graph.get_tensor_by_name(
+            "rnn/EMI-FastRNN-Cell/FastRNNcell/beta:0")
+        bias_ = graph.get_tensor_by_name(
+            "rnn/EMI-FastRNN-Cell/FastRNNcell/B_h:0")
 
-        alpha, beta, bias = initVarList[index], initVarList[index+1], initVarList[index+2]
+        alpha, beta, bias = initVarList[index], initVarList[
+            index + 1], initVarList[index + 2]
         alpha_op = tf.assign(alpha_, alpha)
         beta_op = tf.assign(beta_, beta)
         bias_op = tf.assign(bias_, bias)
@@ -736,7 +772,8 @@ class EMI_FastGRNN(EMI_RNN):
 
     def __init__(self, numSubinstance, numHidden, numTimeSteps,
                  numFeats, graph=None, useDropout=False, gate_non_linearity="sigmoid",
-                 update_non_linearity="tanh", wRank=None, uRank=None, zetaInit=1.0, nuInit = -4.0):
+                 update_non_linearity="tanh", wRank=None, uRank=None,
+                 zetaInit=1.0, nuInit=-4.0):
         self.numHidden = numHidden
         self.numTimeSteps = numTimeSteps
         self.numFeats = numFeats
@@ -776,15 +813,16 @@ class EMI_FastGRNN(EMI_RNN):
             x = tf.reshape(X, [-1, self.numTimeSteps, self.numFeats])
             x = tf.unstack(x, num=self.numTimeSteps, axis=1)
             # Get the FastGRNN output
-            cell = FastGRNNCell(self.numHidden, self.gate_non_linearity, self.update_non_linearity, 
-            	self.wRank, self.uRank, self.zetaInit, self.nuInit, name='EMI-FastGRNN-Cell')
+            cell = FastGRNNCell(self.numHidden, self.gate_non_linearity, self.update_non_linearity,
+                                self.wRank, self.uRank, self.zetaInit, self.nuInit, name='EMI-FastGRNN-Cell')
             wrapped_cell = cell
             if self.useDropout is True:
                 keep_prob = tf.placeholder(dtype=tf.float32, name='keep-prob')
                 wrapped_cell = tf.contrib.rnn.DropoutWrapper(cell,
                                                              input_keep_prob=keep_prob,
                                                              output_keep_prob=keep_prob)
-            outputs__, states = tf.nn.static_rnn(wrapped_cell, x, dtype=tf.float32)
+            outputs__, states = tf.nn.static_rnn(
+                wrapped_cell, x, dtype=tf.float32)
             outputs = []
             for output in outputs__:
                 outputs.append(tf.expand_dims(output, axis=1))
@@ -810,25 +848,35 @@ class EMI_FastGRNN(EMI_RNN):
 
         assert len(self.varList) is 0
         if self.wRank is None:
-        	W = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/W:0")
-        	self.varList = [W]
-    	else:
-    		W1 = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/W1:0")
-    		W2 = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/W2:0")
-        	self.varList = [W1, W2]
+            W = graph.get_tensor_by_name(
+                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/W:0")
+            self.varList = [W]
+        else:
+            W1 = graph.get_tensor_by_name(
+                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/W1:0")
+            W2 = graph.get_tensor_by_name(
+                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/W2:0")
+            self.varList = [W1, W2]
 
         if self.uRank is None:
-        	U = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/U:0")
-        	self.varList.extend([U])
-    	else:
-    		U1 = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/U1:0")
-    		U2 = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/U2:0")
-        	self.varList.extend([U1, U2])
+            U = graph.get_tensor_by_name(
+                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/U:0")
+            self.varList.extend([U])
+        else:
+            U1 = graph.get_tensor_by_name(
+                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/U1:0")
+            U2 = graph.get_tensor_by_name(
+                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/U2:0")
+            self.varList.extend([U1, U2])
 
-        zeta = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/zeta:0")
-        nu = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/nu:0")
-        gate_bias = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_g:0")
-        update_bias = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_h:0")
+        zeta = graph.get_tensor_by_name(
+            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/zeta:0")
+        nu = graph.get_tensor_by_name(
+            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/nu:0")
+        gate_bias = graph.get_tensor_by_name(
+            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_g:0")
+        update_bias = graph.get_tensor_by_name(
+            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_h:0")
         self.varList.extend([zeta, nu, gate_bias, update_bias])
 
     def getHyperParams(self):
@@ -839,41 +887,52 @@ class EMI_FastGRNN(EMI_RNN):
         assert initVarList is not None
         index = 0
         if self.wRank is None:
-        	W_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/W:0")
-        	W = initVarList[0]
-        	w_op = tf.assign(W_, W)
-    		self.assignOps.extend([w_op])
-    		index += 1
-    	else:
-    		W1_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/W1:0")
-    		W2_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/W2:0")
-    		W1, W2 = initVarList[0], initVarList[1]
-        	w1_op = tf.assign(W1_, W1)
-        	w2_op = tf.assign(W2_, W2)
-    		self.assignOps.extend([w1_op, w2_op])
-    		index += 2
+            W_ = graph.get_tensor_by_name(
+                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/W:0")
+            W = initVarList[0]
+            w_op = tf.assign(W_, W)
+            self.assignOps.extend([w_op])
+            index += 1
+        else:
+            W1_ = graph.get_tensor_by_name(
+                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/W1:0")
+            W2_ = graph.get_tensor_by_name(
+                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/W2:0")
+            W1, W2 = initVarList[0], initVarList[1]
+            w1_op = tf.assign(W1_, W1)
+            w2_op = tf.assign(W2_, W2)
+            self.assignOps.extend([w1_op, w2_op])
+            index += 2
 
         if self.uRank is None:
-        	U_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/U:0")
-        	U = initVarList[index]
-        	u_op = tf.assign(U_, U)
-    		self.assignOps.extend([u_op])
-    		index += 1
-    	else:
-    		U1_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/U1:0")
-    		U2_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/U2:0")
-    		U1, U2 = initVarList[index], initVarList[index+1]
-        	u1_op = tf.assign(U1_, U1)
-        	u2_op = tf.assign(U2_, U2)
-    		self.assignOps.extend([u1_op, u2_op])
-    		index += 2
+            U_ = graph.get_tensor_by_name(
+                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/U:0")
+            U = initVarList[index]
+            u_op = tf.assign(U_, U)
+            self.assignOps.extend([u_op])
+            index += 1
+        else:
+            U1_ = graph.get_tensor_by_name(
+                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/U1:0")
+            U2_ = graph.get_tensor_by_name(
+                "rnn/EMI-FastGRNN-Cell/FastGRNNcell/U2:0")
+            U1, U2 = initVarList[index], initVarList[index + 1]
+            u1_op = tf.assign(U1_, U1)
+            u2_op = tf.assign(U2_, U2)
+            self.assignOps.extend([u1_op, u2_op])
+            index += 2
 
-        zeta_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/zeta:0")
-        nu_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/nu:0")
-        gate_bias_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_g:0")
-        update_bias_ = graph.get_tensor_by_name("rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_h:0")
+        zeta_ = graph.get_tensor_by_name(
+            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/zeta:0")
+        nu_ = graph.get_tensor_by_name(
+            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/nu:0")
+        gate_bias_ = graph.get_tensor_by_name(
+            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_g:0")
+        update_bias_ = graph.get_tensor_by_name(
+            "rnn/EMI-FastGRNN-Cell/FastGRNNcell/B_h:0")
 
-        zeta, nu, gate_bias, update_bias = initVarList[index], initVarList[index+1], initVarList[index+2], initVarList[index+3]
+        zeta, nu, gate_bias, update_bias = initVarList[index], initVarList[
+            index + 1], initVarList[index + 2], initVarList[index + 3]
         zeta_op = tf.assign(zeta_, zeta)
         nu_op = tf.assign(nu_, nu)
         gate_bias_op = tf.assign(gate_bias_, gate_bias)
