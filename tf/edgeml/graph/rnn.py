@@ -37,7 +37,7 @@ class FastGRNNCell(RNNCell):
 
     def __init__(self, hidden_size, gate_non_linearity="sigmoid",
                  update_non_linearity="tanh", wRank=None, uRank=None,
-                 zetaInit=1.0, nuInit=-4.0):
+                 zetaInit=1.0, nuInit=-4.0, name="FastGRNN"):
         super(FastGRNNCell, self).__init__()
         self._hidden_size = hidden_size
         self._gate_non_linearity = gate_non_linearity
@@ -51,6 +51,7 @@ class FastGRNNCell(RNNCell):
             self._num_weight_matrices[0] += 1
         if uRank is not None:
             self._num_weight_matrices[1] += 1
+        self._name = name
 
     @property
     def state_size(self):
@@ -81,7 +82,7 @@ class FastGRNNCell(RNNCell):
         return self._num_weight_matrices
 
     def call(self, inputs, state):
-        with vs.variable_scope("FastGRNNcell"):
+        with vs.variable_scope(self._name + "/FastGRNNcell"):
 
             if self._wRank is None:
                 W_matrix_init = init_ops.random_normal_initializer(
@@ -162,7 +163,7 @@ class FastRNNCell(RNNCell):
     '''
 
     def __init__(self, hidden_size, update_non_linearity="tanh",
-                 wRank=None, uRank=None, alphaInit=-3.0, betaInit=3.0):
+                 wRank=None, uRank=None, alphaInit=-3.0, betaInit=3.0, name="FastRNN"):
         super(FastRNNCell, self).__init__()
         self._hidden_size = hidden_size
         self._update_non_linearity = update_non_linearity
@@ -175,6 +176,7 @@ class FastRNNCell(RNNCell):
             self._num_weight_matrices[0] += 1
         if uRank is not None:
             self._num_weight_matrices[1] += 1
+        self._name = name
 
     @property
     def state_size(self):
@@ -201,7 +203,7 @@ class FastRNNCell(RNNCell):
         return self._num_weight_matrices
 
     def call(self, inputs, state):
-        with vs.variable_scope("FastRNNcell"):
+        with vs.variable_scope(self.name + "/FastRNNcell"):
 
             if self._wRank is None:
                 W_matrix_init = init_ops.random_normal_initializer(
