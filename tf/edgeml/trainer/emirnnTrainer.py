@@ -44,7 +44,13 @@ class EMI_Trainer:
         self.lossOp = None
         self.trainOp = None
         self.softmaxPredictions = None
+        # Accuracy computation, requires tf.reduce_sum which is not
+        # numerically stable. Please use sel.equalTilda inplace of 
+        # self.accTilda and use numpy.mean to compute accuracy, if stability
+        # is a requirement.
+        # Relevant issue: https://github.com/tensorflow/tensorflow/issues/2625
         self.accTilda = None
+        self.equalTilda = None
         self.lossIndicatorTensor = None
         self.lossIndicatorPlaceholder = None
         self.lossIndicatorAssignOp = None
@@ -144,10 +150,11 @@ class EMI_Trainer:
             actu = target[:, :, -1, :]
             resPred = tf.reshape(pred, [-1, self.numOutput])
             resActu = tf.reshape(actu, [-1, self.numOutput])
-            equal = tf.equal(tf.argmax(resPred, axis=1), tf.argmax(resActu,
-                                                                   axis=1))
-            self.accTilda = tf.reduce_mean(tf.cast(equal, tf.float32),
-                                           name='acc-tilda')
+            maxPred = tf.argmax(resPred, axis=1)
+            maxActu = tf.argmax(resActu, axis=1)
+            equal = tf.equal(maxPred, maxActu)
+            self.equalTilda = tf.cast(equal, tf.float32, name='equal-tilda')
+            self.accTilda = tf.reduce_mean(self.equalTilda, name='acc-tilda')
 
         self.lossOp = self.__createLossOp(predicted, target)
         self.trainOp = self.__createTrainOp()
@@ -177,6 +184,8 @@ class EMI_Trainer:
         self.softmaxPredictions = graph.get_tensor_by_name(name)
         name = scope + 'acc-tilda:0'
         self.accTilda = graph.get_tensor_by_name(name)
+        name = scope + 'equal-tilda:0'
+        self.equalTilda = graph.get_tensor_by_name(name)
         self.graphCreated = True
         self.__validInit = True
 
