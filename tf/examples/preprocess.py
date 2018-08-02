@@ -129,10 +129,10 @@ def getFastArgs():
                         help='Gate non linearity. Chose between [tanh, sigmoid, relu, quantTanh, quantSigm]. default => tanh. Can add more in edgeml/graph/rnn.py. Only Applicable to FastGRNN')
 
     parser.add_argument('-dS', '--decay-step', type=checkIntPos, default=200,
-                        help='The interval (in epochs) after which the learning rate should decay')
+                        help='The interval (in epochs) after which the learning rate should decay. Default is 200 for 300 epochs')
 
     parser.add_argument('-dR', '--decay-rate', type=checkFloatPos, default=0.1,
-                        help='The factor by which learning rate should decay after each interval')
+                        help='The factor by which learning rate should decay after each interval. Default 0.1')
 
     parser.add_argument('-oF', '--output-file', default=None,
                         help='Output file for dumping the program output, (default: stdout)')
