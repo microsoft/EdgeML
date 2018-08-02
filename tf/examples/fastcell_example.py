@@ -7,7 +7,7 @@ import numpy as np
 import sys
 sys.path.insert(0, '../')
 
-from edgeml.trainer.FastTrainer import FastTrainer
+from edgeml.trainer.fastTrainer import FastTrainer
 from edgeml.graph.rnn import FastGRNNCell
 from edgeml.graph.rnn import FastRNNCell
 
