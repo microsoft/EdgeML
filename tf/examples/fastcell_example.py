@@ -88,6 +88,8 @@ totalEpochs = args.epochs
 learningRate = args.learning_rate
 outFile = args.output_file
 batchSize = args.batch_size
+decayStep = args.decay_step
+decayRate = args.decay_rate
 
 wRank = args.wRank
 uRank = args.uRank
@@ -129,4 +131,4 @@ sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 
 FastCellTrainer.train(batchSize, totalEpochs, sess, Xtrain, Xtest,
-                      Ytrain, Ytest, dataDir, currDir)
+                      Ytrain, Ytest, decayStep, decayRate, dataDir, currDir)

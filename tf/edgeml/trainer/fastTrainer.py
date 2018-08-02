@@ -268,7 +268,8 @@ class FastTrainer:
         np.save(currDir + '/FCbias.npy', self.FCbias.eval())
 
     def train(self, batchSize, totalEpochs, sess,
-              Xtrain, Xtest, Ytrain, Ytest, dataDir, currDir):
+              Xtrain, Xtest, Ytrain, Ytest,
+              decayStep, decayRate, dataDir, currDir):
         '''
         The Dense - IHT - Sparse Retrain Routine for FastCell Training
         '''
@@ -287,6 +288,9 @@ class FastTrainer:
 
         for i in range(0, totalEpochs):
             print("\nEpoch Number: " + str(i), file=self.outFile)
+
+            if i % decayStep == 0 and i != 0:
+                self.learningRate = self.learningRate * decayRate
 
             trainAcc = 0.0
             trainLoss = 0.0

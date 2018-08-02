@@ -6,7 +6,6 @@
  for the example script.
 '''
 import argparse
-import numpy as np
 import datetime
 import os
 
@@ -128,6 +127,12 @@ def getFastArgs():
                         help='Update non linearity. Chose between [tanh, sigmoid, relu, quantTanh, quantSigm]. default => tanh. Can add more in edgeml/graph/rnn.py')
     parser.add_argument('-gnl', '--gate-nl', type=str, default="sigmoid",
                         help='Gate non linearity. Chose between [tanh, sigmoid, relu, quantTanh, quantSigm]. default => tanh. Can add more in edgeml/graph/rnn.py. Only Applicable to FastGRNN')
+
+    parser.add_argument('-dS', '--decay-step', type=checkIntPos, default=200,
+                        help='The interval (in epochs) after which the learning rate should decay')
+
+    parser.add_argument('-dR', '--decay-rate', type=checkFloatPos, default=0.1,
+                        help='The factor by which learning rate should decay after each interval')
 
     parser.add_argument('-oF', '--output-file', default=None,
                         help='Output file for dumping the program output, (default: stdout)')
