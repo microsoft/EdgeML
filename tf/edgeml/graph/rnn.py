@@ -57,29 +57,26 @@ class FastGRNNCell(RNNCell):
     def state_size(self):
         return self._hidden_size
 
-    @property
     def output_size(self):
         return self._hidden_size
 
-    @property
     def gate_non_linearity(self):
         return self._gate_non_linearity
 
-    @property
     def update_non_linearity(self):
         return self._update_non_linearity
 
-    @property
     def wRank(self):
         return self._wRank
 
-    @property
     def uRank(self):
         return self._uRank
 
-    @property
     def num_weight_matrices(self):
         return self._num_weight_matrices
+
+    def name(self):
+        return self._name
 
     def call(self, inputs, state):
         with vs.variable_scope(self._name + "/FastGRNNcell"):
@@ -155,6 +152,23 @@ class FastGRNNCell(RNNCell):
                                  math_ops.sigmoid(self.nu)) * c
         return new_h, new_h
 
+    def getVars(self):
+        Vars = []
+        if self._num_weight_matrices[0] == 1:
+            Vars.append(self.W)
+        else:
+            Vars.extend([self.W1, self.W2])
+
+        if self._num_weight_matrices[1] == 1:
+            Vars.append(self.U)
+        else:
+            Vars.extend([self.U1, self.U2])
+
+        Vars.extend([self.bias_gate, self.bias_update])
+        Vars.extend([self.zeta, self.nu])
+
+        return Vars
+
 
 class FastRNNCell(RNNCell):
     '''
@@ -182,25 +196,23 @@ class FastRNNCell(RNNCell):
     def state_size(self):
         return self._hidden_size
 
-    @property
     def output_size(self):
         return self._hidden_size
 
-    @property
     def update_non_linearity(self):
         return self._update_non_linearity
 
-    @property
     def wRank(self):
         return self._wRank
 
-    @property
     def uRank(self):
         return self._uRank
 
-    @property
     def num_weight_matrices(self):
         return self._num_weight_matrices
+
+    def name(self):
+        return self._name
 
     def call(self, inputs, state):
         with vs.variable_scope(self.name + "/FastRNNcell"):
@@ -268,6 +280,23 @@ class FastRNNCell(RNNCell):
             new_h = math_ops.sigmoid(self.beta) * \
                 state + math_ops.sigmoid(self.alpha) * c
         return new_h, new_h
+
+    def getVars(self):
+        Vars = []
+        if self._num_weight_matrices[0] == 1:
+            Vars.append(self.W)
+        else:
+            Vars.extend([self.W1, self.W2])
+
+        if self._num_weight_matrices[1] == 1:
+            Vars.append(self.U)
+        else:
+            Vars.extend([self.U1, self.U2])
+
+        Vars.extend([self.bias_update])
+        Vars.extend([self.alpha, self.beta])
+
+        return Vars
 
 
 class EMI_DataPipeline():
@@ -670,7 +699,8 @@ class EMI_GRU(EMI_RNN):
         self.output = graph.get_tensor_by_name(scope + 'bag-output:0')
         kernel1 = graph.get_tensor_by_name("rnn/EMI-GRU-Cell/gates/kernel:0")
         bias1 = graph.get_tensor_by_name("rnn/EMI-GRU-Cell/gates/bias:0")
-        kernel2 = graph.get_tensor_by_name("rnn/EMI-GRU-Cell/candidate/kernel:0")
+        kernel2 = graph.get_tensor_by_name(
+            "rnn/EMI-GRU-Cell/candidate/kernel:0")
         bias2 = graph.get_tensor_by_name("rnn/EMI-GRU-Cell/candidate/bias:0")
         assert len(self.varList) is 0
         self.varList = [kernel1, bias1, kernel2, bias2]
@@ -685,9 +715,11 @@ class EMI_GRU(EMI_RNN):
         assert len(initVarList) == 2
         kernel1_ = graph.get_tensor_by_name("rnn/EMI-GRU-Cell/gates/kernel:0")
         bias1_ = graph.get_tensor_by_name("rnn/EMI-GRU-Cell/gates/bias:0")
-        kernel2_ = graph.get_tensor_by_name("rnn/EMI-GRU-Cell/candidate/kernel:0")
+        kernel2_ = graph.get_tensor_by_name(
+            "rnn/EMI-GRU-Cell/candidate/kernel:0")
         bias2_ = graph.get_tensor_by_name("rnn/EMI-GRU-Cell/candidate/bias:0")
-        kernel1, bias1, kernel2, bias2 = initVarList[0], initVarList[1], initVarList[2], initVarList[3]
+        kernel1, bias1, kernel2, bias2 = initVarList[
+            0], initVarList[1], initVarList[2], initVarList[3]
         kernel1_op = tf.assign(kernel1_, kernel1)
         bias1_op = tf.assign(bias1_, bias1)
         kernel2_op = tf.assign(kernel2_, kernel2)
@@ -902,7 +934,7 @@ class EMI_UGRNN(EMI_RNN):
             x = tf.unstack(x, num=self.numTimeSteps, axis=1)
             # Get the UGRNN output
             cell = tf.contrib.rnn.UGRNNCell(self.numHidden,
-                                                forget_bias=self.forgetBias)
+                                            forget_bias=self.forgetBias)
             wrapped_cell = cell
             if self.useDropout is True:
                 keep_prob = tf.placeholder(dtype=tf.float32, name='keep-prob')
@@ -952,6 +984,7 @@ class EMI_UGRNN(EMI_RNN):
         k_op = tf.assign(k_, kernel)
         b_op = tf.assign(b_, bias)
         self.assignOps.extend([k_op, b_op])
+
 
 class EMI_FastGRNN(EMI_RNN):
     """EMI-RNN/MI-RNN model using FastGRNN.

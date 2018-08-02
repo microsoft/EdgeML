@@ -10,6 +10,7 @@ import sys
 
 
 class BonsaiTrainer:
+
     def __init__(self, bonsaiObj, lW, lT, lV, lZ, sW, sT, sV, sZ,
                  learningRate, X, Y, useMCHLoss=False, outFile=None):
         '''
@@ -238,6 +239,8 @@ class BonsaiTrainer:
             print("\nEpoch Number: " + str(i), file=self.outFile)
 
             trainAcc = 0.0
+            trainLoss = 0.0
+
             numIters = int(numIters)
             for j in range(numIters):
 
@@ -302,6 +305,7 @@ class BonsaiTrainer:
                     feed_dict=_feed_dict)
 
                 trainAcc += batchAcc
+                trainLoss += batchLoss
 
                 # Training routine involving IHT and sparse retraining
                 if (counter >= int(totalBatches / 3.0) and
@@ -324,7 +328,8 @@ class BonsaiTrainer:
                               (header, msg, header), file=self.outFile)
                 counter += 1
 
-            print("Train accuracy " + str(trainAcc / numIters),
+            print("Train Loss: " + str(trainLoss / numIters) +
+                  " Train accuracy: " + str(trainAcc / numIters),
                   file=self.outFile)
 
             oldSigmaI = bonsaiObjSigmaI
