@@ -234,38 +234,38 @@ class FastTrainer:
         Function to save Parameter matrices
         '''
         if self.numMatrices[0] == 1:
-            np.save(currDir + 'W.npy', self.FastParams[0].eval())
+            np.save(currDir + '/W.npy', self.FastParams[0].eval())
         else:
-            np.save(currDir + 'W1.npy', self.FastParams[0].eval())
-            np.save(currDir + 'W2.npy', self.FastParams[1].eval())
+            np.save(currDir + '/W1.npy', self.FastParams[0].eval())
+            np.save(currDir + '/W2.npy', self.FastParams[1].eval())
 
         if self.numMatrices[1] == 1:
-            np.save(currDir + 'U.npy',
+            np.save(currDir + '/U.npy',
                     self.FastParams[self.numMatrices[0]].eval())
         else:
-            np.save(currDir + 'U1.npy',
+            np.save(currDir + '/U1.npy',
                     self.FastParams[self.numMatrices[0]].eval())
-            np.save(currDir + 'U2.npy',
+            np.save(currDir + '/U2.npy',
                     self.FastParams[self.numMatrices[0] + 1].eval())
 
         if self.FastObj.cellType() == "FastGRNN":
-            np.save(currDir + 'Bg.npy',
+            np.save(currDir + '/Bg.npy',
                     self.FastParams[self.totalMatrices].eval())
-            np.save(currDir + 'Bh.npy',
+            np.save(currDir + '/Bh.npy',
                     self.FastParams[self.totalMatrices + 1].eval())
-            np.save(currDir + 'zeta.npy',
+            np.save(currDir + '/zeta.npy',
                     self.FastParams[self.totalMatrices + 2].eval())
-            np.save(currDir + 'nu.npy',
+            np.save(currDir + '/nu.npy',
                     self.FastParams[self.totalMatrices + 3].eval())
         elif self.FastObj.cellType() == "FastRNN":
-            np.save(currDir + 'B.npy',
+            np.save(currDir + '/B.npy',
                     self.FastParams[self.totalMatrices].eval())
-            np.save(currDir + 'alpha.npy', self.FastParams[
+            np.save(currDir + '/alpha.npy', self.FastParams[
                     self.totalMatrices + 1].eval())
-            np.save(currDir + 'beta.npy',
+            np.save(currDir + '/beta.npy',
                     self.FastParams[self.totalMatrices + 2].eval())
-        np.save(currDir + 'FC.npy', self.FC.eval())
-        np.save(currDir + 'FCBias.npy', self.FCbias.eval())
+        np.save(currDir + '/FC.npy', self.FC.eval())
+        np.save(currDir + '/FCbias.npy', self.FCbias.eval())
 
     def train(self, batchSize, totalEpochs, sess,
               Xtrain, Xtest, Ytrain, Ytest, dataDir, currDir):

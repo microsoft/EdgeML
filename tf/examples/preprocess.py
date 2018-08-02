@@ -109,7 +109,7 @@ def getFastArgs():
 
     parser.add_argument('-e', '--epochs', type=checkIntPos, default=300,
                         help='Total Epochs (default: 300 try:[100, 150, 600])')
-    parser.add_argument('-b', '--batch-size', type=checkIntPos,
+    parser.add_argument('-b', '--batch-size', type=checkIntPos, default=100,
                         help='Batch Size to be used (default: 100)')
     parser.add_argument('-lr', '--learning-rate', type=checkFloatPos, default=0.01,
                         help='Initial Learning rate for Adam Optimizer (default: 0.01)')
