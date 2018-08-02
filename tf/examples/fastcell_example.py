@@ -100,7 +100,6 @@ gate_non_linearity = args.gate_nl
 
 (dataDimension, numClasses,
     Xtrain, Ytrain, Xtest, Ytest) = preProcessData(dataDir)
-batchSize = 100
 
 assert dataDimension % inputDims == 0, "Infeasible per step input, Timesteps have to be integer"
 
@@ -120,7 +119,6 @@ elif cell == "FastRNN":
                            wRank=wRank, uRank=uRank)
 else:
     sys.exit('Exiting: No Such Cell as ' + cell)
-
 
 FastCellTrainer = FastTrainer(
     FastCell, X, Y, sW=sW, sU=sU, learningRate=learningRate, outFile=outFile)
