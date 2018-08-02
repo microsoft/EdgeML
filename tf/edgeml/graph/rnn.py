@@ -78,6 +78,9 @@ class FastGRNNCell(RNNCell):
     def name(self):
         return self._name
 
+    def cellType(self):
+        return "FastGRNN"
+
     def call(self, inputs, state):
         with vs.variable_scope(self._name + "/FastGRNNcell"):
 
@@ -214,8 +217,11 @@ class FastRNNCell(RNNCell):
     def name(self):
         return self._name
 
+    def cellType(self):
+        return "FastRNN"
+
     def call(self, inputs, state):
-        with vs.variable_scope(self.name + "/FastRNNcell"):
+        with vs.variable_scope(self._name + "/FastRNNcell"):
 
             if self._wRank is None:
                 W_matrix_init = init_ops.random_normal_initializer(

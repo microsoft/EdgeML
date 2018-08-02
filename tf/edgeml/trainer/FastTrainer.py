@@ -11,8 +11,8 @@ import sys
 
 class FastTrainer:
 
-    def __init__(self, FastObj, sW, sU, learningRate,
-                 X, Y, outFile=None):
+    def __init__(self, FastObj, X, Y, sW=1.0, sU=1.0, learningRate=0.01,
+                 outFile=None):
         '''
         FastObj - Can be either FastRNN or FastGRNN with proper initialisations
         sW and sU are the sparsity factors for Fast parameters
@@ -43,19 +43,13 @@ class FastTrainer:
 
         self.lr = tf.placeholder("float")
 
-        self.FC = tf.Variable(tf.random_normal(
-            [self.FastObj.output_size(), self.numClasses]), name='FC')
-        self.FCbias = tf.Variable(tf.random_normal(
-            [self.numClasses]), name='FCbias')
-
-        self.logits, self.finalHiddenState, self.predictions = self.computeGraph(
-            self.X, self.FC, self.FCbias)
+        self.logits, self.finalHiddenState, self.predictions = self.computeGraph()
 
         self.lossOp = self.lossGraph(self.logits, self.Y)
         self.trainOp = self.trainGraph(self.lossOp, self.lr)
 
         self.correctPredictions, self.accuracy = self.accuracyGraph(
-            self.predictions, self.logits)
+            self.predictions, self.Y)
 
         self.numMatrices = self.FastObj.num_weight_matrices()
         self.totalMatrices = self.numMatrices[0] + self.numMatrices[1]
@@ -70,23 +64,38 @@ class FastTrainer:
         self.hardThrsdGraph()
         self.sparseTrainingGraph()
 
-    def RNN(self, x, timeSteps, FastObj, weight, bias):
+    def RNN(self, x, timeSteps, FastObj):
         '''
         Unrolls and adds linear classifier
         '''
         x = tf.unstack(x, timeSteps, 1)
         outputs, states = tf.nn.static_rnn(FastObj, x, dtype=tf.float32)
-        return tf.matmul(outputs[-1], weight) + bias, outputs[-1]
+        return outputs[-1]
 
-    def computeGraph(self, X, weight, bias):
+    def computeGraph(self):
         '''
         Compute graph to unroll and predict on the FastObj
         '''
-        logits, finalHiddenState = self.RNN(X, weight, bias)
+        finalHiddenState = self.RNN(self.X, self.timeSteps, self.FastObj)
+
+        logits = self.classifier(finalHiddenState)
         predictions = tf.nn.softmax(logits)
+
         return logits, finalHiddenState, predictions
 
-    def lossGraph(self, logits, Y, lr):
+    def classifier(self, feats):
+        '''
+        Can be raplaced by any classifier
+        TODO: Make this a separate class if needed
+        '''
+        self.FC = tf.Variable(tf.random_normal(
+            [self.FastObj.output_size(), self.numClasses]), name='FC')
+        self.FCbias = tf.Variable(tf.random_normal(
+            [self.numClasses]), name='FCbias')
+
+        return tf.matmul(feats, self.FC) + self.FCbias
+
+    def lossGraph(self, logits, Y):
         '''
         Loss Graph for given FastObj
         '''
@@ -207,6 +216,17 @@ class FastTrainer:
             totalSize += size
             hasSparse = hasSparse or sparseFlag
 
+        # Replace this with classifier class call
+        nnz, size, sparseFlag = utils.countnnZ(self.FC, 1.0)
+        totalnnZ += nnz
+        totalSize += size
+        hasSparse = hasSparse or sparseFlag
+
+        nnz, size, sparseFlag = utils.countnnZ(self.FCbias, 1.0)
+        totalnnZ += nnz
+        totalSize += size
+        hasSparse = hasSparse or sparseFlag
+
         return totalnnZ, totalSize, hasSparse
 
     def saveParams(self, currDir):
@@ -228,20 +248,24 @@ class FastTrainer:
             np.save(currDir + 'U2.npy',
                     self.FastParams[self.numMatrices[0] + 1].eval())
 
-        np.save(currDir + 'Bg.npy', self.FastParams[self.totalMatrices].eval())
-        np.save(currDir + 'Bh.npy',
-                self.FastParams[self.totalMatrices + 1].eval())
-
-        if self.FastObj.name() == "FastRNN":
+        if self.FastObj.cellType() == "FastGRNN":
+            np.save(currDir + 'Bg.npy',
+                    self.FastParams[self.totalMatrices].eval())
+            np.save(currDir + 'Bh.npy',
+                    self.FastParams[self.totalMatrices + 1].eval())
             np.save(currDir + 'zeta.npy',
                     self.FastParams[self.totalMatrices + 2].eval())
             np.save(currDir + 'nu.npy',
                     self.FastParams[self.totalMatrices + 3].eval())
-        elif self.FastObj.name() == "FastGRNN":
+        elif self.FastObj.cellType() == "FastRNN":
+            np.save(currDir + 'B.npy',
+                    self.FastParams[self.totalMatrices].eval())
             np.save(currDir + 'alpha.npy', self.FastParams[
-                    self.totalMatrices + 2].eval())
+                    self.totalMatrices + 1].eval())
             np.save(currDir + 'beta.npy',
-                    self.FastParams[self.totalMatrices + 3].eval())
+                    self.FastParams[self.totalMatrices + 2].eval())
+        np.save(currDir + 'FC.npy', self.FC.eval())
+        np.save(currDir + 'FCBias.npy', self.FCbias.eval())
 
     def train(self, batchSize, totalEpochs, sess,
               Xtrain, Xtest, Ytrain, Ytest, dataDir, currDir):
@@ -249,13 +273,16 @@ class FastTrainer:
         The Dense - IHT - Sparse Retrain Routine for FastCell Training
         '''
         resultFile = open(
-            dataDir + '/' + str(self.FastObj.name) + 'Results.txt', 'a+')
+            dataDir + '/' + str(self.FastObj.cellType()) + 'Results.txt', 'a+')
         numIters = Xtrain.shape[0] / batchSize
         totalBatches = numIters * totalEpochs
 
         counter = 0
         trimlevel = 15
         ihtDone = 0
+        if self.isDenseTraining is True:
+            ihtDone = 1
+            maxTestAcc = -10000
         header = '*' * 20
 
         for i in range(0, totalEpochs):
@@ -312,8 +339,10 @@ class FastTrainer:
                   " Train Accuracy: " + str(trainAcc / numIters),
                   file=self.outFile)
 
+            testData = Xtest.reshape((-1, self.timeSteps, self.inputDims))
+
             testAcc, testLoss = sess.run([self.accuracy, self.lossOp], feed_dict={
-                                         self.X: Xtest, self.Y: Ytest})
+                                         self.X: testData, self.Y: Ytest})
 
             if ihtDone == 0:
                 maxTestAcc = -10000

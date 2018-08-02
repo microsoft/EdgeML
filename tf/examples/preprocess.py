@@ -89,6 +89,52 @@ def getBonsaiArgs():
     return parser.parse_args()
 
 
+def getFastArgs():
+    '''
+    Function to parse arguments for FastCells
+    '''
+    parser = argparse.ArgumentParser(
+        description='HyperParams for Fast(G)RNN')
+    parser.add_argument('-dir', '--data-dir', required=True,
+                        help='Data directory containing' +
+                        'train.npy and test.npy')
+
+    parser.add_argument('-c', '--cell', type=str, default="FastGRNN",
+                        help='Chose between [FastGRNN, FastRNN], default: FastGRNN')
+
+    parser.add_argument('-id', '--input-dim', type=checkIntNneg, required=True,
+                        help='Input Dimension of RNN, each timestep will feed input-dim features to RNN. Total Feature length = Input Dim * Total Timestep')
+    parser.add_argument('-hd', '--hidden-dim', type=checkIntNneg, required=True,
+                        help='Hidden Dimension of RNN')
+
+    parser.add_argument('-e', '--epochs', type=checkIntPos, default=300,
+                        help='Total Epochs (default: 300 try:[100, 150, 600])')
+    parser.add_argument('-b', '--batch-size', type=checkIntPos,
+                        help='Batch Size to be used (default: 100)')
+    parser.add_argument('-lr', '--learning-rate', type=checkFloatPos, default=0.01,
+                        help='Initial Learning rate for Adam Optimizer (default: 0.01)')
+
+    parser.add_argument('-rW', '--wRank', type=checkIntPos, default=None,
+                        help='Rank for the low-rank parameterisation of W, None => Full Rank')
+    parser.add_argument('-rU', '--uRank', type=checkIntPos, default=None,
+                        help='Rank for the low-rank parameterisation of U, None => Full Rank')
+
+    parser.add_argument('-sW', type=checkFloatPos, default=1.0,
+                        help='Sparsity for predictor parameter W(and both W1 and W2 in low-rank)  (default: 1.0(Dense) try: [0.1, 0.2, 0.3])')
+    parser.add_argument('-sU', type=checkFloatPos, default=1.0,
+                        help='Sparsity for predictor parameter U(and both U1 and U2 in low-rank)  (default: 1.0(Dense) try: [0.1, 0.2, 0.3])')
+
+    parser.add_argument('-unl', '--update-nl', type=str, default="tanh",
+                        help='Update non linearity. Chose between [tanh, sigmoid, relu, quantTanh, quantSigm]. default => tanh. Can add more in edgeml/graph/rnn.py')
+    parser.add_argument('-gnl', '--gate-nl', type=str, default="sigmoid",
+                        help='Gate non linearity. Chose between [tanh, sigmoid, relu, quantTanh, quantSigm]. default => tanh. Can add more in edgeml/graph/rnn.py. Only Applicable to FastGRNN')
+
+    parser.add_argument('-oF', '--output-file', default=None,
+                        help='Output file for dumping the program output, (default: stdout)')
+
+    return parser.parse_args()
+
+
 def getProtoNNArgs():
     '''
     Parse protoNN commandline arguments
@@ -154,6 +200,30 @@ def createTimeStampDirBonsai(dataDir):
                   dataDir + '/TFBonsaiResults')
 
     currDir = 'TFBonsaiResults/' + datetime.datetime.now().strftime("%H_%M_%S_%d_%m_%y")
+    if os.path.isdir(dataDir + '/' + currDir) is False:
+        try:
+            os.mkdir(dataDir + '/' + currDir)
+        except OSError:
+            print("Creation of the directory %s failed" %
+                  dataDir + '/' + currDir)
+        else:
+            return (dataDir + '/' + currDir)
+    return None
+
+
+def createTimeStampDirFast(dataDir, cell):
+    '''
+    Creates a Directory with timestamp as it's name
+    '''
+    if os.path.isdir(dataDir + '/' + str(cell) + 'Results') is False:
+        try:
+            os.mkdir(dataDir + '/' + str(cell) + 'Results')
+        except OSError:
+            print("Creation of the directory %s failed" %
+                  dataDir + '/' + str(cell) + 'Results')
+
+    currDir = str(cell) + 'Results/' + \
+        datetime.datetime.now().strftime("%H_%M_%S_%d_%m_%y")
     if os.path.isdir(dataDir + '/' + currDir) is False:
         try:
             os.mkdir(dataDir + '/' + currDir)
