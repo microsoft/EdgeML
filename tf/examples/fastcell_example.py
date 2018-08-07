@@ -15,8 +15,8 @@ from edgeml.graph.rnn import FastRNNCell
 def preProcessData(dataDir):
     '''
     Function to pre-process input data
-    Expects a .npy file of form [lbl feats] for each datapoint
-    Outputs a train and test set datapoints appended with 1 for Bias induction
+    Expects a .npy file of form [lbl feats] for each datapoint, feats is timesteps*inputDims, flattened across timestep dimension. So input of 1st timestep followed by second and so on.
+    Outputs train and test set datapoints 
     dataDimension, numClasses are inferred directly
     '''
     train = np.load(dataDir + '/train.npy')
