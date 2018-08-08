@@ -140,6 +140,25 @@ def getFastArgs():
     return parser.parse_args()
 
 
+def getQuantArgs():
+    '''
+    Function to parse arguments for Model Quantisation
+    '''
+    parser = argparse.ArgumentParser(
+        description='Arguments for quantizing Fast models. Works only for piece-wise linear non-linearities, like relu, quantTanh, quantSigm (check rnn.py for the definitions)')
+    parser.add_argument('-dir', '--model-dir', required=True,
+                        help='model directory containing' +
+                        '*.npy weight files dumped from the trained model')
+    parser.add_argument('-m', '--max-val', type=checkIntNneg, default=127,
+                        help='this represents the maximum possible value in model,' +
+                        ' essentially the byte complexity, 127=> 1 byte is default')
+    parser.add_argument('-s', '--scalar-scale', type=checkIntNneg, default=1000,
+                        help='maximum granularity/decimals you wish to' +
+                        ' get when quantising simple sclars involved. Default is 1000')
+
+    return parser.parse_args()
+
+
 def getProtoNNArgs():
     '''
     Parse protoNN commandline arguments
