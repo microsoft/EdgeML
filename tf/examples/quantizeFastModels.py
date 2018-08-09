@@ -104,8 +104,7 @@ def quantizeFastModels(modelDir, maxValue=127, scalarScaleFactor=1000):
     np.save(quantModelDir + "/paramScaleFactor.npy",
             paramScaleFactor.astype('int32'))
     np.save(quantModelDir + "/classifierScaleFactor.npy", classifierScaleFactor)
-    np.save(quantModelDir + "/scalarScaleFactor",
-            scalarScaleFactor.astype('int32'))
+    np.save(quantModelDir + "/scalarScaleFactor", scalarScaleFactor)
 
     for i in range(0, len(scalarNameList)):
         np.save(quantModelDir + "/q" +
