@@ -59,6 +59,15 @@ Non-Zeros: 1932 Model Size: 7.546875 KB hasSparse: False
 usps10 directory will now have a consilidated results file called `FastGRNNResults.txt` or `FastRNNResults.txt` depending on the choice of the RNN cell.
 A directory `FastGRNNResults` or `FastRNNResults` with the corresponding models with each run of the code on the usps10 dataset
 
+If you wish to quantise the generated model to use byte quantized integers use `quantizeFastModels.py`. Usage Instructions:
+
+```
+python quantizeFastModels.py -h
+```
+
+This will generate quantised models with a suffix of `q` before every param stored in a new directory `QuantizedFastModel` inside the model directory.
+One can use this model further on edge devices.
+
 
 Copyright (c) Microsoft Corporation. All rights reserved. 
 Licensed under the MIT license.
