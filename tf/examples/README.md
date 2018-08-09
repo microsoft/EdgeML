@@ -38,5 +38,27 @@ Non-Zeros: 4156.0 Model Size: 31.703125 KB hasSparse: True
 
 usps10 directory will now have a consilidated results file called `TFBonsaiResults.txt` and a directory `TFBonsaiResults` with the corresponding models with each run of the code on the usps10 dataset
 
+
+## Sample command for FastCells on USPS10
+The following sample run on usps10 should validate your library:
+
+Note: Even though usps10 is not a time-series dataset, it can be assumed as, a time-series where each row is coming in at one single time.
+So the number of timesteps = 16 and inputDims = 16
+
+```bash
+python fastcell_example.py -dir usps10/ -id 16 -hd 16
+```
+This command should give you a final output screen which reads roughly similar to(might not be exact numbers due to various version mismatches):
+
+```
+Maximum Test accuracy at compressed model size(including early stopping): 0.937718 at Epoch: 80
+Final Test Accuracy: 0.92077726
+
+Non-Zeros: 1932 Model Size: 7.546875 KB hasSparse: False
+```
+usps10 directory will now have a consilidated results file called `FastGRNNResults.txt` or `FastRNNResults.txt` depending on the choice of the RNN cell.
+A directory `FastGRNNResults` or `FastRNNResults` with the corresponding models with each run of the code on the usps10 dataset
+
+
 Copyright (c) Microsoft Corporation. All rights reserved. 
 Licensed under the MIT license.

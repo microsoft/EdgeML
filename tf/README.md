@@ -6,7 +6,8 @@ Tensorflow:
 
 1. [ProtoNN](https://github.com/Microsoft/EdgeML/blob/master/publications/ProtoNN.pdf)
 2. [Bonsai](https://github.com/Microsoft/EdgeML/blob/master/publications/Bonsai.pdf)
-3. [EMI-RNN]()
+3. [FastGRNN & FastRNN]()
+4. [EMI-RNN]()
 
 ## ProtoNN
 `edgeml.graph.protoNN` implements the ProtoNN prediction graph in Tensorflow.
@@ -32,12 +33,12 @@ we assume the labels are integers from 0 through N-1.
 **Tested With:** Tensorflow >1.6 and Python >3.5
 
 ## Bonsai
-`edgeml.graph.Bonsai` implements the Bonsai prediction graph in tensorflow.
+`edgeml.graph.bonsai` implements the Bonsai prediction graph in tensorflow.
 Similar to ProtoNN, the three-phase training routine for Bonsai is decoupled from
 the forward graph to facilitate a plug and play behaviour wherein Bonsai can be
 combined with or used as a final layer classifier for other architectures (RNNs, CNNs).
 
-For training vanilla Bonsai, `edgeml.trainer.BonsaiTrainer` implements the
+For training vanilla Bonsai, `edgeml.trainer.bonsaiTrainer` implements the
 Bonsai training routine in Tensorflow. A simple example,
 `examples/bonsai_example.py` is provided to illustrate its usage.
 
@@ -53,6 +54,28 @@ It is assumed that train and test data is contained in two files,
 `[numberOfExamples, numberOfFeatures + 1]`. The first column of each
 matrix is assumed to contain label information.  For an N-Class problem,
 we assume the labels are integers from 0 through N-1.
+
+**Tested With:** Tensorflow >1.6 with Python 2 and Python 3
+
+## FastGRNN & FastRNN - Called FastCells
+`edgeml.graph.rnn` implements the custom RNN cells of FastGRNN and FastRNN with multiple additional features like Low-Rank parameterisation, custom non-linearities etc.,
+Similar to Bonsai and ProtoNN, the three-phase training routine for FastGRNN and FastRNN is decoupled from
+the custom cells to facilitate a plug and play behaviour of the custom RNN cells in other architectures (NMT, Encoder-Decoder etc.,).
+
+For training FastCells, `edgeml.trainer.fastTrainer` implements the three-phase 
+FastCell training routine in Tensorflow. A simple example,
+`examples/fastcell_example.py` is provided to illustrate its usage.
+
+For detailed usage instructions of the example, in the `examples` directory, please use
+
+	python fastcell_example.py -h
+
+Note that `fastcell_example.py` assumes that data is in a specific format.
+It is assumed that train and test data is contained in two files,
+`train.npy` and `test.npy`. Each containing a 2D numpy array of dimension
+`[numberOfExamples, numberOfFeatures]`. numberOfFeatures is `timesteps x inputDims`,
+flattened across timestep dimension. So input of 1st timestep followed by second and so on.
+For an N-Class problem, we assume the labels are integers from 0 through N-1.
 
 **Tested With:** Tensorflow >1.6 with Python 2 and Python 3
 
