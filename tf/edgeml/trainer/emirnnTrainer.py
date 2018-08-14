@@ -6,6 +6,7 @@ import tensorflow as tf
 import numpy as np
 import sys
 import edgeml.utils as utils
+import pandas as pd
 
 class EMI_Trainer:
     def __init__(self, numTimeSteps, numOutput, graph=None,
@@ -312,6 +313,7 @@ class EMI_Driver:
         sess = self.__sess
         assert updatePolicy in ['prune-ends', 'top-k']
         if updatePolicy == 'top-k':
+            print("Using top-k")
             updatePolicyFunc = self.__policyTopK
         else:
             updatePolicyFunc = self.__policyPrune
@@ -379,6 +381,229 @@ class EMI_Driver:
             currY = newY
         return currY
 
+    def updateLabel(self, Y, policy, softmaxOut, bagLabel, numClasses, **kwargs):
+        assert policy in ['prune-ends', 'top-k']
+        if policy == 'top-k':
+            updatePolicyFunc = self.__policyTopK
+        else:
+            updatePolicyFunc = self.__policyPrune
+        Y_ = np.array(Y)
+        newY = updatePolicyFunc(Y_, softmaxOut, bagLabel, numClasses, **kwargs)
+        return newY
+
+    def analyseModel(self, predictions, Y_bag, numSubinstance, numClass,
+                     redirFile=None, verbose=False, silent=False):
+        '''
+        some basic analysis on predictions and true labels
+        This is the multiclass version
+        predictions [-1, numsubinstance] is the instance level prediction
+
+        verbose: Prints verbose data frame. Includes additionally, precision
+            and recall information.
+
+        In the 2 class setting, precision, recall and f-score for
+        class 1 is also printed.
+        '''
+        assert (predictions.ndim == 2)
+        assert (predictions.shape[1] == numSubinstance)
+        assert (Y_bag.ndim == 1)
+        assert (len(Y_bag) == len(predictions))
+        pholder = [0.0] * numSubinstance
+        df = pd.DataFrame()
+        df['len'] = np.arange(1, numSubinstance + 1)
+        df['acc'] = pholder
+        df['macro-fsc'] = pholder
+        df['macro-pre'] = pholder
+        df['macro-rec'] = pholder
+
+        df['micro-fsc'] = pholder
+        df['micro-pre'] = pholder
+        df['micro-rec'] = pholder
+        colList = []
+        colList.append('acc')
+        colList.append('macro-fsc')
+        colList.append('macro-pre')
+        colList.append('macro-rec')
+
+        colList.append('micro-fsc')
+        colList.append('micro-pre')
+        colList.append('micro-rec')
+        for i in range(0, numClass):
+            pre = 'pre_%02d' % i
+            rec = 'rec_%02d' % i
+            df[pre] = pholder
+            df[rec] = pholder
+            colList.append(pre)
+            colList.append(rec)
+
+        for i in range(1, numSubinstance + 1):
+            pred_ = self.getBagPredictions(predictions, numClass=numClass,
+                                           minSubsequenceLen=i,
+                                           redirFile = redirFile)
+            correct = (pred_ == Y_bag).astype('int')
+            trueAcc = np.mean(correct)
+            cmatrix = utils.getConfusionMatrix(pred_, Y_bag, numClass)
+            df.iloc[i-1, df.columns.get_loc('acc')] = trueAcc
+
+            macro, micro = utils.getMacroMicroFScore(cmatrix)
+            df.iloc[i-1, df.columns.get_loc('macro-fsc')] = macro
+            df.iloc[i-1, df.columns.get_loc('micro-fsc')] = micro
+
+            pre, rec = utils.getMacroPrecisionRecall(cmatrix)
+            df.iloc[i-1, df.columns.get_loc('macro-pre')] = pre
+            df.iloc[i-1, df.columns.get_loc('macro-rec')] = rec
+
+            pre, rec = utils.getMicroPrecisionRecall(cmatrix)
+            df.iloc[i-1, df.columns.get_loc('micro-pre')] = pre
+            df.iloc[i-1, df.columns.get_loc('micro-rec')] = rec
+            for j in range(numClass):
+                pre, rec = utils.getPrecisionRecall(cmatrix, label=j)
+                pre_ = df.columns.get_loc('pre_%02d' % j)
+                rec_ = df.columns.get_loc('rec_%02d' % j)
+                df.iloc[i-1, pre_ ] = pre
+                df.iloc[i-1, rec_ ] = rec
+
+        df.set_index('len')
+        # Comment this line to include all columns
+        colList = ['len', 'acc', 'macro-fsc', 'macro-pre', 'macro-rec']
+        colList += ['micro-fsc', 'micro-pre', 'micro-rec']
+        if verbose:
+            for col in df.columns:
+                if col not in colList:
+                    colList.append(col)
+        if numClass == 2:
+            precisionList = df['pre_01'].values
+            recallList = df['rec_01'].values
+            denom = precisionList + recallList
+            denom[denom == 0] = 1
+            numer = 2 * precisionList * recallList
+            f_ = numer / denom
+            df['fscore_01'] = f_
+            colList.append('fscore_01')
+
+        df = df[colList]
+        if silent is True:
+            return df
+
+        with pd.option_context('display.max_rows', 100,
+                               'display.max_columns', 100,
+                               'expand_frame_repr', True):
+            print(df, file=redirFile)
+
+        idx = np.argmax(df['acc'].values)
+        val = np.max(df['acc'].values)
+        print("Max accuracy %f at subsequencelength %d" % (val, idx + 1),
+              file=redirFile)
+        val = np.max(df['micro-fsc'].values)
+        idx = np.argmax(df['micro-fsc'].values)
+        print("Max micro-f %f at subsequencelength %d" % (val, idx + 1),
+              file=redirFile)
+        val = df['micro-pre'].values[idx]
+        print("Micro-precision %f at subsequencelength %d" % (val, idx + 1),
+              file=redirFile)
+        val = df['micro-rec'].values[idx]
+        print("Micro-recall %f at subsequencelength %d" % (val, idx + 1),
+              file=redirFile)
+
+        idx = np.argmax(df['macro-fsc'].values)
+        val = np.max(df['macro-fsc'].values)
+        print("Max macro-f %f at subsequencelength %d" % (val, idx + 1),
+              file=redirFile)
+        val = df['macro-pre'].values[idx]
+        print("macro-precision %f at subsequencelength %d" % (val, idx + 1),
+              file=redirFile)
+        val = df['macro-rec'].values[idx]
+        print("macro-recall %f at subsequencelength %d" % (val, idx + 1),
+              file=redirFile)
+        if numClass == 2 and verbose:
+            idx = np.argmax(df['fscore_01'].values)
+            val = np.max(df['fscore_01'].values)
+            print('Max fscore %f at subsequencelength %d' % (val, idx + 1),
+                  file=redirFile)
+            print('Precision %f at subsequencelength %d' %
+                  (df['pre_01'].values[idx], idx + 1), file=redirFile)
+            print('Recall %f at subsequencelength %d' %
+                  (df['rec_01'].values[idx], idx + 1), file=redirFile)
+        return df
+
+    def getInstancePredictions(self, x, y, earlyPolicy, batchSize=1024, **kwargs):
+
+        '''
+        Takes the softmax outputs from the joint trained model and, applies
+        earlyPolicy() on each instance and returns the instance level
+        prediction as well as the step at which this prediction was made.
+
+        softmaxOut: [-1, numSubinstance, numTimeSteps, numClass]
+
+        earlyPolicy: callable,
+            def earlyPolicy(subinstacePrediction):
+                subinstacePrediction: [numTimeSteps, numClass]
+                ...
+                return predictedClass, predictedStep
+
+        returns: predictions, predictionStep
+
+        predictions: [-1, numSubinstance]
+        predictionStep: [-1, numSubinstance]
+        '''
+        opList = self.__emiTrainer.softmaxPredictions
+        smxOut = self.runOps(opList, x, y, batchSize)
+        softmaxOut = np.concatenate(smxOut, axis=0)
+        assert softmaxOut.ndim == 4
+        numSubinstance, numTimeSteps, numClass = softmaxOut.shape[1:]
+        softmaxOutFlat = np.reshape(softmaxOut, [-1, numTimeSteps, numClass])
+        flatLen = len(softmaxOutFlat)
+        predictions = np.zeros(flatLen)
+        predictionStep = np.zeros(flatLen)
+        for i, instance in enumerate(softmaxOutFlat):
+            # instance is [numTimeSteps, numClass]
+            assert instance.ndim == 2
+            assert instance.shape[0] == numTimeSteps
+            assert instance.shape[1] == numClass
+            predictedClass, predictedStep = earlyPolicy(instance, **kwargs)
+            predictions[i] = predictedClass
+            predictionStep[i] = predictedStep
+        predictions = np.reshape(predictions, [-1, numSubinstance])
+        predictionStep = np.reshape(predictionStep, [-1, numSubinstance])
+        return predictions, predictionStep
+
+    def getBagPredictions(self, Y_predicted, minSubsequenceLen = 4,
+                          numClass=2, redirFile = None):
+        '''
+        Returns bag level predictions given instance level predictions
+
+        A bag is considered to belong to a non-zero class if
+        minSubsequenceLen is satisfied. Otherwise, it is assumed
+        to belong to class 0. class 0 is negative by default. If
+        minSubsequenceLen is satisfied by multiple classes, the smaller of the
+        two is returned
+
+        Y_predicted is the predicted instance level results
+        [-1, numsubinstance]
+        Y True is the correct instance level label
+        [-1, numsubinstance]
+        '''
+        assert(Y_predicted.ndim == 2)
+        scoreList = []
+        for x in range(1, numClass):
+            scores = self.__getLengthScores(Y_predicted, val=x)
+            length = np.max(scores, axis=1)
+            scoreList.append(length)
+        scoreList = np.array(scoreList)
+        scoreList = scoreList.T
+        assert(scoreList.ndim == 2)
+        assert(scoreList.shape[0] == Y_predicted.shape[0])
+        assert(scoreList.shape[1] == numClass - 1)
+        length = np.max(scoreList, axis=1)
+        assert(length.ndim == 1)
+        assert(length.shape[0] == Y_predicted.shape[0])
+        predictionIndex = (length >= minSubsequenceLen)
+        prediction = np.zeros((Y_predicted.shape[0]))
+        labels = np.argmax(scoreList, axis=1) + 1
+        prediction[predictionIndex] = labels[predictionIndex]
+        return prediction.astype(int)
+
+
     def __getLengthScores(self, Y_predicted, val=1):
         '''
         Returns an matrix which contains the length of the longest positive
@@ -398,10 +623,11 @@ class EMI_Driver:
                     scores[i, j] = 0
         return scores
 
-    def __policyPrune(currentY, softmaxOut, bagLabel, numClases):
+    def __policyPrune(self, currentY, softmaxOut, bagLabel, numClases, **kwargs):
         pass
 
-    def __policyTopK(self, currentY, softmaxOut, bagLabel, numClasses, k=1):
+    def __policyTopK(self, currentY, softmaxOut, bagLabel, numClasses, k=1,
+                     **kwargs):
         '''
         currentY: [-1, numsubinstance, numClass]
         softmaxOut: [-1, numsubinstance, numClass]
