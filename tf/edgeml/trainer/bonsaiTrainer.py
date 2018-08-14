@@ -61,6 +61,11 @@ class BonsaiTrainer:
         self.accuracy = self.accuracyGraph()
         self.prediction = self.bonsaiObj.getPrediction()
 
+        if self.sW > 0.99 and self.sV > 0.99 and self.sZ > 0.99 and self.sT > 0.99:
+            self.isDenseTraining = True
+        else:
+            self.isDenseTraining = False
+
         self.hardThrsd()
         self.sparseTraining()
 
@@ -234,6 +239,12 @@ class BonsaiTrainer:
             trimlevel = 5
         ihtDone = 0
 
+        if self.isDenseTraining is True:
+            ihtDone = 1
+            maxTestAcc = -10000
+            bonsaiObjSigmaI = 1
+            itersInPhase = 0
+
         header = '*' * 20
         for i in range(totalEpochs):
             print("\nEpoch Number: " + str(i), file=self.outFile)
@@ -251,7 +262,7 @@ class BonsaiTrainer:
 
                 # Updating the indicator sigma
                 if ((counter == 0) or (counter == int(totalBatches / 3.0)) or
-                        (counter == int(2 * totalBatches / 3.0))):
+                        (counter == int(2 * totalBatches / 3.0))) and (self.isDenseTraining is False):
                     bonsaiObjSigmaI = 1
                     itersInPhase = 0
 
@@ -309,8 +320,9 @@ class BonsaiTrainer:
 
                 # Training routine involving IHT and sparse retraining
                 if (counter >= int(totalBatches / 3.0) and
-                        (counter < int(2 * totalBatches / 3.0)) and
-                        counter % trimlevel == 0):
+                    (counter < int(2 * totalBatches / 3.0)) and
+                    counter % trimlevel == 0 and
+                        self.isDenseTraining is False):
                     self.runHardThrsd(sess)
                     if ihtDone == 0:
                         msg = " IHT Phase Started "
@@ -319,8 +331,10 @@ class BonsaiTrainer:
                     ihtDone = 1
                 elif ((ihtDone == 1 and counter >= int(totalBatches / 3.0) and
                        (counter < int(2 * totalBatches / 3.0)) and
-                       counter % trimlevel != 0) or
-                        (counter >= int(2 * totalBatches / 3.0))):
+                       counter % trimlevel != 0 and
+                       self.isDenseTraining is False) or
+                        (counter >= int(2 * totalBatches / 3.0) and
+                            self.isDenseTraining is False)):
                     self.runSparseTraining(sess)
                     if counter == int(2 * totalBatches / 3.0):
                         msg = " Sprase Retraining Phase Started "
@@ -370,7 +384,7 @@ class BonsaiTrainer:
         # sigmaI has to be set to infinity to ensure
         # only a single path is used in inference
         bonsaiObjSigmaI = 1e9
-        print("Maximum Test accuracy at compressed" +
+        print("\nMaximum Test accuracy at compressed" +
               " model size(including early stopping): " +
               str(maxTestAcc) + " at Epoch: " +
               str(maxTestAccEpoch + 1) + "\nFinal Test" +
@@ -388,6 +402,7 @@ class BonsaiTrainer:
                          " Param Directory: " +
                          str(os.path.abspath(currDir)) + "\n")
         self.saveParams(currDir)
+        print("The Model Directory: " + currDir + "\n")
 
         resultFile.close()
         self.outFile.flush()
