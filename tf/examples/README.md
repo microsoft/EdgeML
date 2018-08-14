@@ -46,7 +46,7 @@ Note: Even though usps10 is not a time-series dataset, it can be assumed as, a t
 So the number of timesteps = 16 and inputDims = 16
 
 ```bash
-python fastcell_example.py -dir usps10/ -id 16 -hd 16
+python fastcell_example.py -dir usps10/ -id 16 -hd 32
 ```
 This command should give you a final output screen which reads roughly similar to(might not be exact numbers due to various version mismatches):
 
