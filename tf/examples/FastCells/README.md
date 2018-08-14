@@ -43,8 +43,8 @@ python fastcell_example.py -dir usps10/ -id 16 -hd 32
 This command should give you a final output screen which reads roughly similar to(might not be exact numbers due to various version mismatches):
 
 ```
-Maximum Test accuracy at compressed model size(including early stopping): 0.937718 at Epoch: 80
-Final Test Accuracy: 0.92077726
+Maximum Test accuracy at compressed model size(including early stopping): 0.9407075 at Epoch: 262
+Final Test Accuracy: 0.93721974
 
 Non-Zeros: 1932 Model Size: 7.546875 KB hasSparse: False
 ```
