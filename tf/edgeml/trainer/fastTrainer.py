@@ -360,7 +360,7 @@ class FastTrainer:
                   " Test Accuracy: " + str(testAcc), file=self.outFile)
             self.outFile.flush()
 
-        print("Maximum Test accuracy at compressed" +
+        print("\nMaximum Test accuracy at compressed" +
               " model size(including early stopping): " +
               str(maxTestAcc) + " at Epoch: " +
               str(maxTestAccEpoch + 1) + "\nFinal Test" +
@@ -379,6 +379,7 @@ class FastTrainer:
                          str(os.path.abspath(currDir)) + "\n")
 
         self.saveParams(currDir)
+        print("The Model Directory: " + currDir + "\n")
 
         resultFile.close()
         self.outFile.flush()

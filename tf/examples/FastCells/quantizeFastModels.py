@@ -1,7 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-import preprocess
+import helpermethods
 import os
 import numpy as np
 
@@ -118,6 +118,6 @@ def quantizeFastModels(modelDir, maxValue=127, scalarScaleFactor=1000):
         np.save(quantModelDir + "/q" + paramNameList[i], quantParamWeights[i])
 
 
-args = preprocess.getQuantArgs()
+args = helpermethods.getQuantArgs()
 
 quantizeFastModels(args.model_dir, int(args.max_val), int(args.scalar_scale))

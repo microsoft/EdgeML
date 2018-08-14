@@ -1,86 +1,14 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-import preprocess
+import helpermethods
 import tensorflow as tf
 import numpy as np
 import sys
-sys.path.insert(0, '../')
+sys.path.insert(0, '../../')
 
 from edgeml.trainer.bonsaiTrainer import BonsaiTrainer
 from edgeml.graph.bonsai import Bonsai
-
-
-def preProcessData(dataDir):
-    '''
-    Function to pre-process input data
-    Expects a .npy file of form [lbl feats] for each datapoint
-    Outputs a train and test set datapoints appended with 1 for Bias induction
-    dataDimension, numClasses are inferred directly
-    '''
-    train = np.load(dataDir + '/train.npy')
-    test = np.load(dataDir + '/test.npy')
-
-    dataDimension = int(train.shape[1]) - 1
-
-    Xtrain = train[:, 1:dataDimension + 1]
-    Ytrain_ = train[:, 0]
-    numClasses = max(Ytrain_) - min(Ytrain_) + 1
-
-    Xtest = test[:, 1:dataDimension + 1]
-    Ytest_ = test[:, 0]
-
-    numClasses = int(max(numClasses, max(Ytest_) - min(Ytest_) + 1))
-
-    # Mean Var Normalisation
-    mean = np.mean(Xtrain, 0)
-    std = np.std(Xtrain, 0)
-    std[std[:] < 0.000001] = 1
-    Xtrain = (Xtrain - mean) / std
-
-    Xtest = (Xtest - mean) / std
-    # End Mean Var normalisation
-
-    lab = Ytrain_.astype('uint8')
-    lab = np.array(lab) - min(lab)
-
-    lab_ = np.zeros((Xtrain.shape[0], numClasses))
-    lab_[np.arange(Xtrain.shape[0]), lab] = 1
-    if (numClasses == 2):
-        Ytrain = np.reshape(lab, [-1, 1])
-    else:
-        Ytrain = lab_
-
-    lab = Ytest_.astype('uint8')
-    lab = np.array(lab) - min(lab)
-
-    lab_ = np.zeros((Xtest.shape[0], numClasses))
-    lab_[np.arange(Xtest.shape[0]), lab] = 1
-    if (numClasses == 2):
-        Ytest = np.reshape(lab, [-1, 1])
-    else:
-        Ytest = lab_
-
-    trainBias = np.ones([Xtrain.shape[0], 1])
-    Xtrain = np.append(Xtrain, trainBias, axis=1)
-    testBias = np.ones([Xtest.shape[0], 1])
-    Xtest = np.append(Xtest, testBias, axis=1)
-
-    return dataDimension + 1, numClasses, Xtrain, Ytrain, Xtest, Ytest
-
-
-def dumpCommand(list, currDir):
-    '''
-    Dumps the current command to a file for further use
-    '''
-    commandFile = open(currDir + '/command.txt', 'w')
-    command = "python"
-
-    command = command + " " + ' '.join(list)
-    commandFile.write(command)
-
-    commandFile.flush()
-    commandFile.close()
 
 
 # Fixing seeds for reproducibility
@@ -88,7 +16,7 @@ tf.set_random_seed(42)
 np.random.seed(42)
 
 # Hyper Param pre-processing
-args = preprocess.getBonsaiArgs()
+args = helpermethods.getArgs()
 
 sigma = args.sigma
 depth = args.depth
@@ -108,7 +36,7 @@ dataDir = args.data_dir
 outFile = args.output_file
 
 (dataDimension, numClasses,
-    Xtrain, Ytrain, Xtest, Ytest) = preProcessData(dataDir)
+    Xtrain, Ytrain, Xtest, Ytest) = helpermethods.preProcessData(dataDir)
 
 sparZ = args.sZ
 
@@ -141,9 +69,9 @@ if numClasses == 2:
 X = tf.placeholder("float32", [None, dataDimension])
 Y = tf.placeholder("float32", [None, numClasses])
 
-currDir = preprocess.createTimeStampDirBonsai(dataDir)
+currDir = helpermethods.createTimeStampDir(dataDir)
 
-dumpCommand(sys.argv, currDir)
+helpermethods.dumpCommand(sys.argv, currDir)
 
 # numClasses = 1 for binary case
 bonsaiObj = Bonsai(numClasses, dataDimension,
@@ -177,4 +105,3 @@ bonsaiTrainer.train(batchSize, totalEpochs, sess,
 # Final Test Accuracy: 0.94170403
 
 # Non-Zeros: 2636.0 Model Size: 19.1328125 KB hasSparse: True
-
