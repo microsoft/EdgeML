@@ -118,6 +118,11 @@ def quantizeFastModels(modelDir, maxValue=127, scalarScaleFactor=1000):
         np.save(quantModelDir + "/q" + paramNameList[i], quantParamWeights[i])
 
 
-args = helpermethods.getQuantArgs()
+def main():
+    args = helpermethods.getQuantArgs()
+    quantizeFastModels(args.model_dir, int(
+        args.max_val), int(args.scalar_scale))
 
-quantizeFastModels(args.model_dir, int(args.max_val), int(args.scalar_scale))
+
+if __name__ == '__main__':
+    main()
