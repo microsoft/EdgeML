@@ -36,6 +36,12 @@ def medianHeuristic(data, projectionDimension, numPrototypes, W_init=None):
     assert data.ndim == 2
     X = data
     featDim = data.shape[1]
+    if projectionDim > featDim:
+        print("Warning: Projection dimension > feature dimension. Gamma")
+        print("\t estimation due to median heuristic could fail.")
+        print("\tTo retain the projection dataDimension, provide")
+        print("\ta value for gamma.")
+
     if W_init is None:
         W_init = np.random.normal(size=[featDim, projectionDimension])
     W = W_init
