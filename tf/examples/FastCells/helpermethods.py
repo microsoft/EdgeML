@@ -81,7 +81,7 @@ def getArgs():
     parser.add_argument('-unl', '--update-nl', type=str, default="tanh",
                         help='Update non linearity. Chose between [tanh, sigmoid, relu, quantTanh, quantSigm]. default => tanh. Can add more in edgeml/graph/rnn.py')
     parser.add_argument('-gnl', '--gate-nl', type=str, default="sigmoid",
-                        help='Gate non linearity. Chose between [tanh, sigmoid, relu, quantTanh, quantSigm]. default => tanh. Can add more in edgeml/graph/rnn.py. Only Applicable to FastGRNN')
+                        help='Gate non linearity. Chose between [tanh, sigmoid, relu, quantTanh, quantSigm]. default => sigmoid. Can add more in edgeml/graph/rnn.py. Only Applicable to FastGRNN')
 
     parser.add_argument('-dS', '--decay-step', type=checkIntPos, default=200,
                         help='The interval (in epochs) after which the learning rate should decay. Default is 200 for 300 epochs')
