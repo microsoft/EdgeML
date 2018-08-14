@@ -6,10 +6,10 @@ part of EdgeML. Also, we inlude a sample cleanup and use-case on USPS10 public d
 Note EDGEML_TF_EXP directory is '.'
 
 ## Download a sample dataset
-Follow the bash commands given below to download a sample dataset, USPS10, to the root of the repository. Bonsai and ProtoNN come with sample scripts to run on the usps10 dataset. EDGEML_TF_EXP is defined in the previous section.
+Follow the bash commands given below to download a sample dataset, USPS10, to the root of the repository. Bonsai and ProtoNN come with sample scripts to run on the usps10 dataset. EDGEML_TF_EXP is defined in the previous section. MODEL can be one of `Bonsai, ProtoNN and FastCells`.
 
 ```bash
-cd <EDGEML_TF_EXP>
+cd <EDGEML_TF_EXP>/<MODEL>
 mkdir usps10
 cd usps10
 wget http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.bz2
