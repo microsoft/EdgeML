@@ -3,8 +3,6 @@
 This directory includes, example notebook and general execution script of Bonsai developed as
 part of EdgeML. Also, we include a sample cleanup and use-case on the USPS10 public dataset.
 
-Note BONSAI_EXP directory is '.'
-
 Note that `bonsai_example.py` assumes that data is in a specific format.
 It is assumed that train and test data is contained in two files,
 `train.npy` and `test.npy`. Each containing a 2D numpy array of dimension
