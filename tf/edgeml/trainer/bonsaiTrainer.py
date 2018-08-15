@@ -406,4 +406,5 @@ class BonsaiTrainer:
 
         resultFile.close()
         self.outFile.flush()
-        self.outFile.close()
+        if self.outFile is not sys.stdout:
+            self.outFile.close()
