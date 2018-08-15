@@ -7,8 +7,6 @@ import os
 import numpy as np
 import tensorflow as tf
 sys.path.insert(0, '../')
-from edgeml.trainer.protoNNTrainer import ProtoNNTrainer
-from edgeml.graph.protoNN import ProtoNN
 import edgeml.utils as utils
 import argparse
 
@@ -60,7 +58,7 @@ def getGamma(gammaInit, projectionDim, dataDim, numPrototypes, x_train):
     return None, None, gammaInit
 
 
-def loadData(dataDir):
+def preprocessData(dataDir):
     '''
     Loads data from the dataDir and does some initial preprocessing
     steps. Data is assumed to be contained in two files,
@@ -187,4 +185,7 @@ def getProtoNNArgs():
     parser.add_argument('-sZ', type=float, default=1.00,
                         help='Sparsity constraint for predictor parameter Z ' +
                         '(default = 1.0, i.e. dense matrix).')
+    parser.add_argument('-pS', '--print-step', type=int, default=200,
+                        help='The number of update steps between print ' +
+                        'calls to console.')
     return parser.parse_args()

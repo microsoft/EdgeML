@@ -1,9 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-# This script is used to schedule parameter sweeps by calling this
-# form a different scirpt with different values of th eparameters.
-
 from __future__ import print_function
 import sys
 import os
@@ -30,16 +27,18 @@ def main():
     SPAR_Z = config.sZ
     LEARNING_RATE = config.learning_rate
     NUM_EPOCHS = config.epochs
+    BATCH_SIZE = config.batch_size
+    PRINT_STEP = config.print_step
 
     # Load data
-    out = helper.loadData(DATA_DIR)
+    out = helper.preprocessData(DATA_DIR)
     dataDimension = out[0]
     numClasses = out[1]
     x_train, y_train = out[2], out[3]
     x_test, y_test = out[4], out[5]
 
     W, B, gamma = helper.getGamma(config.gamma, PROJECTION_DIM, dataDimension,
-                           NUM_PROTOTYPES, x_train)
+                                  NUM_PROTOTYPES, x_train)
 
     # Setup input and train protoNN
     X = tf.placeholder(tf.float32, [None, dataDimension], name='X')
@@ -51,8 +50,8 @@ def main():
                              SPAR_W, SPAR_B, SPAR_Z,
                              LEARNING_RATE, X, Y, lossType='xentropy')
     sess = tf.Session()
-    trainer.train(16, NUM_EPOCHS, sess, x_train, x_test, y_train, y_test,
-                  printStep=200)
+    trainer.train(BATCH_SIZE, NUM_EPOCHS, sess, x_train, x_test,
+                  y_train, y_test, printStep=PRINT_STEP)
 
     # Print some summary metrics
     acc = sess.run(protoNN.accuracy, feed_dict={X: x_test, Y: y_test})
