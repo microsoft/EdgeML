@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
-# 
+#
 # Setting up the USPS Data for ProtoNN. This scripts calls bash commands.
-# If bash is not available, 
+# If bash is not available,
 #   - manually create a usps10 subdirectory
 #   - download the train and test files from the `linkTrain` and `linkTest`
 #     provided below.
@@ -23,6 +23,7 @@ workingDir = './'
 downloadDir = 'usps10'
 linkTrain = 'http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.bz2'
 linkTest = 'http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.t.bz2'
+
 
 def downloadData(workingDir, downloadDir):
     def runcommand(command):
@@ -56,6 +57,7 @@ def downloadData(workingDir, downloadDir):
     runcommand(command)
     os.chdir(cwd)
     return True
+
 
 def processData(workingDir, downloadDir):
     def loadLibSVMFile(file):
