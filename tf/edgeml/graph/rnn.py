@@ -306,23 +306,24 @@ class FastRNNCell(RNNCell):
 
 
 class EMI_DataPipeline():
-    '''The datainput block for EMI-RNN training. Since EMI-RNN is an expensive
+    '''
+    The data input block for EMI-RNN training. Since EMI-RNN is an expensive
     algorithm due to the multiple rounds of updates that are to be performed,
-    we avoid using the feed dict to feed data into tensorflow and rather,
-    exploit the dataset API. This class abstracts most of the details of these
-    implementations. This class uses iterators to iterate over the data in
-    batches.
+    we avoid using feed dict to feed data into tensorflow and rather,
+    exploit the dataset API. This class abstracts away most of the dataset API
+    implementation details and provides a module that ingests data in numpy
+    matrices and serves them to the remainder of the computation graph.
 
     This class uses reinitializable iterators. Please refer to the dataset API
     docs for more information.
 
     This class supports resuming from checkpoint files. Provide the restored
-    meta graph as an argument to __init__ to enable this behaviour
+    meta graph as an argument to __init__ to enable this behaviour.
 
     Usage:
         Step 1: Create a data input pipeline object and obtain the x_batch and
-        y_batch tensors. These shoudl be fed to other parts of the graph which
-        acts on the input data.
+        y_batch tensors. These should be fed to other parts of the graph that
+        are supposed to act on the input data.
         ```
             inputPipeline = EMI_DataPipeline(NUM_SUBINSTANCE, NUM_TIMESTEPS,
                                              NUM_FEATS, NUM_OUTPUT)
@@ -332,13 +333,14 @@ class EMI_DataPipeline():
         ```
 
         Step 2:  Create other parts of the computation graph (loss operations,
-        training ops etc). After initializing the tensorflow grpah with
-        global_variables_initializer, initialize the iterator with the input
-        data by calling:
-            inputPipeline.runInitializer(x_train, y_trian..)
+        training ops etc). After the graph construction is complete and after
+        initializing the Tensorflow graph with global_variables_initializer,
+        initialize the iterator with the input data by calling:
+            inputPipeline.runInitializer(x_train, y_trian, ...)
 
-        Step 3: You can now iterate over batches by runing some computation
-        operation. At the end of the data, tf.errors.OutOfRangeError will be
+        Step 3: You can now iterate over batches by running some computation
+        operation as you would normally do in seesion.run(..). Att the end of
+        the data, tf.errors.OutOfRangeError will be
         thrown.
         ```
         while True:
@@ -353,12 +355,14 @@ class EMI_DataPipeline():
                  graph=None, prefetchNum=5):
         '''
         numSubinstance, numTimeSteps, numFeats, numOutput:
-            Dataset characteristis. Please refer to the associated EMI_RNN
-            publication for more information.
+            Dataset characteristics. Please refer to the data preparation
+            documentation for more information provided in `examples/EMI-RNN`
         graph: This module supports resuming/restoring from a saved metagraph. To
-            enable this behaviour, pass the restored graph as an argument.
-        prefetchNum: The number of asynchrenous prefetch to do when iterating over
-            the data. Please refer to 'prefetching' in tensorflow dataset API
+            enable this behaviour, pass the restored graph as an argument. A
+            saved metagraph can be restored using the edgeml.utils.GraphManager
+            module.
+        prefetchNum: The number of asynchronous prefetch to do when iterating over
+            the data. Please refer to 'prefetching' in Tensorflow dataset API
         '''
 
         self.numSubinstance = numSubinstance
@@ -379,7 +383,7 @@ class EMI_DataPipeline():
         # Internal
         self.scope = 'EMI/'
 
-    def __createGraph(self):
+    def _createGraph(self):
         assert self.graphCreated is False
         dim = [None, self.numSubinstance, self.numTimesteps, self.numFeats]
         scope = self.scope + 'input-pipeline/'
@@ -412,7 +416,7 @@ class EMI_DataPipeline():
         self.x_batch, self.y_batch = x_batch, y_batch
         self.graphCreated = True
 
-    def __restoreGraph(self, graph):
+    def _restoreGraph(self, graph):
         assert self.graphCreated is False
         scope = 'EMI/input-pipeline/'
         self.X = graph.get_tensor_by_name(scope + "inpX:0")
@@ -431,29 +435,47 @@ class EMI_DataPipeline():
         self.graphCreated = True
 
     def __call__(self):
+        '''
+        The call method performs the actual graph construction either by
+        creating a new graph or, if a restored meta graph is provided, by
+        restoring operators from this meta graph.
+
+        returns iterators (x_batch, y_batch)
+        '''
         if self.graphCreated is True:
             return self.x_batch, self.y_batch
         if self.graph is None:
-            self.__createGraph()
+            self._createGraph()
         else:
-            self.__restoreGraph(self.graph)
+            self._restoreGraph(self.graph)
         assert self.graphCreated is True
         return self.x_batch, self.y_batch
 
     def restoreFromGraph(self, graph, *args, **kwargs):
+        '''
+        This method provides an alternate way of restoring
+        from a saved meta graph - without having to provide the restored meta
+        graph as a parameter to __init__. This is useful when, in between
+        training, you want to reset the entire computation graph and reload a
+        new meta graph from disk. This method allows you to attach to this
+        newly loaded meta graph without having to create a new EMI_DataPipeline
+        object. Use this method only when you want to clear/reset the existing
+        computational graph.
+        '''
         self.graphCreated = False
         self.graph = graph
-        self.__restoreGraph(graph)
+        self._restoreGraph(graph)
         assert self.graphCreated is True
 
     def runInitializer(self, sess, x_data, y_data, batchSize, numEpochs):
         '''
-        Initializes the dataset API with the input data (x_data, y_data).
+        This method is used to ingest data by the dataset API. Call this method
+        with the data matrices after the graph has been initialized.
 
-        x_data, y_data, batchSize: Self explanatory
-        numEpochs: The dataset API implements epochs by appending the data to
-            itself numEpochs times and then iterating over the resulting data as if
-            it was a single data set.
+        x_data, y_data, batchSize: Self explanatory.
+        numEpochs: The Tensorflow dataset API implements iteration over epochs
+            by appending the data to itself numEpochs times and then iterating
+            over the resulting data as if it was a single data set.
         '''
         assert self.graphCreated is True
         msg = 'X shape should be [-1, numSubinstance, numTimesteps, numFeats]'
@@ -477,14 +499,14 @@ class EMI_DataPipeline():
 
 
 class EMI_RNN():
-    """Abstract base class for RNN architectures compatible with EMI-RNN. This
-    class is extended by specific architectures like LSTM/GRU/FastGRNN etc.
-
-    Note: We are not using the PEP recommended abc module since it is difficult
-    to support in both python 2 and 3
-    """
-
     def __init__(self, *args, **kwargs):
+        """
+        Abstract base class for RNN architectures compatible with EMI-RNN.
+        This class is extended by specific architectures like LSTM/GRU/FastGRNN
+        etc.
+
+        Note: We are not using the PEP recommended abc module since it is
+        difficult to support in both python 2 and 3 """
         self.graphCreated = False
         # Model specific matrices, parameter should be saved
         self.graph = None
@@ -511,6 +533,16 @@ class EMI_RNN():
         return self.output
 
     def restoreFromGraph(self, graph, *args, **kwargs):
+        '''
+        This method provides an alternate way of restoring
+        from a saved meta graph - without having to provide the restored meta
+        graph as a parameter to __init__. This is useful when, in between
+        training, you want to reset the entire computation graph and reload a
+        new meta graph from disk. This method allows you to attach to this
+        newly loaded meta graph without having to create a new EMI_DataPipeline
+        object. Use this method only when you want to clear/reset the existing
+        computational graph.
+        '''
         self.graphCreated = False
         self.varList = []
         self.output = None
@@ -521,7 +553,7 @@ class EMI_RNN():
         self._restoreExtendedGraph(self.graph, *args, **kwargs)
         assert self.graphCreated is True
 
-    def getHyperParams(self):
+    def getModelParams(self):
         raise NotImplementedError("Subclass does not implement this method")
 
     def _createBaseGraph(self, *args, **kwargs):
@@ -544,11 +576,29 @@ class EMI_RNN():
 
 
 class EMI_BasicLSTM(EMI_RNN):
-    """EMI-RNN/MI-RNN model using LSTM.
-    """
 
     def __init__(self, numSubinstance, numHidden, numTimeSteps,
                  numFeats, graph=None, forgetBias=1.0, useDropout=False):
+        '''
+        EMI-RNN using LSTM cell. The architecture consists of a single LSTM
+        layer followed by a secondary classifier. The secondary classifier is
+        not defined as part of this module and is left for the user to define,
+        through the redefinition of the '_createExtendedGraph' and
+        '_restoreExtendedGraph' methods.
+
+        This class supports restoring from a meta-graph. Provide the restored
+        graph as an argument to the graph keyword to enable this behaviour.
+
+        numSubinstance: Number of sub-instance.
+        numHidden: The dimension of the hidden state.
+        numTimeSteps: The number of time steps of the RNN.
+        numFeats: The feature vector dimension for each time step.
+        graph: A restored metagraph. Provide a graph if restoring form a meta
+            graph is required.
+        forgetBias: Bias for the forget gate of the LSTM.
+        useDropout: Set to True if a dropout layer is to be added between
+            inputs and outputs to the LSTM.
+        '''
         self.numHidden = numHidden
         self.numTimeSteps = numTimeSteps
         self.numFeats = numFeats
@@ -572,7 +622,7 @@ class EMI_BasicLSTM(EMI_RNN):
         assert X.shape[1] == self.numSubinstance
         assert X.shape[2] == self.numTimeSteps
         assert X.shape[3] == self.numFeats
-        # Reshape into 3D suself.h that the first dimension is -1 * numSubinstance
+        # Reshape into 3D such that the first dimension is -1 * numSubinstance
         # where each numSubinstance segment corresponds to one bag
         # then shape it back in into 4D
         scope = self._scope
@@ -619,12 +669,25 @@ class EMI_BasicLSTM(EMI_RNN):
         assert len(self.varList) is 0
         self.varList = [kernel, bias]
 
-    def getHyperParams(self):
+    def getModelParams(self):
+        '''
+        Returns the LSTM kernel and bias tensors.
+        returns [kernel, bias]
+        '''
         assert self.graphCreated is True, "Graph is not created"
         assert len(self.varList) == 2
         return self.varList
 
     def addBaseAssignOps(self, initVarList):
+        '''
+        Adds Tensorflow assignment operations to all of the model tensors.
+        These operations can then be used to initialize these tensors from
+        numpy matrices by running these operators
+
+        initVarList: A list of numpy matrices that will be used for
+            initialization by the assignment operation. For EMI_BasicLSTM, this
+            should be [kernel, bias] matrices.
+        '''
         assert initVarList is not None
         assert len(initVarList) == 2
         k_ = graph.get_tensor_by_name('rnn/EMI-LSTM-Cell/kernel:0')
@@ -636,11 +699,28 @@ class EMI_BasicLSTM(EMI_RNN):
 
 
 class EMI_GRU(EMI_RNN):
-    """EMI-RNN/MI-RNN model using GRU.
-    """
 
     def __init__(self, numSubinstance, numHidden, numTimeSteps,
                  numFeats, graph=None, useDropout=False):
+        '''
+        EMI-RNN using GRU cell. The architecture consists of a single GRU
+        layer followed by a secondary classifier. The secondary classifier is
+        not defined as part of this module and is left for the user to define,
+        through the redefinition of the '_createExtendedGraph' and
+        '_restoreExtendedGraph' methods.
+
+        This class supports restoring from a meta-graph. Provide the restored
+        graph as value to the graph keyword to enable this behaviour.
+
+        numSubinstance: Number of sub-instance.
+        numHidden: The dimension of the hidden state.
+        numTimeSteps: The number of time steps of the RNN.
+        numFeats: The feature vector dimension for each time step.
+        graph: A restored metagraph. Provide a graph if restoring form a meta
+            graph is required.
+        useDropout: Set to True if a dropout layer is to be added between
+            inputs and outputs to the RNN.
+        '''
         self.numHidden = numHidden
         self.numTimeSteps = numTimeSteps
         self.numFeats = numFeats
@@ -711,12 +791,26 @@ class EMI_GRU(EMI_RNN):
         assert len(self.varList) is 0
         self.varList = [kernel1, bias1, kernel2, bias2]
 
-    def getHyperParams(self):
+    def getModelParams(self):
+        '''
+        Returns the GRU kernel and bias tensors.
+        returns [kernel1, bias1, kernel2, bias2]
+        '''
         assert self.graphCreated is True, "Graph is not created"
         assert len(self.varList) == 4
         return self.varList
 
     def addBaseAssignOps(self, initVarList):
+        '''
+        Adds Tensorflow assignment operations to all of the model tensors.
+        These operations can then be used to initialize these tensors from
+        numpy matrices by running these operators
+
+        initVarList: A list of numpy matrices that will be used for
+            initialization by the assignment operation. For EMI_GRU, this
+            should be list of numpy matrices corresponding to  [kernel1, bias1,
+            kernel2, bias2]
+        '''
         assert initVarList is not None
         assert len(initVarList) == 2
         kernel1_ = graph.get_tensor_by_name("rnn/EMI-GRU-Cell/gates/kernel:0")
@@ -734,25 +828,44 @@ class EMI_GRU(EMI_RNN):
 
 
 class EMI_FastRNN(EMI_RNN):
-    """EMI-RNN/MI-RNN model using FastRNN.
-    """
 
     def __init__(self, numSubinstance, numHidden, numTimeSteps,
-                 numFeats, graph=None, useDropout=False, update_non_linearity="tanh",
-                 wRank=None, uRank=None, alphaInit=-3.0, betaInit=3.0):
+                 numFeats, graph=None, useDropout=False,
+                 update_non_linearity="tanh", wRank=None,
+                 uRank=None, alphaInit=-3.0, betaInit=3.0):
+        '''
+        EMI-RNN using FastRNN cell. The architecture consists of a single
+        FastRNN layer followed by a secondary classifier. The secondary
+        classifier is not defined as part of this module and is left for the
+        user to define, through the redefinition of the '_createExtendedGraph'
+        and '_restoreExtendedGraph' methods.
+
+        This class supports restoring from a meta-graph. Provide the restored
+        graph as value to the graph keyword to enable this behaviour.
+
+        numSubinstance: Number of sub-instance.
+        numHidden: The dimension of the hidden state.
+        numTimeSteps: The number of time steps of the RNN.
+        numFeats: The feature vector dimension for each time step.
+        graph: A restored metagraph. Provide a graph if restoring form a meta
+            graph is required.
+        useDropout: Set to True if a dropout layer is to be added
+            between inputs and outputs to the RNN.
+        update_non_linearity, wRank, uRank, _alphaInit, betaInit:
+            These are FastRNN parameters. Please refer to FastRNN documentation
+            for more information.
+        '''
         self.numHidden = numHidden
         self.numTimeSteps = numTimeSteps
         self.numFeats = numFeats
         self.useDropout = useDropout
         self.numSubinstance = numSubinstance
         self.graph = graph
-
         self.update_non_linearity = update_non_linearity
         self.wRank = wRank
         self.uRank = uRank
         self.alphaInit = alphaInit
         self.betaInit = betaInit
-
         self.graphCreated = False
         # Restore or initialize
         self.keep_prob = None
@@ -764,14 +877,15 @@ class EMI_FastRNN(EMI_RNN):
 
     def _createBaseGraph(self, X):
         assert self.graphCreated is False
-        msg = 'X should be of form [-1, numSubinstance, numTimeSteps, numFeatures]'
+        msg = 'X should be of form [-1, numSubinstance, numTimeSteps,'
+        msg += ' numFeatures]'
         assert X.get_shape().ndims == 4, msg
         assert X.shape[1] == self.numSubinstance
         assert X.shape[2] == self.numTimeSteps
         assert X.shape[3] == self.numFeats
-        # Reshape into 3D suself.h that the first dimension is -1 * numSubinstance
-        # where each numSubinstance segment corresponds to one bag
-        # then shape it back in into 4D
+        # Reshape into 3D suself.h that the first dimension is -1 *
+        # numSubinstance where each numSubinstance segment corresponds to one
+        # bag then shape it back in into 4D
         scope = self._scope
         keep_prob = None
         with tf.name_scope(scope):
@@ -779,15 +893,16 @@ class EMI_FastRNN(EMI_RNN):
             x = tf.unstack(x, num=self.numTimeSteps, axis=1)
             # Get the FastRNN output
             cell = FastRNNCell(self.numHidden, self.update_non_linearity,
-                               self.wRank, self.uRank, self.alphaInit, self.betaInit, name='EMI-FastRNN-Cell')
+                               self.wRank, self.uRank, self.alphaInit,
+                               self.betaInit, name='EMI-FastRNN-Cell')
             wrapped_cell = cell
             if self.useDropout is True:
                 keep_prob = tf.placeholder(dtype=tf.float32, name='keep-prob')
                 wrapped_cell = tf.contrib.rnn.DropoutWrapper(cell,
                                                              input_keep_prob=keep_prob,
                                                              output_keep_prob=keep_prob)
-            outputs__, states = tf.nn.static_rnn(
-                wrapped_cell, x, dtype=tf.float32)
+            outputs__, states = tf.nn.static_rnn(wrapped_cell, x,
+                                                 dtype=tf.float32)
             outputs = []
             for output in outputs__:
                 outputs.append(tf.expand_dims(output, axis=1))
@@ -842,11 +957,26 @@ class EMI_FastRNN(EMI_RNN):
             "rnn/fast_rnn_cell/EMI-FastRNN-Cell/FastRNNcell/B_h:0")
         self.varList.extend([alpha, beta, bias])
 
-    def getHyperParams(self):
+    def getModelParams(self):
+        '''
+        Returns the FastRNN model tensors.
+        TODO: @Aditya in what order? Elaborate
+        '''
         assert self.graphCreated is True, "Graph is not created"
         return self.varList
 
     def addBaseAssignOps(self, initVarList):
+        '''
+        TODO: @Aditya please correct this doc string
+        Adds Tensorflow assignment operations to all of the model tensors.
+        These operations can then be used to initialize these tensors from
+        numpy matrices by running these operators
+
+        initVarList: A list of numpy matrices that will be used for
+            initialization by the assignment operation. For EMI_GRU, this
+            should be list of numpy matrices corresponding to  [kernel1, bias1,
+            kernel2, bias2]
+        '''
         assert initVarList is not None
         index = 0
         if self.wRank is None:
@@ -902,11 +1032,29 @@ class EMI_FastRNN(EMI_RNN):
 
 
 class EMI_UGRNN(EMI_RNN):
-    """EMI-RNN/MI-RNN model using UGRNN.
-    """
 
     def __init__(self, numSubinstance, numHidden, numTimeSteps,
                  numFeats, graph=None, forgetBias=1.0, useDropout=False):
+        '''
+        EMI-RNN using UGRNN cell. The architecture consists of a single UGRNN
+        layer followed by a secondary classifier. The secondary classifier is
+        not defined as part of this module and is left for the user to define,
+        through the redefinition of the '_createExtendedGraph' and
+        '_restoreExtendedGraph' methods.
+
+        This class supports restoring from a meta-graph. Provide the restored
+        graph as value to the graph keyword to enable this behaviour.
+
+        numSubinstance: Number of sub-instance.
+        numHidden: The dimension of the hidden state.
+        numTimeSteps: The number of time steps of the RNN.
+        numFeats: The feature vector dimension for each time step.
+        graph: A restored metagraph. Provide a graph if restoring form a meta
+            graph is required.
+        forgetBias: Bias for the forget gate of the UGRNN.
+        useDropout: Set to True if a dropout layer is to be added between
+            inputs and outputs to the RNN.
+        '''
         self.numHidden = numHidden
         self.numTimeSteps = numTimeSteps
         self.numFeats = numFeats
@@ -930,7 +1078,7 @@ class EMI_UGRNN(EMI_RNN):
         assert X.shape[1] == self.numSubinstance
         assert X.shape[2] == self.numTimeSteps
         assert X.shape[3] == self.numFeats
-        # Reshape into 3D suself.h that the first dimension is -1 * numSubinstance
+        # Reshape into 3D such that the first dimension is -1 * numSubinstance
         # where each numSubinstance segment corresponds to one bag
         # then shape it back in into 4D
         scope = self._scope
@@ -976,12 +1124,25 @@ class EMI_UGRNN(EMI_RNN):
         assert len(self.varList) is 0
         self.varList = [kernel, bias]
 
-    def getHyperParams(self):
+    def getModelParams(self):
+        '''
+        Returns the FastRRNN model tensors.
+        returns [kernel, bias]
+        '''
         assert self.graphCreated is True, "Graph is not created"
         assert len(self.varList) == 2
         return self.varList
 
     def addBaseAssignOps(self, initVarList):
+        '''
+        Adds Tensorflow assignment operations to all of the model tensors.
+        These operations can then be used to initialize these tensors from
+        numpy matrices by running these operators
+
+        initVarList: A list of numpy matrices that will be used for
+            initialization by the assignment operation. For EMI_UGRNN, this
+            should be list of numpy matrices corresponding to  [kernel, bias]
+        '''
         assert initVarList is not None
         assert len(initVarList) == 2
         k_ = graph.get_tensor_by_name('rnn/ugrnn_cell/kernel:0')
@@ -993,13 +1154,35 @@ class EMI_UGRNN(EMI_RNN):
 
 
 class EMI_FastGRNN(EMI_RNN):
-    """EMI-RNN/MI-RNN model using FastGRNN.
-    """
 
-    def __init__(self, numSubinstance, numHidden, numTimeSteps,
-                 numFeats, graph=None, useDropout=False, gate_non_linearity="sigmoid",
+    def __init__(self, numSubinstance, numHidden, numTimeSteps, numFeats,
+                 graph=None, useDropout=False, gate_non_linearity="sigmoid",
                  update_non_linearity="tanh", wRank=None, uRank=None,
                  zetaInit=1.0, nuInit=-4.0):
+        '''
+        EMI-RNN using FastGRNN cell. The architecture consists of a single
+        FastGRNN layer followed by a secondary classifier. The secondary
+        classifier is not defined as part of this module and is left for the
+        user to define, through the redefinition of the '_createExtendedGraph'
+        and '_restoreExtendedGraph' methods.
+
+        This class supports restoring from a meta-graph. Provide the restored
+        graph as value to the graph keyword to enable this behaviour.
+
+        numSubinstance: Number of sub-instance.
+        numHidden: The dimension of the hidden state.
+        numTimeSteps: The number of time steps of the RNN.
+        numFeats: The feature vector dimension for each time step.
+        graph: A restored metagraph. Provide a graph if restoring form a meta
+            graph is required.
+        useDropout: Set to True if a dropout layer is to be added
+            between inputs and outputs to the RNN.
+
+        gate_non_linearity, update_non_linearity, wRank, uRank, zetaInit,
+        nuInit:
+            These are FastGRNN parameters. Please refer to FastGRNN documentation
+            for more information.
+        '''
         self.numHidden = numHidden
         self.numTimeSteps = numTimeSteps
         self.numFeats = numFeats
@@ -1039,8 +1222,10 @@ class EMI_FastGRNN(EMI_RNN):
             x = tf.reshape(X, [-1, self.numTimeSteps, self.numFeats])
             x = tf.unstack(x, num=self.numTimeSteps, axis=1)
             # Get the FastGRNN output
-            cell = FastGRNNCell(self.numHidden, self.gate_non_linearity, self.update_non_linearity,
-                                self.wRank, self.uRank, self.zetaInit, self.nuInit, name='EMI-FastGRNN-Cell')
+            cell = FastGRNNCell(self.numHidden, self.gate_non_linearity,
+                                self.update_non_linearity, self.wRank,
+                                self.uRank, self.zetaInit, self.nuInit,
+                                name='EMI-FastGRNN-Cell')
             wrapped_cell = cell
             if self.useDropout is True:
                 keep_prob = tf.placeholder(dtype=tf.float32, name='keep-prob')
@@ -1105,11 +1290,26 @@ class EMI_FastGRNN(EMI_RNN):
             "rnn/fast_grnn_cell/EMI-FastGRNN-Cell/FastGRNNcell/B_h:0")
         self.varList.extend([zeta, nu, gate_bias, update_bias])
 
-    def getHyperParams(self):
+    def getModelParams(self):
+        '''
+        Returns the FastGRNN model tensors.
+        TODO: @Aditya in what order? Elaborate
+        '''
         assert self.graphCreated is True, "Graph is not created"
         return self.varList
 
     def addBaseAssignOps(self, initVarList):
+        '''
+        TODO: @Aditya please correct this doc string
+        Adds Tensorflow assignment operations to all of the model tensors.
+        These operations can then be used to initialize these tensors from
+        numpy matrices by running these operators
+
+        initVarList: A list of numpy matrices that will be used for
+            initialization by the assignment operation. For EMI_GRU, this
+            should be list of numpy matrices corresponding to  [kernel1, bias1,
+            kernel2, bias2]
+        '''
         assert initVarList is not None
         index = 0
         if self.wRank is None:
