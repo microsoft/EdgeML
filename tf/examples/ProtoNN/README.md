@@ -29,10 +29,11 @@ python protoNN_example.py \
       --num-prototypes 80 \
       --gamma 0.0015 \
       --learning-rate 0.1 \
-      --epochs 200
+      --epochs 200 \
+      --val-step 10
 ```
 
-You can expect a test set accuracy of about 91.8%.
+You can expect a test set accuracy of about 92.5%.
 
 Copyright (c) Microsoft Corporation. All rights reserved. 
 Licensed under the MIT license.

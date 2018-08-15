@@ -167,13 +167,14 @@ def getProtoNNArgs():
                         help='Initial Learning rate for ADAM Optimizer.')
 
     parser.add_argument('-rW', type=float, default=0.000,
-                        help='Coefficient for l2 regularizer for predictor parameter W ' +
-                        '(default = 0.0).')
+                        help='Coefficient for l2 regularizer for predictor' +
+                        ' parameter W ' + '(default = 0.0).')
     parser.add_argument('-rB', type=float, default=0.00,
-                        help='Coefficient for l2 regularizer for predictor parameter B ' +
-                        '(default = 0.0).')
+                        help='Coefficient for l2 regularizer for predictor' +
+                        ' parameter B ' + '(default = 0.0).')
     parser.add_argument('-rZ', type=float, default=0.00,
-                        help='Coefficient for l2 regularizer for predictor parameter Z ' +
+                        help='Coefficient for l2 regularizer for predictor' +
+                        'parameter Z ' +
                         '(default = 0.0).')
 
     parser.add_argument('-sW', type=float, default=1.000,
@@ -188,4 +189,7 @@ def getProtoNNArgs():
     parser.add_argument('-pS', '--print-step', type=int, default=200,
                         help='The number of update steps between print ' +
                         'calls to console.')
+    parser.add_argument('-vS', '--val-step', type=int, default=3,
+                        help='The number of epochs between validation' +
+                        'performance evaluation')
     return parser.parse_args()

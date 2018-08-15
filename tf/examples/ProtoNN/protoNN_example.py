@@ -29,6 +29,7 @@ def main():
     NUM_EPOCHS = config.epochs
     BATCH_SIZE = config.batch_size
     PRINT_STEP = config.print_step
+    VAL_STEP = config.val_step
 
     # Load data
     out = helper.preprocessData(DATA_DIR)
@@ -51,7 +52,7 @@ def main():
                              LEARNING_RATE, X, Y, lossType='xentropy')
     sess = tf.Session()
     trainer.train(BATCH_SIZE, NUM_EPOCHS, sess, x_train, x_test,
-                  y_train, y_test, printStep=PRINT_STEP)
+                  y_train, y_test, printStep=PRINT_STEP, valStep=VAL_STEP)
 
     # Print some summary metrics
     acc = sess.run(protoNN.accuracy, feed_dict={X: x_test, Y: y_test})
@@ -63,7 +64,8 @@ def main():
     print("Final test accuracy", acc)
     print("Model size constraint (Bytes): ", size)
     print("Number of non-zeros: ", nnz)
-    nnz, size, sparse = helper.getModelSize(matrixList, sparcityList, expected=False)
+    nnz, size, sparse = helper.getModelSize(matrixList, sparcityList,
+                                            expected=False)
     print("Actual model size: ", size)
     print("Actual non-zeros: ", nnz)
 
