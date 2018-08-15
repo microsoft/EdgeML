@@ -238,10 +238,10 @@ class BonsaiTrainer:
         else:
             trimlevel = 5
         ihtDone = 0
+        maxTestAcc = -10000
 
         if self.isDenseTraining is True:
             ihtDone = 1
-            maxTestAcc = -10000
             bonsaiObjSigmaI = 1
             itersInPhase = 0
 

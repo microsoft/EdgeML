@@ -281,6 +281,7 @@ class FastTrainer:
         counter = 0
         trimlevel = 15
         ihtDone = 0
+        maxTestAcc = -10000
         if self.isDenseTraining is True:
             ihtDone = 1
             maxTestAcc = -10000
