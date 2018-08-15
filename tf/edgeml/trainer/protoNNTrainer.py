@@ -13,12 +13,23 @@ class ProtoNNTrainer:
                  sparcityW, sparcityB, sparcityZ,
                  learningRate, X, Y, lossType='l2'):
         '''
-        protoNNObj: An instance of ProtoNN class. This instance
-            will be trained.
+        A wrapper for the various techniques used for training ProtoNN. This
+        subsumes both the responsibility of loss graph construction and
+        performing training. The original training routine that is part of the
+        C++ implementation of EdgeML used iterative hard thresholding (IHT),
+        gamma estimation through median heuristic and other tricks for
+        training ProtoNN. This module implements the same in Tensorflow
+        and python.
+
+        protoNNObj: An instance of ProtoNN class defining the forward
+            computation graph. The loss functions and training routines will be
+            attached to this instance.
         regW, regB, regZ: Regularization constants for W, B, and
             Z matrices of protoNN.
         sparcityW, sparcityB, sparcityZ: Sparsity constraints
-            for W, B and Z matrices.
+            for W, B and Z matrices. A value between 0 (exclusive) and 1
+            (inclusive) is expected. A value of 1 indicates dense training.
+        learningRate: Initial learning rate for ADAM optimizer.
         X, Y : Placeholders for data and labels.
             X [-1, featureDimension]
             Y [-1, num Labels]
@@ -106,20 +117,32 @@ class ProtoNNTrainer:
         self.B_th = tf.placeholder(tf.float32, name='B_th')
         self.Z_th = tf.placeholder(tf.float32, name='Z_th')
         with tf.name_scope('hard-threshold-assignments'):
-            hard_thrsd_W = W.assign(self.W_th) 
+            hard_thrsd_W = W.assign(self.W_th)
             hard_thrsd_B = B.assign(self.B_th)
             hard_thrsd_Z = Z.assign(self.Z_th)
             hard_thrsd_op = tf.group(hard_thrsd_W, hard_thrsd_B, hard_thrsd_Z)
         return hard_thrsd_op
 
     def train(self, batchSize, totalEpochs, sess,
-              x_train, x_val, y_train, y_val,
-              noInit=False, redirFile=None, printStep=10):
+              x_train, x_val, y_train, y_val, noInit=False,
+              redirFile=None, printStep=10, valStep=3):
         '''
-        Dense + IHT training of ProtoNN
-        noInit: if not to perform initialization (reuse previous init)
-        printStep: Number of batches after which loss is to be printed
-        TODO: Implement dense - IHT - sparse
+        Performs dense training of ProtoNN followed by iterative hard
+        thresholding to enforce sparsity constraints.
+
+        batchSize: Batch size per update
+        totalEpochs: The number of epochs to run training for. One epoch is
+            defined as one pass over the entire training data.
+        sess: The Tensorflow session to use for running various graph
+            operators.
+        x_train, x_val, y_train, y_val: The numpy array containing train and
+            validation data. x data is assumed to in of shape [-1,
+            featureDimension] while y should have shape [-1, numberLabels].
+        noInit: By default, all the tensors of the computation graph are
+        initialized at the start of the training session. Set noInit=False to
+        disable this behaviour.
+        printStep: Number of batches between echoing of loss and train accuracy.
+        valStep: Number of epochs between evolutions on validation set.
         '''
         d, d_cap, m, L, gamma = self.protoNNObj.getHyperParams()
         assert batchSize >= 1, 'Batch size should be positive integer'
@@ -171,9 +194,9 @@ class ProtoNNTrainer:
                     self.B_th: utils.hardThreshold(B_, self.__sB),
                     self.Z_th: utils.hardThreshold(Z_, self.__sZ)
                 }
-                sess.run(self.__hthOp, feed_dict=fd_thrsd) 
+                sess.run(self.__hthOp, feed_dict=fd_thrsd)
 
-            if (epoch + 1) % 3 == 0:
+            if (epoch + 1) % valStep  == 0:
                 acc = 0.0
                 loss = 0.0
                 for j in range(len(x_val_batches)):
