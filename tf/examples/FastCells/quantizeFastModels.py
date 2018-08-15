@@ -117,6 +117,8 @@ def quantizeFastModels(modelDir, maxValue=127, scalarScaleFactor=1000):
     for i in range(len(paramNameList)):
         np.save(quantModelDir + "/q" + paramNameList[i], quantParamWeights[i])
 
+    print("\n\nQuantized Model Dir: " + quantModelDir)
+
 
 def main():
     args = helpermethods.getQuantArgs()
