@@ -1,7 +1,7 @@
 # EdgeML Bonsai on a sample public dataset
 
 This directory includes, example notebook and general execution script of Bonsai developed as
-part of EdgeML. Also, we inlude a sample cleanup and use-case on USPS10 public dataset.
+part of EdgeML. Also, we include a sample cleanup and use-case on the USPS10 public dataset.
 
 Note BONSAI_EXP directory is '.'
 
@@ -14,21 +14,12 @@ we assume the labels are integers from 0 through N-1.
 
 **Tested With:** Tensorflow >1.6 with Python 2 and Python 3
 
-## Download a sample dataset
-Follow the bash commands given below to download a sample dataset, USPS10, to the root current directory. Bonsai and ProtoNN come with sample scripts to run on the usps10 dataset. BONSAI_EXP is defined in the previous section.
+## Download and clean up sample dataset
 
-```bash
-cd <BONSAI_EXP>
-mkdir usps10
-cd usps10
-wget http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.bz2
-wget http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.t.bz2
-bzip2 -d usps.bz2
-bzip2 -d usps.t.bz2
-mv usps train.txt
-mv usps.t test.txt
-cd ..
-python dataCleanup.py usps10
+We will be testing out the validation of the code by using the USPS dataset. The download and cleanup of the dataset to match the above-mentioned format is done by the script [fetch_usps.py](fetch_usps.py). Run the following command.
+
+```
+python fetch_usps.py
 ```
 
 ## Sample command for Bonsai on USPS10
@@ -45,8 +36,9 @@ Final Test Accuracy: 0.93024415
 Non-Zeros: 4156.0 Model Size: 31.703125 KB hasSparse: True
 ```
 
-usps10 directory will now have a consilidated results file called `TFBonsaiResults.txt` and a directory `TFBonsaiResults` with the corresponding models with each run of the code on the usps10 dataset
+usps10 directory will now have a consolidated results file called `TFBonsaiResults.txt` and a directory `TFBonsaiResults` with the corresponding models with each run of the code on the usps10 dataset
 
 
 Copyright (c) Microsoft Corporation. All rights reserved. 
+
 Licensed under the MIT license.

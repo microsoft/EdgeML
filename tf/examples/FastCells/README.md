@@ -1,7 +1,7 @@
 # EdgeML FastCells on a sample public dataset
 
-This directory includes, example notebook and general execution script of FastCells (FastGRNN & FastRNN) 
-developed as part of EdgeML. Also, we inlude a sample cleanup and use-case on USPS10 public dataset.
+This directory includes example notebook and general execution script of FastCells (FastGRNN & FastRNN) 
+developed as part of EdgeML. Also, we include a sample cleanup and use-case on the USPS10 public dataset.
 
 Note FAST_EXP directory is '.'
 
@@ -9,26 +9,17 @@ Note that `fastcell_example.py` assumes that data is in a specific format.
 It is assumed that train and test data is contained in two files,
 `train.npy` and `test.npy`. Each containing a 2D numpy array of dimension
 `[numberOfExamples, numberOfFeatures]`. numberOfFeatures is `timesteps x inputDims`,
-flattened across timestep dimension. So input of 1st timestep followed by second and so on.
+flattened across timestep dimension. So the input of 1st timestep followed by second and so on.
 For an N-Class problem, we assume the labels are integers from 0 through N-1.
 
 **Tested With:** Tensorflow >1.6 with Python 2 and Python 3
 
-## Download a sample dataset
-Follow the bash commands given below to download a sample dataset, USPS10, to the root current directory. FastCells comes with sample script to run on the usps10 dataset. FAST_EXP is defined in the previous section.
+## Download and clean up sample dataset
 
-```bash
-cd <FAST_EXP>
-mkdir usps10
-cd usps10
-wget http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.bz2
-wget http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.t.bz2
-bzip2 -d usps.bz2
-bzip2 -d usps.t.bz2
-mv usps train.txt
-mv usps.t test.txt
-cd ..
-python dataCleanup.py usps10
+We will be testing out the validation of the code by using the USPS dataset. The download and cleanup of the dataset to match the above-mentioned format is done by the script [fetch_usps.py](fetch_usps.py). Run the following command.
+
+```
+python fetch_usps.py
 ```
 
 ## Sample command for FastCells on USPS10
@@ -48,17 +39,18 @@ Final Test Accuracy: 0.93721974
 
 Non-Zeros: 1932 Model Size: 7.546875 KB hasSparse: False
 ```
-usps10 directory will now have a consilidated results file called `FastGRNNResults.txt` or `FastRNNResults.txt` depending on the choice of the RNN cell.
+usps10 directory will now have a consolidated results file called `FastGRNNResults.txt` or `FastRNNResults.txt` depending on the choice of the RNN cell.
 A directory `FastGRNNResults` or `FastRNNResults` with the corresponding models with each run of the code on the usps10 dataset
 
-If you wish to quantise the generated model to use byte quantized integers use `quantizeFastModels.py`. Usage Instructions:
+If you wish to quantize the generated model to use byte quantized integers use `quantizeFastModels.py`. Usage Instructions:
 
 ```
 python quantizeFastModels.py -h
 ```
 
-This will generate quantised models with a suffix of `q` before every param stored in a new directory `QuantizedFastModel` inside the model directory.
+This will generate quantized models with a suffix of `q` before every param stored in a new directory `QuantizedFastModel` inside the model directory.
 One can use this model further on edge devices.
 
 Copyright (c) Microsoft Corporation. All rights reserved. 
+
 Licensed under the MIT license.
