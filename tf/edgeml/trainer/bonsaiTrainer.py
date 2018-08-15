@@ -372,6 +372,7 @@ class BonsaiTrainer:
                 if maxTestAcc <= testAcc:
                     maxTestAccEpoch = i
                     maxTestAcc = testAcc
+                    self.saveParams(currDir)
 
             print("Test accuracy %g" % testAcc, file=self.outFile)
             print("MarginLoss + RegLoss: " + str(testLoss - regTestLoss) +
@@ -401,7 +402,6 @@ class BonsaiTrainer:
                          " KB hasSparse: " + str(self.getModelSize()[2]) +
                          " Param Directory: " +
                          str(os.path.abspath(currDir)) + "\n")
-        self.saveParams(currDir)
         print("The Model Directory: " + currDir + "\n")
 
         resultFile.close()

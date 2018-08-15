@@ -356,6 +356,7 @@ class FastTrainer:
                 if maxTestAcc <= testAcc:
                     maxTestAccEpoch = i
                     maxTestAcc = testAcc
+                    self.saveParams(currDir)
 
             print("Test Loss: " + str(testLoss) +
                   " Test Accuracy: " + str(testAcc), file=self.outFile)
@@ -379,7 +380,6 @@ class FastTrainer:
                          " Param Directory: " +
                          str(os.path.abspath(currDir)) + "\n")
 
-        self.saveParams(currDir)
         print("The Model Directory: " + currDir + "\n")
 
         resultFile.close()
