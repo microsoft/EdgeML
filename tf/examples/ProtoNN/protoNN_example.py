@@ -70,21 +70,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-'''
-NOTES:
-    1. Curet:
-        python protoNN_example.py \
-            --data-dir ./curet \
-            --projection-dim 60 --num-prototypes 80 --gamma 0.0015 \
-            --learning-rate 0.1 --epochs 200
-        Expected test accuracy: 88%
-
-        python protoNN_example.py \
-            --data-dir ./curet \
-            --projection-dim 60 --num-prototypes 60 --gamma 0.0015 \
-            -rW 0.000005  -rB 0.0 -rZ 0.00005 -sW 0.8 \
-            -sB 1.0 -sZ 1.0 \
-            --learning-rate 0.05 --epochs 800
-        Expected test accuracy: 89-90%
-'''
