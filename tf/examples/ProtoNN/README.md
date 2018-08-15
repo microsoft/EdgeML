@@ -1,18 +1,19 @@
-# EdgeML ProtoNN on a sample public dataset
+# Tensorflow ProtoNN Examples
 
-This directory includes, example notebook and general execution script of
-ProtoNN developed as part of EdgeML. The example is based on the USPS dataset.
+This directory includes an example notebook and a command line execution script
+of ProtoNN developed as part of EdgeML. The example is based on the USPS dataset.
 
 **Tested With:** Tensorflow >1.6 with Python 2 and Python 3
 
 ## Fetching Data
 
-The script [fetch_usps.py](fetch_usps.py) automatically downloads and processes
-the dataset if `bash` is available. To run this script, please use:
+The script - [fetch_usps.py](fetch_usps.py), can be used to  automatically
+download and processes the dataset. The script depends on `bash`.
+ To run this script, please use:
 
     python fetch_usps.py
 
-If `bash` is not available, manual download of the data is required.
+If `bash` is not available, you will have to manually download the data files. 
 Instructions can be found in [fetch_usps.py](fetch_usps.py).
 
 ## Running the ProtoNN execution script
