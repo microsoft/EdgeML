@@ -202,9 +202,35 @@ class BonsaiTrainer:
 
     def saveParams(self, currDir):
         '''
-        Function to save Parameter matrices
+        Function to save Parameter matrices into a given folder
         '''
-        self.bonsaiObj.saveModel(currDir)
+        paramDir = currDir + '/'
+        np.save(paramDir + "W.npy", self.bonsaiObj.W.eval())
+        np.save(paramDir + "V.npy", self.bonsaiObj.V.eval())
+        np.save(paramDir + "T.npy", self.bonsaiObj.T.eval())
+        np.save(paramDir + "Z.npy", self.bonsaiObj.Z.eval())
+        hyperParamDict = {'dataDim': self.bonsaiObj.dataDimension,
+                          'projDim': self.bonsaiObj.projectionDimension,
+                          'numClasses': self.bonsaiObj.numClasses,
+                          'depth': self.bonsaiObj.treeDepth,
+                          'sigma': self.bonsaiObj.sigma}
+        hyperParamFile = paramDir + 'hyperParam.npy'
+        np.save(hyperParamFile, hyperParamDict)
+
+    def loadModel(self, currDir):
+        '''
+        Load the Saved model and load it to the model using constructor
+        Returns two dict one for params and other for hyperParams
+        '''
+        paramDir = currDir + '/'
+        paramDict = {}
+        paramDict['W'] = np.load(paramDir + "W.npy")
+        paramDict['V'] = np.load(paramDir + "V.npy")
+        paramDict['T'] = np.load(paramDir + "T.npy")
+        paramDict['Z'] = np.load(paramDir + "Z.npy")
+        hyperParamDict = np.load(paramDir + "hyperParam.npy").item()
+
+        return paramDict, hyperParamDict
 
     def getModelSize(self):
         '''

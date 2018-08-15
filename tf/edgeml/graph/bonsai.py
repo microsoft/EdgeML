@@ -6,6 +6,7 @@ import numpy as np
 
 
 class Bonsai:
+
     def __init__(self, numClasses, dataDimension, projectionDimension,
                  treeDepth, sigma,
                  W=None, T=None, V=None, Z=None):
@@ -140,38 +141,6 @@ class Bonsai:
                            0 * tf.transpose(self.score)], 1), 1)
 
         return self.prediction
-
-    def saveModel(self, currDir):
-        '''
-        Saved the model params as separate numpy dumps
-        Hyper param dict as a numpy dump
-        '''
-        paramDir = currDir + '/'
-        np.save(paramDir + "W.npy", self.W.eval())
-        np.save(paramDir + "V.npy", self.V.eval())
-        np.save(paramDir + "T.npy", self.T.eval())
-        np.save(paramDir + "Z.npy", self.Z.eval())
-        hyperParamDict = {'dataDim': self.dataDimension,
-                          'projDim': self.projectionDimension,
-                          'numClasses': self.numClasses,
-                          'depth': self.treeDepth, 'sigma': self.sigma}
-        hyperParamFile = paramDir + 'hyperParam.npy'
-        np.save(hyperParamFile, hyperParamDict)
-
-    def loadModel(self, currDir):
-        '''
-        Load the Saved model and load it to the model using constructor
-        Returns two dict one for params and other for hyperParams
-        '''
-        paramDir = currDir + '/'
-        paramDict = {}
-        paramDict['W'] = np.load(paramDir + "W.npy")
-        paramDict['V'] = np.load(paramDir + "V.npy")
-        paramDict['T'] = np.load(paramDir + "T.npy")
-        paramDict['Z'] = np.load(paramDir + "Z.npy")
-        hyperParamDict = np.load(paramDir + "hyperParam.npy").item()
-
-        return paramDict, hyperParamDict
 
     def assertInit(self):
         errRank = "All Parameters must has only two dimensions shape = [a, b]"

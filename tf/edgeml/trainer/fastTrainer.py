@@ -367,9 +367,10 @@ class FastTrainer:
               str(maxTestAcc) + " at Epoch: " +
               str(maxTestAccEpoch + 1) + "\nFinal Test" +
               " Accuracy: " + str(testAcc), file=self.outFile)
-        print("\n\nNon-Zeros: " + str(self.getModelSize()[0]) + " Model Size: " +
-              str(float(self.getModelSize()[1]) / 1024.0) + " KB hasSparse: " +
-              str(self.getModelSize()[2]) + "\n", file=self.outFile)
+        print("\n\nNon-Zeros: " + str(self.getModelSize()[0]) +
+              " Model Size: " + str(float(self.getModelSize()[1]) / 1024.0) +
+              " KB hasSparse: " + str(self.getModelSize()[2]) + "\n",
+              file=self.outFile)
 
         resultFile.write("MaxTestAcc: " + str(maxTestAcc) +
                          " at Epoch(totalEpochs): " +

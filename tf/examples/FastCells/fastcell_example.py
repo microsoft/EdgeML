@@ -44,7 +44,8 @@ def main():
     (dataDimension, numClasses,
         Xtrain, Ytrain, Xtest, Ytest) = helpermethods.preProcessData(dataDir)
 
-    assert dataDimension % inputDims == 0, "Infeasible per step input, Timesteps have to be integer"
+    assert dataDimension % inputDims == 0, "Infeasible per step input, " + \
+        "Timesteps have to be integer"
 
     X = tf.placeholder(
         "float", [None, int(dataDimension / inputDims), inputDims])
@@ -55,25 +56,27 @@ def main():
     helpermethods.dumpCommand(sys.argv, currDir)
 
     if cell == "FastGRNN":
-        FastCell = FastGRNNCell(hiddenDims, gate_non_linearity=gate_non_linearity,
+        FastCell = FastGRNNCell(hiddenDims,
+                                gate_non_linearity=gate_non_linearity,
                                 update_non_linearity=update_non_linearity,
                                 wRank=wRank, uRank=uRank)
     elif cell == "FastRNN":
-        FastCell = FastRNNCell(hiddenDims, update_non_linearity=update_non_linearity,
+        FastCell = FastRNNCell(hiddenDims,
+                               update_non_linearity=update_non_linearity,
                                wRank=wRank, uRank=uRank)
     else:
         sys.exit('Exiting: No Such Cell as ' + cell)
 
     FastCellTrainer = FastTrainer(
-        FastCell, X, Y, sW=sW, sU=sU, learningRate=learningRate, outFile=outFile)
+        FastCell, X, Y, sW=sW, sU=sU,
+        learningRate=learningRate, outFile=outFile)
 
     sess = tf.InteractiveSession()
     sess.run(tf.global_variables_initializer())
 
-    saver = tf.train.Saver()
-
     FastCellTrainer.train(batchSize, totalEpochs, sess, Xtrain, Xtest,
-                          Ytrain, Ytest, decayStep, decayRate, dataDir, currDir)
+                          Ytrain, Ytest, decayStep, decayRate,
+                          dataDir, currDir)
 
 
 if __name__ == '__main__':

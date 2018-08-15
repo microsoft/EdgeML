@@ -1,7 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-import numpy as np
 import tensorflow as tf
 from tensorflow.python.ops import init_ops
 from tensorflow.python.ops import math_ops
@@ -180,7 +179,8 @@ class FastRNNCell(RNNCell):
     '''
 
     def __init__(self, hidden_size, update_non_linearity="tanh",
-                 wRank=None, uRank=None, alphaInit=-3.0, betaInit=3.0, name="FastRNN"):
+                 wRank=None, uRank=None, alphaInit=-3.0, betaInit=3.0,
+                 name="FastRNN"):
         super(FastRNNCell, self).__init__()
         self._hidden_size = hidden_size
         self._update_non_linearity = update_non_linearity
