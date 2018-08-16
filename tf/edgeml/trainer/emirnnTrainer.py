@@ -269,7 +269,7 @@ class EMI_Trainer:
         graph as a parameter to __init__. This is useful when, in between
         training, you want to reset the entire computation graph and reload a
         new meta graph from disk. This method allows you to attach to this
-        newly loaded meta graph without having to create a new EMI_DataPipeline
+        newly loaded meta graph without having to create a new EMI_Trainer
         object. Use this method only when you want to clear/reset the existing
         computational graph.
         '''
@@ -296,6 +296,16 @@ class EMI_Driver:
         loss graph (EMI_Trainer). After the three parts of been created and
         connected, they should be passed as arguments to this module.
 
+        Since EMI-RNN training requires careful handling of Sessions and
+        graphs, these details are wrapped inside EMI_Driver. For an external
+        method to access the current session, please make sure to use
+        getCurrentSession() method defined in EMI_Driver. Note that this has to
+        be done every time a reference to the current session is required.
+        (Internally, sessions are closed and opened when new models are loaded
+        from the disk, so technically, as long as no new model has been loaded
+        from disk, there is no need to call getCurrentSession() again - it is
+        better to be safe though).
+
         emiDataPipeline: An EMI_DataPipeline object.
         emiGraph: An EMI_RNN object.
         emiTrainer: An EMI_Trainer object.
@@ -308,10 +318,10 @@ class EMI_Driver:
         self.__dataPipe = emiDataPipeline
         self.__emiGraph = emiGraph
         self.__emiTrainer = emiTrainer
-        # assert False, 'Not implemented: Check all three objects are properly'
-        # 'conconstructed' according to the assumptions made in rnn.py.
-        # Specifically amake sure that the graphs are valid with all the
-        # variables filled up with corresponding operations
+        msg = 'Have you invoked __call__()'
+        assert self.__dataPipe.graphCreated is True, msg
+        assert self.__emiGraph.graphCreated is True, msg
+        assert self.__emiTrainer.graphCreated is True, msg
         self.__globalStep = globalStepStart
         self.__saver = tf.train.Saver(max_to_keep=max_to_keep,
                                       save_relative_paths=True)
@@ -320,6 +330,10 @@ class EMI_Driver:
 
     def fancyEcho(self, sess, feedDict, currentBatch, redirFile,
                   numBatches=None):
+        '''
+        A callable that is passed as argument - echoCB - to
+        EMI_Trainer.train() method.
+        '''
         _, loss, acc = sess.run([self.__emiTrainer.trainOp,
                                  self.__emiTrainer.lossOp,
                                  self.__emiTrainer.accTilda],
@@ -332,11 +346,19 @@ class EMI_Driver:
 
     def assignToGraph(self, initVarList):
         '''
-        This method should deal with restoring the entire grpah
+        This method should deal with restoring the entire graph
         now'''
         raise NotImplementedError()
 
     def initializeSession(self, graph, reuse=False, feedDict=None):
+        '''
+        Initialize a new session with the computation graph provided in graph.
+
+        graph: The computation graph needed to be used for the current session.
+        reuse: If True, global_variables_initializer will not be invoked and
+            the graph will retain the current tensor states/values. 
+        feedDict: Not used
+        '''
         sess = self.__sess
         if sess is not None:
            sess.close()
@@ -349,12 +371,30 @@ class EMI_Driver:
         self.__sess = sess
 
     def getCurrentSession(self):
+        '''
+        Returns the current tf.Session()
+        '''
         return self.__sess
 
     def setSession(self, sess):
+        '''
+        Sets sess as the session to be used by the driver. Experimental and not
+        recommended.
+        '''
         self.__sess = sess
 
     def runOps(self, opList, X, Y, batchSize, feedDict=None):
+        '''
+        Run tensorflow operations provided in opList on data X, Y.
+
+        opList: A list of operations.
+        X, Y: Numpy matrices of the data.
+        batchSize: batch size
+        feedDict: Feed dict required, if any, by the provided ops.
+
+        returns a  list of batchwise results of sess.run(opList) on the
+        provided data.
+        '''
         sess = self.__sess
         self.__dataPipe.runInitializer(sess, X, Y, batchSize,
                                        numEpochs=1)
@@ -367,36 +407,59 @@ class EMI_Driver:
                 break
         return outList
 
-    def run(self, numClasses, x_train, y_train, bag_train, x_val, y_val, bag_val,
-            numIter, numRounds, batchSize, numEpochs, feedDict=None,
-            infFeedDict=None, choCB=None, redirFile=None,
-            modelPrefix='/tmp/model', updatePolicy='top-k', fracEMI=0.3,
-            lossIndicator=None, *args, **kwargs):
+    def run(self, numClasses, x_train, y_train, bag_train, x_val, y_val,
+            bag_val, numIter, numRounds, batchSize, numEpochs, feedDict=None,
+            echoCB=None, redirFile=None, modelPrefix='/tmp/model',
+            updatePolicy='top-k', fracEMI=0.3, lossIndicator=None, *args,
+            **kwargs):
         '''
-        TODO: Check that max_to_keep > numIter
-        TODO: Check that no model with globalStepStart exists; or, print a
-        warning that we override these methods.
+        Performs the EMI-RNN training routine.
 
-        Automatically run MI-RNN for 70%% of the rounds and emi for the rest
-        Allow option for only MI mode
+        numClasses: Number of output classes.
+        x_train, y_train, bag_train, x_val, y_val, bag_val: data matrices for
+            test and validation sets. Please refer to the data preparation
+            document for more information.
+        numIter: Number of iterations. Each iteration consists of numEpochs
+            passes of the data. A model check point is created after each
+            iteration.
+        numRounds: Number of rounds of label updates to perform. Each round
+            consists of numIter iterations of numEpochs passes over the data.
+        batchSize: Batch Size.
+        numEpochs: Number of epochs per iteration. A model checkpoint is
+            created after evey numEpochs passes over the data.
+        feedDict: Feed dict for training procedure (optional).
+        echoCB: The echo function (print function) that is passed to the
+            EMI_Trainer.trian() method. Defaults to self.fancyEcho()
+        redirFile: Provide a file pointer to redirect output to if required.
+        modelPrefix: Output directory/prefix for checkpoints and metagraphs.
+        updatePolicy: Supported values are 'top-k' and 'prune-ends'. Refer to
+            the update policy documentation for more information.
+        fracEMI: Fraction of the total rounds that use EMI-RNN loss. The
+            initial (1-fracEMI) rounds will use regular MI-RNN loss. To perform
+            only MI-RNN training, set this to 0.0.
+        lossIndicator: NotImplemented
+        *args, **kwargs: Additional arguments passed to callback methods and
+            update policy methods.
 
+        returns the updated instance level labels on the training set.
         '''
         assert self.__sess is not None, 'No sessions initialized'
         sess = self.__sess
         assert updatePolicy in ['prune-ends', 'top-k']
         if updatePolicy == 'top-k':
-            print("Using top-k")
+            print("Update policy: top-k", file=redirFile)
             updatePolicyFunc = self.__policyTopK
         else:
+            print("Update policy: prune-ends", file=redirFile)
             updatePolicyFunc = self.__policyPrune
 
-        if infFeedDict is None:
-            infFeedDict = feedDict
         curr_y = np.array(y_train)
         assert fracEMI >= 0
         assert fracEMI <= 1
         emiSteps = int(fracEMI * numRounds)
         emiStep = numRounds - emiSteps
+        print("Training with MI-RNN loss for %d rounds" % emiStep,
+              file=redirFile)
         for cround in range(numRounds):
             print("Round: %d" % cround, file=redirFile)
             if cround == emiStep:
@@ -454,6 +517,19 @@ class EMI_Driver:
         return currY
 
     def updateLabel(self, Y, policy, softmaxOut, bagLabel, numClasses, **kwargs):
+        '''
+        Updates the current label information based on policy and the predicted
+        outputs.
+
+        Y: numpy array of current label information.
+        policy: The update policy to use. Currently supports ['top-k',
+            'prune-ends']
+        softmaxOut: The predicted instance level output from the soft-max
+            layer.
+        bagLabel: A numpy array with bag level label information.
+        numClasses: Number of output classes.
+        **kwargs: Additional keyword arguments to the update policy
+        '''
         assert policy in ['prune-ends', 'top-k']
         if policy == 'top-k':
             updatePolicyFunc = self.__policyTopK
@@ -466,15 +542,18 @@ class EMI_Driver:
     def analyseModel(self, predictions, Y_bag, numSubinstance, numClass,
                      redirFile=None, verbose=False, silent=False):
         '''
-        some basic analysis on predictions and true labels
-        This is the multiclass version
-        predictions [-1, numsubinstance] is the instance level prediction
+        Some basic analysis on predictions and true labels.
+
+        predictions: [-1, numsubinstance] is the instance level prediction.
+        Y_Bag: [-1] is the bag level labels.
+        numSubinstace: Number of sub-instance.
+        numClass: Number of classes.
+        redirFile: To redirect output to a file, provide the file pointer.
 
         verbose: Prints verbose data frame. Includes additionally, precision
             and recall information.
 
-        In the 2 class setting, precision, recall and f-score for
-        class 1 is also printed.
+        silent: Disable output to console or file pointer.
         '''
         assert (predictions.ndim == 2)
         assert (predictions.shape[1] == numSubinstance)
@@ -601,12 +680,13 @@ class EMI_Driver:
     def getInstancePredictions(self, x, y, earlyPolicy, batchSize=1024, **kwargs):
 
         '''
+        Returns instance level predictions for data (x, y).
+
         Takes the softmax outputs from the joint trained model and, applies
         earlyPolicy() on each instance and returns the instance level
         prediction as well as the step at which this prediction was made.
 
         softmaxOut: [-1, numSubinstance, numTimeSteps, numClass]
-
         earlyPolicy: callable,
             def earlyPolicy(subinstacePrediction):
                 subinstacePrediction: [numTimeSteps, numClass]
@@ -614,9 +694,8 @@ class EMI_Driver:
                 return predictedClass, predictedStep
 
         returns: predictions, predictionStep
-
-        predictions: [-1, numSubinstance]
-        predictionStep: [-1, numSubinstance]
+            predictions: [-1, numSubinstance]
+            predictionStep: [-1, numSubinstance]
         '''
         opList = self.__emiTrainer.softmaxPredictions
         smxOut = self.runOps(opList, x, y, batchSize)
@@ -642,7 +721,7 @@ class EMI_Driver:
     def getBagPredictions(self, Y_predicted, minSubsequenceLen = 4,
                           numClass=2, redirFile = None):
         '''
-        Returns bag level predictions given instance level predictions
+        Returns bag level predictions given instance level predictions.
 
         A bag is considered to belong to a non-zero class if
         minSubsequenceLen is satisfied. Otherwise, it is assumed
@@ -675,7 +754,6 @@ class EMI_Driver:
         prediction[predictionIndex] = labels[predictionIndex]
         return prediction.astype(int)
 
-
     def __getLengthScores(self, Y_predicted, val=1):
         '''
         Returns an matrix which contains the length of the longest positive
@@ -696,7 +774,7 @@ class EMI_Driver:
         return scores
 
     def __policyPrune(self, currentY, softmaxOut, bagLabel, numClases, **kwargs):
-        pass
+        raise NotImplementedError
 
     def __policyTopK(self, currentY, softmaxOut, bagLabel, numClasses, k=1,
                      **kwargs):
@@ -706,11 +784,13 @@ class EMI_Driver:
         bagLabel [-1]
         k: minimum length of continuous non-zero examples
 
-        Check which is the longest continuous label for each bag
-        If this label is the same as the bagLabel, and if the length is at least k:
-            find all the strings with this longest length
-            apart from the string having maximum summation of probabilities
-            for that class label, label all other instances as 0
+        Algorithm:
+            For each bag:
+                1. Find the longest continuous subsequence of a label.
+                2. If this label is the same as the bagLabel, and if the length
+                of the subsequence is at least k:
+                    2.1 Set the label of these instances as the bagLabel.
+                    2.2 Set all other labels as 0
         '''
         assert currentY.ndim == 3
         assert k <= currentY.shape[1]
