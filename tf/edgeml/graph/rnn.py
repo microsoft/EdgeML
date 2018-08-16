@@ -53,6 +53,8 @@ class FastGRNNCell(RNNCell):
     h_t^ = update_nl(Wx_t + Uh_{t-1} + B_h)
     h_t = z_t*h_{t-1} + (sigmoid(zeta)(1-z_t) + sigmoid(nu))*h_t^
 
+    W and U can further parameterised into low rank version by
+    W = matmul(W_1, W_2) and U = matmul(U_1, U_2)
     '''
 
     def __init__(self, hidden_size, gate_non_linearity="sigmoid",
@@ -146,7 +148,7 @@ class FastGRNNCell(RNNCell):
                 uComp = math_ops.matmul(
                     math_ops.matmul(state, self.U1), self.U2)
             # Init zeta to 6.0 and nu to -6.0 if this doesn't give good
-            # results. The ints are hyper-params.
+            # results. The inits are hyper-params.
             zeta_init = init_ops.constant_initializer(
                 self._zetaInit, dtype=tf.float32)
             self.zeta = vs.get_variable("zeta", [1, 1], initializer=zeta_init)
@@ -214,7 +216,9 @@ class FastRNNCell(RNNCell):
 
     h_t^ = update_nl(Wx_t + Uh_{t-1} + B_h)
     h_t = sigmoid(beta)*h_{t-1} + sigmoid(alpha)*h_t^
-    
+
+    W and U can further parameterised into low rank version by 
+    W = matmul(W_1, W_2) and U = matmul(U_1, U_2) 
     '''
 
     def __init__(self, hidden_size, update_non_linearity="tanh",
