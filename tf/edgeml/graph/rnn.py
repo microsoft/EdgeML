@@ -35,9 +35,9 @@ class FastGRNNCell(RNNCell):
     hidden_size = # hidden units
 
     gate_non_linearity = nonlinearity for the gate can be chosen from
-    "tanh, sigmoid, relu, quantTanh, quantSigm"
+    [tanh, sigmoid, relu, quantTanh, quantSigm]
     update_non_linearity = nonlinearity for final rnn update
-    can be chosen from "tanh, sigmoid, relu, quantTanh, quantSigm"
+    can be chosen from [tanh, sigmoid, relu, quantTanh, quantSigm]
 
     wRank = rank of W matrix (creates two matrices if not None)
     uRank = rank of U matrix (creates two matrices if not None)
@@ -190,8 +190,8 @@ class FastRNNCell(RNNCell):
     hidden_size = # hidden units
 
     update_non_linearity = nonlinearity for final rnn update
-    can be chosen from "tanh, sigmoid, relu, quantTanh, quantSigm"
-    
+    can be chosen from [tanh, sigmoid, relu, quantTanh, quantSigm]
+
     wRank = rank of W matrix (creates two matrices if not None)
     uRank = rank of U matrix (creates two matrices if not None)
     alphaInit = init for alpha, the update scalar
