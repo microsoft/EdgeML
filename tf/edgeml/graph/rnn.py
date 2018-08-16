@@ -32,6 +32,13 @@ class FastGRNNCell(RNNCell):
     '''
     FastGRNN Cell with Both Full Rank and Low Rank Formulations
     Has multiple activation functions for the gates
+    hidden_size = # hidden units
+    gate_non_linearity = nonlinearity for the gate
+    update_non_linearity = nonlinearity for final rnn update
+    wRank = rank of W matrix (creates two matrices if not None)
+    uRank = rank of U matrix (creates two matrices if not None)
+    zetaInit = init for zeta, the scale param
+    nuInit = init for nu, the translation param
     '''
 
     def __init__(self, hidden_size, gate_non_linearity="sigmoid",
@@ -176,6 +183,12 @@ class FastRNNCell(RNNCell):
     '''
     FastRNN Cell with Both Full Rank and Low Rank Formulations
     Has multiple activation functions for the gates
+    hidden_size = # hidden units
+    update_non_linearity = nonlinearity for final rnn update
+    wRank = rank of W matrix (creates two matrices if not None)
+    uRank = rank of U matrix (creates two matrices if not None)
+    alphaInit = init for alpha, the update scalar
+    betaInit = init for beta, the weight for previous state
     '''
 
     def __init__(self, hidden_size, update_non_linearity="tanh",
@@ -499,6 +512,7 @@ class EMI_DataPipeline():
 
 
 class EMI_RNN():
+
     def __init__(self, *args, **kwargs):
         """
         Abstract base class for RNN architectures compatible with EMI-RNN.
@@ -960,22 +974,22 @@ class EMI_FastRNN(EMI_RNN):
     def getModelParams(self):
         '''
         Returns the FastRNN model tensors.
-        TODO: @Aditya in what order? Elaborate
+        In the order of  [W(W1, W2), U(U1,U2), alpha, beta, B_h]
+        () implies that the matrix can be replaced with the matrices inside.
         '''
         assert self.graphCreated is True, "Graph is not created"
         return self.varList
 
     def addBaseAssignOps(self, initVarList):
         '''
-        TODO: @Aditya please correct this doc string
         Adds Tensorflow assignment operations to all of the model tensors.
         These operations can then be used to initialize these tensors from
         numpy matrices by running these operators
 
         initVarList: A list of numpy matrices that will be used for
-            initialization by the assignment operation. For EMI_GRU, this
-            should be list of numpy matrices corresponding to  [kernel1, bias1,
-            kernel2, bias2]
+            initialization by the assignment operation. For EMI_FastRNN, this
+            should be list of numpy matrices corresponding to  [W(W1, W2),
+            U(U1,U2), alpha, beta, B_h]
         '''
         assert initVarList is not None
         index = 0
@@ -1293,22 +1307,22 @@ class EMI_FastGRNN(EMI_RNN):
     def getModelParams(self):
         '''
         Returns the FastGRNN model tensors.
-        TODO: @Aditya in what order? Elaborate
+        In the order of  [W(W1, W2), U(U1,U2), zeta, nu, B_g, B_h]
+        () implies that the matrix can be replaced with the matrices inside.
         '''
         assert self.graphCreated is True, "Graph is not created"
         return self.varList
 
     def addBaseAssignOps(self, initVarList):
         '''
-        TODO: @Aditya please correct this doc string
         Adds Tensorflow assignment operations to all of the model tensors.
         These operations can then be used to initialize these tensors from
         numpy matrices by running these operators
 
         initVarList: A list of numpy matrices that will be used for
-            initialization by the assignment operation. For EMI_GRU, this
-            should be list of numpy matrices corresponding to  [kernel1, bias1,
-            kernel2, bias2]
+            initialization by the assignment operation. For EMI_FastGRNN, this
+            should be list of numpy matrices corresponding to  [W(W1, W2),
+            U(U1,U2), zeta, nu, B_g, B_h]
         '''
         assert initVarList is not None
         index = 0
