@@ -773,8 +773,109 @@ class EMI_Driver:
                     scores[i, j] = 0
         return scores
 
-    def __policyPrune(self, currentY, softmaxOut, bagLabel, numClases, **kwargs):
-        raise NotImplementedError
+    def __policyPrune(self, currentY, softmaxOut, bagLabel, numClasses,
+                      minNegativeProb=0.0, updatesPerCall=3,
+                      maxAllowedUpdates=3):
+        '''
+        CurrentY: [-1, numsubinstance, numClass]
+        softmaxOut: [-1, numsubinstance, numClass]
+        bagLabel: [-1]
+        numClasses: Number of output classes
+        minNegativeProb: A instance predicted as negative is labeled as
+            negative iff prob. negative >= minNegativeProb
+        updatesPerCall: At most number of updates to per function call
+        maxAllowedUpdates: Total updates on positive bag cannot exceed
+            maxAllowedUpdate.
+
+        This policy incrementally increases the prefix/suffix of negative
+        labels in currentY.  An instance is labelled as a negative if:
+
+            1. All the instances preceding it in case of a prefix and all
+            instances succeeding it in case of a continuous prefix and/or
+            suffix of negative is labeled as a negative.
+            2. The probability of the instance being negative > negativeProb.
+            3. The instance is indeed predicted as negative (i.e. prob class 0
+            is max)
+            4. If the sequence length is less than maxSamples.
+
+        All four conditions must hold. In case of a tie between instances near
+        the suffix and prefix, the one with maximum probability is updated. If
+        probabilities are same, then the left prefix is updated.
+
+        CLASS 0 is assumed to be negative class
+        '''
+        assert currentY.ndim == 3
+        assert softmaxOut.ndim == 3
+        assert bagLabel.ndim == 1
+        assert len(currentY) == len(softmaxOut)
+        assert len(softmaxOut) == len(bagLabel)
+        numSubinstance = currentY.shape[1]
+        assert maxAllowedUpdates < numSubinstance
+        assert softmaxOut.shape[1] == numSubinstance
+
+        index = (bagLabel != 0)
+        indexList = np.where(bagLabel)[0]
+        newY = np.array(currentY)
+        for i in indexList:
+            currLabel = currentY[i]
+            currProbabilities = softmaxOut[i]
+            prevPrefix = 0
+            prevSuffix = 0
+            for inst in currLabel:
+                if np.argmax(inst) == 0:
+                    prevPrefix += 1
+                else:
+                    break
+            for inst in reversed(currLabel):
+                if np.argmax(inst) == 0:
+                    prevSuffix += 1
+                else:
+                    break
+            assert (prevPrefix + prevSuffix <= maxAllowedUpdates)
+            leftIdx = int(prevPrefix)
+            rightIdx = numSubinstance - int(prevSuffix) - 1
+            possibleUpdates = min(updatesPerCall, maxAllowedUpdates - prevPrefix - prevSuffix)
+            while (possibleUpdates > 0):
+                assert leftIdx < numSubinstance
+                assert leftIdx >= 0
+                assert rightIdx < numSubinstance
+                assert rightIdx >= 0
+                leftLbl = np.argmax(currProbabilities[leftIdx])
+                leftProb = np.max(currProbabilities[leftIdx])
+                rightLbl = np.argmax(currProbabilities[rightIdx])
+                rightProb = np.max(currProbabilities[rightIdx])
+                if (leftLbl != 0 and rightLbl !=0):
+                    break
+                elif (leftLbl == 0 and rightLbl != 0):
+                    if leftProb >= minNegativeProb:
+                        newY[i, leftIdx, :] = 0
+                        newY[i, leftIdx, 0] = 1
+                        leftIdx += 1
+                    else:
+                        break
+                elif (leftLbl != 0 and rightLbl == 0):
+                    if rightProb >= minNegativeProb:
+                        newY[i, rightIdx, :] = 0
+                        newY[i, rightIdx, 0] = 1
+                        rightIdx -= 1
+                    else:
+                        break
+                elif leftProb >= rightProb:
+                    if leftProb >= minNegativeProb:
+                        newY[i, leftIdx, :] = 0
+                        newY[i, leftIdx, 0] = 1
+                        leftIdx += 1
+                    else:
+                        break
+                elif rightProb > leftProb:
+                    if rightProb >= minNegativeProb:
+                        newY[i, rightIdx, :] = 0
+                        newY[i, rightIdx, 0] = 1
+                        rightIdx -= 1
+                    else:
+                        break
+                possibleUpdates -= 1
+        return newY
 
     def __policyTopK(self, currentY, softmaxOut, bagLabel, numClasses, k=1,
                      **kwargs):
