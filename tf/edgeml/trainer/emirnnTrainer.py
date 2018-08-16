@@ -383,7 +383,7 @@ class EMI_Driver:
         '''
         self.__sess = sess
 
-    def runOps(self, opList, X, Y, batchSize, feedDict=None):
+    def runOps(self, opList, X, Y, batchSize, feedDict=None, **kwargs):
         '''
         Run tensorflow operations provided in opList on data X, Y.
 
@@ -396,6 +396,8 @@ class EMI_Driver:
         provided data.
         '''
         sess = self.__sess
+        if feedDict is None:
+            feedDict = self.feedDictFunc(**kwargs)
         self._dataPipe.runInitializer(sess, X, Y, batchSize,
                                        numEpochs=1)
         outList = []
@@ -679,7 +681,8 @@ class EMI_Driver:
                   (df['rec_01'].values[idx], idx + 1), file=redirFile)
         return df
 
-    def getInstancePredictions(self, x, y, earlyPolicy, batchSize=1024, **kwargs):
+    def getInstancePredictions(self, x, y, earlyPolicy, batchSize=1024,
+                               feedDict=None, **kwargs):
 
         '''
         Returns instance level predictions for data (x, y).
@@ -700,7 +703,8 @@ class EMI_Driver:
             predictionStep: [-1, numSubinstance]
         '''
         opList = self._emiTrainer.softmaxPredictions
-        smxOut = self.runOps(opList, x, y, batchSize)
+        smxOut = self.runOps(opList, x, y, batchSize, feedDict=feedDict,
+                             **kwargs)
         softmaxOut = np.concatenate(smxOut, axis=0)
         assert softmaxOut.ndim == 4
         numSubinstance, numTimeSteps, numClass = softmaxOut.shape[1:]
