@@ -13,24 +13,39 @@ class EMI_Trainer:
                  stepSize=0.001, lossType='l2', optimizer='Adam',
                  automode=True):
         '''
-        FIX DOC
-        emi_graph: The forward pass graph that includes EMI_RNN implementation.
-        X, Y : are inputs in appropriate shapes (TODO: Define)
-        lossType: ['l2', 'xentropy']
-        lossIndicator: TODO
+        The EMI-RNN trainer. This classes attaches loss functions and training
+        operations to the forward EMI-RNN graph. Currently, simple softmax loss
+        and l2 loss are supported on the outputs. For optimizers, only ADAM
+        optimizer is available.
 
-        automode (for the lack of better terminology) takes care of most of the
-        training procesure automatically. In certain cases though, the user
-        would want to change certain aspects of the graph - like adding more
-        regregularization terms to the loss operation. In such cases, automode
-        should be turned off and the following method should be called after
-        each graph modification.
-            createOpCollections()
+        numTimesteps: Number of time steps of the RNN model
+        numOutput: Number of output classes
+        graph: This module supports restoring from a meta graph. Provide the
+            meta graph as an argument to enable this behaviour.
+        lossType: A valid loss type string in ['l2', 'xentropy'].
+        optimizer: A valid optimizer string in ['Adam'].
+        automode: Disable or enable the automode behaviour.
+        This module takes care of all of the training procedure automatically,
+        and the default behaviour is suitable for most cases. In certain cases
+        though, the user would want to change certain aspects of the graph;
+        specifically, he would want to change to loss operation by, say, adding
+        regularization terms for the model matrices. To enable this behaviour,
+        the user can perform the following steps:
+            1. Disable automode. That is, when initializing, set automode=False
+            2. After the __call__ method has been invoked to create the loss
+            operation, the user can access the self.lossOp attribute and modify
+            it by adding regularization or other terms.
+            3. After the modification has been performed, the user needs to
+            call the `createOpCollections()` method so that the newly edited
+            operations can be added to Tensorflow collections. This helps in
 
-        X, Y are outputs from some iterator. We assume to be able to get a
-        iterator like behaviour on multiple calls to sess.run(). Specically, we
-        expect a tf.erors.OutOfRangeError at the end of iterations
-        Mention about automode
+        HELP_WANTED: Automode is more of a hack than a systematic way of
+        supporting multiple loss functions/ optimizers. One way of
+        accomplishing this would be to make __createTrainOp and __createLossOp
+        methods protected or public, and having users override these.
+        Alternatively, we can change the structure to incorporate the
+        _createExtendedGraph and _restoreExtendedGraph operations used in
+        EMI-LSTM and so forth.
         '''
         self.numTimeSteps = numTimeSteps
         self.numOutput = numOutput
@@ -45,11 +60,6 @@ class EMI_Trainer:
         self.lossOp = None
         self.trainOp = None
         self.softmaxPredictions = None
-        # Accuracy computation, requires tf.reduce_sum which is not
-        # numerically stable. Please use sel.equalTilda inplace of 
-        # self.accTilda and use numpy.mean to compute accuracy, if stability
-        # is a requirement.
-        # Relevant issue: https://github.com/tensorflow/tensorflow/issues/2625
         self.accTilda = None
         self.equalTilda = None
         self.lossIndicatorTensor = None
@@ -74,6 +84,16 @@ class EMI_Trainer:
         self.__validInit = True
 
     def __call__(self, predicted, target):
+        '''
+        Constructs the loss and train operations. If already created, returns
+        the created operators.
+
+        predicted: The prediction scores outputed from the forward computation
+            graph. Expects a 4 dimensional tensor with shape [-1,
+            numSubinstance, numTimeSteps, numClass].
+        target: The target labels in one hot-encoding. Expects [-1,
+            numSubinstance, numClass]
+        '''
         if self.graphCreated is True:
             # TODO: These statements are redundant after self.validInit call
             # A simple check to self.__validInit should suffice. Test this.
@@ -87,6 +107,7 @@ class EMI_Trainer:
         else:
             self._restoreGraph(predicted, target)
         assert self.graphCreated == True
+        return self.lossOp, self.trainOp
 
     def __transformY(self, target):
         '''
@@ -191,6 +212,10 @@ class EMI_Trainer:
         self.__validInit = True
 
     def createOpCollections(self):
+        '''
+        Adds the trainOp and lossOp to Tensorflow collections. This enables us
+        to restore these operations from saved metagraphs.
+        '''
         tf.add_to_collection('EMI-train-op', self.trainOp)
         tf.add_to_collection('EMI-loss-op', self.lossOp)
 
@@ -202,7 +227,28 @@ class EMI_Trainer:
 
     def trainModel(self, sess, redirFile=None, echoInterval=15,
                    echoCB=None, feedDict=None, **kwargs):
+        '''
+        The training routine.
 
+        sess: The Tensorflow session associated with the computation graph.
+        redirFile: Output from the training routine can be redirected to a file
+            on the disk. Please provide the file pointer to said file to enable
+            this behaviour. Defaults to STDOUT. To disable outputs all
+            together, please pass a file pointer to DEVNULL or equivalent as an
+            argument.
+        echoInterval: The number of batch updates between calls to echoCB.
+        echoCB: This call back method is used for printing intermittent
+            training stats such as validation accuracy or loss value. By default,
+            it defaults to self.__echoCB. The signature of the method is,
+
+            echoCB(self, session, feedDict, currentBatch, redirFile, **kwargs)
+
+            Please refer to the __echoCB implementation for a simple example.
+            A more complex example can be found in the EMI_Driver.
+        feedDict: feedDict, that is required for the session.run() calls. Will
+            be directly passed to the sess.run() calls.
+        **kwargs: Additional args to echoCB.
+        '''
         if echoCB is None:
             echoCB = self.__echoCB
         currentBatch = 0
@@ -217,6 +263,16 @@ class EMI_Trainer:
                 break
 
     def restoreFromGraph(self, graph):
+        '''
+        This method provides an alternate way of restoring
+        from a saved meta graph - without having to provide the restored meta
+        graph as a parameter to __init__. This is useful when, in between
+        training, you want to reset the entire computation graph and reload a
+        new meta graph from disk. This method allows you to attach to this
+        newly loaded meta graph without having to create a new EMI_DataPipeline
+        object. Use this method only when you want to clear/reset the existing
+        computational graph.
+        '''
         self.graphCreated = False
         self.lossOp = None
         self.trainOp = None
@@ -233,6 +289,22 @@ class EMI_Trainer:
 class EMI_Driver:
     def __init__(self, emiDataPipeline, emiGraph, emiTrainer,
                  max_to_keep=1000, globalStepStart=1000):
+        '''
+        The driver class that takes care of training an EMI RNN graph. The EMI
+        RNN graph consists of three parts - a data input pipeline
+        (EMI_DataPipeline), the forward computation graph (EMI-RNN) and the
+        loss graph (EMI_Trainer). After the three parts of been created and
+        connected, they should be passed as arguments to this module.
+
+        emiDataPipeline: An EMI_DataPipeline object.
+        emiGraph: An EMI_RNN object.
+        emiTrainer: An EMI_Trainer object.
+        max_to_keep: Maximum number of model checkpoints to keep. Make sure
+            that this is more than [number of iterations] * [number of rounds].
+        globalStepStart: The global step  value is used as a key for naming
+        saved meta graphs. Meta graphs and checkpoints will be named from
+        globalStepStart through globalStepStart  + max_to_keep.
+        '''
         self.__dataPipe = emiDataPipeline
         self.__emiGraph = emiGraph
         self.__emiTrainer = emiTrainer
