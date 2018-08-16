@@ -43,6 +43,16 @@ class FastGRNNCell(RNNCell):
     uRank = rank of U matrix (creates two matrices if not None)
     zetaInit = init for zeta, the scale param
     nuInit = init for nu, the translation param
+
+    FastGRNN architecture and compression techniques are found in
+    FastGRNN(LINK) paper
+
+    Basic architecture is like:
+
+    z_t = gate_nl(Wx_t + Uh_{t-1} + B_g)
+    h_t^ = update_nl(Wx_t + Uh_{t-1} + B_h)
+    h_t = z_t*h_{t-1} + (sigmoid(zeta)(1-z_t) + sigmoid(nu))*h_t^
+
     '''
 
     def __init__(self, hidden_size, gate_non_linearity="sigmoid",
@@ -196,6 +206,15 @@ class FastRNNCell(RNNCell):
     uRank = rank of U matrix (creates two matrices if not None)
     alphaInit = init for alpha, the update scalar
     betaInit = init for beta, the weight for previous state
+
+    FastRNN architecture and compression techniques are found in
+    FastGRNN(LINK) paper
+
+    Basic architecture is like:
+
+    h_t^ = update_nl(Wx_t + Uh_{t-1} + B_h)
+    h_t = sigmoid(beta)*h_{t-1} + sigmoid(alpha)*h_t^
+    
     '''
 
     def __init__(self, hidden_size, update_non_linearity="tanh",
