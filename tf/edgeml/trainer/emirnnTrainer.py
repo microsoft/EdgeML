@@ -315,13 +315,13 @@ class EMI_Driver:
         saved meta graphs. Meta graphs and checkpoints will be named from
         globalStepStart through globalStepStart  + max_to_keep.
         '''
-        self.__dataPipe = emiDataPipeline
-        self.__emiGraph = emiGraph
-        self.__emiTrainer = emiTrainer
+        self._dataPipe = emiDataPipeline
+        self._emiGraph = emiGraph
+        self._emiTrainer = emiTrainer
         msg = 'Have you invoked __call__()'
-        assert self.__dataPipe.graphCreated is True, msg
-        assert self.__emiGraph.graphCreated is True, msg
-        assert self.__emiTrainer.graphCreated is True, msg
+        assert self._dataPipe.graphCreated is True, msg
+        assert self._emiGraph.graphCreated is True, msg
+        assert self._emiTrainer.graphCreated is True, msg
         self.__globalStep = globalStepStart
         self.__saver = tf.train.Saver(max_to_keep=max_to_keep,
                                       save_relative_paths=True)
@@ -334,9 +334,9 @@ class EMI_Driver:
         A callable that is passed as argument - echoCB - to
         EMI_Trainer.train() method.
         '''
-        _, loss, acc = sess.run([self.__emiTrainer.trainOp,
-                                 self.__emiTrainer.lossOp,
-                                 self.__emiTrainer.accTilda],
+        _, loss, acc = sess.run([self._emiTrainer.trainOp,
+                                 self._emiTrainer.lossOp,
+                                 self._emiTrainer.accTilda],
                                 feed_dict=feedDict)
         epoch = int(currentBatch /  numBatches)
         batch = int(currentBatch % max(numBatches, 1))
@@ -396,7 +396,7 @@ class EMI_Driver:
         provided data.
         '''
         sess = self.__sess
-        self.__dataPipe.runInitializer(sess, X, Y, batchSize,
+        self._dataPipe.runInitializer(sess, X, Y, batchSize,
                                        numEpochs=1)
         outList = []
         while True:
@@ -408,10 +408,9 @@ class EMI_Driver:
         return outList
 
     def run(self, numClasses, x_train, y_train, bag_train, x_val, y_val,
-            bag_val, numIter, numRounds, batchSize, numEpochs, feedDict=None,
-            echoCB=None, redirFile=None, modelPrefix='/tmp/model',
-            updatePolicy='top-k', fracEMI=0.3, lossIndicator=None, *args,
-            **kwargs):
+            bag_val, numIter, numRounds, batchSize, numEpochs, echoCB=None,
+            redirFile=None, modelPrefix='/tmp/model', updatePolicy='top-k',
+            fracEMI=0.3, lossIndicator=None, *args, **kwargs):
         '''
         Performs the EMI-RNN training routine.
 
@@ -460,6 +459,7 @@ class EMI_Driver:
         emiStep = numRounds - emiSteps
         print("Training with MI-RNN loss for %d rounds" % emiStep,
               file=redirFile)
+        feedDict = self.feedDictFunc(**kwargs)
         for cround in range(numRounds):
             print("Round: %d" % cround, file=redirFile)
             if cround == emiStep:
@@ -467,22 +467,22 @@ class EMI_Driver:
                 if lossIndicator is not None:
                     raise NotImplementedError('TODO')
                 else:
-                    nTs = self.__emiTrainer.numTimeSteps
-                    nOut = self.__emiTrainer.numOutput
+                    nTs = self._emiTrainer.numTimeSteps
+                    nOut = self._emiTrainer.numOutput
                     lossIndicator = np.ones([nTs, nOut])
-                    sess.run(self.__emiTrainer.lossIndicatorAssignOp,
-                         feed_dict={self.__emiTrainer.lossIndicatorPlaceholder:
+                    sess.run(self._emiTrainer.lossIndicatorAssignOp,
+                         feed_dict={self._emiTrainer.lossIndicatorPlaceholder:
                                     lossIndicator})
             valAccList, globalStepList = [], []
             # Train the best model for the current round
             for citer in range(numIter):
-                self.__dataPipe.runInitializer(sess, x_train, curr_y,
+                self._dataPipe.runInitializer(sess, x_train, curr_y,
                                                batchSize, numEpochs)
                 numBatches = int(np.ceil(len(x_train) / batchSize))
-                self.__emiTrainer.trainModel(sess, echoCB=self.fancyEcho,
+                self._emiTrainer.trainModel(sess, echoCB=self.fancyEcho,
                                              numBatches=numBatches,
                                              feedDict=feedDict)
-                acc = self.runOps([self.__emiTrainer.accTilda],
+                acc = self.runOps([self._emiTrainer.accTilda],
                                   x_val, y_val, batchSize, feedDict)
                 acc = np.mean(np.reshape(np.array(acc), -1))
                 print(" Val acc %2.5f | " % acc, end='', file=redirFile)
@@ -503,11 +503,13 @@ class EMI_Driver:
             sess = tf.Session()
             graph = self.__graphManager.loadCheckpoint(sess, resPrefix, resStep,
                                                        redirFile=redirFile)
-            self.__dataPipe.restoreFromGraph(graph)
-            self.__emiGraph.restoreFromGraph(graph, None)
-            self.__emiTrainer.restoreFromGraph(graph)
+            # return graph
+            self._dataPipe.restoreFromGraph(graph)
+            self._emiGraph.restoreFromGraph(graph, None)
+            self._emiTrainer.restoreFromGraph(graph)
             self.__sess = sess
-            smxOut = self.runOps([self.__emiTrainer.softmaxPredictions],
+            feedDict = self.feedDictFunc(**kwargs)
+            smxOut = self.runOps([self._emiTrainer.softmaxPredictions],
                                      x_train, y_train, batchSize, feedDict)
             smxOut= [np.array(smxOut[i][0]) for i in range(len(smxOut))]
             smxOut = np.concatenate(smxOut)[:, :, -1, :]
@@ -697,7 +699,7 @@ class EMI_Driver:
             predictions: [-1, numSubinstance]
             predictionStep: [-1, numSubinstance]
         '''
-        opList = self.__emiTrainer.softmaxPredictions
+        opList = self._emiTrainer.softmaxPredictions
         smxOut = self.runOps(opList, x, y, batchSize)
         softmaxOut = np.concatenate(smxOut, axis=0)
         assert softmaxOut.ndim == 4
@@ -954,6 +956,12 @@ class EMI_Driver:
             # everything else as 0
             newY[i, :, :] = 0
             newY[i, :, 0] = 1
-        newY[i, bestCandidate-lccl+1:bestCandidate+1, 0] = 0
-        newY[i, bestCandidate-lccl+1:bestCandidate+1, lcc] = 1
+            newY[i, bestCandidate-lccl+1:bestCandidate+1, 0] = 0
+            newY[i, bestCandidate-lccl+1:bestCandidate+1, lcc] = 1
         return newY
+
+    def feedDictFunc(self, **kwargs):
+        '''
+        Construct feed dict from graph objects
+        '''
+        return None
