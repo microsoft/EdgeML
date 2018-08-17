@@ -18,7 +18,7 @@ of weight matrices.
 # Plug and Play Cells
 
 `FastGRNNCell` and `FastRNNCell` present in `edgeml.graph.rnn` are very similar to 
-Tensorflow's inbuilt GRUCell, BasicLSTMCell, and UGRNNCell allowing us to 
+Tensorflow's inbuilt `RNNCell`, `GRUCell`, `BasicLSTMCell`, and `UGRNNCell` allowing us to 
 replace any of the standard RNN Cell in our architecture with FastCells. 
 One can see the plug and play nature at the endpoint script for FastCells, where the graph 
 building is very similar to LSTM/GRU in Tensorflow. 
