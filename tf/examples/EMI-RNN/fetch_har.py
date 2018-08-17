@@ -21,6 +21,7 @@ BASH = True
 workingDir = './'
 downloadDir = 'HAR'
 linkData = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00240/UCI%20HAR%20Dataset.zip'
+from helpermethods import *
 
 def downloadData(workingDir, downloadDir):
     def runcommand(command, splitChar=' '):
@@ -50,26 +51,9 @@ def downloadData(workingDir, downloadDir):
     return True
 
 def processData(workingDir, downloadDir):
-    def loadLibSVMFile(file):
-        data = load_svmlight_file(file)
-        features = data[0]
-        labels = data[1]
-        retMat = np.zeros([features.shape[0], features.shape[1] + 1])
-        retMat[:, 0] = labels
-        retMat[:, 1:] = features.todense()
-        return retMat
-
     path = workingDir + '/' + downloadDir
     path = os.path.abspath(path)
-    trf = path + '/train.txt'
-    tsf = path + '/test.txt'
-    assert os.path.isfile(trf), 'File not found: %s' % trf
-    assert os.path.isfile(tsf), 'File not found: %s' % tsf
-    train = loadLibSVMFile(trf)
-    test = loadLibSVMFile(tsf)
-    np.save(path + '/train.npy', train)
-    np.save(path + '/test.npy', test)
-
+    generateData(path, seed=42)
 
 if __name__ == '__main__':
     if BASH is True:
@@ -78,6 +62,6 @@ if __name__ == '__main__':
         print("provided in this script.")
         if not downloadData(workingDir, downloadDir):
             exit('Download failed')
-    # print("Procesing data")
-    # processData(workingDir, downloadDir)
+    print("Procesing data")
+    processData(workingDir, downloadDir)
     print("Done")

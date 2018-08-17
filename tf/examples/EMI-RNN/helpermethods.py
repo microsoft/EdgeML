@@ -3,68 +3,70 @@
 import numpy as np
 import os
 
-f = open('train/subject_train.txt')
-subjects = []
-for line in f:
-	subject = line.strip().split()
-	subjects.append(int(subject[0]))
-subjects = np.array(subjects)
+def generateIndicesForSplits(extractedDir):
+	f = open(extractedDir +'/UCI HAR Dataset/train/subject_train.txt')
+	subjects = []
+	for line in f:
+		subject = line.strip().split()
+		subjects.append(int(subject[0]))
+	subjects = np.array(subjects)
 
-# get unique subjects
-numSubjects = np.unique(subjects)
-print ("Unique subjects are", numSubjects)
+	# get unique subjects
+	numSubjects = np.unique(subjects)
+	# print ("Unique subjects are", numSubjects)
 
-# shuffle amongst train subjects so that difficult/easy subjects spread in both val and train
-np.random.seed(42)
-np.random.shuffle(numSubjects)
-print ("Unique subjects after shuffling are", numSubjects)
+	# shuffle amongst train subjects so that difficult/easy subjects spread in both val and train
+	np.random.shuffle(numSubjects)
+	# print ("Unique subjects after shuffling are", numSubjects)
 
-l = len(numSubjects)
+	l = len(numSubjects)
 
-splitRatio = 0.1
-valSplit = int(l*splitRatio + 1)
+	splitRatio = 0.1
+	valSplit = int(l*splitRatio + 1)
 
-valSubjects = numSubjects[:valSplit]
-trainSubjects = numSubjects[valSplit:]
+	valSubjects = numSubjects[:valSplit]
+	trainSubjects = numSubjects[valSplit:]
 
-print ("Train subjects are", trainSubjects)
-print ("Val subjects are", valSubjects)
+	# print ("Train subjects are", trainSubjects)
+	# print ("Val subjects are", valSubjects)
 
-trainSubjectIndices = []
-valSubjectIndices = []
+	trainSubjectIndices = []
+	valSubjectIndices = []
 
-for i, subject in enumerate(subjects):
-	if subject in trainSubjects:
-		trainSubjectIndices.append(i)
-	elif subject in valSubjects:
-		valSubjectIndices.append(i)
-	else:
-		raise Exception("some bug in your code")
+	for i, subject in enumerate(subjects):
+		if subject in trainSubjects:
+			trainSubjectIndices.append(i)
+		elif subject in valSubjects:
+			valSubjectIndices.append(i)
+		else:
+			raise Exception("some bug in your code")
 
-# assert that train/val different
-for x in trainSubjectIndices:
-	assert x not in valSubjectIndices
+	# assert that train/val different
+	for x in trainSubjectIndices:
+		assert x not in valSubjectIndices
 
-trainSubjectIndices = np.array(trainSubjectIndices)
-valSubjectIndices = np.array(valSubjectIndices)
+	trainSubjectIndices = np.array(trainSubjectIndices)
+	valSubjectIndices = np.array(valSubjectIndices)
 
-# shuffle more, so that readings not grouped by a subject
-# therefore, no need to shuffle after slicing from read dataset, as we are shuffling here
-idx = np.arange(len(trainSubjectIndices))
-np.random.seed(42)
-np.random.shuffle(idx)
-trainSubjectIndices = trainSubjectIndices[idx]
+	# shuffle more, so that readings not grouped by a subject
+	# therefore, no need to shuffle after slicing from read dataset, as we are shuffling here
+	idx = np.arange(len(trainSubjectIndices))
+	np.random.seed(42)
+	np.random.shuffle(idx)
+	trainSubjectIndices = trainSubjectIndices[idx]
 
-idx = np.arange(len(valSubjectIndices))
-np.random.seed(42)
-np.random.shuffle(idx)
-valSubjectIndices = valSubjectIndices[idx]
+	idx = np.arange(len(valSubjectIndices))
+	np.random.seed(42)
+	np.random.shuffle(idx)
+	valSubjectIndices = valSubjectIndices[idx]
 
-print (len(trainSubjectIndices), len(valSubjectIndices))
-assert len(trainSubjectIndices) + len(valSubjectIndices) == len(subjects)
+	# print (len(trainSubjectIndices), len(valSubjectIndices))
+	assert len(trainSubjectIndices) + len(valSubjectIndices) == len(subjects)
+
+	return trainSubjectIndices, valSubjectIndices
 
 # painfully read files
-def readData():
+def readData(extractedDir):
 	INPUT_SIGNAL_TYPES = [
     "body_acc_x_",
     "body_acc_y_",
@@ -86,7 +88,7 @@ def readData():
 	    "STANDING", 
 	    "LAYING"
 	] 
-	DATASET_PATH = ""
+	DATASET_PATH = extractedDir + "/UCI HAR Dataset/"
 	TRAIN = "train/"
 	TEST = "test/"
 	# Load "X" (the neural network's training and testing inputs)
@@ -142,75 +144,76 @@ def readData():
 	return x_train_val_combined, y_train_val_combined, x_test, y_test
 
 
-x_train_val_combined, y_train_val_combined, x_test, y_test = readData()
-timesteps = x_train_val_combined.shape[-2]
-feats = x_train_val_combined.shape[-1]
+def generateData(extractedDir, seed=None):
+	if seed is not None:
+		np.random.seed(seed)
+	x_train_val_combined, y_train_val_combined, x_test, y_test = readData(extractedDir)
+	timesteps = x_train_val_combined.shape[-2]
+	feats = x_train_val_combined.shape[-1]
 
-x_train = x_train_val_combined[trainSubjectIndices]
-y_train = y_train_val_combined[trainSubjectIndices]
-x_val = x_train_val_combined[valSubjectIndices]
-y_val = y_train_val_combined[valSubjectIndices]
+	trainSubjectIndices, valSubjectIndices = generateIndicesForSplits(extractedDir)
 
-# normalization
-x_train = np.reshape(x_train, [-1, feats])
-mean = np.mean(x_train, axis=0)
-std = np.std(x_train, axis=0)
+	x_train = x_train_val_combined[trainSubjectIndices]
+	y_train = y_train_val_combined[trainSubjectIndices]
+	x_val = x_train_val_combined[valSubjectIndices]
+	y_val = y_train_val_combined[valSubjectIndices]
 
-# normalize train
-x_train = x_train - mean
-x_train = x_train / std
-x_train = np.reshape(x_train, [-1, timesteps, feats])
+	# normalization
+	x_train = np.reshape(x_train, [-1, feats])
+	mean = np.mean(x_train, axis=0)
+	std = np.std(x_train, axis=0)
 
-# normalize val
-x_val = np.reshape(x_val, [-1, feats])
-x_val = x_val - mean
-x_val = x_val / std
-x_val = np.reshape(x_val, [-1, timesteps, feats])
+	# normalize train
+	x_train = x_train - mean
+	x_train = x_train / std
+	x_train = np.reshape(x_train, [-1, timesteps, feats])
 
-# normalize test
-x_test = np.reshape(x_test, [-1, feats])
-x_test = x_test - mean
-x_test = x_test / std
-x_test = np.reshape(x_test, [-1, timesteps, feats])
+	# normalize val
+	x_val = np.reshape(x_val, [-1, feats])
+	x_val = x_val - mean
+	x_val = x_val / std
+	x_val = np.reshape(x_val, [-1, timesteps, feats])
 
-# shuffle test, as this was remaining
-idx = np.arange(len(x_test))
-np.random.seed(42)
-np.random.shuffle(idx)
-x_test = x_test[idx]
-y_test = y_test[idx]
+	# normalize test
+	x_test = np.reshape(x_test, [-1, feats])
+	x_test = x_test - mean
+	x_test = x_test / std
+	x_test = np.reshape(x_test, [-1, timesteps, feats])
 
-# one-hot encoding of labels
-numOutput = 6
+	# shuffle test, as this was remaining
+	idx = np.arange(len(x_test))
+	np.random.shuffle(idx)
+	x_test = x_test[idx]
+	y_test = y_test[idx]
 
-one_hot = np.zeros([y_train.shape[0], numOutput])
-for i, label in enumerate(y_train):
-    one_hot[i][label[0]] = 1
-y_train = one_hot
+	# one-hot encoding of labels
+	numOutput = 6
 
-one_hot = np.zeros([y_test.shape[0], numOutput])
-for i, label in enumerate(y_test):
-    one_hot[i][label[0]] = 1
-y_test = one_hot
+	one_hot = np.zeros([y_train.shape[0], numOutput])
+	for i, label in enumerate(y_train):
+	    one_hot[i][label[0]] = 1
+	y_train = one_hot
 
-one_hot = np.zeros([y_val.shape[0], numOutput])
-for i, label in enumerate(y_val):
-    one_hot[i][label[0]] = 1
-y_val = one_hot
+	one_hot = np.zeros([y_test.shape[0], numOutput])
+	for i, label in enumerate(y_test):
+	    one_hot[i][label[0]] = 1
+	y_test = one_hot
 
-print("x_train shape", x_train.shape)
-print("y_train shape", y_train.shape)
-print("x_test shape", x_test.shape)
-print("y_test shape", y_test.shape)
-print("x_val shape", x_val.shape)
-print("y_val shape", y_val.shape)
+	one_hot = np.zeros([y_val.shape[0], numOutput])
+	for i, label in enumerate(y_val):
+	    one_hot[i][label[0]] = 1
+	y_val = one_hot
 
-# Since for us, validation set is test set and test set is validation set
-# We pass run train and test sets ( so test is val )
-np.save("x_train", x_train)
-np.save("y_train", y_train)
-np.save("x_test", x_test)
-np.save("y_test", y_test)
-np.save("x_val", x_val)
-np.save("y_val", y_val)
+	# print("x_train shape", x_train.shape)
+	# print("y_train shape", y_train.shape)
+	# print("x_test shape", x_test.shape)
+	# print("y_test shape", y_test.shape)
+	# print("x_val shape", x_val.shape)
+	# print("y_val shape", y_val.shape)
 
+	np.save(extractedDir + "/x_train", x_train)
+	np.save(extractedDir + "/y_train", y_train)
+	np.save(extractedDir + "/x_test", x_test)
+	np.save(extractedDir + "/y_test", y_test)
+	np.save(extractedDir + "/x_val", x_val)
+	np.save(extractedDir + "/y_val", y_val)
