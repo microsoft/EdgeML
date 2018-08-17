@@ -9,12 +9,10 @@ of weight matrices.
 
 # FastRNN
 ![FastRNN](img/FastRNN.png)
-
 ![FastRNN Equation](img/FastRNN_eq.png)
 
 # FastGRNN
 ![FastGRNN Base Architecture](img/FastGRNN.png)
-
 ![FastGRNN Base Equation](img/FastGRNN_eq.png)
 
 # Plug and Play Cells
