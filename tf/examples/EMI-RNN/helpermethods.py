@@ -1,5 +1,9 @@
-# creates x_train, y_train, x_test, y_test, x_val, y_val npy files. val set is created after cutting out a user provided fraction from train set.
-# reference : https://github.com/guillaume-chevalier/LSTM-Human-Activity-Recognition
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
+# 
+# Helper methods to generate training, validation and test splits from the UCI HAR dataset. 
+# Each split consists of a separate set of users.
+# Reference : https://github.com/guillaume-chevalier/LSTM-Human-Activity-Recognition
 
 import numpy as np
 import os
