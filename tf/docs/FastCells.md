@@ -10,8 +10,12 @@ of weight matrices.
 # FastRNN
 ![FastRNN](img/FastRNN.png)
 
+![FastRNN Equation](img/FastRNN_eq.png)
+
 # FastGRNN
 ![FastGRNN Base Architecture](img/FastGRNN.png)
+
+![FastGRNN Base Equation](img/FastGRNN_eq.png)
 
 # Plug and Play Cells
 
@@ -19,8 +23,12 @@ of weight matrices.
 Tensorflow's inbuilt GRUCell, BasicLSTMCell and UGRNNCell allowing us to 
 replace any of the standard RNN Cell in our architecture with FastCells. 
 One can see the plug and play nature at the endpoint script for FastCells, where the graph 
-building is very similar to LSTM/GRU in Tensorflow. [fastcell_example.py](../../examples/FastCells/fastcell_example.py)
+building is very similar to LSTM/GRU in Tensorflow. 
 
-You can find [FastRNNCell](../edgeml/graph/rnn.py#L198) and [FastGRNNCell](../edgeml/graph/rnn.py#L31).
+Script: [Endpoint Script](../examples/FastCells/fastcell_example.py)
+
+Example Notebook: [iPython Notebook](../examples/FastCells/fastcell_example.ipynb)
+
+Cells: [FastRNNCell](../edgeml/graph/rnn.py#L198) and [FastGRNNCell](../edgeml/graph/rnn.py#L31).
 
 # 3 phase Fast Training
