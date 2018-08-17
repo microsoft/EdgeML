@@ -479,7 +479,7 @@ class EMI_DataPipeline():
 
     def __call__(self):
         '''
-        The call method performs the actual graph construction either by
+        The call method performs graph construction either by
         creating a new graph or, if a restored meta graph is provided, by
         restoring operators from this meta graph.
 
@@ -561,22 +561,31 @@ class EMI_RNN():
                                   "abstract class. Instantiating is not " +
                                   "allowed.")
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, x_batch, **kwargs):
+        '''
+        The call method performs graph construction either by
+        creating a new graph or, if a restored meta graph is provided, by
+        restoring operators from this meta graph.
+
+        x_batch: Dataset API iterators to the data.
+
+        returns forward computation output tensor
+        '''
         if self.graphCreated is True:
             assert self.output is not None
             return self.output
         if self.graph is None:
-            output = self._createBaseGraph(*args, **kwargs)
+            output = self._createBaseGraph(x_batch, **kwargs)
             assert self.graphCreated is False
-            self._createExtendedGraph(output, *args, **kwargs)
+            self._createExtendedGraph(output, **kwargs)
         else:
-            self._restoreBaseGraph(self.graph, *args, **kwargs)
+            self._restoreBaseGraph(self.graph, **kwargs)
             assert self.graphCreated is False
-            self._restoreExtendedGraph(self.graph, *args, **kwargs)
+            self._restoreExtendedGraph(self.graph, **kwargs)
         assert self.graphCreated is True
         return self.output
 
-    def restoreFromGraph(self, graph, *args, **kwargs):
+    def restoreFromGraph(self, graph, **kwargs):
         '''
         This method provides an alternate way of restoring
         from a saved meta graph - without having to provide the restored meta
@@ -592,30 +601,30 @@ class EMI_RNN():
         self.output = None
         self.assignOps = []
         self.graph = graph
-        self._restoreBaseGraph(self.graph, *args, **kwargs)
+        self._restoreBaseGraph(self.graph, **kwargs)
         assert self.graphCreated is False
-        self._restoreExtendedGraph(self.graph, *args, **kwargs)
+        self._restoreExtendedGraph(self.graph, **kwargs)
         assert self.graphCreated is True
 
     def getModelParams(self):
         raise NotImplementedError("Subclass does not implement this method")
 
-    def _createBaseGraph(self, *args, **kwargs):
+    def _createBaseGraph(self, x_batch, **kwargs):
         raise NotImplementedError("Subclass does not implement this method")
 
-    def _createExtendedGraph(self, baseOutput, *args, **kwargs):
+    def _createExtendedGraph(self, baseOutput, **kwargs):
         raise NotImplementedError("Subclass does not implement this method")
 
-    def _restoreBaseGraph(self, graph, *args, **kwargs):
+    def _restoreBaseGraph(self, graph, **kwargs):
         raise NotImplementedError("Subclass does not implement this method")
 
-    def _restoreExtendedGraph(self, graph, *args, **kwargs):
+    def _restoreExtendedGraph(self, graph, **kwargs):
         raise NotImplementedError("Subclass does not implement this method")
 
-    def addBaseAssignOps(self, graph, *args, **kwargs):
+    def addBaseAssignOps(self, graph, initVarList, **kwargs):
         raise NotImplementedError("Subclass does not implement this method")
 
-    def addExtendedAssignOps(self, graph, *args, **kwargs):
+    def addExtendedAssignOps(self, graph, **kwargs):
         raise NotImplementedError("Subclass does not implement this method")
 
 
@@ -701,7 +710,7 @@ class EMI_BasicLSTM(EMI_RNN):
         self.output = output
         return self.output
 
-    def _restoreBaseGraph(self, graph, X):
+    def _restoreBaseGraph(self, graph):
         assert self.graphCreated is False
         assert self.graph is not None
         scope = self._scope
@@ -722,7 +731,7 @@ class EMI_BasicLSTM(EMI_RNN):
         assert len(self.varList) == 2
         return self.varList
 
-    def addBaseAssignOps(self, initVarList):
+    def addBaseAssignOps(self, graph, initVarList, **kwargs):
         '''
         Adds Tensorflow assignment operations to all of the model tensors.
         These operations can then be used to initialize these tensors from
@@ -820,7 +829,7 @@ class EMI_GRU(EMI_RNN):
         self.output = output
         return self.output
 
-    def _restoreBaseGraph(self, graph, X):
+    def _restoreBaseGraph(self, graph):
         assert self.graphCreated is False
         assert self.graph is not None
         scope = self._scope
@@ -844,7 +853,7 @@ class EMI_GRU(EMI_RNN):
         assert len(self.varList) == 4
         return self.varList
 
-    def addBaseAssignOps(self, initVarList):
+    def addBaseAssignOps(self, graph, initVarList):
         '''
         Adds Tensorflow assignment operations to all of the model tensors.
         These operations can then be used to initialize these tensors from
@@ -962,7 +971,7 @@ class EMI_FastRNN(EMI_RNN):
         self.output = output
         return self.output
 
-    def _restoreBaseGraph(self, graph, X):
+    def _restoreBaseGraph(self, graph):
         assert self.graphCreated is False
         assert self.graph is not None
         scope = self._scope
@@ -1010,7 +1019,7 @@ class EMI_FastRNN(EMI_RNN):
         assert self.graphCreated is True, "Graph is not created"
         return self.varList
 
-    def addBaseAssignOps(self, initVarList):
+    def addBaseAssignOps(self, graph, initVarList):
         '''
         Adds Tensorflow assignment operations to all of the model tensors.
         These operations can then be used to initialize these tensors from
@@ -1293,7 +1302,7 @@ class EMI_FastGRNN(EMI_RNN):
         self.output = output
         return self.output
 
-    def _restoreBaseGraph(self, graph, X):
+    def _restoreBaseGraph(self, graph):
         assert self.graphCreated is False
         assert self.graph is not None
         scope = self._scope
@@ -1343,7 +1352,7 @@ class EMI_FastGRNN(EMI_RNN):
         assert self.graphCreated is True, "Graph is not created"
         return self.varList
 
-    def addBaseAssignOps(self, initVarList):
+    def addBaseAssignOps(self, graph, initVarList):
         '''
         Adds Tensorflow assignment operations to all of the model tensors.
         These operations can then be used to initialize these tensors from

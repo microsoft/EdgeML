@@ -442,7 +442,8 @@ class EMI_Driver:
         *args, **kwargs: Additional arguments passed to callback methods and
             update policy methods.
 
-        returns the updated instance level labels on the training set.
+        returns the updated instance level labels on the training set and a
+            list of model stats after each round.
         '''
         assert self.__sess is not None, 'No sessions initialized'
         sess = self.__sess
@@ -462,6 +463,7 @@ class EMI_Driver:
         print("Training with MI-RNN loss for %d rounds" % emiStep,
               file=redirFile)
         feedDict = self.feedDictFunc(**kwargs)
+        modelStats = []
         for cround in range(numRounds):
             print("Round: %d" % cround, file=redirFile)
             if cround == emiStep:
@@ -500,16 +502,10 @@ class EMI_Driver:
             ## Load the best val-acc model
             argAcc = np.argmax(valAccList)
             resPrefix, resStep = globalStepList[argAcc]
-            self.__sess.close()
-            tf.reset_default_graph()
-            sess = tf.Session()
-            graph = self.__graphManager.loadCheckpoint(sess, resPrefix, resStep,
-                                                       redirFile=redirFile)
-            # return graph
-            self._dataPipe.restoreFromGraph(graph)
-            self._emiGraph.restoreFromGraph(graph, None)
-            self._emiTrainer.restoreFromGraph(graph)
-            self.__sess = sess
+            modelStats.append((cround, np.max(valAccList),
+                               resPrefix, resStep))
+            self.loadSavedGraphToNewSession(resPrefix, resStep, redirFile)
+            sess = self.getCurrentSession()
             feedDict = self.feedDictFunc(**kwargs)
             smxOut = self.runOps([self._emiTrainer.softmaxPredictions],
                                      x_train, y_train, batchSize, feedDict)
@@ -518,7 +514,22 @@ class EMI_Driver:
             newY = updatePolicyFunc(curr_y, smxOut, bag_train,
                                     numClasses, **kwargs)
             currY = newY
-        return currY
+        return currY, modelStats
+
+    def loadSavedGraphToNewSession(self, modelPrefix, globalStep,
+                                      redirFile=None):
+        self.__sess.close()
+        tf.reset_default_graph()
+        sess = tf.Session()
+        graph = self.__graphManager.loadCheckpoint(sess, modelPrefix,
+                                                   globalStep=globalStep,
+                                                   redirFile=redirFile)
+        # return graph
+        self._dataPipe.restoreFromGraph(graph)
+        self._emiGraph.restoreFromGraph(graph)
+        self._emiTrainer.restoreFromGraph(graph)
+        self.__sess = sess
+        return graph
 
     def updateLabel(self, Y, policy, softmaxOut, bagLabel, numClasses, **kwargs):
         '''
@@ -781,7 +792,7 @@ class EMI_Driver:
 
     def __policyPrune(self, currentY, softmaxOut, bagLabel, numClasses,
                       minNegativeProb=0.0, updatesPerCall=3,
-                      maxAllowedUpdates=3):
+                      maxAllowedUpdates=3, **kwargs):
         '''
         CurrentY: [-1, numsubinstance, numClass]
         softmaxOut: [-1, numsubinstance, numClass]
