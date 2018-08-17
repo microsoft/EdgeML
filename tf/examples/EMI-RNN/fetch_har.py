@@ -15,13 +15,13 @@ import subprocess
 import os
 import numpy as np
 import sys
+from helpermethods import *
 
 BASH = True
 
 workingDir = './'
 downloadDir = 'HAR'
 linkData = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00240/UCI%20HAR%20Dataset.zip'
-from helpermethods import *
 
 def downloadData(workingDir, downloadDir):
     def runcommand(command, splitChar=' '):
