@@ -24,7 +24,7 @@ downloadDir = 'usps10'
 linkTrain = 'http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.bz2'
 linkTest = 'http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.t.bz2'
 
-def downloadData(workingDir, downloadDir):
+def downloadData(workingDir, downloadDir, linkTrain, linkTest):
     def runcommand(command):
         p = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
         output, error = p.communicate()
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         print("Attempting to use bash. If bash is not available, please")
         print("refer to instructions for downloading files manually")
         print("provided in this script.")
-        if not downloadData(workingDir, downloadDir):
+        if not downloadData(workingDir, downloadDir, linkTrain, linkTest):
             exit('Download failed')
     print("Procesing data")
     processData(workingDir, downloadDir)

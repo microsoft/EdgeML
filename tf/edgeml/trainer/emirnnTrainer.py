@@ -485,7 +485,8 @@ class EMI_Driver:
                 numBatches = int(np.ceil(len(x_train) / batchSize))
                 self._emiTrainer.trainModel(sess, echoCB=self.fancyEcho,
                                              numBatches=numBatches,
-                                             feedDict=feedDict)
+                                             feedDict=feedDict,
+                                             redirFile=redirFile)
                 acc = self.runOps([self._emiTrainer.accTilda],
                                   x_val, y_val, batchSize, feedDict)
                 acc = np.mean(np.reshape(np.array(acc), -1))

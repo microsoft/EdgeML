@@ -1165,7 +1165,7 @@ class EMI_UGRNN(EMI_RNN):
         self.output = output
         return self.output
 
-    def _restoreBaseGraph(self, graph, X):
+    def _restoreBaseGraph(self, graph):
         assert self.graphCreated is False
         assert self.graph is not None
         scope = self._scope
@@ -1186,7 +1186,7 @@ class EMI_UGRNN(EMI_RNN):
         assert len(self.varList) == 2
         return self.varList
 
-    def addBaseAssignOps(self, initVarList):
+    def addBaseAssignOps(self, graph, initVarList):
         '''
         Adds Tensorflow assignment operations to all of the model tensors.
         These operations can then be used to initialize these tensors from
