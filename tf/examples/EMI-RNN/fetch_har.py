@@ -53,7 +53,7 @@ def downloadData(workingDir, downloadDir):
 def processData(workingDir, downloadDir):
     path = workingDir + '/' + downloadDir
     path = os.path.abspath(path)
-    generateData(path, seed=42)
+    generateData(path)
 
 if __name__ == '__main__':
     if BASH is True:
