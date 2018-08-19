@@ -1,20 +1,28 @@
 # EdgeML Bonsai on a sample public dataset
 
-This directory includes, example notebook and general execution script of Bonsai developed as
-part of EdgeML. Also, we include a sample cleanup and use-case on the USPS10 public dataset.
+This directory includes, example notebook and general execution script of
+Bonsai developed as part of EdgeML. Also, we include a sample cleanup and
+use-case on the USPS10 public dataset.
 
-Note that `bonsai_example.py` assumes that data is in a specific format.
-It is assumed that train and test data is contained in two files,
-`train.npy` and `test.npy`. Each containing a 2D numpy array of dimension
-`[numberOfExamples, numberOfFeatures + 1]`. The first column of each
-matrix is assumed to contain label information.  For an N-Class problem,
-we assume the labels are integers from 0 through N-1.
+`edgeml.graph.bonsai` implements the Bonsai prediction graph in tensorflow.
+The three-phase training routine for Bonsai is decoupled from the forward graph
+to facilitate a plug and play behaviour wherein Bonsai can be combined with or
+used as a final layer classifier for other architectures (RNNs, CNNs).
+
+Note that `bonsai_example.py` assumes that data is in a specific format.  It is
+assumed that train and test data is contained in two files, `train.npy` and
+`test.npy`. Each containing a 2D numpy array of dimension `[numberOfExamples,
+numberOfFeatures + 1]`. The first column of each matrix is assumed to contain
+label information.  For an N-Class problem, we assume the labels are integers
+from 0 through N-1.
 
 **Tested With:** Tensorflow >1.6 with Python 2 and Python 3
 
 ## Download and clean up sample dataset
 
-We will be testing out the validation of the code by using the USPS dataset. The download and cleanup of the dataset to match the above-mentioned format is done by the script [fetch_usps.py](fetch_usps.py). Run the following command.
+We will be testing out the validation of the code by using the USPS dataset.
+The download and cleanup of the dataset to match the above-mentioned format is
+done by the script [fetch_usps.py](fetch_usps.py). Run the following command.
 
 ```
 python fetch_usps.py

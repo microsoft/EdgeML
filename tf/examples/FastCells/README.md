@@ -1,14 +1,27 @@
 # EdgeML FastCells on a sample public dataset
 
-This directory includes example notebook and general execution script of FastCells (FastGRNN & FastRNN) 
-developed as part of EdgeML. Also, we include a sample cleanup and use-case on the USPS10 public dataset.
+This directory includes example notebook and general execution script of
+FastCells (FastGRNN & FastRNN) developed as part of EdgeML. Also, we include a
+sample cleanup and use-case on the USPS10 public dataset.
 
-Note that `fastcell_example.py` assumes that data is in a specific format.
-It is assumed that train and test data is contained in two files,
-`train.npy` and `test.npy`. Each containing a 2D numpy array of dimension
-`[numberOfExamples, numberOfFeatures]`. numberOfFeatures is `timesteps x inputDims`,
-flattened across timestep dimension. So the input of 1st timestep followed by second and so on.
-For an N-Class problem, we assume the labels are integers from 0 through N-1.
+`edgeml.graph.rnn` implements the custom RNN cells of FastGRNN and FastRNN with
+multiple additional features like Low-Rank parameterisation, custom
+non-linearities etc., Similar to Bonsai and ProtoNN, the three-phase training
+routine for FastGRNN and FastRNN is decoupled from the custom cells to
+facilitate a plug and play behaviour of the custom RNN cells in other
+architectures (NMT, Encoder-Decoder etc.,).
+
+For training FastCells, `edgeml.trainer.fastTrainer` implements the three-phase
+FastCell training routine in Tensorflow. A simple example,
+`examples/fastcell_example.py` is provided to illustrate its usage.
+
+Note that `fastcell_example.py` assumes that data is in a specific format.  It
+is assumed that train and test data is contained in two files, `train.npy` and
+`test.npy`. Each containing a 2D numpy array of dimension `[numberOfExamples,
+numberOfFeatures]`. numberOfFeatures is `timesteps x inputDims`, flattened
+across timestep dimension. So the input of 1st timestep followed by second and
+so on.  For an N-Class problem, we assume the labels are integers from 0
+through N-1.
 
 **Tested With:** Tensorflow >1.6 with Python 2 and Python 3
 
