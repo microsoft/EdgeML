@@ -465,9 +465,9 @@ class EMI_Driver:
         emiStep = numRounds - emiSteps
         print("Training with MI-RNN loss for %d rounds" % emiStep,
               file=redirFile)
-        feedDict = self.feedDictFunc(**kwargs)
         modelStats = []
         for cround in range(numRounds):
+            feedDict = self.feedDictFunc(inference=False, **kwargs)
             print("Round: %d" % cround, file=redirFile)
             if cround == emiStep:
                 print("Switching to EMI-Loss function", file=redirFile)
@@ -491,7 +491,7 @@ class EMI_Driver:
                                              feedDict=feedDict,
                                              redirFile=redirFile)
                 acc = self.runOps([self._emiTrainer.accTilda],
-                                  x_val, y_val, batchSize, feedDict)
+                                  x_val, y_val, batchSize, inference=True)
                 acc = np.mean(np.reshape(np.array(acc), -1))
                 print(" Val acc %2.5f | " % acc, end='', file=redirFile)
                 self.__graphManager.checkpointModel(self.__saver, sess,
@@ -510,7 +510,7 @@ class EMI_Driver:
                                resPrefix, resStep))
             self.loadSavedGraphToNewSession(resPrefix, resStep, redirFile)
             sess = self.getCurrentSession()
-            feedDict = self.feedDictFunc(**kwargs)
+            feedDict = self.feedDictFunc(inference=True, **kwargs)
             smxOut = self.runOps([self._emiTrainer.softmaxPredictions],
                                      x_train, y_train, batchSize, feedDict)
             smxOut= [np.array(smxOut[i][0]) for i in range(len(smxOut))]
@@ -719,7 +719,7 @@ class EMI_Driver:
         '''
         opList = self._emiTrainer.softmaxPredictions
         if 'keep_prob' in kwargs:
-            assert kwargs['keep_prob'] == 1
+            assert kwargs['keep_prob'] == 1, 'Keep prob should be 1.0'
         smxOut = self.runOps(opList, x, y, batchSize, feedDict=feedDict,
                              **kwargs)
         softmaxOut = np.concatenate(smxOut, axis=0)
