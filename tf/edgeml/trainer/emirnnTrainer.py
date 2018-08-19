@@ -190,8 +190,13 @@ class EMI_Trainer:
         graph = self.graph
         self.trainOp = tf.get_collection('EMI-train-op')
         self.lossOp = tf.get_collection('EMI-loss-op')
-        assert len(self.trainOp) == 1, msg
-        assert len(self.lossOp) == 1, msg
+        msg0 = 'Operator or tensor not found'
+        msg1 = 'Multiple tensors with the same name in the graph. Are you not'
+        msg1 +=' resetting your graph?'
+        assert len(self.trainOp) != 0, msg0
+        assert len(self.lossOp) != 0, msg0
+        assert len(self.trainOp) == 1, msg1
+        assert len(self.lossOp) == 1, msg1
         self.trainOp = self.trainOp[0]
         self.lossOp = self.lossOp[0]
         self.lossIndicatorTensor = graph.get_tensor_by_name(scope +
@@ -200,8 +205,6 @@ class EMI_Trainer:
         self.lossIndicatorPlaceholder = graph.get_tensor_by_name(scope + name)
         name = 'loss-indicator-assign-op:0'
         self.lossIndicatorAssignOp = graph.get_tensor_by_name(scope + name)
-        msg = 'Multiple tensors with the same name in the graph. Are you not'
-        msg +=' resetting your graph?'
         name = scope + 'softmaxed-prediction:0'
         self.softmaxPredictions = graph.get_tensor_by_name(name)
         name = scope + 'acc-tilda:0'
@@ -715,6 +718,8 @@ class EMI_Driver:
             predictionStep: [-1, numSubinstance]
         '''
         opList = self._emiTrainer.softmaxPredictions
+        if 'keep_prob' in kwargs:
+            assert kwargs['keep_prob'] == 1
         smxOut = self.runOps(opList, x, y, batchSize, feedDict=feedDict,
                              **kwargs)
         softmaxOut = np.concatenate(smxOut, axis=0)
