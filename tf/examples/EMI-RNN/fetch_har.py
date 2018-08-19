@@ -14,11 +14,13 @@ import numpy as np
 import sys
 from helpermethods import *
 
+## Config
 BASH = True
-
 workingDir = './'
 downloadDir = 'HAR'
 linkData = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00240/UCI%20HAR%20Dataset.zip'
+subinstanceLen = 128
+subinstanceStride = 16
 
 def downloadData(workingDir, downloadDir):
     def runcommand(command, splitChar=' '):
@@ -50,7 +52,7 @@ def downloadData(workingDir, downloadDir):
 def processData(workingDir, downloadDir):
     path = workingDir + '/' + downloadDir
     path = os.path.abspath(path)
-    generateData(path)
+    return generateData(path)
 
 if __name__ == '__main__':
     if BASH is True:
@@ -60,5 +62,23 @@ if __name__ == '__main__':
         if not downloadData(workingDir, downloadDir):
             exit('Download failed')
     print("Procesing data")
-    processData(workingDir, downloadDir)
+    extractedDir = processData(workingDir, downloadDir)
+    rawDir = extractedDir + '/RAW/'
+
+    print("Extracting features")
+    sourceDir = rawDir
+    outDir = extractedDir + '/%d_%d/' % (subinstanceLen, subinstanceStride)
+    if subinstanceLen == 128:
+        outDir = extractedDir + '/%d/' % (subinstanceLen)
+    print('subinstanceLen', subinstanceLen)
+    print('subinstanceStride', subinstanceStride)
+    print('sourceDir', sourceDir)
+    print('outDir', outDir)
+    try:
+        os.mkdir(outDir)
+    except OSError:
+        exit("Could not create %s" % outDir)
+    assert len(os.listdir(outDir)) == 0
+    makeEMIData(subinstanceLen, subinstanceStride, sourceDir, outDir)
     print("Done")
+

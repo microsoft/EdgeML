@@ -192,10 +192,88 @@ def generateData(extractedDir):
     y_train = one_hot(y_train, numOutput)
     y_val = one_hot(y_val, numOutput)
     y_test = one_hot(y_test, numOutput)
-    
-    np.save(extractedDir + "/x_train", x_train)
-    np.save(extractedDir + "/y_train", y_train)
-    np.save(extractedDir + "/x_test", x_test)
-    np.save(extractedDir + "/y_test", y_test)
-    np.save(extractedDir + "/x_val", x_val)
-    np.save(extractedDir + "/y_val", y_val)
+    extractedDir += '/'
+    try:
+        os.mkdir(extractedDir + 'RAW')
+    except OSError:
+        exit("Could not create %s" % extractedDir + 'RAW')
+    np.save(extractedDir + "RAW/x_train", x_train)
+    np.save(extractedDir + "RAW/y_train", y_train)
+    np.save(extractedDir + "RAW/x_test", x_test)
+    np.save(extractedDir + "RAW/y_test", y_test)
+    np.save(extractedDir + "RAW/x_val", x_val)
+    np.save(extractedDir + "RAW/y_val", y_val)
+    return extractedDir
+
+def loadData(dirname):
+    x_train = np.load(dirname + '/' + 'x_train.npy')
+    y_train = np.load(dirname + '/' + 'y_train.npy')
+    x_test = np.load(dirname + '/' + 'x_test.npy')
+    y_test = np.load(dirname + '/' + 'y_test.npy')
+    x_val = np.load(dirname + '/' + 'x_val.npy')
+    y_val = np.load(dirname + '/' + 'y_val.npy')
+    return x_train, y_train, x_test, y_test, x_val, y_val
+
+
+def bagData(X, Y, subinstanceLen, subinstanceStride):
+    '''
+    Takes x and y of shape
+    [-1, 128, 9] and [-1, 6] respectively and converts it into bags of instances.
+    returns [-1, numInstance, ]
+    '''
+    numClass = 6
+    numSteps = 128
+    numFeats = 9
+    assert X.ndim == 3
+    assert X.shape[1] == numSteps
+    assert X.shape[2] == numFeats
+    assert subinstanceLen <= numSteps
+    assert subinstanceLen > 0
+    assert subinstanceStride <= numSteps
+    assert subinstanceStride >= 0
+    assert len(X) == len(Y)
+    assert Y.ndim == 2
+    assert Y.shape[1] == numClass
+    x_bagged = []
+    y_bagged = []
+    for i, point in enumerate(X[:, :, :]):
+        instanceList = []
+        start = 0
+        end = subinstanceLen
+        while True:
+            x = point[start:end, :]
+            if len(x) < subinstanceLen:
+                x_ = np.zeros([subinstanceLen, x.shape[1]])
+                x_[:len(x), :] = x[:, :]
+                x = x_
+            instanceList.append(x)
+            if end >= numSteps:
+                break
+            start += subinstanceStride
+            end += subinstanceStride
+        bag = np.array(instanceList)
+        numSubinstance = bag.shape[0]
+        label = Y[i]
+        label = np.argmax(label)
+        labelBag = np.zeros([numSubinstance, numClass])
+        labelBag[:, label] = 1
+        x_bagged.append(bag)
+        label = np.array(labelBag)
+        y_bagged.append(label)
+    return np.array(x_bagged), np.array(y_bagged)
+
+
+def makeEMIData(subinstanceLen, subinstanceStride, sourceDir, outDir):
+    x_train, y_train, x_test, y_test, x_val, y_val = loadData(sourceDir)
+    x, y = bagData(x_train, y_train, subinstanceLen, subinstanceStride)
+    np.save(outDir + '/x_train.npy', x)
+    np.save(outDir + '/y_train.npy', y)
+    print('Num train %d' % len(x))
+    x, y = bagData(x_test, y_test, subinstanceLen, subinstanceStride)
+    np.save(outDir + '/x_test.npy', x)
+    np.save(outDir + '/y_test.npy', y)
+    print('Num test %d' % len(x))
+    x, y = bagData(x_val, y_val, subinstanceLen, subinstanceStride)
+    np.save(outDir + '/x_val.npy', x)
+    np.save(outDir + '/y_val.npy', y)
+    print('Num val %d' % len(x))
