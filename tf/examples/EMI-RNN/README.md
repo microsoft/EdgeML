@@ -8,6 +8,13 @@ Please refer to `tf/docs/EMI-RNN.md` for detailed documentation of EMI-RNN.
 Please refer to `00_emi_lstm_example.ipynb` for a quick and dirty getting
 started guide.
 
+Note that, EMI-RNN currently natively supports the following cells:
+- LSTM
+- GRU
+- FastGRNN
+- FastRNN
+- UGRNN
+
 **Tested With:** Tensorflow >1.6 with Python 3
 
 ## Fetching Data
