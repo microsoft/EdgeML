@@ -3,12 +3,9 @@
 # 
 # Setting up the HAR Data for EMI-RNN. This scripts calls bash commands.
 # If bash is not available, 
-# TODO:
-#   - Manually create a HAR subdirectory
-#   - download the train and test files from the web link provided in line 23.
+#   - download the train and test files from the web link provided in linkData
+#   variable
 #   - extract the downloaded zip files
-#   - rename usps to train.txt
-#   - rename usps.t to test.txt
 #   - run this script with BASH = False
 
 import subprocess
