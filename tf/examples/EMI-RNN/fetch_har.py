@@ -19,7 +19,7 @@ BASH = True
 workingDir = './'
 downloadDir = 'HAR'
 linkData = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00240/UCI%20HAR%20Dataset.zip'
-subinstanceLen = 128
+subinstanceLen = 48
 subinstanceStride = 16
 
 def downloadData(workingDir, downloadDir):
