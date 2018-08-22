@@ -22,13 +22,13 @@ from 0 through N-1.
 ## Fetching Data
 
 The script - [fetch_usps.py](fetch_usps.py), can be used to  automatically
-download and processes the dataset. The script depends on `bash`.
+download and [process_usps.py](process_usps.py), can be used to process the
+data into the required format.
  To run this script, please use:
 
     python fetch_usps.py
+    python process_usps.py
 
-If `bash` is not available, you will have to manually download the data files. 
-Instructions can be found in [fetch_usps.py](fetch_usps.py).
 
 ## Running the ProtoNN execution script
 

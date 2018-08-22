@@ -1,28 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
-# 
-# Setting up the USPS Data for ProtoNN. This scripts calls bash commands.
-# If bash is not available, 
-#   - manually create a usps10 subdirectory
-#   - download the train and test files from the `linkTrain` and `linkTest`
-#     provided below.
-#   - extract the downloaded .bz2 files
-#   - rename usps to train.txt
-#   - rename usps.t to test.txt
-#   - run this script with BASH = False
+#
+# Setting up the USPS Data.
 
 import subprocess
 import os
 import numpy as np
 from sklearn.datasets import load_svmlight_file
 import sys
-
-BASH = True
-
-workingDir = './'
-downloadDir = 'usps10'
-linkTrain = 'http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.bz2'
-linkTest = 'http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.t.bz2'
 
 def downloadData(workingDir, downloadDir, linkTrain, linkTest):
     def runcommand(command):
@@ -57,35 +42,23 @@ def downloadData(workingDir, downloadDir, linkTrain, linkTest):
     os.chdir(cwd)
     return True
 
-def processData(workingDir, downloadDir):
-    def loadLibSVMFile(file):
-        data = load_svmlight_file(file)
-        features = data[0]
-        labels = data[1]
-        retMat = np.zeros([features.shape[0], features.shape[1] + 1])
-        retMat[:, 0] = labels
-        retMat[:, 1:] = features.todense()
-        return retMat
-
-    path = workingDir + '/' + downloadDir
-    path = os.path.abspath(path)
-    trf = path + '/train.txt'
-    tsf = path + '/test.txt'
-    assert os.path.isfile(trf), 'File not found: %s' % trf
-    assert os.path.isfile(tsf), 'File not found: %s' % tsf
-    train = loadLibSVMFile(trf)
-    test = loadLibSVMFile(tsf)
-    np.save(path + '/train.npy', train)
-    np.save(path + '/test.npy', test)
-
-
 if __name__ == '__main__':
-    if BASH is True:
-        print("Attempting to use bash. If bash is not available, please")
-        print("refer to instructions for downloading files manually")
-        print("provided in this script.")
-        if not downloadData(workingDir, downloadDir, linkTrain, linkTest):
-            exit('Download failed')
-    print("Procesing data")
-    processData(workingDir, downloadDir)
+    workingDir = './'
+    downloadDir = 'usps10'
+    linkTrain = 'http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.bz2'
+    linkTest = 'http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.t.bz2'
+    failureMsg = '''
+Download Failed!
+To manually perform the download
+\t1. Create a new empty directory named `usps10`.
+\t2. Download the data from the following links into the usps10 directory.
+\t\tTest: %s
+\t\tTrain: %s
+\t3. Extract the downloaded files.
+\t4. Rename `usps` to `train.txt` and,
+\t5. Rename `usps.t` to `test.txt
+''' % (linkTrain, linkTest)
+
+    if not downloadData(workingDir, downloadDir, linkTrain, linkTest):
+        exit(failureMsg)
     print("Done")

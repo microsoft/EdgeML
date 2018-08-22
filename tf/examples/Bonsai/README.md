@@ -22,10 +22,12 @@ from 0 through N-1.
 
 We will be testing out the validation of the code by using the USPS dataset.
 The download and cleanup of the dataset to match the above-mentioned format is
-done by the script [fetch_usps.py](fetch_usps.py). Run the following command.
+done by the script [fetch_usps.py](fetch_usps.py) and
+[process_usps.py](process_usps.py)
 
 ```
 python fetch_usps.py
+python process_usps.py
 ```
 
 ## Sample command for Bonsai on USPS10
