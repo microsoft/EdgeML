@@ -20,10 +20,12 @@ Note that, EMI-RNN currently natively supports the following cells:
 ## Fetching Data
 
 The script - [fetch_har.py](fetch_har.py), can be used to  automatically
-download and processes the dataset. The script depends on `bash`.
- To run this script, please use:
+download and [process_har.py](process_har.py) can be used to processes the
+dataset. 
+ To run this script, please use
 
     python fetch_har.py
+    python process_har.py
 
 If `bash` is not available, you will have to manually download the data files. 
 Instructions can be found in [fetch_har.py](fetch_har.py).
