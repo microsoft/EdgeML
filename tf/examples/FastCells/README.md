@@ -27,11 +27,16 @@ through N-1.
 
 ## Download and clean up sample dataset
 
-We will be testing out the validation of the code by using the USPS dataset. The download and cleanup of the dataset to match the above-mentioned format is done by the script [fetch_usps.py](fetch_usps.py). Run the following command.
+We will be testing out the validation of the code by using the USPS dataset.
+The download and cleanup of the dataset to match the above-mentioned format is
+done by the script [fetch_usps.py](fetch_usps.py) and
+[process_usps.py](process_usps.py)
 
 ```
 python fetch_usps.py
+python process_usps.py
 ```
+
 
 ## Sample command for FastCells on USPS10
 The following sample run on usps10 should validate your library:
