@@ -10,6 +10,7 @@ import sys
 
 
 class BonsaiTrainer:
+
     def __init__(self, bonsaiObj, lW, lT, lV, lZ, sW, sT, sV, sZ,
                  learningRate, X, Y, useMCHLoss=False, outFile=None):
         '''
@@ -59,6 +60,11 @@ class BonsaiTrainer:
         self.trainStep = self.trainGraph()
         self.accuracy = self.accuracyGraph()
         self.prediction = self.bonsaiObj.getPrediction()
+
+        if self.sW > 0.99 and self.sV > 0.99 and self.sZ > 0.99 and self.sT > 0.99:
+            self.isDenseTraining = True
+        else:
+            self.isDenseTraining = False
 
         self.hardThrsd()
         self.sparseTraining()
@@ -196,9 +202,35 @@ class BonsaiTrainer:
 
     def saveParams(self, currDir):
         '''
-        Function to save Parameter matrices
+        Function to save Parameter matrices into a given folder
         '''
-        self.bonsaiObj.saveModel(currDir)
+        paramDir = currDir + '/'
+        np.save(paramDir + "W.npy", self.bonsaiObj.W.eval())
+        np.save(paramDir + "V.npy", self.bonsaiObj.V.eval())
+        np.save(paramDir + "T.npy", self.bonsaiObj.T.eval())
+        np.save(paramDir + "Z.npy", self.bonsaiObj.Z.eval())
+        hyperParamDict = {'dataDim': self.bonsaiObj.dataDimension,
+                          'projDim': self.bonsaiObj.projectionDimension,
+                          'numClasses': self.bonsaiObj.numClasses,
+                          'depth': self.bonsaiObj.treeDepth,
+                          'sigma': self.bonsaiObj.sigma}
+        hyperParamFile = paramDir + 'hyperParam.npy'
+        np.save(hyperParamFile, hyperParamDict)
+
+    def loadModel(self, currDir):
+        '''
+        Load the Saved model and load it to the model using constructor
+        Returns two dict one for params and other for hyperParams
+        '''
+        paramDir = currDir + '/'
+        paramDict = {}
+        paramDict['W'] = np.load(paramDir + "W.npy")
+        paramDict['V'] = np.load(paramDir + "V.npy")
+        paramDict['T'] = np.load(paramDir + "T.npy")
+        paramDict['Z'] = np.load(paramDir + "Z.npy")
+        hyperParamDict = np.load(paramDir + "hyperParam.npy").item()
+
+        return paramDict, hyperParamDict
 
     def getModelSize(self):
         '''
@@ -219,7 +251,7 @@ class BonsaiTrainer:
         '''
         The Dense - IHT - Sparse Retrain Routine for Bonsai Training
         '''
-        resultFile = open(dataDir + '/BonsaiResults.txt', 'a+')
+        resultFile = open(dataDir + '/TFBonsaiResults.txt', 'a+')
         numIters = Xtrain.shape[0] / batchSize
 
         totalBatches = numIters * totalEpochs
@@ -232,12 +264,20 @@ class BonsaiTrainer:
         else:
             trimlevel = 5
         ihtDone = 0
+        maxTestAcc = -10000
+
+        if self.isDenseTraining is True:
+            ihtDone = 1
+            bonsaiObjSigmaI = 1
+            itersInPhase = 0
 
         header = '*' * 20
         for i in range(totalEpochs):
             print("\nEpoch Number: " + str(i), file=self.outFile)
 
             trainAcc = 0.0
+            trainLoss = 0.0
+
             numIters = int(numIters)
             for j in range(numIters):
 
@@ -248,7 +288,7 @@ class BonsaiTrainer:
 
                 # Updating the indicator sigma
                 if ((counter == 0) or (counter == int(totalBatches / 3.0)) or
-                        (counter == int(2 * totalBatches / 3.0))):
+                        (counter == int(2 * totalBatches / 3.0))) and (self.isDenseTraining is False):
                     bonsaiObjSigmaI = 1
                     itersInPhase = 0
 
@@ -302,11 +342,13 @@ class BonsaiTrainer:
                     feed_dict=_feed_dict)
 
                 trainAcc += batchAcc
+                trainLoss += batchLoss
 
                 # Training routine involving IHT and sparse retraining
                 if (counter >= int(totalBatches / 3.0) and
-                        (counter < int(2 * totalBatches / 3.0)) and
-                        counter % trimlevel == 0):
+                    (counter < int(2 * totalBatches / 3.0)) and
+                    counter % trimlevel == 0 and
+                        self.isDenseTraining is False):
                     self.runHardThrsd(sess)
                     if ihtDone == 0:
                         msg = " IHT Phase Started "
@@ -315,8 +357,10 @@ class BonsaiTrainer:
                     ihtDone = 1
                 elif ((ihtDone == 1 and counter >= int(totalBatches / 3.0) and
                        (counter < int(2 * totalBatches / 3.0)) and
-                       counter % trimlevel != 0) or
-                        (counter >= int(2 * totalBatches / 3.0))):
+                       counter % trimlevel != 0 and
+                       self.isDenseTraining is False) or
+                        (counter >= int(2 * totalBatches / 3.0) and
+                            self.isDenseTraining is False)):
                     self.runSparseTraining(sess)
                     if counter == int(2 * totalBatches / 3.0):
                         msg = " Sprase Retraining Phase Started "
@@ -324,7 +368,8 @@ class BonsaiTrainer:
                               (header, msg, header), file=self.outFile)
                 counter += 1
 
-            print("Train accuracy " + str(trainAcc / numIters),
+            print("Train Loss: " + str(trainLoss / numIters) +
+                  " Train accuracy: " + str(trainAcc / numIters),
                   file=self.outFile)
 
             oldSigmaI = bonsaiObjSigmaI
@@ -353,6 +398,7 @@ class BonsaiTrainer:
                 if maxTestAcc <= testAcc:
                     maxTestAccEpoch = i
                     maxTestAcc = testAcc
+                    self.saveParams(currDir)
 
             print("Test accuracy %g" % testAcc, file=self.outFile)
             print("MarginLoss + RegLoss: " + str(testLoss - regTestLoss) +
@@ -365,7 +411,7 @@ class BonsaiTrainer:
         # sigmaI has to be set to infinity to ensure
         # only a single path is used in inference
         bonsaiObjSigmaI = 1e9
-        print("Maximum Test accuracy at compressed" +
+        print("\nMaximum Test accuracy at compressed" +
               " model size(including early stopping): " +
               str(maxTestAcc) + " at Epoch: " +
               str(maxTestAccEpoch + 1) + "\nFinal Test" +
@@ -382,8 +428,9 @@ class BonsaiTrainer:
                          " KB hasSparse: " + str(self.getModelSize()[2]) +
                          " Param Directory: " +
                          str(os.path.abspath(currDir)) + "\n")
-        self.saveParams(currDir)
+        print("The Model Directory: " + currDir + "\n")
 
         resultFile.close()
         self.outFile.flush()
-        self.outFile.close()
+        if self.outFile is not sys.stdout:
+            self.outFile.close()
