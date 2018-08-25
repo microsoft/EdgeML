@@ -1,3 +1,7 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
+
+from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 import sys
@@ -9,12 +13,23 @@ class ProtoNNTrainer:
                  sparcityW, sparcityB, sparcityZ,
                  learningRate, X, Y, lossType='l2'):
         '''
-        protoNNObj: An instance of ProtoNN class. This instance
-            will be trained.
+        A wrapper for the various techniques used for training ProtoNN. This
+        subsumes both the responsibility of loss graph construction and
+        performing training. The original training routine that is part of the
+        C++ implementation of EdgeML used iterative hard thresholding (IHT),
+        gamma estimation through median heuristic and other tricks for
+        training ProtoNN. This module implements the same in Tensorflow
+        and python.
+
+        protoNNObj: An instance of ProtoNN class defining the forward
+            computation graph. The loss functions and training routines will be
+            attached to this instance.
         regW, regB, regZ: Regularization constants for W, B, and
             Z matrices of protoNN.
-        sparcityW, sparcityB, sparcityZ: Sparcity constraints
-            for W, B and Z matrices.
+        sparcityW, sparcityB, sparcityZ: Sparsity constraints
+            for W, B and Z matrices. A value between 0 (exclusive) and 1
+            (inclusive) is expected. A value of 1 indicates dense training.
+        learningRate: Initial learning rate for ADAM optimizer.
         X, Y : Placeholders for data and labels.
             X [-1, featureDimension]
             Y [-1, num Labels]
@@ -32,13 +47,12 @@ class ProtoNNTrainer:
         self.Y = Y
         self.sparseTraining = True
         if (sparcityW == 1.0) and (sparcityB == 1.0) and (sparcityZ == 1.0):
-            self.parseTraining = False
+            self.sparseTraining = False
             print("Sparse training disabled.", file=sys.stderr)
         # Define placeholders for sparse training
         self.W_th = None
         self.B_th = None
         self.Z_th = None
-
         self.__lossType = lossType
         self.__validInit = False
         self.__validInit = self.__validateInit()
@@ -50,7 +64,7 @@ class ProtoNNTrainer:
 
     def __validateInit(self):
         self.__validInit = False
-        msg = "Sparcity value should be between"
+        msg = "Sparsity value should be between"
         msg += " 0 and 1 (both inclusive)."
         assert self.__sW >= 0. and self.__sW <= 1., 'W:' + msg
         assert self.__sB >= 0. and self.__sB <= 1., 'B:' + msg
@@ -82,13 +96,12 @@ class ProtoNNTrainer:
                 loss = loss_0 + reg
         elif self.__lossType == 'xentropy':
             with tf.name_scope('protonn-xentropy-loss'):
-                loss_0 = tf.nn.softmax_cross_entropy_with_logits(logits=pnnOut,
-                                                                 labels=self.Y)
+                loss_0 = tf.nn.softmax_cross_entropy_with_logits_v2(logits=pnnOut,
+                                                         labels=tf.stop_gradient(self.Y))
                 loss_0 = tf.reduce_mean(loss_0)
                 reg = l1 * tf.nn.l2_loss(W) + l2 * tf.nn.l2_loss(B)
                 reg += l3 * tf.nn.l2_loss(Z)
                 loss = loss_0 + reg
-
         return loss
 
     def __trainGraph(self):
@@ -103,36 +116,48 @@ class ProtoNNTrainer:
         self.B_th = tf.placeholder(tf.float32, name='B_th')
         self.Z_th = tf.placeholder(tf.float32, name='Z_th')
         with tf.name_scope('hard-threshold-assignments'):
-            hard_thrsd_W = W.assign(self.W_th) 
+            hard_thrsd_W = W.assign(self.W_th)
             hard_thrsd_B = B.assign(self.B_th)
             hard_thrsd_Z = Z.assign(self.Z_th)
             hard_thrsd_op = tf.group(hard_thrsd_W, hard_thrsd_B, hard_thrsd_Z)
         return hard_thrsd_op
 
     def train(self, batchSize, totalEpochs, sess,
-              x_train, x_val, y_train, y_val,
-              noInit=False, redirFile=None, printStep=10):
+              x_train, x_val, y_train, y_val, noInit=False,
+              redirFile=None, printStep=10, valStep=3):
         '''
-        Dense + IHT training of ProtoNN
-        noInit: if not to perform initialization (reuse previous init)
-        printStep: Number of batches after which loss is to be printed
-        TODO: Implement dense - IHT - sparse
+        Performs dense training of ProtoNN followed by iterative hard
+        thresholding to enforce sparsity constraints.
+
+        batchSize: Batch size per update
+        totalEpochs: The number of epochs to run training for. One epoch is
+            defined as one pass over the entire training data.
+        sess: The Tensorflow session to use for running various graph
+            operators.
+        x_train, x_val, y_train, y_val: The numpy array containing train and
+            validation data. x data is assumed to in of shape [-1,
+            featureDimension] while y should have shape [-1, numberLabels].
+        noInit: By default, all the tensors of the computation graph are
+        initialized at the start of the training session. Set noInit=False to
+        disable this behaviour.
+        printStep: Number of batches between echoing of loss and train accuracy.
+        valStep: Number of epochs between evolutions on validation set.
         '''
         d, d_cap, m, L, gamma = self.protoNNObj.getHyperParams()
         assert batchSize >= 1, 'Batch size should be positive integer'
-        assert totalEpochs >= 1, 'Total epochs should be psotive integer'
+        assert totalEpochs >= 1, 'Total epochs should be positive integer'
         assert x_train.ndim == 2, 'Expected training data to be of rank 2'
         assert x_train.shape[1] == d, 'Expected x_train to be [-1, %d]' % d
         assert x_val.ndim == 2, 'Expected validation data to be of rank 2'
         assert x_val.shape[1] == d, 'Expected x_val to be [-1, %d]' % d
         assert y_train.ndim == 2, 'Expected training labels to be of rank 2'
         assert y_train.shape[1] == L, 'Expected y_train to be [-1, %d]' % L
-        assert y_val.ndim == 2, 'Expected valing labels to be of rank 2'
+        assert y_val.ndim == 2, 'Expected validation labels to be of rank 2'
         assert y_val.shape[1] == L, 'Expected y_val to be [-1, %d]' % L
 
         # Numpy will throw asserts for arrays
         if sess is None:
-            raise ValueError('sess must be valid tensorflow session.')
+            raise ValueError('sess must be valid Tensorflow session.')
 
         trainNumBatches = int(np.ceil(len(x_train) / batchSize))
         valNumBatches = int(np.ceil(len(x_val) / batchSize))
@@ -168,9 +193,9 @@ class ProtoNNTrainer:
                     self.B_th: utils.hardThreshold(B_, self.__sB),
                     self.Z_th: utils.hardThreshold(Z_, self.__sZ)
                 }
-                sess.run(self.__hthOp, feed_dict=fd_thrsd) 
+                sess.run(self.__hthOp, feed_dict=fd_thrsd)
 
-            if (epoch + 1) % 3 == 0:
+            if (epoch + 1) % valStep  == 0:
                 acc = 0.0
                 loss = 0.0
                 for j in range(len(x_val_batches)):

@@ -738,7 +738,7 @@ void EdgeML::altMinSGD(
     std::sort(eta.data(), eta.data() + eta.size());
     etaW = armijoW * eta(4);
 #endif
-    LOG_INFO("Step-length estimate for gradW = " + std::to_string(etaW));
+    //LOG_INFO("Step-length estimate for gradW = " + std::to_string(etaW));
 
     accProxSGD<WMatType>
       (//[&model.params.Z, &data.Ytrain, &model.params.B, &data.Xtrain, &model.hyperParams] TODO: Figure out the elegant way of getting this to work
@@ -853,7 +853,7 @@ void EdgeML::altMinSGD(
     std::sort(eta.data(), eta.data() + eta.size());
     etaZ = armijoZ * eta(4);
 #endif
-    LOG_INFO("Step-length estimate for gradZ = " + std::to_string(etaZ));
+    //LOG_INFO("Step-length estimate for gradZ = " + std::to_string(etaZ));
     
     accProxSGD<ZMatType>
       (//[&model.params.B, &data.Ytrain, &WX, &model.hyperParams] 
@@ -944,7 +944,7 @@ void EdgeML::altMinSGD(
     std::sort(eta.data(), eta.data() + eta.size());
     etaB = armijoB * eta(4);
 #endif
-    LOG_INFO("Step-length estimate for gradB = " + std::to_string(etaB));
+    //LOG_INFO("Step-length estimate for gradB = " + std::to_string(etaB));
 
     accProxSGD<BMatType>
       (//[&model.params.Z, &data.Ytrain, &WX, &model.hyperParams] 

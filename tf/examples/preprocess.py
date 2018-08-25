@@ -39,8 +39,55 @@ def checkFloatPos(value):
             "%s is an invalid positive float value" % value)
     return fvalue
 
+def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
 
-def getArgs():
+def getProtoNNArgs():
+    '''
+    Function to parse arguments
+    '''
+    parser = argparse.ArgumentParser(
+        description='HyperParams for ProtoNN Algorithm')
+    parser.add_argument('-dir', '--data_dir', required=True,
+                        help='Data directory containing' +
+                        'train.npy and test.npy')
+
+    parser.add_argument('-p', '--projDim', type=checkIntPos, default=5,
+                        help='Projection Dimension (default: 5 try: [5, 20, 30])')
+
+    parser.add_argument('-np', '--num_proto', type=int, default=80,
+                        help='Parameter for number of prototypes. (default: 60 try: [45,75,100]')
+
+    parser.add_argument('-g', '--gamma', type=float, default = 0.0015,
+                        help='Gamma (default: 0.0015)')
+
+    parser.add_argument('-e', '--num_epochs', type=int, default=100,
+                        help='Num of epochs to be used (default : 200)')
+
+    parser.add_argument('-lr', '--learningRate', type=checkFloatPos, default=0.05,
+                        help='Initial Learning rate for Adam Optimizer (default: 0.05)')
+
+    parser.add_argument('-b', '--batchSize', type=checkIntPos, default = 32,
+                            help='Batch Size to be used (default: 32)')
+
+    parser.add_argument('-rW', type=float, default=0.0,
+                        help='Regularizer for W  (default: 0.0001 try: [0.01, 0.001, 0.00001])')
+
+    parser.add_argument('-rB', type=float, default=0.0,
+                        help='Regularizer for B  (default: 0.0001 try: [0.01, 0.001, 0.00001])')
+
+    parser.add_argument('-rZ', type=float, default=0.0,
+                        help='Regularizer for Z  (default: 0.00001 try: [0.001, 0.0001, 0.000001])')
+
+    return parser.parse_args()
+
+
+def getBonsaiArgs():
     '''
     Function to parse arguments
     '''
@@ -83,66 +130,9 @@ def getArgs():
     parser.add_argument('-oF', '--output_file', default=None,
                         help='Output file for dumping the program output, (default: stdout)')
 
+    parser.add_argument('-regression', type=str2bool , default='False', help = 'boolean argument which controls whether to perform regression or classification.')
+
     return parser.parse_args()
-
-
-def preProcessData(data_dir):
-    '''
-    Function to pre-process input data
-    Expects a .npy file of form [lbl feats] for each datapoint
-    Outputs a train and test set datapoints appended with 1 for Bias induction
-    dataDimension, numClasses are inferred directly
-    '''
-    train = np.load(data_dir + '/train.npy')
-    test = np.load(data_dir + '/test.npy')
-
-    dataDimension = int(train.shape[1]) - 1
-
-    Xtrain = train[:, 1:dataDimension + 1]
-    Ytrain_ = train[:, 0]
-    numClasses = max(Ytrain_) - min(Ytrain_) + 1
-
-    Xtest = test[:, 1:dataDimension + 1]
-    Ytest_ = test[:, 0]
-
-    numClasses = int(max(numClasses, max(Ytest_) - min(Ytest_) + 1))
-
-    # Mean Var Normalisation
-    mean = np.mean(Xtrain, 0)
-    std = np.std(Xtrain, 0)
-    std[std[:] < 0.000001] = 1
-    Xtrain = (Xtrain - mean) / std
-
-    Xtest = (Xtest - mean) / std
-    # End Mean Var normalisation
-
-    lab = Ytrain_.astype('uint8')
-    lab = np.array(lab) - min(lab)
-
-    lab_ = np.zeros((Xtrain.shape[0], numClasses))
-    lab_[np.arange(Xtrain.shape[0]), lab] = 1
-    if (numClasses == 2):
-        Ytrain = np.reshape(lab, [-1, 1])
-    else:
-        Ytrain = lab_
-
-    lab = Ytest_.astype('uint8')
-    lab = np.array(lab) - min(lab)
-
-    lab_ = np.zeros((Xtest.shape[0], numClasses))
-    lab_[np.arange(Xtest.shape[0]), lab] = 1
-    if (numClasses == 2):
-        Ytest = np.reshape(lab, [-1, 1])
-    else:
-        Ytest = lab_
-
-    trainBias = np.ones([Xtrain.shape[0], 1])
-    Xtrain = np.append(Xtrain, trainBias, axis=1)
-    testBias = np.ones([Xtest.shape[0], 1])
-    Xtest = np.append(Xtest, testBias, axis=1)
-
-    return dataDimension + 1, numClasses, Xtrain, Ytrain, Xtest, Ytest
-
 
 def createDir(dataDir):
     '''

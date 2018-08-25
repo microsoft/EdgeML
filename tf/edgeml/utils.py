@@ -1,18 +1,21 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
+
+from __future__ import print_function
 import tensorflow as tf
-import numpy as np
-from tensorflow.python.ops import math_ops
-from tensorflow.python.ops import gen_math_ops
 import numpy as np
 import scipy.cluster
 import scipy.spatial
+import os
 
 
 def medianHeuristic(data, projectionDimension, numPrototypes, W_init=None):
     '''
-    This method can be used to estimate gamma for ProtoNN. An approximate
-    median-heuristc approach is used here;
+    This method can be used to estimate gamma for ProtoNN. An approximation to
+    median heuristic is used here.
     1. First the data is collapsed into the projectionDimension by W_init. If
-    W_init is not provided, it is initiallzed from a random normal(0, 1)
+    W_init is not provided, it is initialized from a random normal(0, 1). Hence
+    data normalization is essential.
     2. Prototype are computed by running a  k-means clustering on the projected
     data.
     3. The median distance is then estimated by calculating median distance
@@ -24,6 +27,8 @@ def medianHeuristic(data, projectionDimension, numPrototypes, W_init=None):
     TODO: Return estimate of Z (prototype labels) based on cluster centroids
     andand labels
 
+    TODO: Clustering fails due to singularity error if projecting upwards
+
     W [dxd_cap]
     B [d_cap, m]
     returns gamma, W, B
@@ -31,6 +36,12 @@ def medianHeuristic(data, projectionDimension, numPrototypes, W_init=None):
     assert data.ndim == 2
     X = data
     featDim = data.shape[1]
+    if projectionDimension > featDim:
+        print("Warning: Projection dimension > feature dimension. Gamma")
+        print("\t estimation due to median heuristic could fail.")
+        print("\tTo retain the projection dataDimension, provide")
+        print("\ta value for gamma.")
+
     if W_init is None:
         W_init = np.random.normal(size=[featDim, projectionDimension])
     W = W_init
@@ -75,12 +86,13 @@ def crossEntropyLoss(logits, label):
     faster convergence
     '''
     return tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=label))
+        tf.nn.softmax_cross_entropy_with_logits_v2(logits=logits,
+                                                   labels=tf.stop_gradient(label)))
 
 
 def hardThreshold(A, s):
     '''
-    Hard Thresholding function on Tensor A with sparsity s
+    Hard thresholding function on Tensor A with sparsity s
     '''
     A_ = np.copy(A)
     A_ = A_.ravel()
@@ -104,7 +116,7 @@ def copySupport(src, dest):
 
 def countnnZ(A, s, bytesPerVar=4):
     '''
-    Returns # of nonzeros and represnetative size of the tensor
+    Returns # of non-zeros and representative size of the tensor
     Uses dense for s >= 0.5 - 4 byte
     Else uses sparse - 8 byte
     '''
@@ -121,32 +133,17 @@ def countnnZ(A, s, bytesPerVar=4):
         return nnZ, nnZ * bytesPerVar, hasSparse
 
 
-def gen_non_linearity(A, non_linearity):
-    '''
-    Returns required activation for a tensor based on the inputs
-    '''
-    if non_linearity == "tanh":
-        return math_ops.tanh(A)
-    elif non_linearity == "sigmoid":
-        return math_ops.sigmoid(A)
-    elif non_linearity == "relu":
-        return gen_math_ops.maximum(A, 0.0)
-    elif non_linearity == "quantTanh":
-        return gen_math_ops.maximum(gen_math_ops.minimum(A, 1.0), -1.0)
-    elif non_linearity == "quantSigm":
-        A = (A + 1.0) / 2.0
-        return gen_math_ops.maximum(gen_math_ops.minimum(A, 1.0), 0.0)
-    else:
-        return math_ops.tanh(A)
-
-
-# Auxiliary methods for EMI-RNN
-# Will probably be moved out
-
 def getConfusionMatrix(predicted, target, numClasses):
     '''
+    Returns a confusion matrix for a multiclass classification
+    problem. `predicted` is a 1-D array of integers representing
+    the predicted classes and `target` is the target classes.
+
     confusion[i][j]: Number of elements of class j
         predicted as class i
+    Labels are assumed to be in range(0, numClasses)
+    Use`printFormattedConfusionMatrix` to echo the confusion matrix
+    in a user friendly form.
     '''
     assert(predicted.ndim == 1)
     assert(target.ndim == 1)
@@ -156,32 +153,36 @@ def getConfusionMatrix(predicted, target, numClasses):
         arr[predicted[i]][target[i]] += 1
     return arr
 
+
 def printFormattedConfusionMatrix(matrix):
     '''
-    Given a 2D confusion matrix, prints it in a formatte
-    way
+    Given a 2D confusion matrix, prints it in a human readable way.
+    The confusion matrix is expected to be a 2D numpy array with
+    square dimensions
     '''
     assert(matrix.ndim == 2)
     assert(matrix.shape[0] == matrix.shape[1])
     RECALL = 'Recall'
     PRECISION = 'PRECISION'
-    print("|%s|"% ('True->'), end='')
+    print("|%s|" % ('True->'), end='')
     for i in range(matrix.shape[0]):
         print("%7d|" % i, end='')
     print("%s|" % 'Precision')
 
-    print("|%s|"% ('-'* len(RECALL)), end='')
+    print("|%s|" % ('-' * len(RECALL)), end='')
     for i in range(matrix.shape[0]):
-        print("%s|" % ('-'* 7), end='')
-    print("%s|" % ('-'* len(PRECISION)))
+        print("%s|" % ('-' * 7), end='')
+    print("%s|" % ('-' * len(PRECISION)))
 
     precisionlist = np.sum(matrix, axis=1)
     recalllist = np.sum(matrix, axis=0)
-    precisionlist = [matrix[i][i]/ x if x != 0 else -1 for i,x in enumerate(precisionlist)]
-    recalllist = [matrix[i][i]/x if x != 0 else -1for i,x in enumerate(recalllist)]
+    precisionlist = [matrix[i][i] / x if x !=
+                     0 else -1 for i, x in enumerate(precisionlist)]
+    recalllist = [matrix[i][i] / x if x !=
+                  0 else -1 for i, x in enumerate(recalllist)]
     for i in range(matrix.shape[0]):
         # len recall = 6
-        print("|%6d|"% (i), end='')
+        print("|%6d|" % (i), end='')
         for j in range(matrix.shape[0]):
             print("%7d|" % (matrix[i][j]), end='')
         print("%s" % (" " * (len(PRECISION) - 7)), end='')
@@ -190,11 +191,11 @@ def printFormattedConfusionMatrix(matrix):
         else:
             print("%7s|" % "nan")
 
-    print("|%s|"% ('-'* len(RECALL)), end='')
+    print("|%s|" % ('-' * len(RECALL)), end='')
     for i in range(matrix.shape[0]):
-        print("%s|" % ('-'* 7), end='')
-    print("%s|" % ('-'*len(PRECISION)))
-    print("|%s|"% ('Recall'), end='')
+        print("%s|" % ('-' * 7), end='')
+    print("%s|" % ('-' * len(PRECISION)))
+    print("|%s|" % ('Recall'), end='')
 
     for i in range(matrix.shape[0]):
         if recalllist[i] != -1:
@@ -281,3 +282,35 @@ def getMacroMicroFScore(cmatrix):
         denom = 1
     micro = 2 * pi * rho / denom
     return macro, micro
+
+
+class GraphManager:
+    '''
+    Manages saving and restoring graphs. Designed to be used with EMI-RNN
+    though is general enough to be useful otherwise as well.
+    '''
+
+    def __init__(self):
+        pass
+
+    def checkpointModel(self, saver, sess, modelPrefix,
+                        globalStep=1000, redirFile=None):
+        saver.save(sess, modelPrefix, global_step=globalStep)
+        print('Model saved to %s, global_step %d' % (modelPrefix, globalStep),
+              file=redirFile)
+
+    def loadCheckpoint(self, sess, modelPrefix, globalStep,
+                       redirFile=None):
+        metaname = modelPrefix + '-%d.meta' % globalStep
+        basename = os.path.basename(metaname)
+        fileList = os.listdir(os.path.dirname(modelPrefix))
+        fileList = [x for x in fileList if x.startswith(basename)]
+        assert len(fileList) > 0, 'Checkpoint file not found'
+        msg = 'Too many or too few checkpoint files for globalStep: %d' % globalStep
+        assert len(fileList) is 1, msg
+        chkpt = basename + '/' + fileList[0]
+        saver = tf.train.import_meta_graph(metaname)
+        metaname = metaname[:-5]
+        saver.restore(sess, metaname)
+        graph = tf.get_default_graph()
+        return graph
