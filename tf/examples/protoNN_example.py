@@ -14,7 +14,6 @@ import helpermethods as helper
 
 
 def main():
-
     config = helper.getProtoNNArgs()
     # Get hyper parameters
     DATA_DIR = config.data_dir
