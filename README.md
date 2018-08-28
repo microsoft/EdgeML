@@ -2,7 +2,7 @@
 
 This repository provides code for machine learning algorithms for edge devices developed at [Microsoft Research India](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/). 
 
-Machine learning models for edge devices need to have a small footprint in terms of storage, prediction latency and energy. One example of a ubiquitous real-world application where such models are desirable is resource-scarce devices and sensors in the Internet of Things (IoT) setting. Making real-time predictions locally on IoT devices without connecting to the cloud requires models that fit in a few kilobytes.
+Machine learning models for edge devices need to have a small footprint in terms of storage, prediction latency, and energy. One example of a ubiquitous real-world application where such models are desirable is resource-scarce devices and sensors in the Internet of Things (IoT) setting. Making real-time predictions locally on IoT devices without connecting to the cloud requires models that fit in a few kilobytes.
 
 This repository contains algorithms that shine in this setting in terms of both model size and compute, namely:
  - **Bonsai**: Strong and shallow non-linear tree based classifier.
@@ -21,6 +21,10 @@ Core Contributors:
   - [Don Dennis](https://dkdennis.xyz)
   - [Harsha Vardhan Simhadri](http://harsha-simhadri.org)
 
-We welcome contributions, comments and criticism. For questions, please [email Harsha](mailto:harshasi@microsoft.com).
+We welcome contributions, comments, and criticism. For questions, please [email Harsha](mailto:harshasi@microsoft.com).
 
 [People](https://github.com/Microsoft/EdgeML/wiki/People/) who have contributed to this [project](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
+
+
+### Microsoft Open Source Code of Conduct
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.

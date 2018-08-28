@@ -1,18 +1,6 @@
-## Edge Machine Learning
+## Edge Machine Learning - C++ Library
 
-This repository provides code for machine learning algorithms for edge devices developed at [Microsoft Research India](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/). 
-
-Machine learning models for edge devices need to have a small footprint in terms of storage, prediction latency and energy. One example of a ubiquitous real-world application where such models are desirable is resource-scarce devices and sensors in the Internet of Things (IoT) setting. Making real-time predictions locally on IoT devices without connecting to the cloud requires models that fit in a few kilobytes.
-
-This repository contains two such algorithms **Bonsai** and **ProtoNN** that shine in this setting. These algorithms can train models for classical supervised learning problems with memory requirements that are orders of magnitude lower than other modern ML algorithms. The trained models can be loaded onto edge devices such as IoT devices/sensors, and used to make fast and accurate predictions completely offline.
-
-For details, please see our [wiki page](https://github.com/Microsoft/EdgeML/wiki/) and our ICML'17 publications on [Bonsai](publications/Bonsai.pdf) and [ProtoNN](publications/ProtoNN.pdf) algorithms.
- 
-Initial Code Contributors: [Chirag Gupta](https://aigen.github.io/), [Aditya Kusupati](https://adityakusupati.github.io/), [Ashish Kumar](https://ashishkumar1993.github.io/), and [Harsha Simhadri](http://harsha-simhadri.org).
-
-We welcome contributions, comments and criticism. For questions, please [email Harsha](mailto:harshasi@microsoft.com).
-
-[People](https://github.com/Microsoft/EdgeML/wiki/People/) who have contributed to this [project](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
+This library consists of two machine learning algortihms **Bonsai** and **ProtoNN** implemented in C++ for speed and scalability.
 
 ### Requirements
 * Linux:
@@ -113,3 +101,6 @@ Additionally, there is one of two flags that has to be set in the Makefile:
 
 ### Microsoft Open Source Code of Conduct
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+Copyright (c) Microsoft Corporation. All rights reserved. 
+Licensed under the MIT license.
