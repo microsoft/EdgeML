@@ -12,7 +12,7 @@ from edgeml.graph.rnn import FastGRNNCell
 from edgeml.graph.rnn import FastRNNCell
 
 
-def main(M, N):
+def main():
     # Fixing seeds for reproducibility
     tf.set_random_seed(42)
     np.random.seed(42)
@@ -71,8 +71,7 @@ def main(M, N):
         FastCell, X, Y, sW=sW, sU=sU,
         learningRate=learningRate, outFile=outFile)
 
-    sess = tf.InteractiveSession(config=tf.ConfigProto(
-        intra_op_parallelism_threads=N, inter_op_parallelism_threads=M))
+    sess = tf.InteractiveSession()
     sess.run(tf.global_variables_initializer())
 
     FastCellTrainer.train(batchSize, totalEpochs, sess, Xtrain, Xtest,
@@ -81,6 +80,4 @@ def main(M, N):
 
 
 if __name__ == '__main__':
-    M = 2
-    N = 4
-    main(M, N)
+    main()
