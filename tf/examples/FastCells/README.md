@@ -55,8 +55,8 @@ Final Test Accuracy: 0.93721974
 
 Non-Zeros: 1932 Model Size: 7.546875 KB hasSparse: False
 ```
-usps10 directory will now have a consolidated results file called `FastGRNNResults.txt` or `FastRNNResults.txt` depending on the choice of the RNN cell.
-A directory `FastGRNNResults` or `FastRNNResults` with the corresponding models with each run of the code on the usps10 dataset
+`usps10/` directory will now have a consolidated results file called `FastGRNNResults.txt` or `FastRNNResults.txt` depending on the choice of the RNN cell.
+A directory `FastGRNNResults` or `FastRNNResults` with the corresponding models with each run of the code on the `usps10` dataset
 
 ## Byte Quantization(Q) for model compression
 If you wish to quantize the generated model to use byte quantized integers use `quantizeFastModels.py`. Usage Instructions:
