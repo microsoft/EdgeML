@@ -286,8 +286,9 @@ class FastTrainer:
             ihtDone = 1
             maxTestAcc = -10000
         header = '*' * 20
-
+        import time
         for i in range(0, totalEpochs):
+            start = time.time()
             print("\nEpoch Number: " + str(i), file=self.outFile)
 
             if i % decayStep == 0 and i != 0:
@@ -343,6 +344,9 @@ class FastTrainer:
             print("Train Loss: " + str(trainLoss / numIters) +
                   " Train Accuracy: " + str(trainAcc / numIters),
                   file=self.outFile)
+            end = time.time()
+            print("\nTime: " + str(end - start) + "\n")
+            continue
 
             testData = Xtest.reshape((-1, self.timeSteps, self.inputDims))
 
