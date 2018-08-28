@@ -26,7 +26,5 @@ pip install
 6. pandas
 ```
 
-**TODO**: TF library requirements.
-
 Copyright (c) Microsoft Corporation. All rights reserved. 
 Licensed under the MIT license.
