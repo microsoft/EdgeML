@@ -1,7 +1,7 @@
 # EdgeML FastCells on a sample public dataset
 
 This directory includes example notebook and general execution script of
-FastCells (FastGRNN & FastRNN) developed as part of EdgeML. Also, we include a
+FastCells (FastRNN & FastGRNN) developed as part of EdgeML. Also, we include a
 sample cleanup and use-case on the USPS10 public dataset.
 
 `edgeml.graph.rnn` implements the custom RNN cells of FastGRNN and FastRNN with
@@ -58,6 +58,7 @@ Non-Zeros: 1932 Model Size: 7.546875 KB hasSparse: False
 usps10 directory will now have a consolidated results file called `FastGRNNResults.txt` or `FastRNNResults.txt` depending on the choice of the RNN cell.
 A directory `FastGRNNResults` or `FastRNNResults` with the corresponding models with each run of the code on the usps10 dataset
 
+## Byte Quantization(Q) for model compression
 If you wish to quantize the generated model to use byte quantized integers use `quantizeFastModels.py`. Usage Instructions:
 
 ```
