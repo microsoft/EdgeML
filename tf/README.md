@@ -1,4 +1,4 @@
-# EdgeML: Tensorflow Implementations 
+## Edge Machine Learning: Tensorflow Library 
 
 This directory includes, Tensorflow implementations of various techniques and
 algorithms developed as part of EdgeML. Currently, the following algorithms are
