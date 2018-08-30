@@ -14,17 +14,18 @@ Usage directions and examples of all of the above algorithms are provided in
 
 ## Dependencies
 
-Tested on both Python2 and Python3
+Tested on both Python2.7 and >= Python3.5 with >= Tensorflow 1.6.0.
 
-pip install
+### CPU
 ``` 
-1. numpy
-2. scikit-learn
-3. scipy
-4. tensorflow [Choose gpu/cpu appropriately after installing CUDA and cuDNN for GPU. Tested till Cuda 9.0 and cuDNN 7.1]
-5. jupyter
-6. pandas
+pip install -r requirements-cpu.txt
+```
+### GPU
+
+Install appropriate CUDA and cuDNN [Tested with >= CUDA 8.1 and cuDNN >= 6.1]
+```
+pip install -r requirements-gpu.txt
 ```
 
-Copyright (c) Microsoft Corporation. All rights reserved. 
+Copyright (c) Microsoft Corporation. All rights reserved.
 Licensed under the MIT license.
