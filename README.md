@@ -6,14 +6,16 @@ Machine learning models for edge devices need to have a small footprint in terms
 
 This repository contains algorithms that shine in this setting in terms of both model size and compute, namely:
  - **Bonsai**: Strong and shallow non-linear tree based classifier.
+ - **ProtoNN**: **Proto**type based k-nearest neighbors (k**NN**) classifier. 
  - **EMI-RNN**: Training routine to recover the critical signature from time series data for faster and accurate RNN predictions.
  - **Fast(G)RNN**: **F**ast, **A**ccurate, **S**table and **T**iny (**G**ated) RNN cells.
- - **ProtoNN**: **Proto**type based k-nearest neighbors (k**NN**) classifier. 
  
 These algorithms can train models for classical supervised learning problems with memory requirements that are orders of magnitude lower than other modern ML algorithms. The trained models can be loaded onto edge devices such as IoT devices/sensors, and used to make fast and accurate predictions completely offline.
 
-For details, please see our [wiki page](https://github.com/Microsoft/EdgeML/wiki/) and our ICML'17 publications on [Bonsai](docs/publications/Bonsai.pdf) and [ProtoNN](docs/publications/ProtoNN.pdf) algorithms, NIPS'18 publications on [EMI-RNN](docs/publications/EMI-RNN.pdf) and [Fast(G)RNN](docs/publications/FastGRNN.pdf). 
- 
+The tf directrory contains code, examples and scripts for all these algorithms in TensorFlow. The cpp directory has training and inference code for Bonsai and ProtoNN algorithms in C++. Please see install/run instruction in the Readme pages within these directories.
+
+For details, please see our [wiki page](https://github.com/Microsoft/EdgeML/wiki/) and our ICML'17 publications on [Bonsai](docs/publications/Bonsai.pdf) and [ProtoNN](docs/publications/ProtoNN.pdf) algorithms, NIPS'18 publications on [EMI-RNN](docs/publications/EMI-RNN.pdf) and [Fast(G)RNN](docs/publications/FastGRNN.pdf).  
+
 Core Contributors:
   - [Aditya Kusupati](https://adityakusupati.github.io/)
   - [Ashish Kumar](https://ashishkumar1993.github.io/)
