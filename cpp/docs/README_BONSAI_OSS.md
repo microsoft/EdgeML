@@ -1,6 +1,6 @@
 # Bonsai
 
-[Bonsai](publications/Bonsai.pdf) is a novel tree based algorithm for efficient prediction on IoT devices – such as those based on the Arduino Uno board having an 8 bit ATmega328P microcontroller operating at 16 MHz with no native floating point support, 2 KB RAM and 32 KB read-only flash.
+[Bonsai](../../docs/publications/Bonsai.pdf) is a novel tree based algorithm for efficient prediction on IoT devices – such as those based on the Arduino Uno board having an 8 bit ATmega328P microcontroller operating at 16 MHz with no native floating point support, 2 KB RAM and 32 KB read-only flash.
 
 Bonsai maintains prediction accuracy while minimizing model size and prediction costs by: 
 
