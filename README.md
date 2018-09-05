@@ -12,7 +12,7 @@ This repository contains algorithms that shine in this setting in terms of both 
  
 These algorithms can train models for classical supervised learning problems with memory requirements that are orders of magnitude lower than other modern ML algorithms. The trained models can be loaded onto edge devices such as IoT devices/sensors, and used to make fast and accurate predictions completely offline.
 
-For details, please see our [wiki page](https://github.com/Microsoft/EdgeML/wiki/) and our ICML'17 publications on [Bonsai](docs/publications/Bonsai.pdf) and [ProtoNN](docs/publications/ProtoNN.pdf) algorithms, NIPS'18 submissions on [EMI-RNN](docs/publications/EMI-RNN.pdf) and [Fast(G)RNN](docs/publications/FastGRNN.pdf). 
+For details, please see our [wiki page](https://github.com/Microsoft/EdgeML/wiki/) and our ICML'17 publications on [Bonsai](docs/publications/Bonsai.pdf) and [ProtoNN](docs/publications/ProtoNN.pdf) algorithms, NIPS'18 publications on [EMI-RNN](docs/publications/EMI-RNN.pdf) and [Fast(G)RNN](docs/publications/FastGRNN.pdf). 
  
 Core Contributors:
   - [Aditya Kusupati](https://adityakusupati.github.io/)
