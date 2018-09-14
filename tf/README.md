@@ -9,7 +9,7 @@ available in Tensorflow:
 3. [Fast(G)RNN](../docs/publications/FastGRNN.pdf)
 4. [ProtoNN](../docs/publications/ProtoNN.pdf)
 
-The TensorFlow compute graphs for these algoriths are packaged as `edgeml.graph'. Trainers for these algorithms are in `edgeml.trainer'. Usage directions and examples for these algorithms are provided in `examples` directory. 
+The TensorFlow compute graphs for these algoriths are packaged as `edgeml.graph`. Trainers for these algorithms are in `edgeml.trainer`. Usage directions and examples for these algorithms are provided in `examples` directory. To get started with any of the provided algorithms, please follow the notebooks in the the `examples` directory.
 
 ## Dependencies
 
