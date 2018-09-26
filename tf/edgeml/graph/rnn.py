@@ -79,6 +79,7 @@ class FastGRNNCell(RNNCell):
     def state_size(self):
         return self._hidden_size
 
+    @property
     def output_size(self):
         return self._hidden_size
 
@@ -242,6 +243,7 @@ class FastRNNCell(RNNCell):
     def state_size(self):
         return self._hidden_size
 
+    @property
     def output_size(self):
         return self._hidden_size
 
