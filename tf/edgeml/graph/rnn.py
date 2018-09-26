@@ -83,24 +83,31 @@ class FastGRNNCell(RNNCell):
     def output_size(self):
         return self._hidden_size
 
+    @property
     def gate_non_linearity(self):
         return self._gate_non_linearity
 
+    @property
     def update_non_linearity(self):
         return self._update_non_linearity
 
+    @property
     def wRank(self):
         return self._wRank
 
+    @property
     def uRank(self):
         return self._uRank
 
+    @property
     def num_weight_matrices(self):
         return self._num_weight_matrices
 
+    @property
     def name(self):
         return self._name
 
+    @property
     def cellType(self):
         return "FastGRNN"
 
@@ -247,21 +254,27 @@ class FastRNNCell(RNNCell):
     def output_size(self):
         return self._hidden_size
 
+    @property
     def update_non_linearity(self):
         return self._update_non_linearity
 
+    @property
     def wRank(self):
         return self._wRank
 
+    @property
     def uRank(self):
         return self._uRank
 
+    @property
     def num_weight_matrices(self):
         return self._num_weight_matrices
 
+    @property
     def name(self):
         return self._name
 
+    @property
     def cellType(self):
         return "FastRNN"
 
