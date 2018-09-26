@@ -57,13 +57,14 @@ def quantizeFastModels(modelDir, maxValue=127, scalarScaleFactor=1000):
     paramLimit = np.max(paramLimitList)
     classifierLimit = np.max(classifierLimitList)
 
-    paramScaleFactor = np.round(255.0 / (2.0 * paramLimit))
-    classifierScaleFactor = 255.0 / (2.0 * classifierLimit)
+    paramScaleFactor = np.round((2.0 * maxValue + 1.0) / (2.0 * paramLimit))
+    classifierScaleFactor = (2.0 * maxValue + 1.0) / (2.0 * classifierLimit)
 
     quantParamWeights = []
     for param in paramWeightList:
         temp = np.round(paramScaleFactor * param)
         temp[temp[:] > maxValue] = maxValue
+        temp[temp[:] < -maxValue] = -1 * (maxValue + 1)
 
         if maxValue <= 127:
             temp = temp.astype('int8')
@@ -78,6 +79,7 @@ def quantizeFastModels(modelDir, maxValue=127, scalarScaleFactor=1000):
     for param in classifierWeightList:
         temp = np.round(classifierScaleFactor * param)
         temp[temp[:] > maxValue] = maxValue
+        temp[temp[:] < -maxValue] = -1 * (maxValue + 1)
 
         if maxValue <= 127:
             temp = temp.astype('int8')
