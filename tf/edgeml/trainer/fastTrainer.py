@@ -89,7 +89,7 @@ class FastTrainer:
         TODO: Make this a separate class if needed
         '''
         self.FC = tf.Variable(tf.random_normal(
-            [self.FastObj.output_size(), self.numClasses]), name='FC')
+            [self.FastObj.hidden_size(), self.numClasses]), name='FC')
         self.FCbias = tf.Variable(tf.random_normal(
             [self.numClasses]), name='FCbias')
 
