@@ -51,7 +51,7 @@ class FastTrainer:
         self.correctPredictions, self.accuracy = self.accuracyGraph(
             self.predictions, self.Y)
 
-        self.numMatrices = self.FastObj.num_weight_matrices()
+        self.numMatrices = self.FastObj.num_weight_matrices
         self.totalMatrices = self.numMatrices[0] + self.numMatrices[1]
 
         self.FastParams = self.FastObj.getVars()
@@ -248,7 +248,7 @@ class FastTrainer:
             np.save(currDir + '/U2.npy',
                     self.FastParams[self.numMatrices[0] + 1].eval())
 
-        if self.FastObj.cellType() == "FastGRNN":
+        if self.FastObj.cellType == "FastGRNN":
             np.save(currDir + '/Bg.npy',
                     self.FastParams[self.totalMatrices].eval())
             np.save(currDir + '/Bh.npy',
@@ -257,7 +257,7 @@ class FastTrainer:
                     self.FastParams[self.totalMatrices + 2].eval())
             np.save(currDir + '/nu.npy',
                     self.FastParams[self.totalMatrices + 3].eval())
-        elif self.FastObj.cellType() == "FastRNN":
+        elif self.FastObj.cellType == "FastRNN":
             np.save(currDir + '/B.npy',
                     self.FastParams[self.totalMatrices].eval())
             np.save(currDir + '/alpha.npy', self.FastParams[
@@ -274,7 +274,7 @@ class FastTrainer:
         The Dense - IHT - Sparse Retrain Routine for FastCell Training
         '''
         resultFile = open(
-            dataDir + '/' + str(self.FastObj.cellType()) + 'Results.txt', 'a+')
+            dataDir + '/' + str(self.FastObj.cellType) + 'Results.txt', 'a+')
         numIters = Xtrain.shape[0] / batchSize
         totalBatches = numIters * totalEpochs
 
