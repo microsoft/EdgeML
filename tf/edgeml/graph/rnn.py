@@ -83,9 +83,6 @@ class FastGRNNCell(RNNCell):
     def output_size(self):
         return self._hidden_size
 
-    def hidden_size(self):
-        return self._hidden_size
-
     def gate_non_linearity(self):
         return self._gate_non_linearity
 
@@ -248,9 +245,6 @@ class FastRNNCell(RNNCell):
 
     @property
     def output_size(self):
-        return self._hidden_size
-
-    def hidden_size(self):
         return self._hidden_size
 
     def update_non_linearity(self):
