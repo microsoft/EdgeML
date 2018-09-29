@@ -287,7 +287,8 @@ class FastTrainer:
             maxTestAcc = -10000
         header = '*' * 20
 
-        testData = Xtest.reshape((-1, self.timeSteps, self.inputDims))
+        Xtest = Xtest.reshape((-1, self.timeSteps, self.inputDims))
+        Xtrain = Xtrain.reshape((-1, self.timeSteps, self.inputDims))
 
         for i in range(0, totalEpochs):
             print("\nEpoch Number: " + str(i), file=self.outFile)
@@ -309,13 +310,9 @@ class FastTrainer:
                 if j == numIters - 1:
                     batchX = Xtrain[j * batchSize:]
                     batchY = Ytrain[j * batchSize:]
-                    batchX = batchX.reshape(
-                        (-1, self.timeSteps, self.inputDims))
                 else:
                     batchX = Xtrain[j * batchSize:(j + 1) * batchSize]
                     batchY = Ytrain[j * batchSize:(j + 1) * batchSize]
-                    batchX = batchX.reshape(
-                        (batchSize, self.timeSteps, self.inputDims))
 
                 # Mini-batch training
                 _, batchLoss, batchAcc = sess.run([self.trainOp, self.lossOp, self.accuracy], feed_dict={
@@ -353,7 +350,7 @@ class FastTrainer:
                   file=self.outFile)
 
             testAcc, testLoss = sess.run([self.accuracy, self.lossOp], feed_dict={
-                                         self.X: testData, self.Y: Ytest})
+                                         self.X: Xtest, self.Y: Ytest})
 
             if ihtDone == 0:
                 maxTestAcc = -10000
