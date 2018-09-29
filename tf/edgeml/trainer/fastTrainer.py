@@ -275,7 +275,7 @@ class FastTrainer:
         '''
         resultFile = open(
             dataDir + '/' + str(self.FastObj.cellType) + 'Results.txt', 'a+')
-        numIters = Xtrain.shape[0] / batchSize
+        numIters = int(np.ceil(float(Xtrain.shape[0]) / float(batchSize)))
         totalBatches = numIters * totalEpochs
 
         counter = 0
@@ -286,6 +286,8 @@ class FastTrainer:
             ihtDone = 1
             maxTestAcc = -10000
         header = '*' * 20
+
+        testData = Xtest.reshape((-1, self.timeSteps, self.inputDims))
 
         for i in range(0, totalEpochs):
             print("\nEpoch Number: " + str(i), file=self.outFile)
@@ -304,10 +306,16 @@ class FastTrainer:
                     print("\n%s%s%s\n" %
                           (header, msg, header), file=self.outFile)
 
-                batchX = Xtrain[j * batchSize:(j + 1) * batchSize]
-                batchY = Ytrain[j * batchSize:(j + 1) * batchSize]
-                batchX = batchX.reshape(
-                    (batchSize, self.timeSteps, self.inputDims))
+                if j == numIters - 1:
+                    batchX = Xtrain[j * batchSize:]
+                    batchY = Ytrain[j * batchSize:]
+                    batchX = batchX.reshape(
+                        (-1, self.timeSteps, self.inputDims))
+                else:
+                    batchX = Xtrain[j * batchSize:(j + 1) * batchSize]
+                    batchY = Ytrain[j * batchSize:(j + 1) * batchSize]
+                    batchX = batchX.reshape(
+                        (batchSize, self.timeSteps, self.inputDims))
 
                 # Mini-batch training
                 _, batchLoss, batchAcc = sess.run([self.trainOp, self.lossOp, self.accuracy], feed_dict={
@@ -343,8 +351,6 @@ class FastTrainer:
             print("Train Loss: " + str(trainLoss / numIters) +
                   " Train Accuracy: " + str(trainAcc / numIters),
                   file=self.outFile)
-
-            testData = Xtest.reshape((-1, self.timeSteps, self.inputDims))
 
             testAcc, testLoss = sess.run([self.accuracy, self.lossOp], feed_dict={
                                          self.X: testData, self.Y: Ytest})
