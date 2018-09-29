@@ -54,7 +54,7 @@ def getArgs():
                         'train.npy and test.npy')
 
     parser.add_argument('-c', '--cell', type=str, default="FastGRNN",
-                        help='Chose between [FastGRNN, FastRNN], ' +
+                        help='Choose between [FastGRNN, FastRNN], ' +
                         'default: FastGRNN')
 
     parser.add_argument('-id', '--input-dim', type=checkIntNneg, required=True,
@@ -89,11 +89,11 @@ def getArgs():
                         '(default: 1.0(Dense) try: [0.1, 0.2, 0.3])')
 
     parser.add_argument('-unl', '--update-nl', type=str, default="tanh",
-                        help='Update non linearity. Chose between ' +
+                        help='Update non linearity. Choose between ' +
                         '[tanh, sigmoid, relu, quantTanh, quantSigm]. ' +
                         'default => tanh. Can add more in edgeml/graph/rnn.py')
     parser.add_argument('-gnl', '--gate-nl', type=str, default="sigmoid",
-                        help='Gate non linearity. Chose between ' +
+                        help='Gate non linearity. Choose between ' +
                         '[tanh, sigmoid, relu, quantTanh, quantSigm]. ' +
                         'default => sigmoid. Can add more in ' +
                         'edgeml/graph/rnn.py. Only Applicable to FastGRNN')
