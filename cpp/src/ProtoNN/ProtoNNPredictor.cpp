@@ -261,8 +261,7 @@ void ProtoNNPredictor::setFromArgs(const int argc, const char** argv)
 
 ProtoNNPredictor::~ProtoNNPredictor()
 {
-  if(dataPoint)
-    delete[] dataPoint;
+  delete[] dataPoint;
 }
 
 FP_TYPE ProtoNNPredictor::testDenseDataPoint(
