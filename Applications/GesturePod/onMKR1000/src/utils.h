@@ -4,15 +4,16 @@
  *
  * Helper methods.
  */
+
 #ifndef __UTILS__
 #define __UTILS__
 
 #include "../config.h"
 
 #if defined(ARDUINO) && ARDUINO >= 100
-	#include "Arduino.h"
+    #include "Arduino.h"
 #else
-	#include "WProgram.h"
+    #include "WProgram.h"
 #endif
 
 // Max label index used for Vote Class
@@ -20,21 +21,21 @@
 
 /*
  ********************************
- * 	Template Class declarations.
+ *  Template Class declarations.
  ********************************
  */
 template<class Typ, int16_t START_SIZE>
 class FIFOCircularQ {
 private:
-	Typ queue[START_SIZE];
-	int16_t front;
-	int16_t back;
+    Typ queue[START_SIZE];
+    int16_t front;
+    int16_t back;
 public:
-	FIFOCircularQ();
-	void forceAdd(Typ obj);
-	Typ getNthEarliest(int i);
-	void flatten(Typ* dst);
-	int16_t getSize();
+    FIFOCircularQ();
+    void forceAdd(Typ obj);
+    Typ getNthEarliest(int i);
+    void flatten(Typ* dst);
+    int16_t getSize();
 };
 
 /*
@@ -44,16 +45,16 @@ public:
 template<typename Typ>
 class Vector3D {
 public:
-	Typ x;
-	Typ y;
-	Typ z;
-	Vector3D<Typ>();
-	Vector3D<Typ>(Typ _x, Typ _y, Typ _z);
-	Vector3D<Typ>& operator+(const Vector3D<Typ>& b);
-	Vector3D<Typ>& operator-(const Vector3D<Typ>& b);
-	Vector3D<Typ>& scale(Typ k);
-	Vector3D<Typ>& invscale(Typ k);
-	Typ& operator[] (int i);
+    Typ x;
+    Typ y;
+    Typ z;
+    Vector3D<Typ>();
+    Vector3D<Typ>(Typ _x, Typ _y, Typ _z);
+    Vector3D<Typ>& operator+(const Vector3D<Typ>& b);
+    Vector3D<Typ>& operator-(const Vector3D<Typ>& b);
+    Vector3D<Typ>& scale(Typ k);
+    Vector3D<Typ>& invscale(Typ k);
+    Typ& operator[] (int i);
 };
 
 /*
@@ -70,8 +71,8 @@ public:
  */
 template<class Typ, int16_t START_SIZE>
 FIFOCircularQ<Typ, START_SIZE>::FIFOCircularQ(){
-	front = -1;
-	back = -1;
+    front = -1;
+    back = -1;
 }
 
 /*
@@ -81,19 +82,19 @@ FIFOCircularQ<Typ, START_SIZE>::FIFOCircularQ(){
  */
 template<class Typ, int16_t START_SIZE>
 void FIFOCircularQ<Typ, START_SIZE>::forceAdd(Typ obj){
-	if (front == -1) {
-		// Empty
-		back = 0;
-		front = 0;
-	} else if(back == front) {
-		// Full
-		back += 1;
-	}
-	// Invariant: at this point, front points to the
-	// empty cell.
-	queue[front++] = obj;
-	front %= START_SIZE;
-	back %= START_SIZE;
+    if (front == -1) {
+        // Empty
+        back = 0;
+        front = 0;
+    } else if(back == front) {
+        // Full
+        back += 1;
+    }
+    // Invariant: at this point, front points to the
+    // empty cell.
+    queue[front++] = obj;
+    front %= START_SIZE;
+    back %= START_SIZE;
 }
 
 /*
@@ -109,7 +110,7 @@ void FIFOCircularQ<Typ, START_SIZE>::forceAdd(Typ obj){
  */
 template<class Typ, int16_t START_SIZE>
 Typ FIFOCircularQ<Typ, START_SIZE>::getNthEarliest(int i) {
-	return queue[(back + i) % START_SIZE];
+    return queue[(back + i) % START_SIZE];
 }
 
 /*
@@ -121,10 +122,10 @@ Typ FIFOCircularQ<Typ, START_SIZE>::getNthEarliest(int i) {
  */
 template<class Typ, int16_t START_SIZE>
 void FIFOCircularQ<Typ, START_SIZE>::flatten(Typ * dst){
-	int16_t s = this->getSize();
-	for(int i = 0; i < s; i++){
-		dst[i] = getNthEarliest(i);
-	}
+    int16_t s = this->getSize();
+    for(int i = 0; i < s; i++){
+        dst[i] = getNthEarliest(i);
+    }
 }
 
 /*
@@ -133,14 +134,14 @@ void FIFOCircularQ<Typ, START_SIZE>::flatten(Typ * dst){
  */
 template<class Typ, int16_t START_SIZE>
 int16_t FIFOCircularQ<Typ, START_SIZE>::getSize(){
-	if(front == -1)
-		return 0;
-	else if (front == back)
-		return START_SIZE;
-	else if (front > back)
-		return front - back;
-	else
-		return front + (START_SIZE - back);
+    if(front == -1)
+        return 0;
+    else if (front == back)
+        return START_SIZE;
+    else if (front > back)
+        return front - back;
+    else
+        return front + (START_SIZE - back);
 }
 
 /*
@@ -150,16 +151,16 @@ int16_t FIFOCircularQ<Typ, START_SIZE>::getSize(){
  */
 template<class Typ>
 Vector3D<Typ>::Vector3D(){
-	this->x = (Typ)0;
-	this->y = (Typ)0;
-	this->z = (Typ)0;
+    this->x = (Typ)0;
+    this->y = (Typ)0;
+    this->z = (Typ)0;
 }
 
 template<class Typ>
 Vector3D<Typ>::Vector3D(Typ _x, Typ _y, Typ _z){
-	this->x = _x;
-	this->y = _y;
-	this->z = _z;
+    this->x = _x;
+    this->y = _y;
+    this->z = _z;
 }
 
 /*
@@ -167,10 +168,10 @@ Vector3D<Typ>::Vector3D(Typ _x, Typ _y, Typ _z){
  */
 template<class Typ>
 Vector3D<Typ>& Vector3D<Typ>::operator+(const Vector3D<Typ>& b){
-	this->x += b.x;
-	this->y += b.y;
-	this->z += b.z;
-	return *(this);
+    this->x += b.x;
+    this->y += b.y;
+    this->z += b.z;
+    return *(this);
 }
 
 /*
@@ -178,10 +179,10 @@ Vector3D<Typ>& Vector3D<Typ>::operator+(const Vector3D<Typ>& b){
  */
 template<class Typ>
 Vector3D<Typ>& Vector3D<Typ>::operator-(const Vector3D<Typ>& b){
-	this->x -= b.x;
-	this->y -= b.y;
-	this->z -= b.z;
-	return *(this);
+    this->x -= b.x;
+    this->y -= b.y;
+    this->z -= b.z;
+    return *(this);
 }
 
 /*
@@ -189,10 +190,10 @@ Vector3D<Typ>& Vector3D<Typ>::operator-(const Vector3D<Typ>& b){
  */
 template<class Typ>
 Vector3D<Typ>& Vector3D<Typ>::scale(Typ k){
-	this->x *= k;
-	this->y *= k;
-	this->z *= k;
-	return *(this);
+    this->x *= k;
+    this->y *= k;
+    this->z *= k;
+    return *(this);
 }
 
 /* 
@@ -202,10 +203,10 @@ Vector3D<Typ>& Vector3D<Typ>::scale(Typ k){
  */
 template<class Typ>
 Vector3D<Typ>& Vector3D<Typ>::invscale(Typ k){
-	this->x /= k;
-	this->y /= k;
-	this->z /= k;
-	return *(this);
+    this->x /= k;
+    this->y /= k;
+    this->z /= k;
+    return *(this);
 }
 
 /*
@@ -215,10 +216,10 @@ Vector3D<Typ>& Vector3D<Typ>::invscale(Typ k){
 template<class Typ>
 Typ& Vector3D<Typ>::operator[] (int i) {
     if (i == 1)
-    	return this->y;
-   	else if (i == 2)
-   		return this->z;
-   	else return this->x;
+        return this->y;
+    else if (i == 2)
+        return this->z;
+    else return this->x;
 }
 
 /**
@@ -234,30 +235,30 @@ Typ& Vector3D<Typ>::operator[] (int i) {
  * @returns void
  */
 void minMaxNormalize(
-	const Vector3D<int16_t> *v,
-	const Vector3D<int16_t> *vmin, 
-	const Vector3D<int16_t> *vmax,
-	Vector3D<float>   *dst
-	);
+    const Vector3D<int16_t> *v,
+    const Vector3D<int16_t> *vmin, 
+    const Vector3D<int16_t> *vmax,
+    Vector3D<float>   *dst
+    );
 
 /* Voting mechanism to prevent stray gestures.
- *	
+ *  
  * A constant poll of the previous 6 predictions is maintained.
  * The candidate with the highest poll is returned
  */
 class Vote{
 public:
-	void forcePush(int x);
-	int result();
-	Vote(int maxLabelIndexIP);
-	int getInitStatus();
+    void forcePush(int x);
+    int result();
+    Vote(int maxLabelIndexIP);
+    int getInitStatus();
 private:
-	int initStatus;
-	int maxLabelIndex;
-	int queue[6]; 
-	int front, back; 
-	int resultScores[MAX_LABEL_INDEX + 1];
-	void updateVote(int in, int out);
+    int initStatus;
+    int maxLabelIndex;
+    int queue[6]; 
+    int front, back; 
+    int resultScores[MAX_LABEL_INDEX + 1];
+    void updateVote(int in, int out);
 };
 
 #endif // __UTILS__

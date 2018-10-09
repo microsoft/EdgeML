@@ -21,25 +21,23 @@
 #include <Arduino.h>
 #include "./../config.h"
 
-
-
 // Base class for all communication modules
 class CommunicationModule{
 public:
-	virtual int init();
-	virtual int write(const char* x);
-	virtual int writeln(const char* x);
+    virtual int init();
+    virtual int write(const char* x);
+    virtual int writeln(const char* x);
 };
 
 // BLE Class declaration. 
 // BLE class is Concrete class derived from CommunicationModule
 class BLE: public CommunicationModule{
 private:
-	int bleSetup();
+    int bleSetup();
 public:
-	int init();
-	int write(const char* x);
-	int writeln(const char* x);
+    int init();
+    int write(const char* x);
+    int writeln(const char* x);
 };
 
 #endif //__COMMUNICATION__
