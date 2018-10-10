@@ -253,9 +253,10 @@ public:
     Vote(int maxLabelIndexIP);
     int getInitStatus();
 private:
+    static const int queueLength=6;
     int initStatus;
     int maxLabelIndex;
-    int queue[6]; 
+    int queue[queueLength]; 
     int front, back; 
     int resultScores[MAX_LABEL_INDEX + 1];
     void updateVote(int in, int out);

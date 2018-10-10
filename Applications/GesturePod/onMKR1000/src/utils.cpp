@@ -61,8 +61,8 @@ void Vote::forcePush(int x) {
         back += 1;
     }
     queue[front++] = x;
-    front %= 6; 
-    back %= 6;
+    front %= this->queueLength; 
+    back %= this->queueLength;
     updateVote(x , out);
 }
 
