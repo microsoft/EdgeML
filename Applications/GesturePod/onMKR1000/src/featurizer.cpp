@@ -17,7 +17,7 @@ Featurizer::Featurizer(
     FIFOCircularQ<float, 400> *_gz
     ){
     if(_bucketWidth != 20) 
-        Serial.println("ERROR3: BucketWidth not 20 not compatible with current ProtoNN Model");
+        exit(-1);
     this->ax = _ax;
     this->ay = _ay;
     this->az = _az;
@@ -52,7 +52,9 @@ int Featurizer::getBucket(
     int bucketDistribution[]
     ){
     sensorValue1D->flatten(sensorValue1Dflat);
-    int imax = 0, imin = 0, maxval = 0,minval = 0, maxcount = 0, mincount = 0, postemp = 0, negtemp = 0, bucketCount;
+    int imax = 0, imin = 0, maxval = 0, minval = 0, 
+        maxcount = 0, mincount = 0, postemp = 0, negtemp = 0, 
+        bucketCount;
     bool flagPos = false, flagNeg = false;
     float j,k;
     for(int i =0; i < 400; i++){
