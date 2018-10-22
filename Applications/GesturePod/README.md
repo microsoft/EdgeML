@@ -11,8 +11,9 @@ GesturePod
 
 GesturePod is a plug-and-play, gesture recognition device. In this repository we share: 
 
-a) the code that powers the GesturePod on MKR1000 - ARM Cortex M0+ class microcontroller, and on your workstation  
-b) a pertrained model that recognizes 5 gestures - Double Tap, Right Twist, Left Twist, Twirl and Double Swipe with an accuracy of 99.87.
+a) Code that powers the GesturePod, recognizes the the gesture and communicates the gesture over Bluetooth Low Energy (BLE). 
+
+b) A pertrained model that recognizes 5 gestures - Double Tap, Right Twist, Left Twist, Twirl and Double Swipe with an accuracy of 99.87.
 
 ## Organization
 
