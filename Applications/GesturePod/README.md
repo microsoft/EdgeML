@@ -25,6 +25,6 @@ This directory is subdivided into two further directories:
 
 ## Docs
 
-Read more about this here.
+Read more about this from the [Technical Report](https://www.microsoft.com/en-us/research/publication/gesturepod-programmable-gesture-recognition-augmenting-assistive-devices/).
 
 

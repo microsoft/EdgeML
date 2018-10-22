@@ -214,6 +214,7 @@ void loop() {
         if (millis() - LAST_SENT_TIME >= 2000){
             if((VOTE_RESULT == 3)||(VOTE_RESULT == 4)||(VOTE_RESULT == 5)||(VOTE_RESULT == 7)||(VOTE_RESULT == 9)){
                 digitalWrite(LED_PIN, HIGH);
+                Serial.print("Communicating gesture: ");
                 Serial.println(GESTURE_TO_COMMUNICATE[VOTE_RESULT]);
                 BLE_module.writeln(GESTURE_TO_COMMUNICATE[VOTE_RESULT]);
                 LAST_SENT_TIME = millis();
