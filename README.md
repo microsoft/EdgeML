@@ -22,6 +22,7 @@ Core Contributors:
   - [Chirag Gupta](https://aigen.github.io/)
   - [Don Dennis](https://dkdennis.xyz)
   - [Harsha Vardhan Simhadri](http://harsha-simhadri.org)
+  - [Shishir G Patil](http://shishirpatil.github.io)
 
 We welcome contributions, comments, and criticism. For questions, please [email Harsha](mailto:harshasi@microsoft.com).
 
