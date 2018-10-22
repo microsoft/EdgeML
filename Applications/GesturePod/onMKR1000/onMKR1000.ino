@@ -97,7 +97,7 @@ void setup() {
         Wire.setClock(400000);
 #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
         Fastwire::setup(400, true);
-    #endif
+#endif
     Serial.begin(BAUD_RATE);
     delay(2000);
     if (predictor1.getErrorCode()){
