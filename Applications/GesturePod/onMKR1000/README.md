@@ -1,4 +1,4 @@
-GesturePod *(on MKR1000)*
+GesturePod *(for MKR1000)*
 =========================
 
 ## Table of Contents
@@ -11,10 +11,8 @@ GesturePod *(on MKR1000)*
 
 ## About
 
-GesturePod is a plug-and-play, gesture recognition device. GesturePod can be clamped onto any white-cane used by persons with Visually Impairment. Simple and natural gestures performed on the cane triggers corresponding activities on the phone. This gesture recognition system on the cane powered by (real time robust Machine Learning (ML) based classifier [ProtoNN](https://github.com/Microsoft/EdgeML/blob/master/docs/publications/ProtoNN.pdf). 
+[GesturePod](https://1drv.ms/u/s!AjDloPaG_l0Et7Ikid1voOVFuI116Q) is a plug-and-play, gesture recognition device. GesturePod can be clamped onto any white-cane used by persons with Visually Impairment. Simple and natural gestures performed on the cane triggers corresponding activities on the phone. The gesture recognition system on the cane is powered by (real time and robust) Machine Learning (ML) based classifier [ProtoNN](https://github.com/Microsoft/EdgeML/blob/master/docs/publications/ProtoNN.pdf). This repository contains the code for recognizing the gestures and communicating the gesture over Bluetooth Low Energy (BLE). The pertrained model can recognize 5 gestures - Double Tap, Right Twist, Left Twist, Twirl and Double Swipe with an accuracy of 99.87.
 
-
-Here in this code base you will find gesture prediction code that runs on a Cortex M0+ microcontroller. 
 
 ## Quick Start
 
@@ -34,9 +32,8 @@ Here in this code base you will find gesture prediction code that runs on a Cort
 ## Docs
 Blog post _Coming soon ..!_
 
-## Also
-Make your own GesturePod.
-Don't have time? No issues, checkout the code on your computer with preloaded sensor values _Coming Soon ..!_
+## Simulation
+Make your own GesturePod. Don't have time? No issues, checkout the simulation on your computer with preloaded sensor values _Coming Soon ..!_
 
 ## Dependencies
-MPU6050, I2C dev and helper 3d math libraries from [jrowberg](https://github.com/jrowberg/i2cdevlib). Last tested with commit [900b8f9](https://github.com/jrowberg/i2cdevlib/tree/900b8f959e9fa5c3126e0301f8a61d45a4ea99cc).
+To communicate with the MPU6050, we use [jrowberg's](https://github.com/jrowberg/i2cdevlib) ```i2cdevlib``` library.  Last tested with commit [900b8f9](https://github.com/jrowberg/i2cdevlib/tree/900b8f959e9fa5c3126e0301f8a61d45a4ea99cc).
