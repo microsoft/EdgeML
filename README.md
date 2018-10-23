@@ -23,7 +23,7 @@ ML algorithms. The trained models can be loaded onto edge devices such as IoT
 devices/sensors, and used to make fast and accurate predictions completely
 offline.
 
-The `tf` directrory contains code, examples and scripts for all these algorithms
+The `tf` directory contains code, examples and scripts for all these algorithms
 in TensorFlow. The `cpp` directory has training and inference code for Bonsai and
 ProtoNN algorithms in C++. Please see install/run instruction in the Readme
 pages within these directories. The `applications` directory has code/demonstrations
