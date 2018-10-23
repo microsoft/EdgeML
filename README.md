@@ -23,10 +23,11 @@ ML algorithms. The trained models can be loaded onto edge devices such as IoT
 devices/sensors, and used to make fast and accurate predictions completely
 offline.
 
-The tf directrory contains code, examples and scripts for all these algorithms
-in TensorFlow. The cpp directory has training and inference code for Bonsai and
+The `tf` directrory contains code, examples and scripts for all these algorithms
+in TensorFlow. The `cpp` directory has training and inference code for Bonsai and
 ProtoNN algorithms in C++. Please see install/run instruction in the Readme
-pages within these directories.
+pages within these directories. The `applications` directory has code/demonstrations
+of applications of the EdgeML algorithms.
 
 For details, please see our [wiki
 page](https://github.com/Microsoft/EdgeML/wiki/) and our ICML'17 publications
@@ -34,6 +35,7 @@ on [Bonsai](docs/publications/Bonsai.pdf) and
 [ProtoNN](docs/publications/ProtoNN.pdf) algorithms, NIPS'18 publications on
 [EMI-RNN](docs/publications/emi-rnn-preprint-01.pdf) and
 [Fast(G)RNN](docs/publications/FastGRNN.pdf).  
+
 
 Core Contributors:
   - [Aditya Kusupati](https://adityakusupati.github.io/)
