@@ -33,7 +33,7 @@ For details, please see our [wiki
 page](https://github.com/Microsoft/EdgeML/wiki/) and our ICML'17 publications
 on [Bonsai](docs/publications/Bonsai.pdf) and
 [ProtoNN](docs/publications/ProtoNN.pdf) algorithms, NIPS'18 publications on
-[EMI-RNN](docs/publications/emi-rnn-preprint-01.pdf) and
+[EMI-RNN](docs/publications/emi-rnn-nips-18.pdf) and
 [Fast(G)RNN](docs/publications/FastGRNN.pdf).  
 
 
