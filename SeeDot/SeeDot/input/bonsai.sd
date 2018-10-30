@@ -1,0 +1,24 @@
+let X   = (401, 1)   in [-5.648844, 5.648609] in
+let Z   = (10, 401)  in [-1.425590, 0.716429] in
+let W   = (3, 1, 10) in [-0.892538, 0.845641] in
+let V   = (3, 1, 10) in [-0.431755, 0.790801] in
+let T   = (1, 1, 10) in [-0.163914, 0.182429] in
+let mean = (10, 1) in [-0.000001, 0.000001] in
+
+let ZX = Z |*| X - mean in
+
+// depth 0
+let node0   = 0    in
+let W0      = W[node0] * ZX in
+let V0      = V[node0] * ZX in
+let V0_tanh = tanh(V0) in
+let score0  = W0 <*> V0_tanh in
+
+// depth 1
+let node1   = (T[node0] * ZX) >= 0? 2 * node0 + 1 : 2 * node0 + 2 in
+let W1      = W[node1] * ZX in
+let V1      = V[node1] * ZX in
+let V1_tanh = tanh(V1) in
+let score1  = score0 + W1 <*> V1_tanh in
+
+sgn(score1)

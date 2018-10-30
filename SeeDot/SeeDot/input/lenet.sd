@@ -1,0 +1,19 @@
+let X   = (3072, 1)   in [-2.429066, 2.734221] in
+let Wc1  = (5, 5, 3, 4)    in [-1.735703, 1.876650] in
+let Wc2  = (5, 5, 4, 12)    in [-1.385201, 1.384465] in
+let Wf1  = (768, 64)    in [-0.399491, 0.317243] in
+let Wf2  = (64, 10)    in [-0.227359, 0.316699] in
+let Bc1  = (4)    in [-0.412876, 1.146242] in
+let Bc2  = (12)    in [-1.765916, 3.276492] in
+let Bf1  = (64)    in [-0.350147, 0.525990] in
+let Bf2  = (10)    in [-0.804918, 1.110411] in
+
+let X2    = reshape(X, (1, 32, 32, 3), (1, 2))     in
+let Hc1   = relu   ((X2    # Wc1) <+> Bc1) in
+let Hc1P  = maxpool(Hc1, 2)              in
+let Hc2   = relu   ((Hc1P  # Wc2) <+> Bc2) in
+let Hc2P  = maxpool(Hc2, 2)              in
+let Hc2PP = reshape(Hc2P, (1, 768), (1, 4, 2, 3))       in
+let Hf1   = relu   ((Hc2PP * Wf1) <+> Bf1) in
+let Hf2   =        ((Hf1   * Wf2) <+> Bf2) in
+argmax(Hf2)
