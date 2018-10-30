@@ -55,7 +55,7 @@ class Compiler:
 		# Generate AST
 		ast = ASTBuilder.ASTBuilder().visit(tree)
 
-		PrintAST().visit(ast)
+		#PrintAST().visit(ast)
 
 		# Perform type inference
 		InferType().visit(ast)

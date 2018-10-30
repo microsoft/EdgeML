@@ -1,0 +1,175 @@
+bonsai
+	int16
+		cifar-binary
+			sf number = -10
+			accuracy number = 75.490
+		cr-binary
+			sf number = -11
+			accuracy number = 74.019
+		cr-multiclass
+			sf number = -12
+			accuracy number = 10.339
+		curet-multiclass
+			sf number = -11
+			accuracy number = 43.835
+		letter-multiclass
+			sf number = -10
+			accuracy number = 64.760
+		mnist-binary
+			sf number = -10
+			accuracy number = 95.940
+		mnist-multiclass
+			sf number = -11
+			accuracy number = 93.360
+		usps-binary
+			sf number = -11
+			accuracy number = 94.619
+		usps-multiclass
+			sf number = -11
+			accuracy number = 91.679
+		ward-binary
+			sf number = -8
+			accuracy number = 95.132
+	int32
+		cifar-binary
+			sf number = 0
+			accuracy number = 75.630
+		cr-binary
+			sf number = 0
+			accuracy number = 73.913
+		cr-multiclass
+			sf number = 0
+			accuracy number = 10.809
+		curet-multiclass
+			sf number = 0
+			accuracy number = 45.189
+		letter-multiclass
+			sf number = 0
+			accuracy number = 64.920
+		mnist-binary
+			sf number = 0
+			accuracy number = 96.010
+		mnist-multiclass
+			sf number = 0
+			accuracy number = 93.430
+		usps-binary
+			sf number = 0
+			accuracy number = 94.519
+		usps-multiclass
+			sf number = 0
+			accuracy number = 91.978
+		ward-binary
+			sf number = 0
+			accuracy number = 95.236
+	float32
+		cifar-binary
+			accuracy number = 75.480
+		cr-binary
+			accuracy number = 73.860
+		cr-multiclass
+			accuracy number = 10.757
+		curet-multiclass
+			accuracy number = 45.545
+		letter-multiclass
+			accuracy number = 64.880
+		mnist-binary
+			accuracy number = 95.980
+		mnist-multiclass
+			accuracy number = 93.380
+		usps-binary
+			accuracy number = 94.619
+		usps-multiclass
+			accuracy number = 91.978
+		ward-binary
+			accuracy number = 95.287
+
+protonn
+	int16
+		cifar-binary
+			sf number = -6
+			accuracy number = 75.400
+		cr-binary
+			sf number = -2
+			accuracy number = 70.785
+		cr-multiclass
+			sf number = -6
+			accuracy number = 31.593
+		curet-multiclass
+			sf number = -2
+			accuracy number = 50.463
+		letter-multiclass
+			sf number = -6
+			accuracy number = 76.720
+		mnist-binary
+			sf number = -6
+			accuracy number = 94.280
+		mnist-multiclass
+			sf number = -6
+			accuracy number = 91.440
+		usps-binary
+			sf number = -6
+			accuracy number = 94.170
+		usps-multiclass
+			sf number = -1
+			accuracy number = 91.978
+		ward-binary
+			sf number = -2
+			accuracy number = 94.200
+	int32
+		cifar-binary
+			sf number = 0
+			accuracy number = 76.460
+		cr-binary
+			sf number = 0
+			accuracy number = 73.171
+		cr-multiclass
+			sf number = 0
+			accuracy number = 32.846
+		curet-multiclass
+			sf number = 0
+			accuracy number = 54.455
+		letter-multiclass
+			sf number = 0
+			accuracy number = 84.060
+		mnist-binary
+			sf number = 0
+			accuracy number = 95.220
+		mnist-multiclass
+			sf number = 0
+			accuracy number = 92.030
+		usps-binary
+			sf number = 0
+			accuracy number = 94.320
+		usps-multiclass
+			sf number = 0
+			accuracy number = 92.576
+		ward-binary
+			sf number = 0
+			accuracy number = 94.925
+	float32
+		cifar-binary
+			accuracy number = 76.450
+		cr-binary
+			accuracy number = 72.906
+		cr-multiclass
+			accuracy number = 32.742
+		curet-multiclass
+			accuracy number = 54.526
+		letter-multiclass
+			accuracy number = 84.020
+		mnist-binary
+			accuracy number = 95.210
+		mnist-multiclass
+			accuracy number = 92.060
+		usps-binary
+			accuracy number = 94.270
+		usps-multiclass
+			accuracy number = 92.526
+		ward-binary
+			accuracy number = 94.873
+
+lenet
+	int16
+		cifar-10
+			sf number = -8
+			accuracy number = 64.980

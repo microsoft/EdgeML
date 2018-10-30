@@ -487,7 +487,7 @@ class MainDriver:
 
 			print("\nGenerating code for " + algo + " " + target + "...")
 					
-			inputFile = os.path.join("input", algo + ".flt")
+			inputFile = os.path.join("input", algo + ".sd")
 			profileLogFile = os.path.join("input", "profile.txt")
 					
 			outputDir = os.path.join("output")

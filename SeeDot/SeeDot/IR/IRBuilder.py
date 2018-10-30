@@ -15,6 +15,38 @@ from Util import *
 class IRBuilder(ASTVisitor):
 
 	def __init__(self):
+		
+		self.profileLoaded = False
+
+		if getMaxExpnt() == None:
+			self.MAX_EXPNT_ALL = self.get_expnt(max(abs(m_all), abs(M_all)))
+		else:
+			self.MAX_EXPNT_ALL = getMaxExpnt()
+
+		self.expTables = {}
+
+		# fresh vars
+		self._var_cnt = 0
+		self._iter_cnt = 0
+
+		# exp
+		self.IDX_B = 8
+
+		# idf of vars that need to be init'ed
+		self.VAR_IDF_INIT = []
+
+		# Global variables
+		self.decls = {}
+		self.expts = {}
+		self.intvs = {}
+		self.cnsts = {}
+
+	def readProfileFile(self):
+		if self.profileLoaded == True:
+			return
+		
+		self.profileLoaded = True
+
 		# data-driven parameters
 		inputFile = getProfileLogFile()
 
@@ -35,30 +67,8 @@ class IRBuilder(ASTVisitor):
 		self.expRange = [m_exp, M_exp]
 		self.expB = expB
 		self.expTableShape = [2, 2 ** self.expB]
-		self.expTables = {}
 
 		self.MAX_VAL_EXP = M_exp
-		
-		if getMaxExpnt() == None:
-			self.MAX_EXPNT_ALL = self.get_expnt(max(abs(m_all), abs(M_all)))
-		else:
-			self.MAX_EXPNT_ALL = getMaxExpnt()
-
-		# fresh vars
-		self._var_cnt = 0
-		self._iter_cnt = 0
-
-		# exp
-		self.IDX_B = 8
-
-		# idf of vars that need to be init'ed
-		self.VAR_IDF_INIT = []
-
-		# Global variables
-		self.decls = {}
-		self.expts = {}
-		self.intvs = {}
-		self.cnsts = {}
 
 	# Variable and iterators creation
 	def getTempVars(self, n:int):
@@ -1353,6 +1363,9 @@ class IRBuilder(ASTVisitor):
 		return (prog_2, expr_1)
 
 	def visitExp(self, node:AST.Func):
+		
+		self.readProfileFile()
+
 		if useMathExp():
 			return self.visitMathExp(node)
 		elif useTableExp():
