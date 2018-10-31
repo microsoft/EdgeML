@@ -14,9 +14,12 @@
  * Connections to MPU6050 using I2C protocol.
  */
 
-/* Parts of this code is borrowed from Jeff Rowberg's I2Cdev device library.
+/*
+ * Parts of this code are borrowed from Jeff Rowberg's I2Cdev device library.
  * Below are the terms of license for I2Cdev device library:
- *
+ */
+
+/*
  * I2Cdev device library code is placed under the MIT license
  * Copyright (c) 2012 Jeff Rowberg
  *

@@ -33,7 +33,7 @@ For details, please see our [wiki
 page](https://github.com/Microsoft/EdgeML/wiki/) and our ICML'17 publications
 on [Bonsai](docs/publications/Bonsai.pdf) and
 [ProtoNN](docs/publications/ProtoNN.pdf) algorithms, NIPS'18 publications on
-[EMI-RNN](docs/publications/emi-rnn-preprint-01.pdf) and
+[EMI-RNN](docs/publications/emi-rnn-nips18.pdf) and
 [Fast(G)RNN](docs/publications/FastGRNN.pdf).  
 
 
@@ -43,6 +43,7 @@ Core Contributors:
   - [Chirag Gupta](https://aigen.github.io/)
   - [Don Dennis](https://dkdennis.xyz)
   - [Harsha Vardhan Simhadri](http://harsha-simhadri.org)
+  - [Shishir Patil](https://shishirpatil.github.io/)
 
 We welcome contributions, comments, and criticism. For questions, please [email
 Harsha](mailto:harshasi@microsoft.com).
