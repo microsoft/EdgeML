@@ -8,7 +8,7 @@ for instance a mobile phone. Watch the [GesturePod video here](https://1drv.ms/u
 
 In this directory, we provide resources for
   1. Creating a GesturePod of your own based on the [Arduino MKR1000](https://store.arduino.cc/usa/arduino-mkr1000), in the `onMKR1000` directory, and
-  2. Running a simulation of the gesture recognition algorithm on your desktop in the `onComputer` directory. 
+  2. Running the gesture recognition pipeline on your computer in the `onComputer` directory. 
 
 Read more about GesturePod and access the public dataset from our
 [Technical Report](https://www.microsoft.com/en-us/research/publication/gesturepod-programmable-gesture-recognition-augmenting-assistive-devices/).

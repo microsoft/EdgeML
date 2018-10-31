@@ -1,4 +1,4 @@
-GesturePod *(Simulation)*
+GesturePod *(Gesture Recognition Pipeline)*
 =========================
 
 ## Table of Contents
@@ -12,22 +12,25 @@ GesturePod *(Simulation)*
 
 GesturePod is a plug-and-play, gesture recognition device. 
 
-As the GesturePod involves hardware, this is a quick simulation of GesturePod on your system. We have stored sensor data collected from the GesturePod. This pre-stored sensor data is used for predictions. You can now play around with GesturePod on your system!
+As the GesturePod involves hardware, this implements GesturePod's gesture recognition pipeline on your system. We have stored sensor data collected from the GesturePod. This pre-stored sensor data is used for gesture recognition. You can now play around with GesturePod on your system!
 
 ## Quick Start
 
-1. Installation requires [Git](https://git-scm.com/), [make](https://www.gnu.org/software/make/), and [g++](https://gcc.gnu.org/).
+1. Installation requires 
+	- [git](https://git-scm.com/), 
+	- [make](https://www.gnu.org/software/make/)
+	- [g++](https://gcc.gnu.org/).
 
-2. Clone the repo and navigate to this folder
+2. Clone the repo and navigate to this directory
 	```
-	git clone ...
+	git clone https://github.com/Microsoft/EdgeML
 	cd EdgeML/Applications/GesturePod/onComputer
 	```
 3. Compile and build the code
 	```
 	make
 	```
-4. Run..!
+4. Run
 	```
 	./gesturepodsim
 	```
