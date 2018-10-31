@@ -17,7 +17,7 @@ GesturePod is a plug-and-play, gesture recognition device. GesturePod can be cla
 This directory is subdivided into two further directories:
 
 * ```onMKR1000``` : If you have the GesturePod hardware ready, navigate to the ```onMKR1000``` directory for the code that runs on your GesturePod.
-* ```onWorkstation``` : If you do not have the hardware, you can simulate gesture recognition on your computer as well. We have stored sensor data for you! Navigate to ```onWorkstation```.
+* ```onComputer``` : If you do not have the hardware, you can simulate gesture recognition on your computer as well. We have stored sensor data for you! Navigate to ```onComputer```.
 
 
 Read more about GesturePod and access the dataset from the [Technical Report](https://www.microsoft.com/en-us/research/publication/gesturepod-programmable-gesture-recognition-augmenting-assistive-devices/).
