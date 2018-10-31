@@ -7,7 +7,6 @@ GesturePod *(Simulation)*
 - [Quick Start](#quick-start)
 - [Docs](#docs)
 - [Also](#also)
-- [TODO](#todo)
 
 ## About
 
