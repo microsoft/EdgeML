@@ -19,6 +19,19 @@ class IRBuilder(ASTVisitor):
 		self.profileLoaded = False
 
 		if getMaxExpnt() == None:
+			# data-driven parameters
+			inputFile = getProfileLogFile()
+
+			assert os.path.isfile(inputFile)
+
+			data = []
+			with open(inputFile, 'r') as f:
+				for line in f:
+					entries = line.strip().split(", ")
+					row = list(map(float, entries))
+					data.append(row)
+
+			[m_all, M_all] = data[0]
 			self.MAX_EXPNT_ALL = self.get_expnt(max(abs(m_all), abs(M_all)))
 		else:
 			self.MAX_EXPNT_ALL = getMaxExpnt()
