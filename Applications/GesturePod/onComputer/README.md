@@ -12,7 +12,7 @@ GesturePod *(Gesture Recognition Pipeline)*
 
 GesturePod is a plug-and-play, gesture recognition device. 
 
-As the GesturePod involves hardware, this implements GesturePod's gesture recognition pipeline on your system. We have stored sensor data collected from the GesturePod. This pre-stored sensor data is used for gesture recognition. You can now play around with GesturePod on your system!
+As the GesturePod involves hardware, this implements GesturePod's gesture recognition pipeline on your computer system. We have stored sensor data collected from the GesturePod. This pre-stored sensor data is used for gesture recognition. You can now play around with GesturePod on your computer!
 
 ## Quick Start
 
