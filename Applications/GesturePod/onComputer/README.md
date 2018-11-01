@@ -34,10 +34,10 @@ As the GesturePod involves hardware, this implements GesturePod's gesture recogn
 	```
 	./gesturepodsim
 	```
-5. By default the program runs for data that has the following gesture: *Double Taps*.
+5. By default the program runs for data file included in ```./data/```. This data file has the following gesture: *Double Taps*.
 
-	To try different gestures, you could change the ```DATA_FILE``` in ```src/main.cpp:23```. 
-	A more exhaustive data set is released as a part of our [TechReport](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar-5b058a4590168.gz)
+	To run the gesture recognition pipeline for different gestures contained in other data file(s), add the data file(s) in ```./data/``` directory and update ```DATA_FILE``` in ```src/main.cpp:23```. 
+	An exhaustive data set is released as a part of our [TechReport](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar-5b058a4590168.gz)
 
 ## Docs
 Checkout our Blog post *Coming Soon..!*
