@@ -5,14 +5,18 @@ GesturePod *(Gesture Recognition Pipeline)*
 
 - [About](#about)
 - [Quick Start](#quick-start)
-- [Docs](#docs)
-- [Also](#also)
 
 ## About
 
 GesturePod is a plug-and-play, gesture recognition device. 
 
-As the GesturePod involves hardware, this implements GesturePod's gesture recognition pipeline on your computer system. We have stored sensor data collected from the GesturePod. This pre-stored sensor data is used for gesture recognition. You can now play around with GesturePod on your computer!
+This repository isolates the gesture recognition pipeline from the Arduino
+MKR1000 implementation. All additional modules, for instance, BLE
+communication, interface with the IMU are not included. We provide sample IMU
+sensor data, which is used for prediciton. This repository is intended to be
+used as a playground to understand the gesture recognition pipeline. It is a
+bare-minimum implementation of gesture recognition. Additionally, this can be
+used as a basis for porting GesturePod to other  platforms.
 
 ## Quick Start
 
@@ -34,13 +38,12 @@ As the GesturePod involves hardware, this implements GesturePod's gesture recogn
 	```
 	./gesturepodsim
 	```
-5. By default the program runs for data file included in ```./data/```. This data file has the following gesture: *Double Taps*.
+5. Currently the data is read from ```./data/taps.h```. This data file has
+   sensor readings collected from GesturePod, while *Double Taps* gesture was
+   performed.
 
-	To run the gesture recognition pipeline for different gestures contained in other data file(s), add the data file(s) in ```./data/``` directory and update ```DATA_FILE``` in ```src/main.cpp:23```. 
-	An exhaustive data set is released as a part of our [TechReport](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar-5b058a4590168.gz)
+GesturePod data set is released as a part of our
+[TechReport](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar-5b058a4590168.gz)
 
-## Docs
-Checkout our Blog post *Coming Soon..!*
 
-## Also
-Make your own GesturePod. Get the code [here](https://github.com/Microsoft/EdgeML/tree/master/Applications/GesturePod/onMKR1000).
+Checkout our Blog post *Coming Soon...*
