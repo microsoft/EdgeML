@@ -1,5 +1,6 @@
 import numpy as np
 import operator
+import os
 
 import AST.AST as AST
 from AST.ASTVisitor import ASTVisitor
@@ -1278,12 +1279,12 @@ class IRBuilder(ASTVisitor):
 			cmd0 = IR.Comment(expr_1.idf + ' ' + op_ir.name + ' ' + expr_2.idf)
 
 			assert typ_3.dim == 2
-			assert shr_n3 == 0
 
 			[I, J] = typ_3.shape
 
 			shr_n1 = self.formatShr(shr_n1)
 			shr_n2 = self.formatShr(shr_n2)
+			shr_n3 = self.formatShr(shr_n3)
 
 			expr_1.inputVar = False
 			expr_2.inputVar = False
@@ -1297,6 +1298,7 @@ class IRBuilder(ASTVisitor):
 									IR.Int(J): "J",
 									shr_n1: "shrA",
 									shr_n2: "shrB",
+									shr_n3: "shrC"
 									})
 
 			prog_assn = IR.Prog([cmd0, funcCall])

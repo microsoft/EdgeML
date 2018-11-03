@@ -4,7 +4,7 @@
 #include "Arduino.h"
 
 // C = A + B
-void MatAdd(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
+void MatAdd(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
@@ -13,14 +13,17 @@ void MatAdd(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT sh
 			a = a / shrA;
 			b = b / shrB;
 
-			C[i * J + j] = a + b;
+			MYINT c = a + b;
+			c = c / shrC;
+			
+			C[i * J + j] = c;
 		}
 	}
 	return;
 }
 
 // C = A - B
-void MatSub(MYINT *A, const MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
+void MatSub(MYINT *A, const MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
@@ -29,7 +32,10 @@ void MatSub(MYINT *A, const MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MY
 			a = a / shrA;
 			b = b / shrB;
 
-			C[i * J + j] = a - b;
+			MYINT c = a - b;
+			c = c / shrC;
+
+			C[i * J + j] = c;
 		}
 	}
 	return;
