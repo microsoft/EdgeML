@@ -6,7 +6,7 @@ available in Tensorflow:
 
 1. [Bonsai](../docs/publications/Bonsai.pdf)
 2. [EMI-RNN](../docs/publications/emi-rnn-nips18.pdf)
-3. [Fast(G)RNN](../docs/publications/FastGRNN.pdf)
+3. [FastRNN & FastGRNN](../docs/publications/FastGRNN.pdf)
 4. [ProtoNN](../docs/publications/ProtoNN.pdf)
 
 The TensorFlow compute graphs for these algoriths are packaged as
