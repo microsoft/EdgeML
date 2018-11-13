@@ -15,7 +15,7 @@ This repository contains algorithms that shine in this setting in terms of both 
  - **Bonsai**: Strong and shallow non-linear tree based classifier.
  - **ProtoNN**: **Proto**type based k-nearest neighbors (k**NN**) classifier. 
  - **EMI-RNN**: Training routine to recover the critical signature from time series data for faster and accurate RNN predictions.
- - **Fast(G)RNN**: **F**ast, **A**ccurate, **S**table and **T**iny (**G**ated) RNN cells.
+ - **FastRNN & FastGRNN - FastCells**: **F**ast, **A**ccurate, **S**table and **T**iny (**G**ated) RNN cells.
  
 These algorithms can train models for classical supervised learning problems
 with memory requirements that are orders of magnitude lower than other modern
@@ -34,7 +34,7 @@ page](https://github.com/Microsoft/EdgeML/wiki/) and our ICML'17 publications
 on [Bonsai](docs/publications/Bonsai.pdf) and
 [ProtoNN](docs/publications/ProtoNN.pdf) algorithms, NIPS'18 publications on
 [EMI-RNN](docs/publications/emi-rnn-nips18.pdf) and
-[Fast(G)RNN](docs/publications/FastGRNN.pdf).  
+[FastGRNN](docs/publications/FastGRNN.pdf).  
 
 
 Core Contributors:
