@@ -27,7 +27,7 @@ Script: [Endpoint Script](../examples/FastCells/fastcell_example.py)
 
 Example Notebook: [iPython Notebook](../examples/FastCells/fastcell_example.ipynb)
 
-Cells: [FastRNNCell](../edgeml/graph/rnn.py#L198) and [FastGRNNCell](../edgeml/graph/rnn.py#L31).
+Cells: [FastRNNCell](../edgeml/graph/rnn.py#L206) and [FastGRNNCell](../edgeml/graph/rnn.py#L31).
 
 # 3 phase Fast Training
 
