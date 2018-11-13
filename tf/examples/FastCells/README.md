@@ -4,7 +4,7 @@ This directory includes example notebook and general execution script of
 FastCells (FastRNN & FastGRNN) developed as part of EdgeML. Also, we include a
 sample cleanup and use-case on the USPS10 public dataset.
 
-`edgeml.graph.rnn` implements the custom RNN cells of **FastRNN** ([`FastRNNCell`](../../edgeml/graph/rnn.py#L198)) and **FastGRNN** ([`FastGRNNCell`](../../edgeml/graph/rnn.py#L31)) with
+`edgeml.graph.rnn` implements the custom RNN cells of **FastRNN** ([`FastRNNCell`](../../edgeml/graph/rnn.py#L206)) and **FastGRNN** ([`FastGRNNCell`](../../edgeml/graph/rnn.py#L31)) with
 multiple additional features like Low-Rank parameterisation, custom
 non-linearities etc., Similar to Bonsai and ProtoNN, the three-phase training
 routine for FastRNN and FastGRNN is decoupled from the custom cells to
