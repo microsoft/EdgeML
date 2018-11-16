@@ -18,6 +18,45 @@ from Codegen.CodegenBase import CodegenBase
 class IRGenBase(ASTVisitor):
 
 	def __init__(self):
+		
+		self.profileLoaded = False
+
+		if getMaxExpnt() == None:
+			# data-driven parameters
+			inputFile = getProfileLogFile()
+
+			assert os.path.isfile(inputFile)
+
+			data = []
+			with open(inputFile, 'r') as f:
+				for line in f:
+					entries = line.strip().split(", ")
+					row = list(map(float, entries))
+					data.append(row)
+
+			[m_all, M_all] = data[0]
+			self.MAX_EXPNT_ALL = self.get_expnt(max(abs(m_all), abs(M_all)))
+		else:
+			self.MAX_EXPNT_ALL = getMaxExpnt()
+
+		self.expTables = {}
+
+		# fresh vars
+		self._var_cnt = 0
+		self._iter_cnt = 0
+
+		# exp
+		self.IDX_B = 8
+
+		# idf of vars that need to be init'ed
+		self.VAR_IDF_INIT = []
+
+	def readProfileFile(self):
+		if self.profileLoaded == True:
+			return
+		
+		self.profileLoaded = True
+
 		# data-driven parameters
 		inputFile = getProfileLogFile()
 
@@ -38,24 +77,8 @@ class IRGenBase(ASTVisitor):
 		self.expRange = [m_exp, M_exp]
 		self.expB = expB
 		self.expTableShape = [2, 2 ** self.expB]
-		self.expTables = {}
 
 		self.MAX_VAL_EXP = M_exp
-		
-		if getMaxExpnt() == None:
-			self.MAX_EXPNT_ALL = self.get_expnt(max(abs(m_all), abs(M_all)))
-		else:
-			self.MAX_EXPNT_ALL = getMaxExpnt()
-
-		# fresh vars
-		self._var_cnt = 0
-		self._iter_cnt = 0
-
-		# exp
-		self.IDX_B = 8
-
-		# idf of vars that need to be init'ed
-		self.VAR_IDF_INIT = []
 
 	# Set and retrieve state
 	def get_arg(self, ctx):
@@ -1176,6 +1199,8 @@ class IRGenBase(ASTVisitor):
 
 		# Change shift right for multiplication
 		assert False
+
+		self.readProfileFile()
 
 		self.set_arg(node.expr, node)
 		(prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)

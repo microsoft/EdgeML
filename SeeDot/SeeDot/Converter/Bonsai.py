@@ -168,9 +168,8 @@ class Bonsai:
 		self.headerFile = os.path.join(getOutputDir(), "model.h")
 		self.inputFile = os.path.join(getOutputDir(), "input.txt")
 		self.infoFile = os.path.join(getOutputDir(), "info.txt")
-		if(forHls()):
-			self.fpgaFile = os.path.join(getFpgaOutputDir(), "CustomTypes.sv")
-			self.LUTdir = os.path.join(getFpgaOutputDir(), "lut")
+		self.fpgaFile = os.path.join(getOutputDir(), "CustomTypes.sv")
+		self.LUTdir = os.path.join(getOutputDir(), "lut")
 
 		open(self.headerFile, 'w').close()
 		open(self.infoFile, 'w').close()

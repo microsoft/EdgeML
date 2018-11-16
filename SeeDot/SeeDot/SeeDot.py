@@ -32,7 +32,9 @@ class Main:
 			if self.target == Common.Target.Arduino:
 				outputFile = os.path.join("..", "arduino", "predict.cpp")			
 			elif self.target == Common.Target.Hls:
-				outputFile = os.path.join("..", "fpga", "predict.cpp")			
+				outputFile = os.path.join("..", "hls", "predict.cpp")
+			elif self.target == Common.Target.Verilog:
+				outputFile = os.path.join("..", "verilog", "predict.cpp")
 		else:
 			outputFile = os.path.join("..", "Predictor", self.algo + "_fixed.cpp")
 		
@@ -52,15 +54,21 @@ class Main:
 		print("Generating input files for %s %s dataset..." % (version, datasetType), end='')
 
 		# Create output dirs
-		if target == Common.Target.X86:
-			datasetOutputDir = os.path.join("..", "Predictor", self.algo, version + "-" + datasetType)
-			outputDir = os.path.join("..", "Predictor", self.algo, version + "-testing")
-		elif target == Common.Target.Arduino:
+		if target == Common.Target.Arduino:
 			outputDir = os.path.join("..", "Streamer", "input")
 			datasetOutputDir = outputDir
 		elif target == Common.Target.Hls:
-			outputDir = os.path.join("..", "fpga", "input")
+			outputDir = os.path.join("..", "hls", "input")
 			datasetOutputDir = os.path.join("..", "Streamer", "input")
+		elif target == Common.Target.Verilog:
+			outputDir = os.path.join("..", "verilog", "input")
+			datasetOutputDir = os.path.join("..", "Streamer", "input")
+		elif target == Common.Target.X86:
+			outputDir = os.path.join("..", "Predictor", self.algo, version + "-testing")
+			datasetOutputDir = os.path.join("..", "Predictor", self.algo, version + "-" + datasetType)
+		else:
+			assert False
+		
 		os.makedirs(datasetOutputDir, exist_ok=True)
 		os.makedirs(outputDir, exist_ok=True)
 
@@ -320,7 +328,7 @@ class MainDriver:
 	def writeVivadoScripts(self):
 
 		#script for HLS Synthesis
-		FPGAHLSSynAutoFile = os.path.join("..","fpga","scriptSyn.tcl")
+		FPGAHLSSynAutoFile = os.path.join("..","hls","scriptSyn.tcl")
 		fp = open(FPGAHLSSynAutoFile, 'w')
 		fp.write("##################################################################\n")
 		fp.write("## Generated Script to run Vivado HLS C Synthesis\n")
@@ -355,14 +363,14 @@ class MainDriver:
 		#fp.close
 
 		#Create batch files for execution
-		SynGenFile = os.path.join("..","fpga","synGen.bat")
+		SynGenFile = os.path.join("..","hls","synGen.bat")
 		fp = open(SynGenFile, 'w')
 		fp.write("@echo off\n\n")
 		fp.write("set PATH=%%~dp0;%%PATH%%;%%~dp0..\\msys\\bin;%s\n" % Common.vivadoInstallPath)
 		fp.write("vivado_hls -f ../fpga/scriptSyn.tcl")
 		fp.close
 
-		IPGenFile = os.path.join("..","fpga","IPGen.bat")
+		IPGenFile = os.path.join("..","hls","IPGen.bat")
 		fp = open(IPGenFile, 'w')
 		fp.write("@echo off\n\n")
 		fp.write("set PATH=%%~dp0;%%PATH%%;%%~dp0..\\msys\\bin;%s\n" % Common.vivadoInstallPath)
@@ -370,8 +378,8 @@ class MainDriver:
 		fp.close
 
 	def runVivadoScripts(self):
-		FPGAHLSSynAutoFile = os.path.join("..","fpga","synGen.bat")
-		FPGAHLSIPGenAutoFile = os.path.join("..","fpga","IPGen.bat")
+		FPGAHLSSynAutoFile = os.path.join("..","hls","synGen.bat")
+		FPGAHLSIPGenAutoFile = os.path.join("..","hls","IPGen.bat")
 
 		#automate tasks of Vivado HLS and Vivado IP generation
 		print("Automatic Generation of Vivado HLS synthesized code started")

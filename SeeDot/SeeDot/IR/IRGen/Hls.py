@@ -1133,6 +1133,9 @@ class Hls(IRGenBase):
 		return (prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_0)
 
 	def visitExp(self, node:AST.Func):
+		
+		self.readProfileFile()
+
 		if useMathExp():
 			return self.visitMathExp(node)
 		elif useTableExp():
