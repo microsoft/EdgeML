@@ -25,7 +25,7 @@ class Main:
 		print("Generating code...", end='')
 
 		# Set input and output files
-		inputFile = os.path.join("..", "Predictor", self.algo, "fixed-testing", "input.txt")
+		inputFile = os.path.join("..", "Predictor", "seedot_fixed", "testing", "input.txt")
 		profileLogFile = os.path.join("..", "Predictor", "output", self.algo + "-float", "profile.txt")
 
 		if outputPragmas:
@@ -36,7 +36,7 @@ class Main:
 			elif self.target == Common.Target.Verilog:
 				outputFile = os.path.join("..", "verilog", "predict.cpp")
 		else:
-			outputFile = os.path.join("..", "Predictor", self.algo + "_fixed.cpp")
+			outputFile = os.path.join("..", "Predictor", "seedot_fixed.cpp")
 		
 		try:
 			obj = Compiler(self.algo, self.target, outputPragmas, inputFile, outputFile, profileLogFile, sf, self.numWorkers)
@@ -64,8 +64,12 @@ class Main:
 			outputDir = os.path.join("..", "verilog", "input")
 			datasetOutputDir = os.path.join("..", "Streamer", "input")
 		elif target == Common.Target.X86:
-			outputDir = os.path.join("..", "Predictor", self.algo, version + "-testing")
-			datasetOutputDir = os.path.join("..", "Predictor", self.algo, version + "-" + datasetType)
+			if version == Common.Version.Fixed:
+				outputDir = os.path.join("..", "Predictor", "seedot_fixed", "testing")
+				datasetOutputDir = os.path.join("..", "Predictor", "seedot_fixed", datasetType)
+			elif version == Common.Version.Float:
+				outputDir = os.path.join("..", "Predictor", self.algo + "_float", "testing")
+				datasetOutputDir = os.path.join("..", "Predictor", self.algo + "_float", datasetType)
 		else:
 			assert False
 		
@@ -537,8 +541,15 @@ class MainDriver:
 			
 			print("\nGenerating input files for \"" + algo + " " + version + " " + dataset + " " + datasetType + "\"...")
 
-			datasetOutputDir = os.path.join("..", "Predictor", algo, version + "-" + datasetType)
-			outputDir = os.path.join("..", "Predictor", algo, version + "-testing")
+			#outputDir = os.path.join("..", "Predictor", algo, version + "-testing")
+			#datasetOutputDir = os.path.join("..", "Predictor", algo, version + "-" + datasetType)
+
+			if version == Common.Version.Fixed:
+				outputDir = os.path.join("..", "Predictor", "seedot_fixed", "testing")
+				datasetOutputDir = os.path.join("..", "Predictor", "seedot_fixed", datasetType)
+			elif version == Common.Version.Float:
+				outputDir = os.path.join("..", "Predictor", self.algo + "_float", "testing")
+				datasetOutputDir = os.path.join("..", "Predictor", self.algo + "_float", datasetType)
 
 			os.makedirs(datasetOutputDir, exist_ok=True)
 			os.makedirs(outputDir, exist_ok=True)

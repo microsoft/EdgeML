@@ -5,9 +5,7 @@
 #include <Windows.h>
 
 #include "datatypes.h"
-#include "bonsai.h"
-#include "lenet.h"
-#include "protonn.h"
+#include "predictors.h"
 #include "profile.h"
 
 using namespace std;
@@ -109,7 +107,11 @@ int main(int argc, char *argv[]) {
 	string datasetTypeStr = argv[3];
 
 	// Reading the dataset
-	string inputDir = algoStr + "\\" + versionStr + "-" + datasetTypeStr + "\\";
+	string inputDir;
+	if (version == Fixed)
+		inputDir = "seedot_fixed\\" + datasetTypeStr + "\\";
+	else
+		inputDir = algoStr + "_float\\" + datasetTypeStr + "\\";
 
 	ifstream featuresFile(inputDir + "X.csv");
 	ifstream lablesFile(inputDir + "Y.csv");
@@ -167,7 +169,7 @@ int main(int argc, char *argv[]) {
 #ifdef INT32
 				features_int[i][0] = (MYINT)(atoll(features.at(i).c_str()));
 #endif
-			}
+		}
 		else
 			for (int i = 0; i < features_size; i++)
 				features_float[i] = (float)(atof(features.at(i).c_str()));
@@ -175,15 +177,15 @@ int main(int argc, char *argv[]) {
 		// Invoke the predictor function
 		int res;
 		if (algo == Bonsai && version == Fixed)
-			res = bonsaiFixed(features_int);
+			res = seedotFixed(features_int);
 		else if (algo == Bonsai && version == Float)
 			res = bonsaiFloat(features_float);
 		else if (algo == Lenet && version == Fixed)
-			res = lenetFixed(features_int);
+			res = seedotFixed(features_int);
 		else if (algo == Lenet && version == Float)
 			res = lenetFloat(features_float);
 		else if (algo == Protonn && version == Fixed)
-			res = protonnFixed(features_int);
+			res = seedotFixed(features_int);
 		else if (algo == Protonn && version == Float)
 			res = protonnFloat(features_float);
 

@@ -56,8 +56,8 @@ class Arduino(CodegenBase):
 	def printCincludes(self):
 		self.out.printf('#include <iostream>\n\n', indent=True)
 		self.out.printf('#include "datatypes.h"\n', indent=True)
-		self.out.printf('#include "%s.h"\n' % (getAlgo()), indent=True)
-		self.out.printf('#include "Arduino.h"\n', indent=True)
+		self.out.printf('#include "predictors.h"\n', indent=True)
+		self.out.printf('#include "library.h"\n', indent=True)
 		self.out.printf('#include "model.h"\n\n', indent=True)
 		self.out.printf('using namespace std;\n', indent=True)
 		if outputPragmas():
@@ -88,7 +88,7 @@ class Arduino(CodegenBase):
 		self.out.increaseIndent()
 
 	def printCHeader(self):
-		self.out.printf('int %sFixed(MYINT **X) {\n' % (getAlgo()), indent=True)
+		self.out.printf('int seedotFixed(MYINT **X) {\n', indent=True)
 		self.out.increaseIndent()
 
 	def printVarDecls(self):

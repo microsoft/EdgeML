@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "datatypes.h"
-#include "protonn.h"
+#include "predictors.h"
 #include "model.h"
 
 #define PROFILE 1

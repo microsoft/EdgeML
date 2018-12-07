@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "datatypes.h"
-#include "bonsai.h"
+#include "predictors.h"
 #include "model.h"
 
 #define TANH 0

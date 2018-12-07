@@ -2,7 +2,7 @@
 #include <fstream>
 
 #include "datatypes.h"
-#include "lenet.h"
+#include "predictors.h"
 #include "model.h"
 
 using namespace std;

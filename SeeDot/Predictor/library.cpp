@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "datatypes.h"
-#include "Arduino.h"
+#include "library.h"
 
 // C = A + B
 void MatAdd(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {

@@ -119,24 +119,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Arduino.cpp" />
-    <ClCompile Include="bonsai_fixed.cpp" />
+    <ClCompile Include="library.cpp" />
     <ClCompile Include="bonsai_float.cpp" />
-    <ClCompile Include="lenet_fixed.cpp" />
     <ClCompile Include="lenet_float.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="profile.cpp" />
-    <ClCompile Include="protonn_fixed.cpp" />
+    <ClCompile Include="seedot_fixed.cpp" />
     <ClCompile Include="protonn_float.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Arduino.h" />
-    <ClInclude Include="bonsai.h" />
+    <ClInclude Include="library.h" />
     <ClInclude Include="datatypes.h" />
-    <ClInclude Include="lenet.h" />
     <ClInclude Include="model.h" />
+    <ClInclude Include="predictors.h" />
     <ClInclude Include="profile.h" />
-    <ClInclude Include="protonn.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
