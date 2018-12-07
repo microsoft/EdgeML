@@ -1,1 +1,5 @@
 output/
+
+bonsai_float/*
+lenet_float/*
+protonn_float/*
