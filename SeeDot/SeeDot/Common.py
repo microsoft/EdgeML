@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
 
 # Target word length. Currently set to match the word length of Arduino (2 bytes)
 wordLength = 16
@@ -10,6 +12,7 @@ tanh_limit = 1.0
 
 # LUT Upper bound for Artix-7
 LUTUpperBound = 0.9 * 20800
+LUTCount = 0
 
 # MSBuild location
 # Edit the path if not present at the following location

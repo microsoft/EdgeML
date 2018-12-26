@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
+
 import os
 import subprocess
 import sys
@@ -319,7 +322,7 @@ class MainDriver:
 		parser.add_argument("-sf", "--max-scale-factor", type = int, metavar = '', help = "Max scaling factor for code generation")
 		parser.add_argument("--output-pragmas", action = "store_true", help = "Add relevant pragmas to the generated code")
 		parser.add_argument("--load-sf", action = "store_true", help = "Verify the accuracy of the generated code")
-		parser.add_argument("--workers", type=int,default = 1, metavar = '', help = "number of worker threads to parallelize SparseMul on FPGAs only")
+		parser.add_argument("--workers", type=int, default = 1, metavar = '', help = "number of worker threads to parallelize SparseMul on FPGAs only")
 		
 		self.args = parser.parse_args()
 
@@ -329,92 +332,10 @@ class MainDriver:
 		if not isinstance(self.args.datasetType, list):	self.args.datasetType = [self.args.datasetType]
 		if not isinstance(self.args.target, list): self.args.target = [self.args.target]
 
-	def writeVivadoScripts(self):
-
-		#script for HLS Synthesis
-		FPGAHLSSynAutoFile = os.path.join("..","hls","scriptSyn.tcl")
-		fp = open(FPGAHLSSynAutoFile, 'w')
-		fp.write("##################################################################\n")
-		fp.write("## Generated Script to run Vivado HLS C Synthesis\n")
-		fp.write("## PLEASE DO NOT EDIT\n")
-		fp.write("##################################################################\n")
-		fp.write("cd ../fpga/ \n")
-		fp.write("open_project -reset SeeDotFpga_%s\n" % self.args.algo[0])
-		fp.write("set_top %sFixed\n" % self.args.algo[0])
-		fp.write("add_files ../fpga/predict.cpp\n")
-		fp.write("add_files ../fpga/model.h\n")
-		fp.write("open_solution -reset \"solution1\"\n")
-		fp.write("set_part {xc7a35ticsg324-1l} -tool vivado\n")
-		fp.write("create_clock -period 100 -name default\n")
-		fp.write("config_array_partition -auto_partition_threshold 9 -auto_promotion_threshold 64\n")
-		fp.write("csynth_design\n")
-		fp.write("\n\n\n")
-		fp.write("exit")
-		fp.close
-
-		##script for Vivado Synthesis, P&R and IP Gen
-		#FPGAHLSIPGenAutoFile = os.path.join ("..","Predictor","fpgaOutput","scriptExportIP.tcl")
-		#fp = open(FPGAHLSIPGenAutoFile, 'w')
-		#fp.write("##################################################################\n")
-		#fp.write("## Generated Script to run Vivado Synthesis, P&R and IP Gen\n")
-		#fp.write("## PLEASE DO NOT EDIT\n")
-		#fp.write("##################################################################\n")
-		#fp.write("open_project FltFpga_%s\n" % self.args.algo[0])
-		#fp.write("open_solution \"solution1\"\n")
-		#fp.write("export_design -flow syn -rtl verilog -format ip_catalog -description \"IP of predictor generated from FLT\" -display_name \"predictor\" \n")
-		#fp.write("\n\n\n")
-		#fp.write("exit")
-		#fp.close
-
-		#Create batch files for execution
-		SynGenFile = os.path.join("..","hls","synGen.bat")
-		fp = open(SynGenFile, 'w')
-		fp.write("@echo off\n\n")
-		fp.write("set PATH=%%~dp0;%%PATH%%;%%~dp0..\\msys\\bin;%s\n" % Common.vivadoInstallPath)
-		fp.write("vivado_hls -f ../fpga/scriptSyn.tcl")
-		fp.close
-
-		IPGenFile = os.path.join("..","hls","IPGen.bat")
-		fp = open(IPGenFile, 'w')
-		fp.write("@echo off\n\n")
-		fp.write("set PATH=%%~dp0;%%PATH%%;%%~dp0..\\msys\\bin;%s\n" % Common.vivadoInstallPath)
-		fp.write("vivado_hls -f ../fpga/scriptExportIP.tcl")
-		fp.close
-
-	def runVivadoScripts(self):
-		FPGAHLSSynAutoFile = os.path.join("..","hls","synGen.bat")
-		FPGAHLSIPGenAutoFile = os.path.join("..","hls","IPGen.bat")
-
-		#automate tasks of Vivado HLS and Vivado IP generation
-		print("Automatic Generation of Vivado HLS synthesized code started")
-		process = subprocess.call(FPGAHLSSynAutoFile)
-		if process == 1:
-			print("FAILED Vivado HLS synthesis!!\n")
-		else:
-			print("success Vivado HLS synthesis")
-		
-		#print("Automatic Vivado IP generation started")
-		#process = subprocess.call(FPGAHLSIPGenAutoFile)
-		#if process == 1:
-		#	print("FAILED  Vivado IP generation!!\n")
-		#else:
-		#	print("success  Vivado IP generation")
-
-	def copyOutputs(self):
-		#srcfilePath = os.path.join("FltFpga" + self.args.algo[0]+ "\\")
-		srcfilePath = os.path.join("scriptSyn.tcl")
-		destFilePath = os.path.join("..","Predictor","fpgaOutput\\",)
-		print(srcfilePath, destFilePath)
-		process = subprocess.call(["xcopy" , srcfilePath, destFilePath, "/s", "/o", "/i", "/x", "/e", "/h" , "/k"])
-		if process == 1:
-			print("FAILED  Copy!!\n")
-		else:
-			print("success  Copy")
-
 	def run(self):
 		if not os.path.isfile(Common.msbuildPath):
 			raise Exception("Msbuild.exe not found at the following location:\n%s\nPlease change the path and run again" % (Common.msbuildPath))
-		Common.LUTCount = 0
+
 		if self.args.driver is None:
 			self.runMainDriver()
 		elif self.args.driver == "compiler":
@@ -424,7 +345,7 @@ class MainDriver:
 		elif self.args.driver == "predictor":
 			self.runPredictorDriver()
 
-		#AUTOMATE Vivado HLS Syntheis and Vivado IP Generation for Fpga
+		#AUTOMATE Vivado HLS Synthesis and Vivado IP Generation for Fpga
 		if self.args.target[0] == Common.Target.Hls:
 			if not os.path.isdir(Common.vivadoInstallPath):
 				raise Exception("Vivado not found at the following location:\n%s\nPlease change the path or check Installation and run again" % (Common.vivadoInstallPath))
@@ -590,44 +511,87 @@ class MainDriver:
 		with open(os.path.join("..", "Results", "Results.json")) as data:
 			return json.load(data)
 
-class MainDriverOld:
+	def writeVivadoScripts(self):
 
-	algosAll = ["bonsai", "protonn"]
+		#script for HLS Synthesis
+		FPGAHLSSynAutoFile = os.path.join("..","hls","scriptSyn.tcl")
+		fp = open(FPGAHLSSynAutoFile, 'w')
+		fp.write("##################################################################\n")
+		fp.write("## Generated Script to run Vivado HLS C Synthesis\n")
+		fp.write("## PLEASE DO NOT EDIT\n")
+		fp.write("##################################################################\n")
+		fp.write("cd ../fpga/ \n")
+		fp.write("open_project -reset SeeDotFpga_%s\n" % self.args.algo[0])
+		fp.write("set_top %sFixed\n" % self.args.algo[0])
+		fp.write("add_files ../fpga/predict.cpp\n")
+		fp.write("add_files ../fpga/model.h\n")
+		fp.write("open_solution -reset \"solution1\"\n")
+		fp.write("set_part {xc7a35ticsg324-1l} -tool vivado\n")
+		fp.write("create_clock -period 100 -name default\n")
+		fp.write("config_array_partition -auto_partition_threshold 9 -auto_promotion_threshold 64\n")
+		fp.write("csynth_design\n")
+		fp.write("\n\n\n")
+		fp.write("exit")
+		fp.close
 
-	def __init__(self):
-		# Parser to accept command line arguments
-		parser = argparse.ArgumentParser()
+		##script for Vivado Synthesis, P&R and IP Gen
+		#FPGAHLSIPGenAutoFile = os.path.join ("..","Predictor","fpgaOutput","scriptExportIP.tcl")
+		#fp = open(FPGAHLSIPGenAutoFile, 'w')
+		#fp.write("##################################################################\n")
+		#fp.write("## Generated Script to run Vivado Synthesis, P&R and IP Gen\n")
+		#fp.write("## PLEASE DO NOT EDIT\n")
+		#fp.write("##################################################################\n")
+		#fp.write("open_project FltFpga_%s\n" % self.args.algo[0])
+		#fp.write("open_solution \"solution1\"\n")
+		#fp.write("export_design -flow syn -rtl verilog -format ip_catalog -description \"IP of predictor generated from FLT\" -display_name \"predictor\" \n")
+		#fp.write("\n\n\n")
+		#fp.write("exit")
+		#fp.close
 
-		parser.add_argument("-a", "--algo", choices=self.algosAll,
-								  required=True, metavar='', help="Algorithm to run")
-		parser.add_argument("--train", required=True,
-							metavar='', help="Training dataset file")
-		parser.add_argument("--test", required=True,
-							metavar='', help="Testing dataset file")
-		parser.add_argument("--model", required=True,
-							metavar='', help="Directory containing model")
+		#Create batch files for execution
+		SynGenFile = os.path.join("..","hls","synGen.bat")
+		fp = open(SynGenFile, 'w')
+		fp.write("@echo off\n\n")
+		fp.write("set PATH=%%~dp0;%%PATH%%;%%~dp0..\\msys\\bin;%s\n" % Common.vivadoInstallPath)
+		fp.write("vivado_hls -f ../fpga/scriptSyn.tcl")
+		fp.close
 
-		self.args = parser.parse_args()
+		IPGenFile = os.path.join("..","hls","IPGen.bat")
+		fp = open(IPGenFile, 'w')
+		fp.write("@echo off\n\n")
+		fp.write("set PATH=%%~dp0;%%PATH%%;%%~dp0..\\msys\\bin;%s\n" % Common.vivadoInstallPath)
+		fp.write("vivado_hls -f ../fpga/scriptExportIP.tcl")
+		fp.close
 
-		# Verify the input files and directory exists
-		if not os.path.isfile(self.args.train):
-			raise Exception("Training dataset file doesn't exist")
-		if not os.path.isfile(self.args.test):
-			raise Exception("Testing dataset file doesn't exist")
-		if not os.path.isdir(self.args.model):
-			raise Exception("Model directory doesn't exist")
+	def runVivadoScripts(self):
+		FPGAHLSSynAutoFile = os.path.join("..","hls","synGen.bat")
+		FPGAHLSIPGenAutoFile = os.path.join("..","hls","IPGen.bat")
 
-	def run(self):
-		if not os.path.isfile(Common.msbuildPath):
-			raise Exception("Msbuild.exe not found at the following locaiton:\n%s\nPlease change the path and run again" % (Common.msbuildPath))
+		#automate tasks of Vivado HLS and Vivado IP generation
+		print("Automatic Generation of Vivado HLS synthesized code started")
+		process = subprocess.call(FPGAHLSSynAutoFile)
+		if process == 1:
+			print("FAILED Vivado HLS synthesis!!\n")
+		else:
+			print("success Vivado HLS synthesis")
+		
+		#print("Automatic Vivado IP generation started")
+		#process = subprocess.call(FPGAHLSIPGenAutoFile)
+		#if process == 1:
+		#	print("FAILED  Vivado IP generation!!\n")
+		#else:
+		#	print("success  Vivado IP generation")
 
-		print("\n====================")
-		print("Executing on %s" % (self.args.algo))
-		print("====================\n")
-		obj = Main(self.args.algo, self.args.train,
-				   self.args.test, self.args.model)
-		obj.run()
-
+	def copyOutputs(self):
+		#srcfilePath = os.path.join("FltFpga" + self.args.algo[0]+ "\\")
+		srcfilePath = os.path.join("scriptSyn.tcl")
+		destFilePath = os.path.join("..","Predictor","fpgaOutput\\",)
+		print(srcfilePath, destFilePath)
+		process = subprocess.call(["xcopy" , srcfilePath, destFilePath, "/s", "/o", "/i", "/x", "/e", "/h" , "/k"])
+		if process == 1:
+			print("FAILED  Copy!!\n")
+		else:
+			print("success  Copy")
 
 if __name__ == "__main__":
 	obj = MainDriver()
