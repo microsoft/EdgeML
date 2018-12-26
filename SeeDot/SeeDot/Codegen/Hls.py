@@ -3,13 +3,12 @@
 
 import numpy as np
 
+from Codegen.CodegenBase import CodegenBase
+
 import IR.IR as IR
 import IR.IRUtil as IRUtil
 
 import Type as Type
-
-from Codegen.CodegenBase import CodegenBase
-
 from Util import *
 
 class Hls(CodegenBase):

@@ -3,8 +3,8 @@
 
 from Antlr.SeeDotParser import SeeDotParser
 
-import AST.AST as AST
 from AST.ASTVisitor import ASTVisitor
+import AST.AST as AST
 
 indent = "  "
 

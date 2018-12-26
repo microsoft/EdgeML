@@ -1,14 +1,12 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-from enum import Enum
 import numpy as np
 
 import IR.IR as IR
 
-import Type as Type
-
 import Common
+import Type as Type
 from Util import *
 
 class CodegenBase:

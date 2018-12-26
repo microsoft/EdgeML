@@ -1,10 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-import AST.AST as AST
-
 from Antlr.SeeDotVisitor import SeeDotVisitor
 from Antlr.SeeDotParser  import SeeDotParser
+
+import AST.AST as AST
 
 class ASTBuilder(SeeDotVisitor):
 
@@ -81,6 +81,8 @@ class ASTBuilder(SeeDotVisitor):
 
 	def visitCond(self, ctx:SeeDotParser.CondContext):
 		expr = self.visit(ctx.expr(0))
+		# Currently Cond node is used only to check sign of the expression
+		# Hence the rhs of the conditional is supposed to be zero
 		assert ctx.IntConst().getText() == '0'
 		num = 0
 		trueBlock = self.visit(ctx.expr(1))
