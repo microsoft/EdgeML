@@ -184,7 +184,12 @@ def preProcessData(dataDir):
     testBias = np.ones([Xtest.shape[0], 1])
     Xtest = np.append(Xtest, testBias, axis=1)
 
-    return dataDimension + 1, numClasses, Xtrain, Ytrain, Xtest, Ytest
+    mean = np.append(mean, np.array([0]))
+    std = np.append(std, np.array([1]))
+
+    dataDimension += 1
+
+    return dataDimension, numClasses, Xtrain, Ytrain, Xtest, Ytest, mean, std
 
 
 def dumpCommand(list, currDir):
@@ -199,3 +204,11 @@ def dumpCommand(list, currDir):
 
     commandFile.flush()
     commandFile.close()
+
+
+def saveMeanStd(mean, std, currDir):
+    '''
+    Function to save Mean and Std vectors
+    '''
+    np.save(currDir + '/mean.npy', mean)
+    np.save(currDir + '/std.npy', std)

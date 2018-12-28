@@ -36,8 +36,8 @@ def main():
 
     outFile = args.output_file
 
-    (dataDimension, numClasses,
-        Xtrain, Ytrain, Xtest, Ytest) = helpermethods.preProcessData(dataDir)
+    (dataDimension, numClasses, Xtrain, Ytrain, Xtest, Ytest,
+     mean, std) = helpermethods.preProcessData(dataDir)
 
     sparZ = args.sZ
 
@@ -73,6 +73,7 @@ def main():
     currDir = helpermethods.createTimeStampDir(dataDir)
 
     helpermethods.dumpCommand(sys.argv, currDir)
+    helpermethods.saveMeanStd(mean, std, currDir)
 
     # numClasses = 1 for binary case
     bonsaiObj = Bonsai(numClasses, dataDimension,

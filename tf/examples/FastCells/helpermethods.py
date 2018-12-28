@@ -209,7 +209,7 @@ def preProcessData(dataDir):
     lab_[np.arange(Xtest.shape[0]), lab] = 1
     Ytest = lab_
 
-    return dataDimension, numClasses, Xtrain, Ytrain, Xtest, Ytest
+    return dataDimension, numClasses, Xtrain, Ytrain, Xtest, Ytest, mean, std
 
 
 def dumpCommand(list, currDir):
@@ -224,3 +224,11 @@ def dumpCommand(list, currDir):
 
     commandFile.flush()
     commandFile.close()
+
+
+def saveMeanStd(mean, std, currDir):
+    '''
+    Function to save Mean and Std vectors
+    '''
+    np.save(currDir + '/mean.npy', mean)
+    np.save(currDir + '/std.npy', std)
