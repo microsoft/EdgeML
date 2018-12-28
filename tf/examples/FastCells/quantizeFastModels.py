@@ -50,6 +50,8 @@ def quantizeFastModels(modelDir, maxValue=127, scalarScaleFactor=1000):
                 temp = np.load(modelDir + "/" + file)
                 classifierWeightList.append(temp)
                 classifierLimitList.append(min_max(temp, file))
+            elif file.startswith("mean") or file.startswith("std"):
+                continue
             else:
                 scalarNameList.append(file)
                 scalarWeightList.append(np.load(modelDir + "/" + file))
