@@ -106,6 +106,25 @@ def getArgs():
     return parser.parse_args()
 
 
+def getQuantArgs():
+    '''
+    Function to parse arguments for Model Quantisation
+    '''
+    parser = argparse.ArgumentParser(
+        description='Arguments for quantizing Fast models. ' +
+        'Works only for piece-wise linear non-linearities, ' +
+        'like relu, quantTanh, quantSigm (check rnn.py for the definitions)')
+    parser.add_argument('-dir', '--model-dir', required=True,
+                        help='model directory containing' +
+                        '*.npy weight files dumped from the trained model')
+    parser.add_argument('-m', '--max-val', type=checkIntNneg, default=127,
+                        help='this represents the maximum possible value ' +
+                        'in model, essentially the byte complexity, ' +
+                        '127=> 1 byte is default')
+
+    return parser.parse_args()
+
+
 def createTimeStampDir(dataDir):
     '''
     Creates a Directory with timestamp as it's name
