@@ -3,11 +3,12 @@
 
 import os
 
-import Common
-from Converter.Util import *
-from Converter.Protonn import *
 from Converter.Bonsai import *
 from Converter.Lenet import *
+from Converter.Protonn import *
+from Converter.Util import *
+
+import Common
 
 # Main file which sets the configurations and creates the corresponding object
 

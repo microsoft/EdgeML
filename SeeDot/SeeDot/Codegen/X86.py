@@ -11,7 +11,7 @@ import IR.IRUtil as IRUtil
 import Type
 from Util import *
 
-class Arduino(CodegenBase):
+class X86(CodegenBase):
 
 	def __init__(self, writer, decls, expts, intvs, cnsts, expTables, VAR_IDF_INIT):
 		self.out = writer
@@ -28,11 +28,11 @@ class Arduino(CodegenBase):
 		self._out_suffix(expr)
 
 	def _out_prefix(self):
-		self.printArduinoIncludes()
+		self.printCincludes()
 
 		self.printExpTables()
 		
-		self.printArduinoHeader()
+		self.printCHeader()
 
 		self.printVarDecls()
 
@@ -40,13 +40,14 @@ class Arduino(CodegenBase):
 		
 		self.out.printf('\n')
 
-	def printArduinoIncludes(self):
-		self.out.printf('#include <Arduino.h>\n\n', indent=True)
-		self.out.printf('#include "config.h"\n', indent=True)
-		self.out.printf('#include "predict.h"\n', indent=True)
-		self.out.printf('#include "Arduino.h"\n', indent=True)
+	def printCincludes(self):
+		self.out.printf('#include <iostream>\n\n', indent=True)
+		self.out.printf('#include "datatypes.h"\n', indent=True)
+		self.out.printf('#include "predictors.h"\n', indent=True)
+		self.out.printf('#include "library.h"\n', indent=True)
 		self.out.printf('#include "model.h"\n\n', indent=True)
-		self.out.printf('using namespace model;\n\n', indent=True)
+		self.out.printf('using namespace std;\n', indent=True)
+		self.out.printf('using namespace %s_fixed;\n\n' % (getAlgo()), indent=True)
 
 	def printExpTables(self):
 		for exp, [table, [tableVarA, tableVarB]] in self.expTables.items():
@@ -55,7 +56,7 @@ class Arduino(CodegenBase):
 			self.out.printf('\n')
 
 	def printExpTable(self, table_row, var):
-		self.out.printf('const PROGMEM MYINT %s[%d] = {\n' % (var.idf, len(table_row)), indent = True)
+		self.out.printf('const MYINT %s[%d] = {\n' % (var.idf, len(table_row)), indent = True)
 		self.out.increaseIndent()
 		self.out.printf('', indent = True)
 		for i in range(len(table_row)):
@@ -63,8 +64,8 @@ class Arduino(CodegenBase):
 		self.out.decreaseIndent()
 		self.out.printf('\n};\n')
 
-	def printArduinoHeader(self):
-		self.out.printf('int predict() {\n', indent=True)
+	def printCHeader(self):
+		self.out.printf('int seedotFixed(MYINT **X) {\n', indent=True)
 		self.out.increaseIndent()
 
 	def printVarDecls(self):
@@ -106,9 +107,9 @@ class Arduino(CodegenBase):
 			num = 2 ** exponent
 
 			if type.dim == 0:
-				self.out.printf('Serial.println(', indent = True)
+				self.out.printf('cout << ', indent = True)
 				self.out.printf('float(' + idfr + ')*' + str(num))
-				self.out.printf(', 6);\n')
+				self.out.printf(' << endl;\n')
 			else:
 				iters = []
 				for i in range(type.dim):
@@ -123,37 +124,3 @@ class Arduino(CodegenBase):
 
 		self.out.decreaseIndent()
 		self.out.printf('}\n', indent=True)
-
-	def printVar(self, ir):
-		if ir.inputVar:
-			if Common.wordLength == 16:
-				self.out.printf('((MYINT) pgm_read_word_near(&')
-			elif Common.wordLength == 32:
-				self.out.printf('((MYINT) pgm_read_dword_near(&')
-			else:
-				assert False
-		self.out.printf('%s', ir.idf)
-		for e in ir.idx:
-			self.out.printf('[')
-			self.print(e)
-			self.out.printf(']')
-		if ir.inputVar:
-			self.out.printf('))')
-
-	def printAssn(self, ir):
-		if isinstance(ir.e, IR.Var) and ir.e.idf == "X":
-			self.out.printf("", indent=True)
-			self.print(ir.var)
-			self.out.printf(" = getIntFeature(i0);\n")
-		else:
-			super().printAssn(ir)
-
-	def printPrint(self, ir):
-		self.out.printf('Serial.println(', indent=True)
-		self.print(ir.expr)
-		self.out.printf(');\n')
-
-	def printPrintAsFloat(self, ir):
-		self.out.printf('Serial.println(float(', indent=True)
-		self.print(ir.expr)
-		self.out.printf(') * ' + str(2 ** ir.expnt) + ', 6);')

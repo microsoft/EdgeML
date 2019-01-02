@@ -166,7 +166,7 @@ class Protonn:
 		self.computeModelSize()
 		self.writeModel()
 		if forHls():
-			self.writeFpgaModel()
+			self.writeModelForHls()
 
 	def run(self):
 		self.headerFile = os.path.join(getOutputDir(), "model.h")
@@ -286,7 +286,7 @@ class ProtonnFixed(Protonn):
 		self.writeFooter()
 
 		
-	def writeFpgaModel(self):
+	def writeModelForHls(self):
 		#Reformat Z_idx and Z_val to work with worker threads of SparseMul
 		if useSparseMat():
 			W_transp = matTranspose(self.W)
@@ -358,5 +358,5 @@ class ProtonnFloat(Protonn):
 		writeMatsAsArray(mats, self.headerFile)
 		self.writeFooter()
 
-	def writeFpgaModel(self):
+	def writeModelForHls(self):
 		pass

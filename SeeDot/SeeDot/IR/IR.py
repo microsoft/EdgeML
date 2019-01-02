@@ -10,7 +10,7 @@ from Util import *
 class Op():
 	Op = Enum('Op', '+ - * / << >> & | ^ ~ ! && || < <= > >= == !=')
 	Op.print = lambda self, writer: writer.printf('%s', self.name)
-	Op.op_list = lambda op_str: list(map(lambda x: Op.Op[x], op_str.split())) # op_str:str
+	Op.op_list = lambda op_str: list(map(lambda x: Op.Op[x], op_str.split()))
 
 class Expr:
 	pass
@@ -40,14 +40,15 @@ class Var(IntExpr):
 		self.inputVar = inputVar
 	def subst(self, from_idf:str, to_e:Expr):
 		idx_new = list(map(lambda e: e.subst(from_idf, to_e), self.idx))
-		if(self.idf != from_idf):
+		if self.idf != from_idf:
 			return self.__class__(self.idf, idx_new, self.inputVar)
 		else:
-			if(isinstance(to_e, Var)):
+			if isinstance(to_e, Var):
 				return self.__class__(to_e.idf, to_e.idx + idx_new, to_e.inputVar and self.inputVar)
-			elif(isinstance(to_e, Int)):
+			elif isinstance(to_e, Int):
 				return to_e
-			else: assert False
+			else:
+				assert False
 
 class Bool(BoolExpr):
 	def __init__(self, b:bool):
@@ -57,12 +58,54 @@ class Bool(BoolExpr):
 
 class IntUop(IntExpr):
 	def __init__(self, op:Op.Op, e:IntExpr):
-		assert(op in Op.Op.op_list('- ~'))
+		assert op in Op.Op.op_list('- ~')
 		self.op = op
 		self.e = e
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.op,
-							  self.e.subst(from_idf, to_e))
+		return self.__class__(self.op, self.e.subst(from_idf, to_e))
+			
+class IntBop(IntExpr):
+	def __init__(self, e1:IntExpr, op:Op.Op, e2:IntExpr):
+		assert op in Op.Op.op_list('+ - * / << >> & | ^')
+		self.e1 = e1
+		self.op = op
+		self.e2 = e2
+	def subst(self, from_idf:str, to_e:Expr):
+		return self.__class__(self.e1.subst(from_idf, to_e), self.op, self.e2.subst(from_idf, to_e))
+
+class BoolUop(BoolExpr):
+	def __init__(self, op:Op.Op, e:BoolExpr):
+		assert op in Op.Op.op_list('')
+		self.op = op
+		self.e = e
+	def subst(self, from_idf:str, to_e:Expr):
+		return self.__class__(self.op, self.e.subst(from_idf, to_e))
+
+class BoolBop(BoolExpr):
+	def __init__(self, e1:BoolExpr, op:Op.Op, e2:BoolExpr):
+		assert op in Op.Op.op_list('&& ||')
+		self.e1 = e1
+		self.op = op
+		self.e2 = e2
+	def subst(self, from_idf:str, to_e:Expr):
+		return self.__class__(self.e1.subst(from_idf, to_e), self.op, self.e2.subst(from_idf, to_e))
+
+class BoolCop(BoolExpr):
+	def __init__(self, e1:IntExpr, op:Op.Op, e2:IntExpr):
+		assert op in Op.Op.op_list('< <= > >= == !=')
+		self.e1 = e1
+		self.op = op
+		self.e2 = e2
+	def subst(self, from_idf:str, to_e:Expr):
+		return self.__class__(self.e1.subst(from_idf, to_e), self.op, self.e2.subst(from_idf, to_e))
+
+class CExpr(Expr):
+	def __init__(self, cond:BoolExpr, et:Expr, ef:Expr):
+		self.cond = cond
+		self.et = et
+		self.ef = ef
+	def subst(self, from_idf:str, to_e:Expr):
+		return self.__class__(self.cond.subst(from_idf, to_e), self.et  .subst(from_idf, to_e), self.ef  .subst(from_idf, to_e))
 
 class Exp(IntExpr):
 	def __init__(self, e:IntExpr):
@@ -76,58 +119,6 @@ class TypeCast(IntExpr):
 		self.expr = expr
 	def subst(self, from_idf:str, to_e:Expr):
 		return self.__class__(self.type, self.expr.subst(from_idf, to_e))
-			
-class IntBop(IntExpr):
-	def __init__(self, e1:IntExpr, op:Op.Op, e2:IntExpr):
-		assert(op in Op.Op.op_list('+ - * / << >> & | ^'))
-		self.e1 = e1
-		self.op = op
-		self.e2 = e2
-	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.e1.subst(from_idf, to_e),
-							  self.op,
-							  self.e2.subst(from_idf, to_e))
-
-class BoolUop(BoolExpr):
-	def __init__(self, op:Op.Op, e:BoolExpr):
-		assert(op in Op.Op.op_list('')) # !
-		self.op = op
-		self.e = e
-	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.op,
-							  self.e.subst(from_idf, to_e))
-
-class BoolBop(BoolExpr):
-	def __init__(self, e1:BoolExpr, op:Op.Op, e2:BoolExpr):
-		assert(op in Op.Op.op_list('&& ||')) # || ^
-		self.e1 = e1
-		self.op = op
-		self.e2 = e2
-	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.e1.subst(from_idf, to_e),
-							  self.op,
-							  self.e2.subst(from_idf, to_e))
-
-class BoolCop(BoolExpr):
-	def __init__(self, e1:IntExpr, op:Op.Op, e2:IntExpr):
-		assert(op in Op.Op.op_list('< <= > >= == !=')) # >= <= !=
-		self.e1 = e1
-		self.op = op
-		self.e2 = e2
-	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.e1.subst(from_idf, to_e),
-						self.op,
-						self.e2.subst(from_idf, to_e))
-
-class CExpr(Expr):
-	def __init__(self, cond:BoolExpr, et:Expr, ef:Expr):
-		self.cond = cond
-		self.et = et
-		self.ef = ef
-	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.cond.subst(from_idf, to_e),
-						self.et  .subst(from_idf, to_e),
-						self.ef  .subst(from_idf, to_e))
 
 class Cmd:
 	pass
@@ -140,8 +131,7 @@ class Assn(Cmd):
 		self.var = var
 		self.e = e
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.var.subst(from_idf, to_e),
-						self.e  .subst(from_idf, to_e))
+		return self.__class__(self.var.subst(from_idf, to_e), self.e.subst(from_idf, to_e))
 
 class If(Cmd):
 	def __init__(self, cond:Expr, trueCmds:CmdList, falseCmds:CmdList=[]):
@@ -158,14 +148,8 @@ class For(Cmd):
 		self.var = var
 		self.st = DataType.getInt(st)
 		self.cond = cond
-		#self.ed = DataType.getInt(ed)
 		self.cmd_l = cmd_l
 		self.factor = fac
-	#def __init__(self, init:Cmd, cond:Expr, after:Cmd, cmds:CmdList):
-	#	self.init = init
-	#	self.cond = cond
-	#	self.after = after
-	#	self.cmds = cmds
 	def subst(self, from_idf:str, to_e:Expr):
 		cmd_l_new = list(map(lambda cmd: cmd.subst(from_idf, to_e), self.cmd_l))
 		return For(self.var, self.st, self.cond.subst(from_idf, to_e), cmd_l_new, self.factor)
@@ -232,7 +216,7 @@ class DataType():
 	intStr = {Common.Target.Arduino: 'MYINT',
 				Common.Target.Hls: 'MYINT',
 				Common.Target.Verilog: 'MYINT',
-				Common.Target.X86: 'int' + str(Common.wordLength) + '_t'
+				Common.Target.X86: 'MYINT'
 				}
 	floatStr = "float"
 	
@@ -272,6 +256,5 @@ class FuncCall:
 		self.name = name
 		self.argList = argList
 	def subst(self, from_idf:str, to_e:Expr):
-		#argList_new = list(map(lambda cmd: cmd.subst(from_idf, to_e), self.argList))
 		argList_new = dict(map(lambda cmd: (cmd[0].subst(from_idf, to_e), cmd[1]), self.argList.items()))
 		return self.__class__(self.name, argList_new)

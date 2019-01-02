@@ -10,7 +10,6 @@ def getExpnt(max, B):
 
 e = getExpnt(0.8, 8)
 
-a = [20, 10, 30]
-b = [10, 20, 30]
-
-print(a == b)
+test = np.load("test.npy").tolist()
+print(test.__class__, len(test), len(test[0]))
+print(test[0])

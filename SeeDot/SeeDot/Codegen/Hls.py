@@ -8,7 +8,7 @@ from Codegen.CodegenBase import CodegenBase
 import IR.IR as IR
 import IR.IRUtil as IRUtil
 
-import Type as Type
+import Type
 from Util import *
 
 class Hls(CodegenBase):
@@ -26,6 +26,133 @@ class Hls(CodegenBase):
 		self._out_prefix()
 		self.print(prog)
 		self._out_suffix(expr)
+
+	def _out_prefix(self):
+		self.printHlsIncludes()
+
+		self.printExpTables()
+
+		self.printHlsHeader()
+
+		self.printVarDecls()
+
+		self.printConstDecls()
+		
+		self.out.printf('\n')
+
+	def printHlsIncludes(self):
+		self.out.printf('#include <iostream>\n', indent=True)
+		self.out.printf('#include <stdint.h>\n', indent=True)
+		#self.out.printf('#include <ap_int.h> \n ', indent=True)
+		#self.out.printf('#include "predict.h"\n', indent=True)
+		self.out.printf('#ifdef __SYNTHESIS__\n #include <ap_int.h>\n#endif\n', indent=True)
+		#self.out.printf('typedef ap_int<BITWIDTH> MYINT;\n', indent=True)
+		self.out.printf('typedef int16_t MYINT;\n', indent=True)
+		self.out.printf('#ifndef __SYNTHESIS__\n #include "%s.h"\n #endif \n ',getAlgo(),indent=True)
+		#self.out.printf('#include "predict.h"\n', indent=True)
+		self.out.printf('#include "model.h"\n\n', indent=True)
+		self.out.printf('using namespace %s_fixed;\n\n' % getAlgo(), indent=True)
+
+	def printExpTables(self):
+		for exp, [table, [tableVarA, tableVarB]] in self.expTables.items():
+			self.printExpTable(table[0], tableVarA)
+			self.printExpTable(table[1], tableVarB)
+			self.out.printf('\n')
+
+	def printExpTable(self, table_row, var):
+		self.out.printf('const MYINT %s[%d] = {\n' % (var.idf, len(table_row)), indent = True)
+		self.out.increaseIndent()
+		self.out.printf('', indent = True)
+		for i in range(len(table_row)):
+			self.out.printf('%d, ' % table_row[i])
+		self.out.decreaseIndent()
+		self.out.printf('\n};\n')
+
+	def printHlsHeader(self):
+		self.out.printf('int %sFixed(',getAlgo())
+		#self.out.printf('X[D]){\n')
+		self.out.printf('\n #ifndef __SYNTHESIS__ \n')
+		self.out.printf('MYINT **X')
+		#for i in range(0,getNumWorkers()):
+		#	if(i==getNumWorkers()-1):
+		#		self.out.printf('MYINT X' + str(i) +'[D]') 
+		#	else:
+		#		self.out.printf('MYINT X' + str(i) +'[D],') 
+		self.out.printf('\n #else \n')
+
+		#for i in range(0,getNumWorkers()):
+		#	self.out.printf('MYINT ZX_t_ex' + '[10]' + '[d],')
+				#for i in range(0,getNumWorkers()):
+		self.out.printf('MYINT ZX_t_ex[' + str(getNumWorkers()) + '][d],')
+		self.out.printf('ap_uint<1> doneSpMV')
+		self.out.printf('\n  #endif \n')
+
+		self.out.printf(') {\n', indent=True)
+		self.out.printf('#pragma HLS INTERFACE ap_memory port=ZX_t_ex \n')
+		self.out.printf('#pragma HLS ARRAY_PARTITION variable=ZX_t_ex block factor=' + str(getNumWorkers()) + ' dim=1 \n')
+		self.out.increaseIndent()
+		#self.out.printf('#pragma HLS INTERFACE ap_ctrl_none port=return \n ', indent=True)
+
+		self.out.printf('#pragma HLS ALLOCATION instances=mul limit=75 operation \n ', indent=True)# to account for the constraint of 90 DSPs on device
+		#printf('char buff[8];\n\n', indent=True)
+
+	def printVarDecls(self):
+		for decl in self.decls:
+			if decl in self.VAR_IDF_INIT:
+				continue
+			typ_str = IR.DataType.getIntStr()
+			idf_str = decl
+			type = self.decls[decl]
+			if Type.isInt(type): shape_str = ''
+			elif Type.isTensor(type): shape_str = ''.join(['[' + str(n) + ']' for n in type.shape])
+			self.out.printf('%s %s%s;\n', typ_str, idf_str, shape_str, indent=True)
+		self.out.printf('\n')
+
+	def printConstDecls(self):
+		for cnst in self.cnsts:
+			var, num = cnst, self.cnsts[cnst]
+			if np.iinfo(np.int16).min <= num <= np.iinfo(np.int16).max:
+				self.out.printf('%s = %d;\n', var, num, indent=True)
+			elif np.iinfo(np.int32).min <= num <= np.iinfo(np.int32).max:
+				self.out.printf('%s = %dL;\n', var, num, indent=True)
+			elif np.iinfo(np.int64).min <= num <= np.iinfo(np.int64).max:
+				self.out.printf('%s = %dLL;\n', var, num, indent=True)
+			else:
+				assert False
+
+	def _out_suffix(self, expr:IR.Expr):
+		self.out.printf('\n')
+
+		type = self.decls[expr.idf]
+
+		if Type.isInt(type):
+			self.out.printf('return ', indent = True)
+			self.print(expr)
+			self.out.printf(';\n')
+		elif Type.isTensor(type):
+			idfr = expr.idf
+			exponent = self.expts[expr.idf]
+			num = 2 ** exponent
+
+			if type.dim == 0:
+				self.out.printf('cout << ', indent = True)
+				self.out.printf('float(' + idfr + ')*' + str(num))
+				self.out.printf(' << endl;\n')
+			else:
+				#iters = self.getTempIterators(type.dim)
+				iters = []
+				for i in range(type.dim):
+					s = chr(ord('i') + i)
+					tempVar = IR.Var(s)
+					iters.append(tempVar)
+				expr_1 = IRUtil.addIndex(expr, iters)
+				cmds = IRUtil.loop(type.shape, iters, [IR.PrintAsFloat(expr_1, exponent)])
+				self.print(IR.Prog(cmds))
+		else:
+			assert False
+
+		#self.out.decreaseIndent()
+		self.out.printf('}\n', indent=True)
 
 	def printMemset(self, ir):
 		self.out.printf('//memset cant be used in HLS code; using for-loop instead\n', indent = True)
@@ -62,14 +189,12 @@ class Hls(CodegenBase):
 		# factor = fac  -- UNROLL by a factor 'fac'
 		if(ir.factor == -1):
 			self.out.printf('++) {\n ')
-			if outputPragmas() and forHls():
-				self.out.printf('#pragma HLS UNROLL\n')
+			self.out.printf('#pragma HLS UNROLL\n')
 		elif(ir.factor == 0):
 			self.out.printf('++) {\n')
 		else:
 			self.out.printf('++) {\n ')
-			if outputPragmas() and forHls():
-				self.out.printf('#pragma HLS UNROLL factor=%d\n', ir.factor)
+			self.out.printf('#pragma HLS UNROLL factor=%d\n', ir.factor)
 
 	def printCExpr(self, ir):
 		self.out.printf('(')
@@ -83,166 +208,7 @@ class Hls(CodegenBase):
 		self.print(ir.ef)
 		self.out.printf(')')
 
-	def _out_prefix(self):
-		self.printFpgaIncludes()
-		self.printExpTables()
-		self.printFpgaHeader()
-
-		# declare vars
-		self.printVarDecls()
-
-		# init vars of Int()
-		self.printConstDecls()
-		
-		self.out.printf('\n')
-
-	def printConstDecls(self):
-		for cnst in self.cnsts:
-			var, num = cnst, self.cnsts[cnst]
-			if np.iinfo(np.int16).min <= num <= np.iinfo(np.int16).max:
-				self.out.printf('%s = %d;\n', var, num, indent=True)
-			elif np.iinfo(np.int32).min <= num <= np.iinfo(np.int32).max:
-				self.out.printf('%s = %dL;\n', var, num, indent=True)
-			elif np.iinfo(np.int64).min <= num <= np.iinfo(np.int64).max:
-				self.out.printf('%s = %dLL;\n', var, num, indent=True)
-			else:
-				assert False
-
-	def printCincludes(self):
-		self.out.printf('#include <iostream>\n\n', indent=True)
-		self.out.printf('typedef int16_t MYINT;\n\n', indent=True)
-		#if outputPragmas():
-			#self.out.printf('#include "%s.h"\n' % (getAlgo()), indent=True)
-		self.out.printf('#include "model.h"\n\n', indent=True)
-		self.out.printf('using namespace std;\n', indent=True)
-		if outputPragmas() and forHls():
-			print('\n', indent=True)
-		else:
-			self.out.printf('using namespace %s_%s;\n\n' % (getAlgo(), getVersion()), indent=True)
-
-	def printArduinoIncludes(self):
-		self.out.printf('#include <HardwareSerial.h>\n', indent=True)
-		self.out.printf('#include <Arduino.h>\n\n', indent=True)
-		self.out.printf('typedef int16_t MYINT;\n\n', indent=True)
-		self.out.printf('#include "predict.h"\n', indent=True)
-		self.out.printf('#include "model.h"\n\n', indent=True)
-		self.out.printf('using namespace %s_%s;\n\n' % (getAlgo(), getVersion()), indent=True)
-
-	def printFpgaIncludes(self):
-		self.out.printf('#include <iostream>\n', indent=True)
-		self.out.printf('#include <stdint.h>\n', indent=True)
-		#self.out.printf('#include <ap_int.h> \n ', indent=True)
-		#self.out.printf('#include "predict.h"\n', indent=True)
-		self.out.printf('#ifdef __SYNTHESIS__\n #include <ap_int.h>\n#endif\n', indent=True)
-		#self.out.printf('typedef ap_int<BITWIDTH> MYINT;\n', indent=True)
-		self.out.printf('typedef int16_t MYINT;\n', indent=True)
-		self.out.printf('#ifndef __SYNTHESIS__\n #include "%s.h"\n #endif \n ',getAlgo(),indent=True)
-		#self.out.printf('#include "predict.h"\n', indent=True)
-		self.out.printf('#include "model.h"\n\n', indent=True)
-		self.out.printf('using namespace %s_fixed;\n\n' % getAlgo(), indent=True)
-
-	def printCheader(self):
-		self.out.printf('int %sFixed(MYINT **X) {\n' % (getAlgo()), indent=True)
-		self.out.increaseIndent()
-
-	def printArduinoHeader(self):
-		self.out.printf('void predict(HardwareSerial &Serial) {\n', indent=True)
-		self.out.increaseIndent()
-		self.out.printf('unsigned long startTime = micros();\n\n', indent=True)
-		self.out.printf('char buff[8];\n\n', indent=True)
-
-	def printFpgaHeader(self):
-		self.out.printf('int %sFixed(',getAlgo())
-		#self.out.printf('X[D]){\n')
-		self.out.printf('\n #ifndef __SYNTHESIS__ \n')
-		self.out.printf('MYINT **X')
-		#for i in range(0,getNumWorkers()):
-		#	if(i==getNumWorkers()-1):
-		#		self.out.printf('MYINT X' + str(i) +'[D]') 
-		#	else:
-		#		self.out.printf('MYINT X' + str(i) +'[D],') 
-		self.out.printf('\n #else \n')
-
-		#for i in range(0,getNumWorkers()):
-		#	self.out.printf('MYINT ZX_t_ex' + '[10]' + '[d],')
-				#for i in range(0,getNumWorkers()):
-		self.out.printf('MYINT ZX_t_ex[' + str(getNumWorkers()) + '][d],')
-		self.out.printf('ap_uint<1> doneSpMV')
-		self.out.printf('\n  #endif \n')
-
-		self.out.printf(') {\n', indent=True)
-		if outputPragmas() and forHls():
-			self.out.printf('#pragma HLS INTERFACE ap_memory port=ZX_t_ex \n')
-			self.out.printf('#pragma HLS ARRAY_PARTITION variable=ZX_t_ex block factor=' + str(getNumWorkers()) + ' dim=1 \n')
-		self.out.increaseIndent()
-		#self.out.printf('#pragma HLS INTERFACE ap_ctrl_none port=return \n ', indent=True)
-
-		if outputPragmas() and forHls():
-			self.out.printf('#pragma HLS ALLOCATION instances=mul limit=75 operation \n ', indent=True)# to account for the constraint of 90 DSPs on device
-		#printf('char buff[8];\n\n', indent=True)
-
-	def printExpTables(self):
-		for exp, [table, [tableVarA, tableVarB]] in self.expTables.items():
-			self.printExpTable(table[0], tableVarA)
-			self.printExpTable(table[1], tableVarB)
+	def printPragmas(self, ir):
+		if ir.vital == 1:
 			self.out.printf('\n')
-
-	def printExpTable(self, table_row, var):
-		if outputPragmas() and forHls():
-			self.out.printf('const PROGMEM MYINT %s[%d] = {\n' % (var.idf, len(table_row)), indent = True)
-		else:
-			self.out.printf('const MYINT %s[%d] = {\n' % (var.idf, len(table_row)), indent = True)
-		self.out.increaseIndent()
-		self.out.printf('', indent = True)
-		for i in range(len(table_row)):
-			self.out.printf('%d, ' % table_row[i])
-		self.out.decreaseIndent()
-		self.out.printf('\n};\n')
-
-	def printVarDecls(self):
-		for decl in self.decls:
-			if decl in self.VAR_IDF_INIT:
-				continue
-			typ_str = IR.DataType.getIntStr()
-			idf_str = decl
-			type = self.decls[decl]
-			if Type.isInt(type): shape_str = ''
-			elif Type.isTensor(type): shape_str = ''.join(['[' + str(n) + ']' for n in type.shape])
-			self.out.printf('%s %s%s;\n', typ_str, idf_str, shape_str, indent=True)
-		self.out.printf('\n')
-
-	def _out_suffix(self, expr:IR.Expr):
-		self.out.printf('\n')
-
-		type = self.decls[expr.idf]
-
-		if Type.isInt(type):
-			self.out.printf('return ', indent = True)
-			self.print(expr)
-			self.out.printf(';\n')
-		elif Type.isTensor(type):
-			idfr = expr.idf
-			exponent = self.expts[expr.idf]
-			num = 2 ** exponent
-
-			if type.dim == 0:
-				self.out.printf('cout << ', indent = True)
-				self.out.printf('float(' + idfr + ')*' + str(num))
-				self.out.printf(' << endl;\n')
-			else:
-				#iters = self.getTempIterators(type.dim)
-				iters = []
-				for i in range(type.dim):
-					s = chr(ord('i') + i)
-					tempVar = IR.Var(s)
-					iters.append(tempVar)
-				expr_1 = IRUtil.addIndex(expr, iters)
-				cmds = IRUtil.loop(type.shape, iters, [IR.PrintAsFloat(expr_1, exponent)])
-				self.print(IR.Prog(cmds))
-		else:
-			assert False
-
-		if outputPragmas():
-			pass
-		#self.out.decreaseIndent()
-		self.out.printf('}\n', indent=True)
+			self.out.printf(ir.msg + '\n', indent = True)

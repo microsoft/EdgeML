@@ -23,6 +23,7 @@ from IR.IRGen.Hls import Hls
 from Codegen.Arduino import Arduino as ArduinoCodegen
 from Codegen.Hls import Hls as HlsCodegen
 from Codegen.Verilog import Verilog as VerilogCodegen
+from Codegen.X86 import X86 as X86Codegen
 
 from Util import *
 from Writer import Writer
@@ -74,6 +75,8 @@ class Compiler:
 			codegen = ArduinoCodegen(writer, compiler.decls, compiler.expts, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.VAR_IDF_INIT)
 		elif forVerilog():
 			codegen = VerilogCodegen(writer, compiler.decls, compiler.expts, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.VAR_IDF_INIT)
+		elif forX86():
+			codegen = X86Codegen(writer, compiler.decls, compiler.expts, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.VAR_IDF_INIT)
 		else:
 			assert False
 
@@ -98,7 +101,7 @@ class Compiler:
 
 		IRUtil.init()
 		
-		if forArduino():
+		if forArduino() or forX86():
 			compiler = Arduino()
 		elif forHls():
 			compiler = Hls()
@@ -114,6 +117,8 @@ class Compiler:
 			codegen = ArduinoCodegen(writer, decls, expts, intvs, cnsts, compiler.expTables, compiler.VAR_IDF_INIT)
 		elif forHls():
 			codegen = HlsCodegen(writer, decls, expts, intvs, cnsts, compiler.expTables, compiler.VAR_IDF_INIT)
+		elif forX86():
+			codegen = X86Codegen(writer, decls, expts, intvs, cnsts, compiler.expTables, compiler.VAR_IDF_INIT)
 		else:
 			assert False
 

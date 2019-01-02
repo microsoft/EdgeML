@@ -1,11 +1,12 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-import os
 import math
+import os
+
+from Converter.Util import *
 
 import Common
-from Converter.Util import *
 
 # Class to read Bonsai model dumps and generate input files (C header file and the compiler input)
 # The two classes BonsaiFixed and BonsaiFloat are for generating fixed model and float model respectively
@@ -165,7 +166,7 @@ class Bonsai:
 		self.computeModelSize()
 		self.writeModel()
 		if forHls():
-			self.writeFpgaModel()
+			self.writeModelForHls()
 
 	def run(self):
 		self.headerFile = os.path.join(getOutputDir(), "model.h")
@@ -307,7 +308,7 @@ class BonsaiFixed(Bonsai):
 		self.writeFooter()
 		
 
-	def writeFpgaModel(self):
+	def writeModelForHls(self):
 		#Reformat Z_idx and Z_val to work with worker threads of SparseMul
 		if useSparseMat():
 			Z_transp = matTranspose(self.Z)
@@ -378,5 +379,5 @@ class BonsaiFloat(Bonsai):
 		self.writeFooter()
 
 
-	def writeFpgaModel(self):
+	def writeModelForHls(self):
 		pass

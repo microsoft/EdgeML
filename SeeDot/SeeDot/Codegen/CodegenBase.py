@@ -6,7 +6,7 @@ import numpy as np
 import IR.IR as IR
 
 import Common
-import Type as Type
+import Type
 from Util import *
 
 class CodegenBase:
@@ -28,20 +28,11 @@ class CodegenBase:
 			assert False
 
 	def printVar(self, ir):
-		if outputPragmas() and ir.inputVar and forArduino():
-			if Common.wordLength == 16:
-				self.out.printf('((MYINT) pgm_read_word_near(&')
-			elif Common.wordLength == 32:
-				self.out.printf('((MYINT) pgm_read_dword_near(&')
-			else:
-				assert False
 		self.out.printf('%s', ir.idf)
 		for e in ir.idx:
 			self.out.printf('[')
 			self.print(e)
 			self.out.printf(']')
-		if outputPragmas() and ir.inputVar and forArduino():
-			self.out.printf('))')
 
 	def printBool(self, ir):
 		self.out.printf({True:'true', False:'false'}[ir.b])
@@ -106,23 +97,11 @@ class CodegenBase:
 		self.out.printf(')')
 
 	def printAssn(self, ir):
-		if forArduino():
-			self.printAssnForArduino(ir)
-		else:
-			self.printAssnDefault(ir)
-	def printAssnDefault(self, ir):
 		self.out.printf('', indent=True)
 		self.print(ir.var)
 		self.out.printf(' = ')
 		self.print(ir.e)
 		self.out.printf(';\n')
-	def printAssnForArduino(self, ir):
-		if isinstance(ir.e, IR.Var) and ir.e.idf == "X" and outputPragmas():
-			self.out.printf("", indent=True)
-			self.print(ir.var)
-			self.out.printf(" = getIntFeature(i0);\n")
-		else:
-			self.printAssnDefault(ir)
 
 	def printIf(self, ir):
 		self.out.printf('if (', indent = True)
@@ -177,11 +156,6 @@ class CodegenBase:
 		self.out.printf('\n')
 		self.out.printf('// ' + ir.msg + '\n', indent = True)
 
-	def printPragmas(self, ir):
-		if (outputPragmas() or ir.vital == 1) and forHls():
-			self.out.printf('\n')
-			self.out.printf(ir.msg + '\n', indent = True)
-
 	def printProg(self, ir):
 		for cmd in ir.cmd_l:
 			self.print(cmd)
@@ -192,26 +166,14 @@ class CodegenBase:
 		self.out.printf(', 0, sizeof(%s) * %d);\n' % (IR.DataType.getIntStr(), ir.len))
 
 	def printPrint(self, ir):
-		if outputPragmas() and forArduino():
-			self.out.printf('Serial.println(', indent=True)
-		else:
-			self.out.printf('cout << ', indent=True)
+		self.out.printf('cout << ', indent=True)
 		self.print(ir.expr)
-		if outputPragmas():
-			self.out.printf(');\n')
-		else:
-			self.out.printf(' << endl;\n')
+		self.out.printf(' << endl;\n')
 
 	def printPrintAsFloat(self, ir):
-		if outputPragmas() and forArduino():
-			self.out.printf('Serial.println(float(', indent=True)
-		else:
-			self.out.printf('cout << ((float)(', indent=True)
+		self.out.printf('cout << ((float)(', indent=True)
 		self.print(ir.expr)
-		if outputPragmas() and forArduino():
-			self.out.printf(') * ' + str(2 ** ir.expnt) + ', 6);')
-		else:
-			self.out.printf(')) * ' + str(2 ** ir.expnt) + ' << "";\n')
+		self.out.printf(')) * ' + str(2 ** ir.expnt) + ' << "";\n')
 
 	def printFuncCall(self, ir):
 		self.out.printf("%s(" % ir.name, indent = True)

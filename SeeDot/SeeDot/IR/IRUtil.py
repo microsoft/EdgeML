@@ -58,7 +58,7 @@ def shrUint(e:Expr, n:int) -> Expr:
 	return IntBop(e, Op.Op['>>'], Int(n))
 
 def shr(e:Expr, n:int) -> Expr:
-	if forArduino() or forHls():
+	if forArduino() or forHls() or forX86():
 		return shrForArduino(e, n)
 	else:
 		return shrDefault(e, n)

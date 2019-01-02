@@ -8,7 +8,7 @@ from Codegen.CodegenBase import CodegenBase
 import IR.IR as IR
 import IR.IRUtil as IRUtil
 
-import Type as Type
+import Type
 from Util import *
 
 class Verilog(CodegenBase):
@@ -32,7 +32,6 @@ class Verilog(CodegenBase):
 		else:
 			shape_str = ''
 
-		#self.out.printf('%s%s, ', idf_str, shape_str, indent=True)
 		self.out.printf("output logic [%d:0] %s%s;" % (Common.wordLength - 1, expr.idf, shape_str), indent=True)
 		self.out.printf('\n')
 		
@@ -50,8 +49,6 @@ class Verilog(CodegenBase):
 
 		# declare vars
 		self.printVarDecls()
-		
-		#self.out.printf('\n')
 
 	def printVarDecls(self):
 
