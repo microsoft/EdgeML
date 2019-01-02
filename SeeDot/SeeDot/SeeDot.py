@@ -24,7 +24,7 @@ class Main:
 		self.accuracy = {}
 
 	# Generate the fixed-point code using the input generated from the Converter project
-	def compile(self, outputPragmas, sf):
+	def compile(self, target, outputPragmas, sf):
 		print("Generating code...", end='')
 
 		# Set input and output files
@@ -32,17 +32,17 @@ class Main:
 		profileLogFile = os.path.join("..", "Predictor", "output", self.algo + "-float", "profile.txt")
 
 		if outputPragmas:
-			if self.target == Common.Target.Arduino:
+			if target == Common.Target.Arduino:
 				outputFile = os.path.join("..", "arduino", "predict.cpp")			
-			elif self.target == Common.Target.Hls:
+			elif target == Common.Target.Hls:
 				outputFile = os.path.join("..", "hls", "predict.cpp")
-			elif self.target == Common.Target.Verilog:
+			elif target == Common.Target.Verilog:
 				outputFile = os.path.join("..", "verilog", "predict.cpp")
 		else:
 			outputFile = os.path.join("..", "Predictor", "seedot_fixed.cpp")
 		
 		try:
-			obj = Compiler(self.algo, self.target, outputPragmas, inputFile, outputFile, profileLogFile, sf, self.numWorkers)
+			obj = Compiler(self.algo, target, outputPragmas, inputFile, outputFile, profileLogFile, sf, self.numWorkers)
 			obj.run()
 		except:
 			print("failed!\n")
@@ -105,8 +105,8 @@ class Main:
 		return acc
 
 	# Compile and run the generated code once for a given scaling factor
-	def runOnce(self, version, datasetType, outputPragmas, sf):
-		res = self.compile(outputPragmas, sf)
+	def runOnce(self, version, datasetType, target, outputPragmas, sf):
+		res = self.compile(target, outputPragmas, sf)
 		if res == False:
 			return False, False
 
@@ -128,7 +128,7 @@ class Main:
 			print("Testing with max scale factor of " + str(i))
 
 			##
-			res, exit = self.runOnce(Common.Version.Fixed, Common.DatasetType.Training, False, i)
+			res, exit = self.runOnce(Common.Version.Fixed, Common.DatasetType.Training, Common.Target.X86, False, i)
 
 			if exit == True:
 				return False
@@ -196,7 +196,7 @@ class Main:
 
 		##
 		# Compile and run code using the best scaling factor
-		res = self.runOnce(Common.Version.Fixed, Common.DatasetType.Testing, False, self.sf)
+		res = self.runOnce(Common.Version.Fixed, Common.DatasetType.Testing, Common.Target.X86, False, self.sf)
 		if res == False:
 			return False
 
@@ -233,7 +233,7 @@ class Main:
 		destFile = os.path.join("..", self.target, "model.h")
 		shutil.copyfile(srcFile, destFile)
 
-		res = self.compile(True, self.sf)
+		res = self.compile(self.target, True, self.sf)
 		if res == False:
 			return False
 

@@ -44,7 +44,7 @@ class Arduino(CodegenBase):
 		self.out.printf('#include <Arduino.h>\n\n', indent=True)
 		self.out.printf('#include "config.h"\n', indent=True)
 		self.out.printf('#include "predict.h"\n', indent=True)
-		self.out.printf('#include "Arduino.h"\n', indent=True)
+		self.out.printf('#include "library.h"\n', indent=True)
 		self.out.printf('#include "model.h"\n\n', indent=True)
 		self.out.printf('using namespace model;\n\n', indent=True)
 

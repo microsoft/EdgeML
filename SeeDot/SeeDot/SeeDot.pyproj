@@ -50,6 +50,9 @@
     <Compile Include="Codegen\CodegenBase.py" />
     <Compile Include="Codegen\Hls.py" />
     <Compile Include="Codegen\Verilog.py" />
+    <Compile Include="Codegen\X86.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Codegen\__init__.py">
       <SubType>Code</SubType>
     </Compile>
