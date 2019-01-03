@@ -22,12 +22,7 @@ class X86(CodegenBase):
 		self.expTables = expTables
 		self.VAR_IDF_INIT = VAR_IDF_INIT
 
-	def printAll(self, prog:IR.Prog, expr:IR.Expr):
-		self._out_prefix()
-		self.print(prog)
-		self._out_suffix(expr)
-
-	def _out_prefix(self):
+	def printPrefix(self):
 		self.printCincludes()
 
 		self.printExpTables()
@@ -68,31 +63,7 @@ class X86(CodegenBase):
 		self.out.printf('int seedotFixed(MYINT **X) {\n', indent=True)
 		self.out.increaseIndent()
 
-	def printVarDecls(self):
-		for decl in self.decls:
-			if decl in self.VAR_IDF_INIT:
-				continue
-			typ_str = IR.DataType.getIntStr()
-			idf_str = decl
-			type = self.decls[decl]
-			if Type.isInt(type): shape_str = ''
-			elif Type.isTensor(type): shape_str = ''.join(['[' + str(n) + ']' for n in type.shape])
-			self.out.printf('%s %s%s;\n', typ_str, idf_str, shape_str, indent=True)
-		self.out.printf('\n')
-
-	def printConstDecls(self):
-		for cnst in self.cnsts:
-			var, num = cnst, self.cnsts[cnst]
-			if np.iinfo(np.int16).min <= num <= np.iinfo(np.int16).max:
-				self.out.printf('%s = %d;\n', var, num, indent=True)
-			elif np.iinfo(np.int32).min <= num <= np.iinfo(np.int32).max:
-				self.out.printf('%s = %dL;\n', var, num, indent=True)
-			elif np.iinfo(np.int64).min <= num <= np.iinfo(np.int64).max:
-				self.out.printf('%s = %dLL;\n', var, num, indent=True)
-			else:
-				assert False
-
-	def _out_suffix(self, expr:IR.Expr):
+	def printSuffix(self, expr:IR.Expr):
 		self.out.printf('\n')
 
 		type = self.decls[expr.idf]

@@ -285,7 +285,6 @@ class ProtonnFixed(Protonn):
 
 		self.writeFooter()
 
-		
 	def writeModelForHls(self):
 		#Reformat Z_idx and Z_val to work with worker threads of SparseMul
 		if useSparseMat():
@@ -305,6 +304,7 @@ class ProtonnFixed(Protonn):
 		varDict = {'WIDTH' : 16, 'D' : self.D, 'd' : self.d, 'NUM_THREADS' : numWorkers, 'JOBS_PER_THREAD' : jobsPerThread, 'COMMON_JOB_CNT' : extraJobs, 'TOT_VAL' : totVal, 'maxIndex': maxIndex }
 		varDict.update(indexDict)
 		writeVarsFpga(varDict, self.fpgaFile)
+
 
 class ProtonnFloat(Protonn):
 

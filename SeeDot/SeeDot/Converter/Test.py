@@ -9,7 +9,3 @@ def getExpnt(max, B):
 	return int(np.ceil(np.log2(max) - np.log2((1 << (B - 2)) - 1)))
 
 e = getExpnt(0.8, 8)
-
-test = np.load("test.npy").tolist()
-print(test.__class__, len(test), len(test[0]))
-print(test[0])

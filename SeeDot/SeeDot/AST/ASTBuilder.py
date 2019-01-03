@@ -1,8 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-from Antlr.SeeDotVisitor import SeeDotVisitor
 from Antlr.SeeDotParser  import SeeDotParser
+from Antlr.SeeDotVisitor import SeeDotVisitor
 
 import AST.AST as AST
 

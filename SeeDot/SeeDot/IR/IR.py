@@ -7,7 +7,7 @@ import numpy as np
 import Common
 from Util import *
 
-class Op():
+class Op:
 	Op = Enum('Op', '+ - * / << >> & | ^ ~ ! && || < <= > >= == !=')
 	Op.print = lambda self, writer: writer.printf('%s', self.name)
 	Op.op_list = lambda op_str: list(map(lambda x: Op.Op[x], op_str.split()))
@@ -23,15 +23,16 @@ class BoolExpr(Expr):
 
 class Int(IntExpr):
 	@staticmethod
-	def negMax():
-		return DataType.getNegMax()
-	@staticmethod
 	def max():
 		return DataType.getMax()
+	@staticmethod
+	def negMax():
+		return DataType.getNegMax()
+	
 	def __init__(self, n:int):
 		self.n = DataType.getInt(n)
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.n)
+		return Int(self.n)
 
 class Var(IntExpr):
 	def __init__(self, idf:str, idx:list=[], inputVar=False):
@@ -41,10 +42,10 @@ class Var(IntExpr):
 	def subst(self, from_idf:str, to_e:Expr):
 		idx_new = list(map(lambda e: e.subst(from_idf, to_e), self.idx))
 		if self.idf != from_idf:
-			return self.__class__(self.idf, idx_new, self.inputVar)
+			return Var(self.idf, idx_new, self.inputVar)
 		else:
 			if isinstance(to_e, Var):
-				return self.__class__(to_e.idf, to_e.idx + idx_new, to_e.inputVar and self.inputVar)
+				return Var(to_e.idf, to_e.idx + idx_new, to_e.inputVar and self.inputVar)
 			elif isinstance(to_e, Int):
 				return to_e
 			else:
@@ -54,7 +55,7 @@ class Bool(BoolExpr):
 	def __init__(self, b:bool):
 		self.b = b
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.b)
+		return Bool(self.b)
 
 class IntUop(IntExpr):
 	def __init__(self, op:Op.Op, e:IntExpr):
@@ -62,7 +63,7 @@ class IntUop(IntExpr):
 		self.op = op
 		self.e = e
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.op, self.e.subst(from_idf, to_e))
+		return IntUop(self.op, self.e.subst(from_idf, to_e))
 			
 class IntBop(IntExpr):
 	def __init__(self, e1:IntExpr, op:Op.Op, e2:IntExpr):
@@ -71,7 +72,7 @@ class IntBop(IntExpr):
 		self.op = op
 		self.e2 = e2
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.e1.subst(from_idf, to_e), self.op, self.e2.subst(from_idf, to_e))
+		return IntBop(self.e1.subst(from_idf, to_e), self.op, self.e2.subst(from_idf, to_e))
 
 class BoolUop(BoolExpr):
 	def __init__(self, op:Op.Op, e:BoolExpr):
@@ -79,7 +80,7 @@ class BoolUop(BoolExpr):
 		self.op = op
 		self.e = e
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.op, self.e.subst(from_idf, to_e))
+		return BoolUop(self.op, self.e.subst(from_idf, to_e))
 
 class BoolBop(BoolExpr):
 	def __init__(self, e1:BoolExpr, op:Op.Op, e2:BoolExpr):
@@ -88,7 +89,7 @@ class BoolBop(BoolExpr):
 		self.op = op
 		self.e2 = e2
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.e1.subst(from_idf, to_e), self.op, self.e2.subst(from_idf, to_e))
+		return BoolBop(self.e1.subst(from_idf, to_e), self.op, self.e2.subst(from_idf, to_e))
 
 class BoolCop(BoolExpr):
 	def __init__(self, e1:IntExpr, op:Op.Op, e2:IntExpr):
@@ -97,7 +98,7 @@ class BoolCop(BoolExpr):
 		self.op = op
 		self.e2 = e2
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.e1.subst(from_idf, to_e), self.op, self.e2.subst(from_idf, to_e))
+		return BoolCop(self.e1.subst(from_idf, to_e), self.op, self.e2.subst(from_idf, to_e))
 
 class CExpr(Expr):
 	def __init__(self, cond:BoolExpr, et:Expr, ef:Expr):
@@ -105,20 +106,20 @@ class CExpr(Expr):
 		self.et = et
 		self.ef = ef
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.cond.subst(from_idf, to_e), self.et  .subst(from_idf, to_e), self.ef  .subst(from_idf, to_e))
+		return CExpr(self.cond.subst(from_idf, to_e), self.et.subst(from_idf, to_e), self.ef.subst(from_idf, to_e))
 
 class Exp(IntExpr):
 	def __init__(self, e:IntExpr):
 		self.e = e
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.e.subst(from_idf, to_e))
+		return Exp(self.e.subst(from_idf, to_e))
 
 class TypeCast(IntExpr):
 	def __init__(self, type, expr:Expr):
 		self.type = type
 		self.expr = expr
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.type, self.expr.subst(from_idf, to_e))
+		return TypeCast(self.type, self.expr.subst(from_idf, to_e))
 
 class Cmd:
 	pass
@@ -131,7 +132,7 @@ class Assn(Cmd):
 		self.var = var
 		self.e = e
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.var.subst(from_idf, to_e), self.e.subst(from_idf, to_e))
+		return Assn(self.var.subst(from_idf, to_e), self.e.subst(from_idf, to_e))
 
 class If(Cmd):
 	def __init__(self, cond:Expr, trueCmds:CmdList, falseCmds:CmdList=[]):
@@ -141,7 +142,7 @@ class If(Cmd):
 	def subst(self, from_idf:str, to_e:Expr):
 		trueCmdsNew = list(map(lambda cmd: cmd.subst(from_idf, to_e), self.trueCmds))
 		falseCmdsNew = list(map(lambda cmd: cmd.subst(from_idf, to_e), self.falseCmds))
-		return self.__class__(self.cond.subst(from_idf, to_e), trueCmdsNew, falseCmdsNew)
+		return If(self.cond.subst(from_idf, to_e), trueCmdsNew, falseCmdsNew)
 
 class For(Cmd):
 	def __init__(self, var:Var, st:int, cond:Expr, cmd_l:CmdList, fac=0):
@@ -162,52 +163,58 @@ class While(Cmd):
 		cmds_new = list(map(lambda cmd: cmd.subst(from_idf, to_e), self.cmds))
 		return While(self.expr.subst(from_idf, to_e), cmds_new)
 
-class Comment(Cmd):
-	def __init__(self, msg):
-		self.msg = msg
+class FuncCall(Cmd):
+	def __init__(self, name, argList):
+		self.name = name
+		self.argList = argList
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.msg)
-
-class Pragmas(Cmd):
-	def __init__(self, msg, vital=0):
-		self.msg = msg
-		self.vital = vital
-	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.msg, self.vital)
-
-class Prog():
-	def __init__(self, cmd_l:CmdList, resource=0):
-		self.cmd_l = cmd_l
-		self.resource = resource
-	def subst(self, from_idf:str, to_e:Expr):
-		cmd_l_new = list(map(lambda cmd: cmd.subst(from_idf, to_e), self.cmd_l))
-		return self.__class__(cmd_l_new, self.resource)
+		argList_new = dict(map(lambda cmd: (cmd[0].subst(from_idf, to_e), cmd[1]), self.argList.items()))
+		return FuncCall(self.name, argList_new)
 
 class Memset(Cmd):
-	#if dim==1 then single for-loop memset, else memset for 'dim'
 	def __init__(self, e:Var, len:int,dim=1, lens=[]):
 		self.e = e
 		self.len = len
 		self.dim = dim
 		self.lens = lens
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.e.subst(from_idf, to_e), self.len)
+		return Memset(self.e.subst(from_idf, to_e), self.len)
 
 class Print(Cmd):
 	def __init__(self, expr:Expr):
 		self.expr = expr
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.expr.subst(from_idf, to_e))
+		return Print(self.expr.subst(from_idf, to_e))
 
 class PrintAsFloat(Cmd):
 	def __init__(self, expr:Expr, expnt:int):
 		self.expr = expr
 		self.expnt = expnt
 	def subst(self, from_idf:str, to_e:Expr):
-		return self.__class__(self.expr.subst(from_idf, to_e), self.expnt)
+		return PrintAsFloat(self.expr.subst(from_idf, to_e), self.expnt)
 
-class DataType():
+class Pragmas(Cmd):
+	def __init__(self, msg, vital=0):
+		self.msg = msg
+		self.vital = vital
+	def subst(self, from_idf:str, to_e:Expr):
+		return Pragmas(self.msg, self.vital)
 
+class Comment(Cmd):
+	def __init__(self, msg):
+		self.msg = msg
+	def subst(self, from_idf:str, to_e:Expr):
+		return Comment(self.msg)
+
+class Prog:
+	def __init__(self, cmd_l:CmdList, resource=0):
+		self.cmd_l = cmd_l
+		self.resource = resource
+	def subst(self, from_idf:str, to_e:Expr):
+		cmd_l_new = list(map(lambda cmd: cmd.subst(from_idf, to_e), self.cmd_l))
+		return Prog(cmd_l_new, self.resource)
+
+class DataType:
 	intType = {Common.Target.Arduino: {8: np.int8, 16: np.int16, 32: np.int32, 64: np.int64},
 				Common.Target.Hls: {8: np.int8, 16: np.int16, 32: np.int32, 64: np.int64},
 				Common.Target.Verilog: {8: np.int8, 16: np.int16, 32: np.int32, 64: np.int64},
@@ -225,36 +232,23 @@ class DataType():
 		target = getTarget()
 		wordLen = Common.wordLength
 		return DataType.intType[target][wordLen](x)
-	
 	@staticmethod
 	def getIntClass():
 		target = getTarget()
 		wordLen = Common.wordLength
 		return DataType.intType[target][wordLen]
-
 	@staticmethod
 	def getIntStr():
 		target = getTarget()
 		return DataType.intStr[target]
-
 	@staticmethod
 	def getFloatStr():
 		return DataType.floatStr
-
-	@staticmethod
-	def getNegMax():
-		intClass = DataType.getIntClass()
-		return intClass(np.iinfo(intClass).min)
-
 	@staticmethod
 	def getMax():
 		intClass = DataType.getIntClass()
 		return intClass(np.iinfo(intClass).max)
-
-class FuncCall:
-	def __init__(self, name, argList):
-		self.name = name
-		self.argList = argList
-	def subst(self, from_idf:str, to_e:Expr):
-		argList_new = dict(map(lambda cmd: (cmd[0].subst(from_idf, to_e), cmd[1]), self.argList.items()))
-		return self.__class__(self.name, argList_new)
+	@staticmethod
+	def getNegMax():
+		intClass = DataType.getIntClass()
+		return intClass(np.iinfo(intClass).min)

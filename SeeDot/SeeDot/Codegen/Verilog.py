@@ -22,10 +22,16 @@ class Verilog(CodegenBase):
 		self.expTables = expTables
 		self.VAR_IDF_INIT = VAR_IDF_INIT
 
-	# Print the compiled code (IR)
-	def printAll(self, prog:IR.Prog, expr:IR.Expr):
-		self._out_prefix()
-		
+	def printPrefix(self):
+
+		self.out.printf("`timescale 1ns/1ps\n\n")
+
+		self.out.printf("module main(X, clk, rst);\n\n")
+
+		self.out.increaseIndent()
+
+		self.printVarDecls()
+
 		type = self.decls[expr.idf]
 		if isinstance(type, Type.Tensor):
 			shape_str = ''.join(['[' + str(n - 1) + ':0]' for n in type.shape])
@@ -34,21 +40,6 @@ class Verilog(CodegenBase):
 
 		self.out.printf("output logic [%d:0] %s%s;" % (Common.wordLength - 1, expr.idf, shape_str), indent=True)
 		self.out.printf('\n')
-		
-		self.print(prog)
-		
-		self._out_suffix(expr)
-
-	def _out_prefix(self):
-
-		self.out.printf("`timescale 1ns/1ps\n\n")
-
-		self.out.printf("module main(X, clk, rst);\n\n")
-
-		self.out.increaseIndent()
-
-		# declare vars
-		self.printVarDecls()
 
 	def printVarDecls(self):
 
@@ -65,7 +56,7 @@ class Verilog(CodegenBase):
 			self.out.printf('input [%d:0] %s%s;\n', Common.wordLength - 1, idf_str, shape_str, indent=True)
 		self.out.printf('\n')
 
-	def _out_suffix(self, expr:IR.Expr):
+	def printSuffix(self, expr:IR.Expr):
 		self.out.printf('\n', indent=True)
 		self.out.decreaseIndent()
 		self.out.printf('endmodule\n', indent=True)

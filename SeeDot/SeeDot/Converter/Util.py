@@ -326,7 +326,7 @@ def writeVarsFpga(vars:dict, fileName:str):
 	file = open(fileName, "w") 
 	dpath = '''"../fpga/output/lut/"'''
 	file.write("`ifndef CUSTOM_TYPES_SV_INCLUDED \n `define CUSTOM_TYPES_SV_INCLUDED \n")
-	file.write("`define dpath %s \n" %(dpath))
+	file.write("`define dpath %s \n" % (dpath))
 	for key in vars:
 		file.write("localparam " + key + '\t = \t' + str(vars[key]) + ";\n")
 	file.write("`endif\n")
@@ -446,38 +446,38 @@ def transformZ_offsetGen(Zidx, Zval, numJobs, name):
 	totVal = len(Zidx)
 	
 	#find max job length
-	maxJobLen,prev,curr = 0,0,0
+	maxJobLen, prev, curr = 0, 0, 0
 	for i in Zidx:
-		if(i == 0):
-			if(maxJobLen < curr - prev):
+		if i == 0:
+			if maxJobLen < (curr - prev):
 				maxJobLen = curr - prev
 			prev = curr
 		else:
-			curr+=1
+			curr += 1
 
 	SpDict = {}
 	offsetDict = {}
 
 	#split arrays for worker threads (NOT THE LAST ONE)
-	listidx,listval, index, indexDict = [],[],[],{}
-	id,i,count,idxId,valId,strId = 0,0,0,0,0,0
-	for i in range(0 ,numWorkers):
+	listidx, listval, index, indexDict = [], [], [], {}
+	id, i, count, idxId, valId, strId = 0, 0, 0, 0, 0, 0
+	for i in range(0 , numWorkers):
 		count,id = 0,0
 		while(count < jobsPerThread):
 			listidx.append(Zidx[idxId])
-			if(Zidx[idxId] == 0):
+			if Zidx[idxId] == 0:
 				listval.append(0)
 				count+=1
 			else:
 				listval.append(Zval[valId])
-				valId+=1
-			idxId+=1
-			id+=1
+				valId += 1
+			idxId += 1
+			id += 1
 		index.append(id)
 		indexDict.update({"index" + str(strId) : id})
 		SpDict.update({name + "idx_t" + str(strId) : listidx})
 		SpDict.update({name + "val_t" + str(strId) : listval})
-		strId+=1
+		strId += 1
 		listidx = []
 		listval = []
 
@@ -488,14 +488,14 @@ def transformZ_offsetGen(Zidx, Zval, numJobs, name):
 	offsetList.append(0)
 	while(idxId < totVal):
 		listidx.append(Zidx[idxId])
-		if(Zidx[idxId] == 0):
+		if Zidx[idxId] == 0:
 			listval.append(0)
 			offsetList.append(id + 1)
 		else:
 			listval.append(Zval[valId])
-			valId+=1
-		idxId+=1
-		id+=1
+			valId += 1
+		idxId += 1
+		id += 1
 	
 	commonIndex = id	
 	indexDict.update({"commonindex" : commonIndex})
@@ -504,4 +504,3 @@ def transformZ_offsetGen(Zidx, Zval, numJobs, name):
 	offsetDict.update({"offset" : offsetList})
 
 	return SpDict, maxJobSize, maxJobLen, offsetDict, indexDict, max(index + [commonIndex])
-

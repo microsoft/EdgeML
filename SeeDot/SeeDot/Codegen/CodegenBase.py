@@ -13,9 +13,6 @@ class CodegenBase:
 
 	def __init__(self, writer):
 		self.out = writer
-	
-	def printOp(self, ir):
-		self.out.printf('%s', ir.name)
 
 	def printInt(self, ir):
 		if np.iinfo(np.int16).min <= ir.n <= np.iinfo(np.int16).max:
@@ -41,17 +38,6 @@ class CodegenBase:
 		self.out.printf('(')
 		self.print(ir.op)
 		self.print(ir.e)
-		self.out.printf(')')
-
-	def printExp(self, ir):
-		self.out.printf('(exp(')
-		self.print(ir.e)
-		self.out.printf('))')
-
-	def printTypeCast(self, ir):
-		self.out.printf('(')
-		self.out.printf('(' + ir.type + ')')
-		self.print(ir.expr)
 		self.out.printf(')')
 
 	def printIntBop(self, ir):
@@ -94,6 +80,17 @@ class CodegenBase:
 		self.print(ir.et)
 		self.out.printf(' : ')
 		self.print(ir.ef)
+		self.out.printf(')')
+
+	def printExp(self, ir):
+		self.out.printf('(exp(')
+		self.print(ir.e)
+		self.out.printf('))')
+
+	def printTypeCast(self, ir):
+		self.out.printf('(')
+		self.out.printf('(' + ir.type + ')')
+		self.print(ir.expr)
 		self.out.printf(')')
 
 	def printAssn(self, ir):
@@ -152,29 +149,6 @@ class CodegenBase:
 		self.out.decreaseIndent()
 		self.out.printf('}\n', indent=True)
 
-	def printComment(self, ir):
-		self.out.printf('\n')
-		self.out.printf('// ' + ir.msg + '\n', indent = True)
-
-	def printProg(self, ir):
-		for cmd in ir.cmd_l:
-			self.print(cmd)
-
-	def printMemset(self, ir):
-		self.out.printf('memset(', indent = True)
-		self.print(ir.e)
-		self.out.printf(', 0, sizeof(%s) * %d);\n' % (IR.DataType.getIntStr(), ir.len))
-
-	def printPrint(self, ir):
-		self.out.printf('cout << ', indent=True)
-		self.print(ir.expr)
-		self.out.printf(' << endl;\n')
-
-	def printPrintAsFloat(self, ir):
-		self.out.printf('cout << ((float)(', indent=True)
-		self.print(ir.expr)
-		self.out.printf(')) * ' + str(2 ** ir.expnt) + ' << "";\n')
-
 	def printFuncCall(self, ir):
 		self.out.printf("%s(" % ir.name, indent = True)
 		keys = list(ir.argList)
@@ -200,6 +174,37 @@ class CodegenBase:
 				self.out.printf(", ")
 		self.out.printf(");\n\n")
 
+	def printMemset(self, ir):
+		self.out.printf('memset(', indent = True)
+		self.print(ir.e)
+		self.out.printf(', 0, sizeof(%s) * %d);\n' % (IR.DataType.getIntStr(), ir.len))
+
+	def printPrint(self, ir):
+		self.out.printf('cout << ', indent=True)
+		self.print(ir.expr)
+		self.out.printf(' << endl;\n')
+
+	def printPrintAsFloat(self, ir):
+		self.out.printf('cout << ((float)(', indent=True)
+		self.print(ir.expr)
+		self.out.printf(')) * ' + str(2 ** ir.expnt) + ' << "";\n')
+
+	def printPragmas(self, ir):
+		if ir.vital == 1:
+			self.out.printf('\n')
+			self.out.printf(ir.msg + '\n', indent = True)
+
+	def printComment(self, ir):
+		self.out.printf('\n')
+		self.out.printf('// ' + ir.msg + '\n', indent = True)
+
+	def printProg(self, ir):
+		for cmd in ir.cmd_l:
+			self.print(cmd)
+
+	def printOp(self, ir):
+		self.out.printf('%s', ir.name)
+
 	def print(self, ir):
 		if isinstance(ir, IR.Int):
 			return self.printInt(ir)
@@ -209,10 +214,6 @@ class CodegenBase:
 			return self.printBool(ir)
 		elif isinstance(ir, IR.IntUop):
 			return self.printIntUop(ir)
-		elif isinstance(ir, IR.Exp):
-			return self.printExp(ir)
-		elif isinstance(ir, IR.TypeCast):
-			return self.printTypeCast(ir)
 		elif isinstance(ir, IR.IntBop):
 			return self.printIntBop(ir)
 		elif isinstance(ir, IR.BoolUop):
@@ -223,6 +224,10 @@ class CodegenBase:
 			return self.printBoolCop(ir)
 		elif isinstance(ir, IR.CExpr):
 			return self.printCExpr(ir)
+		elif isinstance(ir, IR.Exp):
+			return self.printExp(ir)
+		elif isinstance(ir, IR.TypeCast):
+			return self.printTypeCast(ir)
 		elif isinstance(ir, IR.Assn):
 			return self.printAssn(ir)
 		elif isinstance(ir, IR.If):
@@ -231,21 +236,50 @@ class CodegenBase:
 			return self.printFor(ir)
 		elif isinstance(ir, IR.While):
 			return self.printWhile(ir)
-		elif isinstance(ir, IR.Comment):
-			return self.printComment(ir)
-		elif isinstance(ir, IR.Pragmas):
-			return self.printPragmas(ir)
-		elif isinstance(ir, IR.Prog):
-			return self.printProg(ir)
+		elif isinstance(ir, IR.FuncCall):
+			return self.printFuncCall(ir)
 		elif isinstance(ir, IR.Memset):
 			return self.printMemset(ir)
 		elif isinstance(ir, IR.Print):
 			return self.printPrint(ir)
 		elif isinstance(ir, IR.PrintAsFloat):
 			return self.printPrintAsFloat(ir)
-		elif isinstance(ir, IR.FuncCall):
-			return self.printFuncCall(ir)
+		elif isinstance(ir, IR.Pragmas):
+			return self.printPragmas(ir)
+		elif isinstance(ir, IR.Comment):
+			return self.printComment(ir)
+		elif isinstance(ir, IR.Prog):
+			return self.printProg(ir)
 		elif isinstance(ir, IR.Op.Op):
 			return self.printOp(ir)
 		else:
 			assert False
+
+	def printAll(self, prog:IR.Prog, expr:IR.Expr):
+		self.printPrefix()
+		self.print(prog)
+		self.printSuffix(expr)
+
+	def printVarDecls(self):
+		for decl in self.decls:
+			if decl in self.VAR_IDF_INIT:
+				continue
+			typ_str = IR.DataType.getIntStr()
+			idf_str = decl
+			type = self.decls[decl]
+			if Type.isInt(type): shape_str = ''
+			elif Type.isTensor(type): shape_str = ''.join(['[' + str(n) + ']' for n in type.shape])
+			self.out.printf('%s %s%s;\n', typ_str, idf_str, shape_str, indent=True)
+		self.out.printf('\n')
+
+	def printConstDecls(self):
+		for cnst in self.cnsts:
+			var, num = cnst, self.cnsts[cnst]
+			if np.iinfo(np.int16).min <= num <= np.iinfo(np.int16).max:
+				self.out.printf('%s = %d;\n', var, num, indent=True)
+			elif np.iinfo(np.int32).min <= num <= np.iinfo(np.int32).max:
+				self.out.printf('%s = %dL;\n', var, num, indent=True)
+			elif np.iinfo(np.int64).min <= num <= np.iinfo(np.int64).max:
+				self.out.printf('%s = %dLL;\n', var, num, indent=True)
+			else:
+				assert False

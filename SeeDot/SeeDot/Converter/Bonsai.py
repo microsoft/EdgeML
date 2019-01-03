@@ -306,7 +306,6 @@ class BonsaiFixed(Bonsai):
 						shapeStr="[%d]" * 3 % (T_m, 1, self.d))
 
 		self.writeFooter()
-		
 
 	def writeModelForHls(self):
 		#Reformat Z_idx and Z_val to work with worker threads of SparseMul
@@ -327,6 +326,7 @@ class BonsaiFixed(Bonsai):
 		varDict = {'WIDTH' : 16, 'D' : self.D, 'd' : self.d, 'NUM_THREADS' : numWorkers, 'JOBS_PER_THREAD' : jobsPerThread, 'COMMON_JOB_CNT' : extraJobs, 'TOT_VAL' : totVal, 'maxIndex': maxIndex , 'H_1' : Common.H_1, 'shr1': Common.shr1, 'shr2': Common.shr2}
 		varDict.update(indexDict)
 		writeVarsFpga(varDict, self.fpgaFile)
+
 
 class BonsaiFloat(Bonsai):
 
@@ -377,7 +377,6 @@ class BonsaiFloat(Bonsai):
 		writeListsAsArray(lists, self.headerFile)
 		writeMatsAsArray(mats, self.headerFile)
 		self.writeFooter()
-
 
 	def writeModelForHls(self):
 		pass
