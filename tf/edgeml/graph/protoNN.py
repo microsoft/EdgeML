@@ -157,6 +157,7 @@ class ProtoNN:
             self.predictions = tf.argmax(y, 1, name='protoNNPredictions')
             if Y is not None:
                 self.createAccOp(self.protoNNOut, Y)
+            self.W, self.B, self.Z = W, B, Z
         return y
 
     def createAccOp(self, outputs, target):
