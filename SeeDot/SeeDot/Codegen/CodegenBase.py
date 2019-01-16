@@ -14,6 +14,9 @@ class CodegenBase:
 	def __init__(self, writer):
 		self.out = writer
 
+	def printOp(self, ir):
+		self.out.printf('%s', ir.name)
+
 	def printInt(self, ir):
 		if np.iinfo(np.int16).min <= ir.n <= np.iinfo(np.int16).max:
 			self.out.printf('%d', ir.n)
@@ -201,9 +204,6 @@ class CodegenBase:
 	def printProg(self, ir):
 		for cmd in ir.cmd_l:
 			self.print(cmd)
-
-	def printOp(self, ir):
-		self.out.printf('%s', ir.name)
 
 	def print(self, ir):
 		if isinstance(ir, IR.Int):

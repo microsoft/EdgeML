@@ -172,7 +172,7 @@ class FuncCall(Cmd):
 		return FuncCall(self.name, argList_new)
 
 class Memset(Cmd):
-	def __init__(self, e:Var, len:int,dim=1, lens=[]):
+	def __init__(self, e:Var, len:int, dim=1, lens=[]):
 		self.e = e
 		self.len = len
 		self.dim = dim

@@ -48,9 +48,6 @@ class IRGenBase(ASTVisitor):
 		self._var_cnt = 0
 		self._iter_cnt = 0
 
-		# exp
-		self.IDX_B = 8
-
 		# idf of vars that need to be init'ed
 		self.VAR_IDF_INIT = []
 
@@ -335,7 +332,7 @@ class IRGenBase(ASTVisitor):
 
 	#=== exp: expnt, intv, IR ===#
 	def _get_exp_table_shape(self):
-		return [Common.wordLength // self.IDX_B, 2 ** self.IDX_B]
+		return [Common.wordLength // self.expB, 2 ** self.expB]
 	
 	def _get_exp_tables(self, p:int): # -> IR.Var list
 		if p >= 0: p_str = 'p' + str(p)
@@ -359,11 +356,11 @@ class IRGenBase(ASTVisitor):
 		cmdl_res = []
 		for i in range(idx1_num):
 			idx1 = IR.Int(i)
-			idx2 = IR.IntBop(IRUtil.shrUint(e_pos, self.IDX_B * i),
+			idx2 = IR.IntBop(IRUtil.shrUint(e_pos, self.expB * i),
 							 IR.Op.Op['&'], IR.Int(idx2_num - 1))
 			# NOTE: shrUint is used since e_pos >= 0
 			cmdl_res += [IR.Assn(idx2_tmp, idx2)]
-			rhs = IRUtil.add_idx_priv(IRUtil.addIndex(table, [idx1]), idx2_tmp, self.IDX_B)
+			rhs = IRUtil.add_idx_priv(IRUtil.addIndex(table, [idx1]), idx2_tmp, self.expB)
 			lhs = IRUtil.addIndex(table_tmp, [idx1])
 			cmdl_res += [IR.Assn(lhs, rhs)]
 
@@ -390,11 +387,11 @@ class IRGenBase(ASTVisitor):
 		p_res = 0
 		for i in range(idx1_num):
 			if   table_kind == 'pos':
-				max_arg = (2 ** (p + self.IDX_B * i)) * (idx2_num - 1)
+				max_arg = (2 ** (p + self.expB * i)) * (idx2_num - 1)
 				# max_arg = min(max_arg, self.MAX_VAL_EXP) # TODO: use
 				# MAX_VAL_EXP
 			elif table_kind == 'neg':
-				max_arg = (-2 ** (p + self.IDX_B * i))
+				max_arg = (-2 ** (p + self.expB * i))
 			p_res += self.get_expnt(np.exp(max_arg))
 
 		# consider shr's
@@ -415,7 +412,7 @@ class IRGenBase(ASTVisitor):
 							 np.exp(np.ldexp(M, p)))
 
 	def compile_exp(self, e:IR.Expr, p:int): # -> IR.CmdList * IR.Expr * decl dict
-		assert(Common.wordLength % self.IDX_B == 0)
+		assert(Common.wordLength % self.expB == 0)
 
 		# table_{pos,neg}, typ_table
 		[table_pos, table_neg] = self._get_exp_tables(p)

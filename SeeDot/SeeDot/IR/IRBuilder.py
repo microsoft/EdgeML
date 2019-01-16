@@ -5,15 +5,16 @@ import numpy as np
 import operator
 import os
 
-import AST.AST as AST
-from AST.ASTVisitor import ASTVisitor
 from Antlr.SeeDotParser import SeeDotParser
 
-import Common
+import AST.AST as AST
+from AST.ASTVisitor import ASTVisitor
 
-import Type as Type
 import IR.IR as IR
 import IR.IRUtil as IRUtil
+
+import Common
+import Type as Type
 from Util import *
 
 class IRBuilder(ASTVisitor):
@@ -45,9 +46,6 @@ class IRBuilder(ASTVisitor):
 		# fresh vars
 		self._var_cnt = 0
 		self._iter_cnt = 0
-
-		# exp
-		self.IDX_B = 8
 
 		# idf of vars that need to be init'ed
 		self.VAR_IDF_INIT = []
@@ -106,21 +104,17 @@ class IRBuilder(ASTVisitor):
 
 	def get_intv_exp(self, p:int, intv): # int^2 -> int^2
 		(m, M) = intv
-		assert(m < np.ldexp(self.MAX_VAL_EXP, -p))
+		assert m < np.ldexp(self.MAX_VAL_EXP, -p)
 		M = min(M, np.ldexp(self.MAX_VAL_EXP, -p))
-		return self.get_intv(p,
-							 np.exp(np.ldexp(m, p)),
-							 np.exp(np.ldexp(M, p)))
+		return self.get_intv(p, np.exp(np.ldexp(m, p)), np.exp(np.ldexp(M, p)))
 
 	# Computing exponent and intervals
 	def get_expnt(self, maxabs:float): # -> int
 		return int(np.ceil(np.log2(maxabs) - np.log2((1 << (Common.wordLength - 2)) - 1)))
 
 	# Takes range [r1, r2] and returns the interval scaled by p
-	def get_intv(self, p:int, r1:float, r2:float): # -> int^2
-		m = int(np.ldexp(r1, -p))
-		M = int(np.ldexp(r2, -p))
-		return (m, M)
+	def get_intv(self, p:int, r1:float, r2:float):
+		return (int(np.ldexp(r1, -p)), int(np.ldexp(r2, -p)))
 
 	def get_shr_mul(self, p1, p2):
 		shr = (Common.wordLength - 2) // 2
@@ -171,7 +165,7 @@ class IRBuilder(ASTVisitor):
 		m = max(m >> shr_n[2], -max_abs)
 		M = min(M >> shr_n[2],  max_abs)
 			
-		return (p, (m,M), shr_n)
+		return (p, (m, M), shr_n)
 
 	#=== sum: expnt, intv, IR ===#
 	def get_expnt_sum(self, p:int, n:int): # -> int^3
@@ -181,9 +175,9 @@ class IRBuilder(ASTVisitor):
 		else:
 			p_res = min(p + H_tot, self.MAX_EXPNT_ALL)
 		H_1 = p_res - p
-		assert(H_1 >= 0)
+		assert H_1 >= 0
 		H_2 = H_tot - H_1
-		assert(H_2 >= 0)
+		assert H_2 >= 0
 		return (p_res, H_1, H_2)
 
 	def get_intv_sum(self, intv, n:int): # int^2 -> int^2
@@ -197,7 +191,7 @@ class IRBuilder(ASTVisitor):
 		# -> cmd list * decl dict
 		n_cur = self.getTempVar()
 		itmp = self.getTempVar()
-		[h,i] = self.getTempIterators(2)
+		[h, i] = self.getTempIterators(2)
 
 		def get_cmdl_body(shr_n:int) -> IR.CmdList:
 			assert(0 <= shr_n <= 1)
@@ -207,14 +201,14 @@ class IRBuilder(ASTVisitor):
 			#   : itmp == (n_cur>>1)
 			#   ?  ((src[2*i] )>>@shr_n@)
 			#   : 0 //src[i]
-			src_i = IRUtil.addIndex(src, [i]                          , idx_to_prefix)
+			src_i = IRUtil.addIndex(src, [i], idx_to_prefix)
 			src_2i = IRUtil.addIndex(src, [IRUtil.mul(IR.Int(2),i)], idx_to_prefix)
 			src_2i1 = IRUtil.addIndex(src, [IRUtil.inc(IRUtil.mul(IR.Int(2),i))], idx_to_prefix)
 			rhs_1 = IR.CExpr(IRUtil.lt(itmp, IRUtil.shrUint(n_cur, 1)),
-							 IRUtil.shr(IRUtil.add(src_2i, src_2i1), shr_n),
+					IRUtil.shr(IRUtil.add(src_2i, src_2i1), shr_n),
 					IR.CExpr(IRUtil.andd(IRUtil.eq(itmp, IRUtil.shrUint(n_cur, 1)),
-									  IRUtil.eq(IR.IntBop(n_cur, IR.Op.Op['&'], IRUtil.one), IRUtil.one)),
-							 IRUtil.shr(src_2i          , shr_n),
+							  IRUtil.eq(IR.IntBop(n_cur, IR.Op.Op['&'], IRUtil.one), IRUtil.one)),
+							 IRUtil.shr(src_2i, shr_n),
 							 IRUtil.zero))
 			'''# rhs_2 = (n_cur&1) == 1 ? (src[n_cur-1]>>@shr_n@) : 0
 			src_ncnt1 = IR.addIndex(src, [IR.sub(n_cur,IR.one)], idx_to_prefix)
@@ -270,10 +264,6 @@ class IRBuilder(ASTVisitor):
 			return intVar
 		else:
 			assert False
-
-	#=================#
-	# visit functions #
-	#=================#
 
 	def visitInt(self, node:AST.Int):
 		n = node.value

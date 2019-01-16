@@ -11,9 +11,10 @@ import shutil
 from itertools import product
 import json
 
+from Converter.Converter import Converter
+
 import Common
 from Compiler import Compiler
-from Converter.Converter import Converter
 from Predictor import Predictor
 
 

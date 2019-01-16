@@ -1,13 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-import operator
 from functools import reduce
+import operator
+
+from Antlr.SeeDotParser  import SeeDotParser
 
 import AST.AST as AST
 from AST.ASTVisitor import ASTVisitor
-
-from Antlr.SeeDotParser  import SeeDotParser
 
 class Type:
 	pass
@@ -49,8 +49,8 @@ class InferType(ASTVisitor):
 		node.type = Int()
 		return node.type
 
+	# Float is represented as a tensor with 0 dimension
 	def visitFloat(self, node:AST.Float):
-		# Float is represented as a tensor with 0 dimension
 		node.type = Tensor([])
 		return node.type
 
@@ -92,10 +92,12 @@ class InferType(ASTVisitor):
 		node.expr.gamma = dict(node.gamma)
 		exprType = self.visit(node.expr)
 
+		[n1, n2 ,n3, n4] = exprType.shape
+
 		# Implementation only performs maxpool over a 4D input
 		assert isTensor(exprType) and exprType.dim == 4
 		
-		[n1, n2 ,n3, n4] = exprType.shape
+		# Implementation needs node.dim to exactly divide matrix dimensions
 		assert n2 % node.dim == 0 and n3 % node.dim == 0
 		
 		shape = [n1, n2 // node.dim, n3 // node.dim, n4]  
@@ -120,7 +122,7 @@ class InferType(ASTVisitor):
 
 		return node.type
 
-	# Currently assuming that the type of each expr is equal
+	# Currently assuming that the type of each expr is same
 	def visitFuncCall(self, node:AST.FuncCall):
 		type = None
 		for expr in node.exprList:
@@ -181,11 +183,21 @@ class InferType(ASTVisitor):
 				
 				node.type = Tensor([n1, n4])
 		else:
-			print(eType, fType)
 			assert False
 
 		return node.type
 	
+	# e <+> f OR e <-> f
+	def visitBopAddOrSubCir(self, node:AST.Bop1, eType:Type, fType:Type):
+		assert isTensor(eType) and isTensor(fType)
+		assert eType.dim >= fType.dim
+		assert fType.dim == 1
+		assert eType.shape[-1] == fType.shape[-1]
+		
+		shape = eType.shape
+		node.type = Tensor(shape)
+		return node.type
+
 	# e <*> f - Point-wise multiplication
 	def visitBopMulCir(self, node:AST.Bop1, eType:Type, fType:Type):
 		assert isTensor(eType) and isTensor(fType)
@@ -200,22 +212,13 @@ class InferType(ASTVisitor):
 		assert isTensor(eType) and isTensor(fType)
 		assert eType.dim == 4 and fType.dim == 4
 		
+		# Implementation does Conv on 4D input on 4D filter
+		# Input is padded with 0s to ensure that the output dimension of the matrix is same as the input
 		[n, h, w, cin] = eType.shape
 		[hf, wf, cin_, cout] = fType.shape
 		assert cin == cin_
 		
 		shape = [n, h, w, cout]
-		node.type = Tensor(shape)
-		return node.type
-
-	# e <+> f OR e <-> f
-	def visitBopAddOrSubCir(self, node:AST.Bop1, eType:Type, fType:Type):
-		assert isTensor(eType) and isTensor(fType)
-		assert eType.dim >= fType.dim
-		assert fType.dim == 1
-		assert eType.shape[-1] == fType.shape[-1]
-		
-		shape = eType.shape
 		node.type = Tensor(shape)
 		return node.type
 
@@ -248,6 +251,7 @@ class InferType(ASTVisitor):
 		
 		# exp(e)
 		elif node.op == SeeDotParser.EXP:
+			# Currently supports exp() on a tensor with single element
 			assert isTensor(eType) and eType.isShapeOne()
 			node.type = eType
 		

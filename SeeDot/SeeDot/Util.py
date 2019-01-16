@@ -57,7 +57,7 @@ def setMaxExpnt(x:int):
 	Config.maxExpnt = x
 
 def getShrType():
-	# "shr" "shr+" "div"
+	# "shr" "shr+" "div" "negate"
 	return "div"
 
 def useMathExp():
