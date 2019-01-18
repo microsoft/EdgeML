@@ -16,6 +16,7 @@ from Converter.Converter import Converter
 import Common
 from Compiler import Compiler
 from Predictor import Predictor
+import Util
 
 
 class Main:
@@ -355,10 +356,15 @@ class MainDriver:
 			#self.copyOutputs()
 
 	def runMainDriver(self):
+
 		results = self.loadResultsFile()
 
 		for iter in product(self.args.algo, self.args.version, self.args.dataset, self.args.target):
 			algo, version, dataset, target = iter
+
+			if target == Common.Target.Hls:
+				prev = Util.Config.codegen
+				Util.Config.codegen = "inline"
 
 			print("\n========================================")
 			print("Executing on %s %s %s %s" % (algo, version, dataset, target))
@@ -414,6 +420,9 @@ class MainDriver:
 				return
 			else:
 				print("PASS")
+
+			if target == Common.Target.Hls:
+				Util.Config.codegen = prev
 
 	def runCompilerDriver(self):
 		for iter in product(self.args.algo, self.args.target):

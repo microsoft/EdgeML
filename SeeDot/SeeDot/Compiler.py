@@ -1,30 +1,29 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-import os
-import argparse
 from antlr4 import *
+import argparse
+import os
 
-from Antlr.SeeDotLexer  import SeeDotLexer
+from Antlr.SeeDotLexer import SeeDotLexer
 from Antlr.SeeDotParser import SeeDotParser
 
-import AST.AST        as AST
+import AST.AST as AST
 import AST.ASTBuilder as ASTBuilder
-from AST.PrintAST  import PrintAST
-
-from Type import InferType
-
-from IR.IRBuilder import IRBuilder
-import IR.IRUtil as IRUtil
-
-from IR.IRGen.Arduino import Arduino
-from IR.IRGen.Hls import Hls
+from AST.PrintAST import PrintAST
 
 from Codegen.Arduino import Arduino as ArduinoCodegen
 from Codegen.Hls import Hls as HlsCodegen
 from Codegen.Verilog import Verilog as VerilogCodegen
 from Codegen.X86 import X86 as X86Codegen
 
+from IR.IRBuilder import IRBuilder
+import IR.IRUtil as IRUtil
+
+from IR.IRGen.Arduino import Arduino as ArduinoIRGen
+from IR.IRGen.Hls import Hls as HlsIRGen
+
+from Type import InferType
 from Util import *
 from Writer import Writer
 
@@ -44,12 +43,6 @@ class Compiler:
 		setMaxExpnt(maxExpnt)
 	
 	def run(self):
-		if genFuncCalls():
-			self.runWithFuncCalls()
-		else:
-			self.runWithNewAST()
-
-	def runWithFuncCalls(self):
 		# Parse and generate CST for the input
 		lexer = SeeDotLexer(self.input)
 		tokens = CommonTokenStream(lexer)
@@ -59,24 +52,26 @@ class Compiler:
 		# Generate AST
 		ast = ASTBuilder.ASTBuilder().visit(tree)
 
-		#PrintAST().visit(ast)
+		# Pretty printing AST
+		# PrintAST().visit(ast)
 
 		# Perform type inference
 		InferType().visit(ast)
 
 		IRUtil.init()
-		
-		compiler = IRBuilder()
-		res = compiler.visit(ast)
+
+		res, state = self.compile(ast)
 
 		writer = Writer(self.outputFile)
 
 		if forArduino():
-			codegen = ArduinoCodegen(writer, compiler.decls, compiler.expts, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.VAR_IDF_INIT)
+			codegen = ArduinoCodegen(writer, *state)
+		elif forHls():
+			codegen = HlsCodegen(writer, *state)
 		elif forVerilog():
-			codegen = VerilogCodegen(writer, compiler.decls, compiler.expts, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.VAR_IDF_INIT)
+			codegen = VerilogCodegen(writer, *state)
 		elif forX86():
-			codegen = X86Codegen(writer, compiler.decls, compiler.expts, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.VAR_IDF_INIT)
+			codegen = X86Codegen(writer, *state)
 		else:
 			assert False
 
@@ -84,44 +79,34 @@ class Compiler:
 
 		writer.close()
 
-	def runWithNewAST(self):
-		# Parse and generate CST for the input
-		lexer = SeeDotLexer(self.input)
-		tokens = CommonTokenStream(lexer)
-		parser = SeeDotParser(tokens)
-		tree = parser.expr()
+	def compile(self, ast):
+		if genFuncCalls():
+			return self.genCodeWithFuncCalls(ast)
+		else:
+			return self.genCodeWithoutFuncCalls(ast)
 
-		# Generate AST
-		ast = ASTBuilder.ASTBuilder().visit(tree)
+	def genCodeWithFuncCalls(self, ast):
 
-		# Perform type inference
-		InferType().visit(ast)
+		compiler = IRBuilder()
+		
+		res = compiler.visit(ast)
 
-		#PrintAST().visit(ast)
+		state = compiler.decls, compiler.expts, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.VAR_IDF_INIT
 
-		IRUtil.init()
+		return res, state
+
+	def genCodeWithoutFuncCalls(self, ast):
 		
 		if forArduino() or forX86():
-			compiler = Arduino()
+			compiler = ArduinoIRGen()
 		elif forHls():
-			compiler = Hls()
+			compiler = HlsIRGen()
 		else:
 			assert False
 
-		res = compiler.visit(ast)
-		writer = Writer(self.outputFile)
+		prog, expr,	decls, expts, intvs, cnsts = compiler.visit(ast)
 
-		prog, expr,	decls, expts, intvs, cnsts = res
+		res = prog, expr
+		state = decls, expts, intvs, cnsts, compiler.expTables, compiler.VAR_IDF_INIT
 
-		if forArduino():
-			codegen = ArduinoCodegen(writer, decls, expts, intvs, cnsts, compiler.expTables, compiler.VAR_IDF_INIT)
-		elif forHls():
-			codegen = HlsCodegen(writer, decls, expts, intvs, cnsts, compiler.expTables, compiler.VAR_IDF_INIT)
-		elif forX86():
-			codegen = X86Codegen(writer, decls, expts, intvs, cnsts, compiler.expTables, compiler.VAR_IDF_INIT)
-		else:
-			assert False
-
-		codegen.printAll(prog, expr)
-
-		writer.close()
+		return res, state
