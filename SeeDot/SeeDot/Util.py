@@ -72,7 +72,6 @@ def setNumWorkers(WorkerThreads):
 def getNumWorkers():
 	return Config.numWorkers
 
-
 # z = [y1,y2,..] = [[x1,..], [x2,..], ..] --> [x1,.., x2,.., ..]
 def flatten(z:list): 
 	return [x for y in z for x in y]

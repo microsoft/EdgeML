@@ -1,4 +1,20 @@
 
+import argparse
+import json
+import os
+from itertools import product
+
+import Common
+from SeeDot import Main
+
+class Dataset:
+	Common = ["cifar-binary", "cr-binary", "cr-multiclass", "curet-multiclass",
+		   "letter-multiclass", "mnist-binary", "mnist-multiclass",
+		   "usps-binary", "usps-multiclass", "ward-binary"]
+	Extra = ["cifar-10", "eye-binary", "farm-beats", "interactive-cane", "whale-binary"]
+	Default = Common
+	All = Common + Extra
+
 class MainDriver:
 
 	def __init__(self):
@@ -10,7 +26,7 @@ class MainDriver:
 		parser.add_argument("--driver", choices = self.driversAll, metavar = '', help = "Driver to use")
 		parser.add_argument("-a", "--algo", choices = Common.Algo.All, default = Common.Algo.Default, metavar = '', help = "Algorithm to run")
 		parser.add_argument("-v", "--version", choices = Common.Version.All, default = Common.Version.All, metavar = '', help = "Floating point code or fixed point code")
-		parser.add_argument("-d", "--dataset", choices = Common.Dataset.All, default = Common.Dataset.Default, metavar = '', help = "Dataset to run")
+		parser.add_argument("-d", "--dataset", choices = Dataset.All, default = Dataset.Default, metavar = '', help = "Dataset to run")
 		parser.add_argument("-dt", "--datasetType", choices = Common.DatasetType.All, default = [Common.DatasetType.Default], metavar = '', help = "Training dataset or testing dataset")
 		parser.add_argument("-t", "--target", choices = Common.Target.All, default = [Common.Target.Default], metavar = '', help = "Desktop code or Arduino code or Fpga HLS code")
 		parser.add_argument("-sf", "--max-scale-factor", type = int, metavar = '', help = "Max scaling factor for code generation")
@@ -294,3 +310,8 @@ class MainDriver:
 			print("FAILED  Copy!!\n")
 		else:
 			print("success  Copy")
+
+if __name__ == "__main__":
+	obj = MainDriver()
+	obj.parseArgs()
+	obj.run()

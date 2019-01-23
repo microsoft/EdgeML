@@ -2,17 +2,14 @@
 # Licensed under the MIT license.
 
 import argparse, os, shutil
-import subprocess
 import operator
 import traceback
-from itertools import product
 
 from Converter.Converter import Converter
 
 import Common
 from Compiler import Compiler
 from Predictor import Predictor
-import Util
 
 
 class Main:
