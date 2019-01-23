@@ -32,15 +32,6 @@ def forVerilog():
 def forX86():
 	return Config.target == Common.Target.X86
 
-def getOutputPragmasFlag():
-	return Config.outputPragmas
-
-def setOutputPragmasFlag(flag):
-	Config.outputPragmas = flag
-
-def outputPragmas():
-	return getOutputPragmasFlag()
-
 def getProfileLogFile():
 	return Config.profileLogFile
 

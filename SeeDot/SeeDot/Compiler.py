@@ -2,8 +2,7 @@
 # Licensed under the MIT license.
 
 from antlr4 import *
-import argparse
-import os
+import argparse, os
 
 from Antlr.SeeDotLexer import SeeDotLexer
 from Antlr.SeeDotParser import SeeDotParser
@@ -29,14 +28,13 @@ from Writer import Writer
 
 class Compiler:
 
-	def __init__(self, algo, target, outputPragmas, inputFile, outputFile, profileLogFile, maxExpnt, numWorkers):
+	def __init__(self, algo, target, inputFile, outputFile, profileLogFile, maxExpnt, numWorkers):
 		if os.path.isfile(inputFile) == False:
 			raise Exception("Input file doesn't exist")
 
 		setAlgo(algo)
 		setTarget(target)
 		setNumWorkers(numWorkers)
-		setOutputPragmasFlag(outputPragmas)
 		self.input = FileStream(inputFile)
 		self.outputFile = outputFile
 		setProfileLogFile(profileLogFile)

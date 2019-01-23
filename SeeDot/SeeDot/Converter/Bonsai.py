@@ -1,8 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-import math
-import os
+import math, os
 
 from Converter.Util import *
 
@@ -170,7 +169,7 @@ class Bonsai:
 
 	def run(self):
 		self.headerFile = os.path.join(getOutputDir(), "model.h")
-		self.inputFile = os.path.join(getOutputDir(), "input.txt")
+		self.inputFile = os.path.join(getOutputDir(), "input.sd")
 		self.infoFile = os.path.join(getOutputDir(), "info.txt")
 		self.fpgaFile = os.path.join(getOutputDir(), "CustomTypes.sv")
 		self.LUTdir = os.path.join(getOutputDir(), "lut")

@@ -83,7 +83,7 @@ class Lenet:
 
 	def run(self):
 		self.headerFile = os.path.join(getOutputDir(), "model.h")
-		self.inputFile = os.path.join(getOutputDir(), "input.txt")
+		self.inputFile = os.path.join(getOutputDir(), "input.sd")
 		self.infoFile = os.path.join(getOutputDir(), "info.txt")
 
 		open(self.headerFile, 'w').close()

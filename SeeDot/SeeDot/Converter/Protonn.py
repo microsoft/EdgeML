@@ -170,7 +170,7 @@ class Protonn:
 
 	def run(self):
 		self.headerFile = os.path.join(getOutputDir(), "model.h")
-		self.inputFile = os.path.join(getOutputDir(), "input.txt")
+		self.inputFile = os.path.join(getOutputDir(), "input.sd")
 		self.infoFile = os.path.join(getOutputDir(), "info.txt")
 		self.fpgaFile = os.path.join(getOutputDir(), "CustomTypes.sv")
 		self.LUTdir = os.path.join(getOutputDir(), "lut")
