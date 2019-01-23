@@ -18,7 +18,7 @@ void MatAdd(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT sh
 
 			MYINT c = a + b;
 			c = c / shrC;
-			
+
 			C[i * J + j] = c;
 		}
 	}

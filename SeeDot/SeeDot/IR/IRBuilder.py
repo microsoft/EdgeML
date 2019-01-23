@@ -2,7 +2,8 @@
 # Licensed under the MIT license.
 
 import numpy as np
-import operator, os
+import operator
+import os
 
 from Antlr.SeeDotParser import SeeDotParser
 

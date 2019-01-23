@@ -39,7 +39,7 @@ class DatasetType:
 
 class Target:
 	Arduino = "arduino"
-	Hls= "hls"
+	Hls = "hls"
 	Verilog = "verilog"
 	X86 = "x86"
 	Default = Arduino

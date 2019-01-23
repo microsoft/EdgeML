@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
 #ifdef INT32
 				features_int[i][0] = (MYINT)(atoll(features.at(i).c_str()));
 #endif
-		}
+			}
 		else
 			for (int i = 0; i < features_size; i++)
 				features_float[i] = (float)(atof(features.at(i).c_str()));

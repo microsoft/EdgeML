@@ -1,7 +1,9 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-import argparse, os, shutil
+import argparse
+import os
+import shutil
 import operator
 import traceback
 

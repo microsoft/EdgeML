@@ -2,7 +2,8 @@
 # Licensed under the MIT license.
 
 from antlr4 import *
-import argparse, os
+import argparse
+import os
 
 from Antlr.SeeDotLexer import SeeDotLexer
 from Antlr.SeeDotParser import SeeDotParser
