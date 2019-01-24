@@ -52,7 +52,7 @@ class IRBuilder(ASTVisitor):
 
 		# Global variables
 		self.decls = {}
-		self.expts = {}
+		self.scales = {}
 		self.intvs = {}
 		self.cnsts = {}
 
@@ -103,7 +103,7 @@ class IRBuilder(ASTVisitor):
 		expr = self.getTempVar()
 
 		self.decls[expr.idf] = node.type
-		self.expts[expr.idf] = scale
+		self.scales[expr.idf] = scale
 		self.intvs[expr.idf] = intv
 		self.cnsts[expr.idf] = val_int
 
@@ -128,47 +128,47 @@ class IRBuilder(ASTVisitor):
 		expr = self.getTempVar()
 		expr.inputVar = True
 		
-		self.expts[expr.idf] = scale
+		self.scales[expr.idf] = scale
 		self.intvs[expr.idf] = intv
 
 		return (prog, expr)
 
 	# out = in ^ T
 	def visitTransp(self, node:AST.Transp):
-		(prog_1, expr_in) = self.visit(node.expr)
+		(prog_in, expr_in) = self.visit(node.expr)
 		
-		expr_2 = self.getTempVar()
+		expr_out = self.getTempVar()
 
-		typ_2 = node.type
-		[I, J] = typ_2.shape
+		type_out = node.type
+		[I, J] = type_out.shape
 
 		cmd0 = IR.Comment(expr_in.idf + "^T")
 
-		p_2 = self.expts[expr_in.idf]
-		intv_2 = self.intvs[expr_in.idf]
+		scale_out = self.scales[expr_in.idf]
+		intv_out = self.intvs[expr_in.idf]
 
 		expr_in.inputVar = False
-		expr_2.inputVar = False
+		expr_out.inputVar = False
 
 		funcCall = IR.FuncCall("Transpose", {
 								expr_in: "A",
-								expr_2: "B",
+								expr_out: "B",
 								IR.Int(I): "I",
 								IR.Int(J): "J"
 								})
 
-		prog_for = IR.Prog([cmd0, funcCall])
+		prog_transp = IR.Prog([cmd0, funcCall])
 
-		prog_2 = IRUtil.prog_merge(prog_1, prog_for)
+		prog_out = IRUtil.concatPrograms(prog_in, prog_transp)
 		
-		self.decls[expr_2.idf] = typ_2
-		self.expts[expr_2.idf] = p_2
-		self.intvs[expr_2.idf] = intv_2
+		self.decls[expr_out.idf] = type_out
+		self.scales[expr_out.idf] = scale_out
+		self.intvs[expr_out.idf] = intv_out
 
-		return (prog_2, expr_2)
+		return (prog_out, expr_out)
 
 	def visitReshape(self, node:AST.Reshape):
-		(prog_1, expr_in) = self.visit(node.expr)
+		(prog_in, expr_in) = self.visit(node.expr)
 
 		'''
 		reshape(A, n, h, w)
@@ -187,30 +187,30 @@ class IRBuilder(ASTVisitor):
 		                 t1++;
 		'''
 
-		typ_1 = node.expr.type
-		typ_2 = node.type
+		type_in = node.expr.type
+		type_out = node.type
 
 		# Compute scaling factors
-		p_2 = self.expts[expr_in.idf]
-		intv_2 = self.intvs[expr_in.idf]
+		scale_out = self.scales[expr_in.idf]
+		intv_out = self.intvs[expr_in.idf]
 
 		# Declare variables
-		expr_2 = self.getTempVar()
-		iters_1 = self.getTempIterators(typ_1.dim)
-		iters_2 = self.getTempVars(typ_2.dim)
+		expr_out = self.getTempVar()
+		iters_in = self.getTempIterators(type_in.dim)
+		iters_out = self.getTempVars(type_out.dim)
 
 		# Initialize to 0
-		cmd1 = [IR.Assn(var, IRUtil.zero) for var in iters_2]
+		cmd1 = [IR.Assn(var, IRUtil.zero) for var in iters_out]
 
 		# Incrementing the first index
-		first_iter = iters_2[0]
+		first_iter = iters_out[0]
 		cmd4 = IRUtil.incCmd(first_iter)
 
 		# Incrementing other indices using a loop
 		cmd5 = [cmd4]
-		for i in range(1, typ_2.dim):
-			curr_iter = iters_2[i]
-			curr_size = IR.Int(typ_2.shape[i])
+		for i in range(1, type_out.dim):
+			curr_iter = iters_out[i]
+			curr_size = IR.Int(type_out.shape[i])
 			cmd5 = [IRUtil.incCmd(curr_iter), IR.If(IRUtil.eq(curr_iter, curr_size), [IRUtil.initVarToZero(curr_iter)] + cmd5)]
 		
 		# Outer loop
@@ -218,39 +218,39 @@ class IRBuilder(ASTVisitor):
 		loopIters = []
 		for order in node.order:
 			order = order - 1
-			loopShape.append(typ_1.shape[order])
-			loopIters.append(iters_1[order])
+			loopShape.append(type_in.shape[order])
+			loopIters.append(iters_in[order])
 
-		loop2 = IRUtil.loop(loopShape, loopIters, [IR.Assn(IRUtil.addIndex(expr_2, iters_2), IRUtil.addIndex(expr_in, iters_1))] + cmd5)
+		loop2 = IRUtil.loop(loopShape, loopIters, [IR.Assn(IRUtil.addIndex(expr_out, iters_out), IRUtil.addIndex(expr_in, iters_in))] + cmd5)
 
 		# Finalize
-		comment = IR.Comment("reshape(" + expr_in.idf + ", " + ', '.join(str(e) for e in typ_2.shape) + ")")
+		comment = IR.Comment("reshape(" + expr_in.idf + ", " + ', '.join(str(e) for e in type_out.shape) + ")")
 		reshape_prog = IR.Prog([comment] + cmd1 + loop2)
-		prog_2 = IRUtil.prog_merge(prog_1, reshape_prog)
+		prog_2 = IRUtil.concatPrograms(prog_in, reshape_prog)
 
 		# Update context
-		self.decls[expr_2.idf] = typ_2
-		self.expts[expr_2.idf] = p_2
-		self.intvs[expr_2.idf] = intv_2
+		self.decls[expr_out.idf] = type_out
+		self.scales[expr_out.idf] = scale_out
+		self.intvs[expr_out.idf] = intv_out
 		
 		# Update declarations
-		self.decls.update(dict((var.idf, Type.Int()) for var in iters_2))
+		self.decls.update(dict((var.idf, Type.Int()) for var in iters_out))
 
-		return (prog_2, expr_2)
+		return (prog_2, expr_out)
 	
 	def visitMaxpool(self, node:AST.Maxpool):
 
-		(prog_1, expr_in) = self.visit(node.expr)
+		(prog_in, expr_in) = self.visit(node.expr)
 
 		typ_2 = node.type
 		F = node.dim
 
 		# Compute scaling factor
-		p_2 = self.expts[expr_in.idf]
+		p_2 = self.scales[expr_in.idf]
 		intv_2 = self.intvs[expr_in.idf]
 
 		# Declare variables
-		expr_2 = self.getTempVar()
+		expr_out = self.getTempVar()
 
 		[N_A, H_A, W_A, C_A] = node.expr.type.shape
 
@@ -258,11 +258,11 @@ class IRBuilder(ASTVisitor):
 		comment = IR.Comment("maxpool(" + expr_in.idf + ", " + str(F) + ")")
 
 		expr_in.inputVar = False
-		expr_2.inputVar = False
+		expr_out.inputVar = False
 
 		funcCall = IR.FuncCall("Maxpool", {
 								expr_in: "A",
-								expr_2: "B",
+								expr_out: "B",
 								IR.Int(N_A): "N",
 								IR.Int(H_A): "H",
 								IR.Int(W_A): "W",
@@ -272,21 +272,21 @@ class IRBuilder(ASTVisitor):
 
 		prog_for = IR.Prog([comment, funcCall])
 		
-		prog_2 = IRUtil.prog_merge(prog_1, prog_for)
+		prog_2 = IRUtil.concatPrograms(prog_in, prog_for)
 
 		# Update declarations
-		self.decls[expr_2.idf] = typ_2
-		self.expts[expr_2.idf] = p_2
-		self.intvs[expr_2.idf] = intv_2
+		self.decls[expr_out.idf] = typ_2
+		self.scales[expr_out.idf] = p_2
+		self.intvs[expr_out.idf] = intv_2
 
-		return (prog_2, expr_2)
+		return (prog_2, expr_out)
 	
 	def visitIndex(self, node:AST.Index):
 
-		(prog_1, expr_in) = self.visit(node.expr)
+		(prog_in, expr_in) = self.visit(node.expr)
 		(prog_2, expr_2) = self.visit(node.index)
 
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2)
+		prog_3 = IRUtil.concatPrograms(prog_in, prog_2)
 		expr_3 = IRUtil.addIndex(expr_in, [expr_2])
 
 		return (prog_3, expr_3)
@@ -296,13 +296,13 @@ class IRBuilder(ASTVisitor):
 		progs = []
 		exprs = []
 		for expr in node.exprList:
-			(prog_1, expr_in) = self.visit(expr)
-			progs.append(prog_1)
+			(prog_in, expr_in) = self.visit(expr)
+			progs.append(prog_in)
 			exprs.append(expr_in)
 
 		prog_ret = IR.Prog([])
 		for prog in progs:
-			prog_ret = IRUtil.prog_merge(prog_ret, prog)
+			prog_ret = IRUtil.concatPrograms(prog_ret, prog)
 
 		expr_ret = self.getTempVar()
 
@@ -325,30 +325,30 @@ class IRBuilder(ASTVisitor):
 
 		prog = IR.Prog([comment, funcCall])
 
-		prog_ret = IRUtil.prog_merge(prog_ret, prog)
+		prog_ret = IRUtil.concatPrograms(prog_ret, prog)
 
 		self.decls[expr_ret.idf] = node.type
-		self.expts[expr_ret.idf] = self.expts[exprs[0].idf]
+		self.scales[expr_ret.idf] = self.scales[exprs[0].idf]
 		self.intvs[expr_ret.idf] = self.intvs[exprs[0].idf]
 
 		return (prog_ret, expr_ret)
 
 	def visitUop(self, node:AST.Uop):
 
-		(prog_1, expr_in) = self.visit(node.expr)
+		(prog_in, expr_in) = self.visit(node.expr)
 
 		op = node.op
 		
 		if op == SeeDotParser.ADD:
-			return (prog_1, expr_in)
+			return (prog_in, expr_in)
 		assert op == SeeDotParser.SUB
 		
 		typ_2 = node.type
 		
 		# e : Int
 		if Type.isInt(typ_2):
-			prog_2 = prog_1
-			expr_2 = IRUtil.negate(expr_in)
+			prog_2 = prog_in
+			expr_out = IRUtil.negate(expr_in)
 			decls_2 = decls_1
 			expts_2 = expts_1
 			intvs_2 = intvs_1
@@ -356,28 +356,28 @@ class IRBuilder(ASTVisitor):
 		# e: Tensor(), or Tensor(..)
 		else:
 			# decl fresh vars
-			expr_2 = self.getTempVar()
+			expr_out = self.getTempVar()
 			iters = self.getTempIterators(typ_2.dim)
 
 			# cmdl_assn
 			expr_in_elt = IRUtil.addIndex(expr_in, iters)
-			expr_2_elt = IRUtil.addIndex(expr_2, iters)
+			expr_2_elt = IRUtil.addIndex(expr_out, iters)
 			rhs = IRUtil.negate(expr_in_elt)
 			cmdl_assn = IRUtil.loop(typ_2.shape, iters, [IR.Assn(expr_2_elt, rhs)])
 
 			# prog_assn, p_2, intv_2
 			prog_assn = IR.Prog(cmdl_assn)
-			p_2 = self.expts[expr_in.idf]
+			p_2 = self.scales[expr_in.idf]
 			(m, M) = self.intvs[expr_in.idf]
 			intv_2 = (-M, -m)
 
-			prog_2 = IRUtil.prog_merge(prog_1, prog_assn)
+			prog_2 = IRUtil.concatPrograms(prog_in, prog_assn)
 			
-			self.decls[expr_2.idf] = typ_2
-			self.expts[expr_2.idf] = p_2
-			self.intvs[expr_2.idf] = intv_2
+			self.decls[expr_out.idf] = typ_2
+			self.scales[expr_out.idf] = p_2
+			self.intvs[expr_out.idf] = intv_2
 
-		return (prog_2, expr_2)
+		return (prog_2, expr_out)
 
 	def visitBop1(self, node:AST.Bop1):
 		op = node.op
@@ -402,18 +402,18 @@ class IRBuilder(ASTVisitor):
 
 	def visitBopMulInt(self, node:AST.Bop1):
 		
-		(prog_1, expr_in) = self.visit(node.expr1)
+		(prog_in, expr_in) = self.visit(node.expr1)
 
 		(prog_2, expr_2) = self.visit(node.expr2)
 
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2)
+		prog_3 = IRUtil.concatPrograms(prog_in, prog_2)
 		expr_3 = IRUtil.mul(expr_in, expr_2)
 
 		return (prog_3, expr_3)
 
 	def visitBopMul1DTensor(self, node:AST.Bop1):
 
-		(prog_1, expr_in) = self.visit(node.expr1)
+		(prog_in, expr_in) = self.visit(node.expr1)
 
 		(prog_2, expr_2) = self.visit(node.expr2)
 
@@ -424,7 +424,7 @@ class IRBuilder(ASTVisitor):
 		# decl fresh vars
 		expr_3 = self.getTempVar()
 
-		p1, p2 = self.expts[expr_in.idf], self.expts[expr_2.idf]
+		p1, p2 = self.scales[expr_in.idf], self.scales[expr_2.idf]
 		intv1, intv2 = self.intvs[expr_in.idf], self.intvs[expr_2.idf]
 
 		[shr1, shr2] = self.getShrForMul(p1, p2)
@@ -460,17 +460,17 @@ class IRBuilder(ASTVisitor):
 
 		prog_assn = IR.Prog([cmd0, funcCall])
 
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_assn)
+		prog_3 = IRUtil.concatPrograms(prog_in, prog_2, prog_assn)
 
 		self.decls[expr_3.idf] = typ_3
-		self.expts[expr_3.idf] = p_3
+		self.scales[expr_3.idf] = p_3
 		self.intvs[expr_3.idf] = intv_3
 
 		return (prog_3, expr_3)
 
 	def visitBopMul2DTensor(self, node:AST.Bop1):
 		
-		(prog_1, expr_in) = self.visit(node.expr1)
+		(prog_in, expr_in) = self.visit(node.expr1)
 
 		(prog_2, expr_2) = self.visit(node.expr2)
 
@@ -479,7 +479,7 @@ class IRBuilder(ASTVisitor):
 		expr_mul = self.getTempVar()
 
 		# Compute scales
-		p1, p2 = self.expts[expr_in.idf], self.expts[expr_2.idf]
+		p1, p2 = self.scales[expr_in.idf], self.scales[expr_2.idf]
 		intv1, intv2 = self.intvs[expr_in.idf], self.intvs[expr_2.idf]
 
 		[shr1, shr2] = self.getShrForMul(p1, p2)
@@ -535,10 +535,10 @@ class IRBuilder(ASTVisitor):
 
 		prog_assn = IR.Prog([cmd0, funcCall])
 		
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_assn)
+		prog_3 = IRUtil.concatPrograms(prog_in, prog_2, prog_assn)
 		
 		self.decls[expr_3.idf] = typ_3
-		self.expts[expr_3.idf] = p_3
+		self.scales[expr_3.idf] = p_3
 		self.intvs[expr_3.idf] = intv_3
 		
 		self.decls[expr_mul.idf] = typ_mul
@@ -547,7 +547,7 @@ class IRBuilder(ASTVisitor):
 
 	def visitBopSparseMul(self, node:AST.Bop1):
 
-		(prog_1, expr_in) = self.visit(node.expr1)
+		(prog_in, expr_in) = self.visit(node.expr1)
 
 		(prog_2, expr_2) = self.visit(node.expr2)
 
@@ -559,7 +559,7 @@ class IRBuilder(ASTVisitor):
 		expr_3 = self.getTempVar()
 		typ_3 = node.type
 
-		p1, p2 = self.expts[expr_in.idf], self.expts[expr_2.idf]
+		p1, p2 = self.scales[expr_in.idf], self.scales[expr_2.idf]
 		intv1, intv2 = self.intvs[expr_in.idf], self.intvs[expr_2.idf]
 
 		[shr1, shr2] = self.getShrForMul(p1, p2)
@@ -603,7 +603,7 @@ class IRBuilder(ASTVisitor):
 		prog_3 = IR.Prog([cmd0, cmd1, funcCall])
 
 		self.decls[expr_3.idf] = typ_3
-		self.expts[expr_3.idf] = p_3
+		self.scales[expr_3.idf] = p_3
 		self.intvs[expr_3.idf] = intv_3
 
 		# Hard coded the length of Aidx and Aval to 100. Need to change that
@@ -617,7 +617,7 @@ class IRBuilder(ASTVisitor):
 
 	def visitBopMulCir(self, node:AST.Bop1):
 
-		(prog_1, expr_in) = self.visit(node.expr1)
+		(prog_in, expr_in) = self.visit(node.expr1)
 
 		(prog_2, expr_2) = self.visit(node.expr2)
 
@@ -631,7 +631,7 @@ class IRBuilder(ASTVisitor):
 
 		[I, J] = typ_3.shape
 
-		p1, p2 = self.expts[expr_in.idf], self.expts[expr_2.idf]
+		p1, p2 = self.scales[expr_in.idf], self.scales[expr_2.idf]
 		intv1, intv2 = self.intvs[expr_in.idf], self.intvs[expr_2.idf]
 
 		[shr1, shr2] = self.getShrForMul(p1, p2)
@@ -660,17 +660,17 @@ class IRBuilder(ASTVisitor):
 
 		prog_assn = IR.Prog([cmd0, funcCall])
 
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_assn)
+		prog_3 = IRUtil.concatPrograms(prog_in, prog_2, prog_assn)
 		
 		self.decls[expr_3.idf] = typ_3
-		self.expts[expr_3.idf] = p_3
+		self.scales[expr_3.idf] = p_3
 		self.intvs[expr_3.idf] = intv_3
 
 		return (prog_3, expr_3)
 
 	def visitBopConv(self, node:AST.Bop1):
 
-		(prog_1, expr_in) = self.visit(node.expr1)
+		(prog_in, expr_in) = self.visit(node.expr1)
 
 		(prog_2, expr_2) = self.visit(node.expr2)
 		
@@ -688,7 +688,7 @@ class IRBuilder(ASTVisitor):
 		[expr_3, sum] = self.getTempVars(2)
 
 		# Compute scale reductions and new scaling factors
-		p1, p2 = self.expts[expr_in.idf], self.expts[expr_2.idf]
+		p1, p2 = self.scales[expr_in.idf], self.scales[expr_2.idf]
 		intv1, intv2 = self.intvs[expr_in.idf], self.intvs[expr_2.idf]
 
 		[shr1, shr2] = self.getShrForMul(p1, p2)
@@ -727,11 +727,11 @@ class IRBuilder(ASTVisitor):
 								})
 
 		prog_conv = IR.Prog([comment, funcCall])
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_conv)
+		prog_3 = IRUtil.concatPrograms(prog_in, prog_2, prog_conv)
 		
 		# Update context for output variable
 		self.decls[expr_3.idf] = typ_3
-		self.expts[expr_3.idf] = p_3
+		self.scales[expr_3.idf] = p_3
 		self.intvs[expr_3.idf] = intv_3
 		
 		# Update declarations
@@ -741,7 +741,7 @@ class IRBuilder(ASTVisitor):
 
 	def visitBopAddOrSubCir(self, node:AST.Bop1):
 
-		(prog_1, expr_in) = self.visit(node.expr1)
+		(prog_in, expr_in) = self.visit(node.expr1)
 
 		(prog_2, expr_2) = self.visit(node.expr2)
 
@@ -766,7 +766,7 @@ class IRBuilder(ASTVisitor):
 		
 		assert add == True
 
-		(p_3, intv_3, [shr_n1, shr_n2, shr_n3]) = self.getScaleAndIntervalForAdd(self.expts[expr_in.idf], self.expts[expr_2.idf],
+		(p_3, intv_3, [shr_n1, shr_n2, shr_n3]) = self.getScaleAndIntervalForAdd(self.scales[expr_in.idf], self.scales[expr_2.idf],
 										self.intvs[expr_in.idf], self.intvs[expr_2.idf], op_fn)
 
 		shr_n1 = self.formatShr(shr_n1)
@@ -809,16 +809,16 @@ class IRBuilder(ASTVisitor):
 
 		prog_assn = IR.Prog([comment, funcCall])
 			
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_assn)
+		prog_3 = IRUtil.concatPrograms(prog_in, prog_2, prog_assn)
 		
-		self.expts[expr_in.idf] = p_3
+		self.scales[expr_in.idf] = p_3
 		self.intvs[expr_in.idf] = intv_3
 
 		return (prog_3, expr_in)
 
 	def visitBop2(self, node:AST.Bop2):
 
-		(prog_1, expr_in) = self.visit(node.expr1)
+		(prog_in, expr_in) = self.visit(node.expr1)
 
 		(prog_2, expr_2) = self.visit(node.expr2)
 
@@ -835,7 +835,7 @@ class IRBuilder(ASTVisitor):
 
 		# e : Int
 		if Type.isInt(typ_3):
-			prog_3 = IRUtil.prog_merge(prog_1, prog_2)
+			prog_3 = IRUtil.concatPrograms(prog_in, prog_2)
 			expr_3 = IR.IntBop(expr_in, op_ir, expr_2)
 
 		# e : Tensor(), or Tensor(..)
@@ -844,7 +844,7 @@ class IRBuilder(ASTVisitor):
 			expr_3 = self.getTempVar()
 			
 			# p_3, intv_3, shr_n*
-			(p_3, intv_3, [shr_n1, shr_n2, shr_n3]) = self.getScaleAndIntervalForAdd(self.expts[expr_in.idf], self.expts[expr_2.idf],
+			(p_3, intv_3, [shr_n1, shr_n2, shr_n3]) = self.getScaleAndIntervalForAdd(self.scales[expr_in.idf], self.scales[expr_2.idf],
 										  self.intvs[expr_in.idf], self.intvs[expr_2.idf], op_fn)
 
 			cmd0 = IR.Comment(expr_in.idf + ' ' + op_ir.name + ' ' + expr_2.idf)
@@ -874,10 +874,10 @@ class IRBuilder(ASTVisitor):
 
 			prog_assn = IR.Prog([cmd0, funcCall])
 
-			prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_assn)
+			prog_3 = IRUtil.concatPrograms(prog_in, prog_2, prog_assn)
 			
 			self.decls[expr_3.idf] = typ_3
-			self.expts[expr_3.idf] = p_3
+			self.scales[expr_3.idf] = p_3
 			self.intvs[expr_3.idf] = intv_3
 
 		return (prog_3, expr_3)
@@ -894,7 +894,7 @@ class IRBuilder(ASTVisitor):
 
 	def visitRelu(self, node:AST.Func):
 
-		(prog_1, expr_in) = self.visit(node.expr)
+		(prog_in, expr_in) = self.visit(node.expr)
 
 		typ_1 = node.expr.type
 		
@@ -927,7 +927,7 @@ class IRBuilder(ASTVisitor):
 		(m, M) = self.intvs[expr_in.idf]
 		intv_2 = (0, M)
 		
-		prog_2 = IRUtil.prog_merge(prog_1, prog_for)
+		prog_2 = IRUtil.concatPrograms(prog_in, prog_for)
 		
 		self.intvs[expr_in.idf] = intv_2
 
@@ -951,10 +951,10 @@ class IRBuilder(ASTVisitor):
 		MIN = 0.1
 
 		self.set_arg(node.expr, node)
-		(prog_1, expr_in) = self.visit(node.expr)
+		(prog_in, expr_in) = self.visit(node.expr)
 
 		typ_1 = node.expr.type
-		p_1 = self.expts[expr_in.idf]
+		p_1 = self.scales[expr_in.idf]
 		intv_1 = self.intvs[expr_in.idf]
 
 		'''
@@ -963,7 +963,7 @@ class IRBuilder(ASTVisitor):
 		
 		maxExp = np.exp(-MIN)
 
-		expr_2 = self.getTempVar()
+		expr_out = self.getTempVar()
 		p_2 = self.getScale(maxExp)
 		intv_2 = self.getInterval(p_2, maxExp, maxExp)
 
@@ -971,7 +971,7 @@ class IRBuilder(ASTVisitor):
 		shr2 = IR.Int(2 ** -p_2)
 
 		expr_1_elt = IRUtil.addIndex(expr_in, [IRUtil.zero] * typ_1.dim)
-		expr_2_elt = IRUtil.addIndex(expr_2, [IRUtil.zero] * typ_1.dim)
+		expr_2_elt = IRUtil.addIndex(expr_out, [IRUtil.zero] * typ_1.dim)
 
 		cmd = IR.Assn(expr_2_elt, IRUtil.castToInt(IRUtil.mul(IR.Exp(IRUtil.div(IRUtil.castToFloat(expr_1_elt), shr1)), shr2)))
 		
@@ -982,21 +982,21 @@ class IRBuilder(ASTVisitor):
 
 		prog_exp = IR.Prog([cmd0, cmd])
 
-		prog_2 = IRUtil.prog_merge(prog_1, prog_exp)
-		self.decls[expr_2.idf] = typ_1
-		self.expts[expr_2.idf] = p_2
-		self.intvs[expr_2.idf] = intv_2
+		prog_2 = IRUtil.concatPrograms(prog_in, prog_exp)
+		self.decls[expr_out.idf] = typ_1
+		self.scales[expr_out.idf] = p_2
+		self.intvs[expr_out.idf] = intv_2
 
-		return (prog_2, expr_2)
+		return (prog_2, expr_out)
 
 	# Note: We assume e<=0 for exp(e)
 	def visitTableExp(self, node:AST.Func):
 
-		(prog_1, expr_in) = self.visit(node.expr)
+		(prog_in, expr_in) = self.visit(node.expr)
 
 		# TODO: use MAX_VAL_EXP
 		typ_1 = node.expr.type
-		p_1 = self.expts[expr_in.idf]
+		p_1 = self.scales[expr_in.idf]
 		intv_1 = self.intvs[expr_in.idf]
 
 		[m, M] = self.expRange
@@ -1007,7 +1007,7 @@ class IRBuilder(ASTVisitor):
 		
 		input = self.getTempVar()
 		[i, j] = self.getTempVars(2)
-		expr_2 = self.getTempVar()
+		expr_out = self.getTempVar()
 
 		'''
 		1.  if ((-x) < min) {
@@ -1033,7 +1033,7 @@ class IRBuilder(ASTVisitor):
 		[shr1, shr2] = self.getShrForMul(p1, p2)
 
 		expr_1_elt = IRUtil.addIndex(expr_in, [IRUtil.zero] * typ_1.dim)
-		expr_2_elt = IRUtil.addIndex(expr_2, [IRUtil.zero] * typ_1.dim)
+		expr_2_elt = IRUtil.addIndex(expr_out, [IRUtil.zero] * typ_1.dim)
 
 		cond = IRUtil.lt(IRUtil.negate(expr_1_elt), IR.Int(m_scale))
 		
@@ -1053,14 +1053,14 @@ class IRBuilder(ASTVisitor):
 		cmd0 = IR.Comment('exp(' + expr_in.idf + ')')
 
 		prog_exp = IR.Prog([cmd0, cmd1, cmd10])
-		prog_2 = IRUtil.prog_merge(prog_1, prog_exp)
+		prog_2 = IRUtil.concatPrograms(prog_in, prog_exp)
 		
-		self.decls[expr_2.idf] = typ_1
+		self.decls[expr_out.idf] = typ_1
 		self.decls.update(dict((var.idf, Type.Int()) for var in [input, i, j]))
-		self.expts[expr_2.idf] = p_2
-		self.intvs[expr_2.idf] = intv_2
+		self.scales[expr_out.idf] = p_2
+		self.intvs[expr_out.idf] = intv_2
 
-		return (prog_2, expr_2)
+		return (prog_2, expr_out)
 
 	def getShl(self, n:int):
 		assert n != 0
@@ -1121,7 +1121,7 @@ class IRBuilder(ASTVisitor):
 
 	def visitArgMax(self, node:AST.Func):
 
-		(prog_1, expr_in) = self.visit(node.expr)
+		(prog_in, expr_in) = self.visit(node.expr)
 
 		typ_1 = node.expr.type
 
@@ -1144,16 +1144,16 @@ class IRBuilder(ASTVisitor):
 
 		prog = IR.Prog([cmd0, funcCall])
 			
-		prog_2 = IRUtil.prog_merge(prog_1, prog)
+		prog_2 = IRUtil.concatPrograms(prog_in, prog)
 		
-		expr_2 = idx
+		expr_out = idx
 		self.decls[idx.idf] = Type.Int()
 
-		return (prog_2, expr_2)
+		return (prog_2, expr_out)
 
 	def visitSgn(self, node:AST.Func):
 
-		(prog_1, expr_in) = self.visit(node.expr)
+		(prog_in, expr_in) = self.visit(node.expr)
 
 		typ_1 = node.expr.type
 		
@@ -1162,21 +1162,21 @@ class IRBuilder(ASTVisitor):
 
 		cmd = IR.Assn(x, IRUtil.cond_zero(e, IRUtil.one, IRUtil.zero))
 
-		prog_2 = IRUtil.prog_merge(prog_1, IR.Prog([cmd]))
-		expr_2 = x
+		prog_2 = IRUtil.concatPrograms(prog_in, IR.Prog([cmd]))
+		expr_out = x
 		
 		self.decls.update(dict((var.idf, Type.Int()) for var in [x]))
 		
-		return (prog_2, expr_2)
+		return (prog_2, expr_out)
 
 	def visitTanh(self, node:AST.Func):
 
-		(prog_1, expr_in) = self.visit(node.expr)
+		(prog_in, expr_in) = self.visit(node.expr)
 
 		typ_1 = node.expr.type
 		[I, J] = typ_1.shape
 
-		p = self.expts[expr_in.idf]
+		p = self.scales[expr_in.idf]
 
 		# Scale tanh limit
 		tanh_limit = int(np.ldexp(Common.tanh_limit, -p))
@@ -1204,34 +1204,34 @@ class IRBuilder(ASTVisitor):
 		intv_1 = self.intvs[expr_in.idf]
 		self.intvs[expr_in.idf] = self.updateTanhIntv(intv_1, tanh_intv)
 
-		prog_2 = IRUtil.prog_merge(prog_1, IR.Prog([cmd0, funcCall]))
-		expr_2 = expr_in
+		prog_2 = IRUtil.concatPrograms(prog_in, IR.Prog([cmd0, funcCall]))
+		expr_out = expr_in
 		
-		return (prog_2, expr_2)
+		return (prog_2, expr_out)
 
 	def visitSum(self, node:AST.Sum):
 
 		i_idf = node.name
 		self.decls[i_idf] = Type.Int()
 
-		(prog_1, expr_in) = self.visit(node.expr)
+		(prog_in, expr_in) = self.visit(node.expr)
 
 		# i_{st,ed}, typ_2, typ_1_all
 		i_st, i_ed = node.start, node.end
 		
-		expr_2 = self.getTempVar()
+		expr_out = self.getTempVar()
 		typ_2 = node.type
 		
 		'''
-		expr_2
+		expr_out
 		i = 0
 		for (j = 0; j < n; j++)
-		  expr_in = prog_1
-		  expr_2 = expr_2 + expr_in
+		  expr_in = prog_in
+		  expr_out = expr_out + expr_in
 		  i++
 
 		1.  for i in [0, C]:
-		2.    expr_2[i] = expr_2[i] + shr(expr_in[i])
+		2.    expr_out[i] = expr_out[i] + shr(expr_in[i])
 		'''
 
 		i_var = IR.Var(i_idf)
@@ -1239,12 +1239,12 @@ class IRBuilder(ASTVisitor):
 		iters = self.getTempIterators(typ_2.dim)
 
 		# p_2, intv_2, cmdl_sum, decls_sum
-		(p_2, H_1, H_2) = self.getScaleForTreeSum(self.expts[expr_in.idf], i_ed - i_st)
+		(p_2, H_1, H_2) = self.getScaleForTreeSum(self.scales[expr_in.idf], i_ed - i_st)
 
 		expr_1_elt = IRUtil.addIndex(expr_in, iters)
-		expr_2_elt = IRUtil.addIndex(expr_2, iters)
+		expr_2_elt = IRUtil.addIndex(expr_out, iters)
 
-		cmd1 = IR.Memset(expr_2, typ_2.size())
+		cmd1 = IR.Memset(expr_out, typ_2.size())
 		cmd2 = IR.Assn(expr_2_elt, IRUtil.add(expr_2_elt, IRUtil.shr(expr_1_elt, H_1)))
 		sum_loop = IRUtil.loop(typ_2.shape, iters, [cmd2])
 
@@ -1252,22 +1252,22 @@ class IRBuilder(ASTVisitor):
 			[cmd1,
 			IR.Assn(i_var, IR.Int(i_st)),
 			 IR.For(i_iter, 0, IRUtil.lt(i_iter, IR.Int(i_ed - i_st)),
-				prog_1.cmd_l + sum_loop + \
+				prog_in.cmd_l + sum_loop + \
 				[IR.Assn(i_var, IRUtil.inc(i_var))])]
 
 		intv_2 = self.getIntervalForTreeSum(self.intvs[expr_in.idf], i_ed - i_st)
 
 		prog_2 = IR.Prog(cmd_sum)
 		
-		self.decls[expr_2.idf] = typ_2
-		self.expts[expr_2.idf] = p_2
-		self.intvs[expr_2.idf] = intv_2
+		self.decls[expr_out.idf] = typ_2
+		self.scales[expr_out.idf] = p_2
+		self.intvs[expr_out.idf] = intv_2
 
-		return (prog_2, expr_2)
+		return (prog_2, expr_out)
 
 	def visitCond(self, node:AST.Cond):
 
-		(prog_1, expr_in) = self.visit(node.expr)
+		(prog_in, expr_in) = self.visit(node.expr)
 
 		(prog_2, expr_2) = self.visit(node.trueBlock)
 
@@ -1280,7 +1280,7 @@ class IRBuilder(ASTVisitor):
 		
 		# e2,e3 : Int
 		if Type.isInt(typ_2):
-			prog_4 = IRUtil.prog_merge(prog_1, prog_2, prog_3)
+			prog_4 = IRUtil.concatPrograms(prog_in, prog_2, prog_3)
 			expr_4 = IRUtil.cond_zero(expr_1_elt, expr_2, expr_3)
 
 		# e2,e3 : Tensor(), or Tensor(..)
@@ -1290,7 +1290,7 @@ class IRBuilder(ASTVisitor):
 			iters = self.getTempIterators(typ_2.dim)
 
 			# p_4, intv_4
-			(p_2, p_3) = (self.expts[expr_2.idf], self.expts[expr_3.idf])
+			(p_2, p_3) = (self.scales[expr_2.idf], self.scales[expr_3.idf])
 			(intv_2, intv_3) = (self.intvs[expr_2.idf], self.intvs[expr_3.idf])
 			(m_2, M_2) = intv_2
 			(m_3, M_3) = intv_3
@@ -1310,17 +1310,17 @@ class IRBuilder(ASTVisitor):
 			cmdl_assn = IRUtil.loop(typ_2.shape, iters, [IR.Assn(expr_4_elt, rhs)])
 			prog_assn = IR.Prog(cmdl_assn)
 			
-			prog_4 = IRUtil.prog_merge(prog_1, prog_2, prog_3, prog_assn)
+			prog_4 = IRUtil.concatPrograms(prog_in, prog_2, prog_3, prog_assn)
 			
 			self.decls[expr_4.idf] = typ_2
-			self.expts[expr_4.idf] = p_4
+			self.scales[expr_4.idf] = p_4
 			self.intvs[expr_4.idf] = intv_4
 
 		return (prog_4, expr_4)
 
 	def visitLet(self, node:AST.Let):
 
-		(prog_1, expr_in) = self.visit(node.decl)
+		(prog_in, expr_in) = self.visit(node.decl)
 		typ_1 = node.decl.type
 		idf = node.name
 
@@ -1328,15 +1328,15 @@ class IRBuilder(ASTVisitor):
 		if Type.isInt(typ_1):
 			self.decls[idf] = Type.Int()
 
-			(prog_2, expr_2) = self.visit(node.expr)
+			(prog_2, expr_out) = self.visit(node.expr)
 
 			prog_assn = IR.Prog([IR.Assn(IR.Var(idf), expr_in)])
-			prog_3 = IRUtil.prog_merge(prog_1, prog_assn, prog_2)
+			prog_3 = IRUtil.concatPrograms(prog_in, prog_assn, prog_2)
 
-			return (prog_3, expr_2)
+			return (prog_3, expr_out)
 		# e1 : Tensor{(),(..)}
 		else:
-			self.expts[idf] = self.expts[expr_in.idf]
+			self.scales[idf] = self.scales[expr_in.idf]
 			self.intvs[idf] = self.intvs[expr_in.idf]
 
 			if isinstance(node.decl, AST.Decl):
@@ -1345,14 +1345,14 @@ class IRBuilder(ASTVisitor):
 				expr_in.idf = idf
 				expr_in.inputVar = True
 
-			(prog_2, expr_2) = self.visit(node.expr)
+			(prog_2, expr_out) = self.visit(node.expr)
 
 			prog_2 = prog_2.subst(idf, expr_in)
-			expr_2 = expr_2.subst(idf, expr_in)
+			expr_out = expr_out.subst(idf, expr_in)
 			
-			prog_3 = IRUtil.prog_merge(prog_1, prog_2)
+			prog_3 = IRUtil.concatPrograms(prog_in, prog_2)
 
-			return (prog_3, expr_2)
+			return (prog_3, expr_out)
 
 	# Computing exponent and intervals
 	def getScale(self, maxabs:float): # -> int

@@ -533,7 +533,7 @@ class IRGenBase(ASTVisitor):
 		p_2 = expts_1[expr_1.idf]
 		intv_2 = intvs_1[expr_1.idf]
 
-		prog_2 = IRUtil.prog_merge(prog_1, prog_for)
+		prog_2 = IRUtil.concatPrograms(prog_1, prog_for)
 		decls_2 = copy_dict(decls_1, {expr_2.idf :  typ_2})
 		expts_2 = copy_dict(expts_1, {expr_2.idf :    p_2})
 		intvs_2 = copy_dict(intvs_1, {expr_2.idf : intv_2})
@@ -579,7 +579,7 @@ class IRGenBase(ASTVisitor):
 			p_2 = expts_1[expr_1.idf]
 			intv_2 = intvs_1[expr_1.idf]
 
-			prog_2 = IRUtil.prog_merge(prog_1, prog_for)
+			prog_2 = IRUtil.concatPrograms(prog_1, prog_for)
 			decls_2 = copy_dict(decls_1, {expr_2.idf :  typ_2})
 			expts_2 = copy_dict(expts_1, {expr_2.idf :    p_2})
 			intvs_2 = copy_dict(intvs_1, {expr_2.idf : intv_2})
@@ -621,7 +621,7 @@ class IRGenBase(ASTVisitor):
 			p_2 = expts_1[expr_1.idf]
 			intv_2 = intvs_1[expr_1.idf]
 
-			prog_2 = IRUtil.prog_merge(prog_1, prog_decl, prog_for)
+			prog_2 = IRUtil.concatPrograms(prog_1, prog_decl, prog_for)
 			decls_2 = copy_dict(decls_1, {expr_2.idf :  typ_2})
 			expts_2 = copy_dict(expts_1, {expr_2.idf :    p_2})
 			intvs_2 = copy_dict(intvs_1, {expr_2.idf : intv_2})
@@ -664,7 +664,7 @@ class IRGenBase(ASTVisitor):
 		p_2 = expts_1[expr_1.idf]
 		intv_2 = intvs_1[expr_1.idf]
 
-		prog_2 = IRUtil.prog_merge(prog_1, prog_for)
+		prog_2 = IRUtil.concatPrograms(prog_1, prog_for)
 		decls_2 = copy_dict(decls_1, {expr_2.idf :  typ_2})
 		expts_2 = copy_dict(expts_1, {expr_2.idf :    p_2})
 		intvs_2 = copy_dict(intvs_1, {expr_2.idf : intv_2})
@@ -678,7 +678,7 @@ class IRGenBase(ASTVisitor):
 		self.set_arg2(node.index, decls_1, expts_1, intvs_1, cnsts_1)
 		(prog_2, expr_2,  decls_2, expts_2, intvs_2, cnsts_2) = self.visit(node.index)
 
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2)
+		prog_3 = IRUtil.concatPrograms(prog_1, prog_2)
 		expr_3 = IRUtil.addIndex(expr_1, [expr_2])
 #        out = StringIO(); sys.stdout = out; expr_2.print('c'); sys.stdout =
 #        sys.__stdout__
@@ -723,7 +723,7 @@ class IRGenBase(ASTVisitor):
 			(m,M) = intvs_1[expr_1.idf]
 			intv_2 = (-M,-m)
 
-			prog_2 = IRUtil.prog_merge(prog_1, prog_assn)
+			prog_2 = IRUtil.concatPrograms(prog_1, prog_assn)
 			decls_2 = copy_dict(decls_1, {expr_2.idf :  typ_2})
 			expts_2 = copy_dict(expts_1, {expr_2.idf :    p_2})
 			intvs_2 = copy_dict(intvs_1, {expr_2.idf : intv_2})
@@ -758,7 +758,7 @@ class IRGenBase(ASTVisitor):
 		self.set_arg2(node.expr2, decls_1, expts_1, intvs_1, cnsts_1)
 		(prog_2, expr_2,  decls_2, expts_2, intvs_2, cnsts_2) = self.visit(node.expr2)
 
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2)
+		prog_3 = IRUtil.concatPrograms(prog_1, prog_2)
 		expr_3 = IRUtil.mul(expr_1, expr_2)
 		decls_3 = decls_2
 		expts_3 = expts_2
@@ -806,7 +806,7 @@ class IRGenBase(ASTVisitor):
 		p_3 = self.get_expnt_mul(p1, shr1, p2, shr2)
 		intv_3 = self.get_intv_mul(intv1, shr1, intv2, shr2)
 					
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_assn)
+		prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_assn)
 		decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
 		expts_3 = copy_dict(expts_2, {expr_3.idf :    p_3})
 		intvs_3 = copy_dict(intvs_2, {expr_3.idf : intv_3})
@@ -867,7 +867,7 @@ class IRGenBase(ASTVisitor):
 		# prog_assn
 		prog_assn = IR.Prog(cmdl_shr1 + cmdl_shr2 + cmdl_mul + cmdl_sum)
 					
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_assn)
+		prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_assn)
 		decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
 		expts_3 = copy_dict(expts_2, {expr_3.idf :    p_3})
 		intvs_3 = copy_dict(intvs_2, {expr_3.idf : intv_3})
@@ -919,7 +919,7 @@ class IRGenBase(ASTVisitor):
 		#p_3 = self.get_expnt_mul(expts_1[expr_1.idf], expts_2[expr_2.idf])
 		#intv_3 = self.get_intv_mul(intvs_1[expr_1.idf], intvs_2[expr_2.idf])
 
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_assn)
+		prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_assn)
 		decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
 		expts_3 = copy_dict(expts_2, {expr_3.idf :    p_3})
 		intvs_3 = copy_dict(intvs_2, {expr_3.idf : intv_3})
@@ -1018,7 +1018,7 @@ class IRGenBase(ASTVisitor):
 		# prog_assn
 		prog_assn = IR.Prog(cmdl_shr + cmdl_pad + cmdl_mul + cmdl_sum)
 					
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_assn)
+		prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_assn)
 		decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
 		expts_3 = copy_dict(expts_2, {expr_3.idf :    p_3})
 		intvs_3 = copy_dict(intvs_2, {expr_3.idf : intv_3})
@@ -1072,7 +1072,7 @@ class IRGenBase(ASTVisitor):
 		comment = IR.Comment(expr_1.idf + " <" + op_ir.name + "> " + expr_2.idf)
 		prog_assn = IR.Prog([comment] + cmdl_assn)
 			
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_assn)
+		prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_assn)
 		decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
 		expts_3 = copy_dict(expts_2, {expr_3.idf :    p_3})
 		intvs_3 = copy_dict(intvs_2, {expr_3.idf : intv_3})
@@ -1095,7 +1095,7 @@ class IRGenBase(ASTVisitor):
 
 		# e : Int
 		if Type.isInt(typ_3):
-			prog_3 = IRUtil.prog_merge(prog_1, prog_2)
+			prog_3 = IRUtil.concatPrograms(prog_1, prog_2)
 			expr_3 = IR.IntBop(expr_1, op_ir, expr_2)
 			decls_3 = decls_2
 			expts_3 = expts_2
@@ -1143,7 +1143,7 @@ class IRGenBase(ASTVisitor):
 
 			prog_assn = IR.Prog([cmd0] + cmdl_assn + p)
 
-			prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_assn)
+			prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_assn)
 			decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
 			expts_3 = copy_dict(expts_2, {expr_3.idf :    p_3})
 			intvs_3 = copy_dict(intvs_2, {expr_3.idf : intv_3})
@@ -1188,7 +1188,7 @@ class IRGenBase(ASTVisitor):
 		(m,M) = intvs_1[expr_1.idf]
 		intv_2 = (0,M)
 			
-		prog_2 = IRUtil.prog_merge(prog_1, prog_for)
+		prog_2 = IRUtil.concatPrograms(prog_1, prog_for)
 		decls_2 = copy_dict(decls_1, {expr_2.idf :  typ_1})
 		expts_2 = copy_dict(expts_1, {expr_2.idf :    p_2})
 		intvs_2 = copy_dict(intvs_1, {expr_2.idf : intv_2})
@@ -1234,7 +1234,7 @@ class IRGenBase(ASTVisitor):
 		prog_for   = IR.Prog(cmdl_for)
 		'''
 			
-		prog_2 = IRUtil.prog_merge(prog_1, prog_exp)
+		prog_2 = IRUtil.concatPrograms(prog_1, prog_exp)
 		decls_2 = copy_dict(decls_1, {expr_2.idf :  typ_1})
 		expts_2 = copy_dict(expts_1, {expr_2.idf :    p_2})
 		intvs_2 = copy_dict(intvs_1, {expr_2.idf : intv_2})
@@ -1270,7 +1270,7 @@ class IRGenBase(ASTVisitor):
 				IR.Assn(curind, IRUtil.inc(curind))])
 		prog_tot = IR.Prog(cmdl_decl + cmdl_assn)
 			
-		prog_2 = IRUtil.prog_merge(prog_1, prog_tot)
+		prog_2 = IRUtil.concatPrograms(prog_1, prog_tot)
 		expr_2 = maxind
 		decls_2 = copy_dict(decls_1, dict((var.idf, Type.Int()) for var in [curind, maxind, maxval, newmax]))
 		expts_2 = expts_1
@@ -1364,7 +1364,7 @@ class IRGenBase(ASTVisitor):
 		
 		# e2,e3 : Int
 		if Type.isInt(typ_2):
-			prog_4 = IRUtil.prog_merge(prog_1, prog_2, prog_3)
+			prog_4 = IRUtil.concatPrograms(prog_1, prog_2, prog_3)
 			expr_4 = IRUtil.cond_zero(expr_1_elt, expr_2, expr_3)
 			decls_4 = decls_3
 			expts_4 = expts_3
@@ -1397,7 +1397,7 @@ class IRGenBase(ASTVisitor):
 			cmdl_assn = IRUtil.loop(typ_2.shape, iters, [IR.Assn(expr_4_elt, rhs)])
 			prog_assn = IR.Prog(cmdl_assn)
 			
-			prog_4 = IRUtil.prog_merge(prog_1, prog_2, prog_3, prog_assn)
+			prog_4 = IRUtil.concatPrograms(prog_1, prog_2, prog_3, prog_assn)
 			decls_4 = copy_dict(decls_3, {expr_4.idf :  typ_2})
 			expts_4 = copy_dict(expts_3, {expr_4.idf :    p_4})
 			intvs_4 = copy_dict(intvs_3, {expr_4.idf : intv_4})
@@ -1417,7 +1417,7 @@ class IRGenBase(ASTVisitor):
 			(prog_2, expr_2,  decls_2, expts_2, intvs_2, cnsts_2) = self.visit(node.expr)
 
 			prog_assn = IR.Prog([IR.Assn(IR.Var(idf), expr_1)])
-			prog_3 = IRUtil.prog_merge(prog_1, prog_assn, prog_2)
+			prog_3 = IRUtil.concatPrograms(prog_1, prog_assn, prog_2)
 
 			return (prog_3, expr_2, decls_2, expts_2, intvs_2, cnsts_2)
 		# e1 : Tensor{(),(..)}
@@ -1436,7 +1436,7 @@ class IRGenBase(ASTVisitor):
 
 			prog_2 = prog_2.subst(idf, expr_1)
 			expr_2 = expr_2.subst(idf, expr_1)
-			prog_3 = IRUtil.prog_merge(prog_1, prog_2)
+			prog_3 = IRUtil.concatPrograms(prog_1, prog_2)
 
 			return (prog_3, expr_2, decls_2, expts_2, intvs_2, cnsts_2)
 

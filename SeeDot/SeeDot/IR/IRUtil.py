@@ -107,7 +107,7 @@ def initVarToZero(e:Expr) -> Cmd: return Assn(e, Int(0))
 def incCmd(e:Var) -> Cmd: return Assn(e, inc(e))
 def decCmd(e:Var) -> Cmd: return Assn(e, dec(e))
 
-def prog_merge(*prog_l, resource=0):
+def concatPrograms(*prog_l, resource=0):
 	cmd_l = flatten([prog.cmd_l for prog in prog_l])
 	Res = 0
 	for x in prog_l:

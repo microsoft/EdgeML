@@ -91,7 +91,7 @@ class Arduino(IRGenBase):
 		# Finalize
 		comment = IR.Comment("reshape(" + expr_1.idf + ", " + ', '.join(str(e) for e in typ_2.shape) + ")")
 		reshape_prog = IR.Prog([comment] + cmd1 + loop2)
-		prog_2 = IRUtil.prog_merge(prog_1, reshape_prog)
+		prog_2 = IRUtil.concatPrograms(prog_1, reshape_prog)
 
 		# Update context
 		decls_2 = copy_dict(decls_1, {expr_2.idf :  typ_2})
@@ -143,7 +143,7 @@ class Arduino(IRGenBase):
 		comment = IR.Comment(expr_1.idf + " <" + op_ir.name + "> " + expr_2.idf)
 		prog_assn = IR.Prog([comment] + cmdl_assn)
 			
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_assn)
+		prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_assn)
 		#decls_3 = copy_dict(decls_2, {expr_1.idf :  typ_3})
 		decls_3 = decls_2
 		expts_3 = copy_dict(expts_2, {expr_1.idf :    p_3})
@@ -183,7 +183,7 @@ class Arduino(IRGenBase):
 		(m, M) = intvs_1[expr_1.idf]
 		intv_2 = (0, M)
 		
-		prog_2 = IRUtil.prog_merge(prog_1, prog_for)
+		prog_2 = IRUtil.concatPrograms(prog_1, prog_for)
 		intvs_2 = copy_dict(intvs_1, {expr_1.idf : intv_2})
 
 		return (prog_2, expr_1, decls_1, expts_1, intvs_2, cnsts_1)
@@ -240,7 +240,7 @@ class Arduino(IRGenBase):
 		# Finalize
 		comment = IR.Comment("maxpool(" + expr_1.idf + ", " + str(F) + ")")
 		prog_for = IR.Prog([comment] + loop1)
-		prog_2 = IRUtil.prog_merge(prog_1, prog_for)
+		prog_2 = IRUtil.concatPrograms(prog_1, prog_for)
 
 		# Update declarations
 		#decls_2 = copy_dict(decls_1, {expr_2.idf :  typ_2})
@@ -348,7 +348,7 @@ class Arduino(IRGenBase):
 		# Finalize
 		comment = IR.Comment(expr_1.idf + ' # ' + expr_2.idf)
 		prog_conv = IR.Prog([comment] + loop1)
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_conv)
+		prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_conv)
 		
 		# Update context for output variable
 		decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
@@ -420,7 +420,7 @@ class Arduino(IRGenBase):
 		cmd0 = IR.Comment(expr_1.idf + ' * ' + expr_2.idf)
 		prog_assn = IR.Prog([cmd0] + cmdl_sum)
 		
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_assn)
+		prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_assn)
 		decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
 		expts_3 = copy_dict(expts_2, {expr_3.idf :    p_3})
 		intvs_3 = copy_dict(intvs_2, {expr_3.idf : intv_3})
@@ -478,7 +478,7 @@ class Arduino(IRGenBase):
 		#p_3 = self.get_expnt_mul(expts_1[expr_1.idf], expts_2[expr_2.idf])
 		#intv_3 = self.get_intv_mul(intvs_1[expr_1.idf], intvs_2[expr_2.idf])
 
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog_assn)
+		prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_assn)
 		decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
 		expts_3 = copy_dict(expts_2, {expr_3.idf :    p_3})
 		intvs_3 = copy_dict(intvs_2, {expr_3.idf : intv_3})
@@ -574,7 +574,7 @@ class Arduino(IRGenBase):
 		#p = IRUtil.print_loop(typ_3.shape, iters, [IR.PrintAsFloat(IRUtil.addIndex(expr_3, iters), p_3)])
 
 		prog = IR.Prog([cmd0, cmd1, cmd2, cmd3] + loop4)
-		prog_3 = IRUtil.prog_merge(prog_1, prog_2, prog)
+		prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog)
 
 		decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
 		expts_3 = copy_dict(expts_2, {expr_3.idf :    p_3})
@@ -698,7 +698,7 @@ class Arduino(IRGenBase):
 
 		prog = IR.Prog([cmd1, cmd2] + loop3)
 					
-		prog_3 = IRUtil.prog_merge(prog)
+		prog_3 = IRUtil.concatPrograms(prog)
 		decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
 		expts_3 = copy_dict(expts_2, {expr_3.idf :    p_3})
 		intvs_3 = copy_dict(intvs_2, {expr_3.idf : intv_3})
@@ -756,7 +756,7 @@ class Arduino(IRGenBase):
 
 		prog = IR.Prog([cmd1, cmd2, cmd3] + for4)
 			
-		prog_2 = IRUtil.prog_merge(prog_1, prog)
+		prog_2 = IRUtil.concatPrograms(prog_1, prog)
 		expr_2 = idx
 		decls_2 = copy_dict(decls_1, dict((var.idf, Type.Int()) for var in [j, idx, max]))
 		expts_2 = expts_1
@@ -793,7 +793,7 @@ class Arduino(IRGenBase):
 		intv_2 = self.updateTanhIntv(intv_1, tanh_intv)
 		intvs_2 = copy_dict(intvs_1, {expr_1.idf: intv_2})
 
-		prog_2 = IRUtil.prog_merge(prog_1, IR.Prog([cmd0] + loop))
+		prog_2 = IRUtil.concatPrograms(prog_1, IR.Prog([cmd0] + loop))
 		expr_2 = expr_1
 		decls_2 = decls_1
 		expts_2 = expts_1
@@ -822,7 +822,7 @@ class Arduino(IRGenBase):
 		#cmd = IR.Assn(x, IR.CExpr(IRUtil.gt(e,IRUtil.zero), IRUtil.one,
 		#IR.CExpr(IRUtil.eq(e, IRUtil.zero), IRUtil.zero, IRUtil.negone)))
 
-		prog_2 = IRUtil.prog_merge(prog_1, IR.Prog([cmd]))
+		prog_2 = IRUtil.concatPrograms(prog_1, IR.Prog([cmd]))
 		expr_2 = x
 		decls_2 = copy_dict(decls_1, dict((var.idf, Type.Int()) for var in [x]))
 		expts_2 = expts_1
@@ -897,7 +897,7 @@ class Arduino(IRGenBase):
 
 		prog_exp = IR.Prog([cmd0, cmd])
 
-		prog_2 = IRUtil.prog_merge(prog_1, prog_exp)
+		prog_2 = IRUtil.concatPrograms(prog_1, prog_exp)
 		decls_2 = copy_dict(decls_1, {expr_2.idf : typ_1})
 		expts_2 = copy_dict(expts_1, {expr_2.idf : p_2})
 		intvs_2 = copy_dict(intvs_1, {expr_2.idf : intv_2})
@@ -969,7 +969,7 @@ class Arduino(IRGenBase):
 		cmd0 = IR.Comment('exp(' + expr_1.idf + ')')
 
 		prog_exp = IR.Prog([cmd0, cmd1, cmd10])
-		prog_2 = IRUtil.prog_merge(prog_1, prog_exp)
+		prog_2 = IRUtil.concatPrograms(prog_1, prog_exp)
 		decls_2 = copy_dict(decls_1, {expr_2.idf : typ_1})
 		decls_2.update(dict((var.idf, Type.Int()) for var in [input, i, j]))
 		expts_2 = copy_dict(expts_1, {expr_2.idf : p_2})
