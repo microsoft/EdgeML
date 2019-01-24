@@ -90,7 +90,7 @@ class Compiler:
 		
 		res = compiler.visit(ast)
 
-		state = compiler.decls, compiler.expts, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.globalVars
+		state = compiler.decls, compiler.scales, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.globalVars
 
 		return res, state
 
@@ -103,9 +103,9 @@ class Compiler:
 		else:
 			assert False
 
-		prog, expr,	decls, expts, intvs, cnsts = compiler.visit(ast)
+		prog, expr,	decls, scales, intvs, cnsts = compiler.visit(ast)
 
 		res = prog, expr
-		state = decls, expts, intvs, cnsts, compiler.expTables, compiler.VAR_IDF_INIT
+		state = decls, scales, intvs, cnsts, compiler.expTables, compiler.VAR_IDF_INIT
 
 		return res, state

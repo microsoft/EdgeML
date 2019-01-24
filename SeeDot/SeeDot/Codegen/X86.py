@@ -13,10 +13,10 @@ from Util import *
 
 class X86(CodegenBase):
 
-	def __init__(self, writer, decls, expts, intvs, cnsts, expTables, globalVars):
+	def __init__(self, writer, decls, scales, intvs, cnsts, expTables, globalVars):
 		self.out = writer
 		self.decls = decls
-		self.expts = expts
+		self.scales = scales
 		self.intvs = intvs
 		self.cnsts = cnsts
 		self.expTables = expTables
@@ -74,7 +74,7 @@ class X86(CodegenBase):
 			self.out.printf(';\n')
 		elif Type.isTensor(type):
 			idfr = expr.idf
-			exponent = self.expts[expr.idf]
+			exponent = self.scales[expr.idf]
 			num = 2 ** exponent
 
 			if type.dim == 0:

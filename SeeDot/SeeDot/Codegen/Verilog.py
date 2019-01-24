@@ -13,10 +13,10 @@ from Util import *
 
 class Verilog(CodegenBase):
 
-	def __init__(self, writer, decls, expts, intvs, cnsts, expTables, globalVars):
+	def __init__(self, writer, decls, scales, intvs, cnsts, expTables, globalVars):
 		self.out = writer
 		self.decls = decls
-		self.expts = expts
+		self.scales = scales
 		self.intvs = intvs
 		self.cnsts = cnsts
 		self.expTables = expTables
