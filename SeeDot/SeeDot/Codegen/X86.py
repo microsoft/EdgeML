@@ -13,14 +13,14 @@ from Util import *
 
 class X86(CodegenBase):
 
-	def __init__(self, writer, decls, expts, intvs, cnsts, expTables, VAR_IDF_INIT):
+	def __init__(self, writer, decls, expts, intvs, cnsts, expTables, globalVars):
 		self.out = writer
 		self.decls = decls
 		self.expts = expts
 		self.intvs = intvs
 		self.cnsts = cnsts
 		self.expTables = expTables
-		self.VAR_IDF_INIT = VAR_IDF_INIT
+		self.globalVars = globalVars
 
 	def printPrefix(self):
 		self.printCincludes()

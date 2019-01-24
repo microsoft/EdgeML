@@ -13,14 +13,14 @@ from Util import *
 
 class Verilog(CodegenBase):
 
-	def __init__(self, writer, decls, expts, intvs, cnsts, expTables, VAR_IDF_INIT):
+	def __init__(self, writer, decls, expts, intvs, cnsts, expTables, globalVars):
 		self.out = writer
 		self.decls = decls
 		self.expts = expts
 		self.intvs = intvs
 		self.cnsts = cnsts
 		self.expTables = expTables
-		self.VAR_IDF_INIT = VAR_IDF_INIT
+		self.globalVars = globalVars
 
 	def printPrefix(self):
 
@@ -46,7 +46,7 @@ class Verilog(CodegenBase):
 		self.out.printf("input clk, rst;\n", indent=True)
 
 		for decl in self.decls:
-			if decl in self.VAR_IDF_INIT:
+			if decl in self.globalVars:
 				continue
 			typ_str = IR.DataType.getIntStr()
 			idf_str = decl

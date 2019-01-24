@@ -90,7 +90,7 @@ class Compiler:
 		
 		res = compiler.visit(ast)
 
-		state = compiler.decls, compiler.expts, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.VAR_IDF_INIT
+		state = compiler.decls, compiler.expts, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.globalVars
 
 		return res, state
 

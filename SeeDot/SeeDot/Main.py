@@ -5,6 +5,7 @@ import os
 from itertools import product
 
 import Common
+from Compiler import Compiler
 from SeeDot import Main
 
 class Dataset:
@@ -30,7 +31,6 @@ class MainDriver:
 		parser.add_argument("-dt", "--datasetType", choices = Common.DatasetType.All, default = [Common.DatasetType.Default], metavar = '', help = "Training dataset or testing dataset")
 		parser.add_argument("-t", "--target", choices = Common.Target.All, default = [Common.Target.Default], metavar = '', help = "Desktop code or Arduino code or Fpga HLS code")
 		parser.add_argument("-sf", "--max-scale-factor", type = int, metavar = '', help = "Max scaling factor for code generation")
-		parser.add_argument("--output-pragmas", action = "store_true", help = "Add relevant pragmas to the generated code")
 		parser.add_argument("--load-sf", action = "store_true", help = "Verify the accuracy of the generated code")
 		parser.add_argument("--workers", type=int, default = 1, metavar = '', help = "number of worker threads to parallelize SparseMul on FPGAs only")
 		
@@ -145,7 +145,7 @@ class MainDriver:
 			os.makedirs(outputDir, exist_ok=True)
 
 			outputFile = os.path.join(outputDir, algo + "-fixed.cpp")
-			obj = Compiler(algo, target, self.args.output_pragmas, inputFile, outputFile, profileLogFile, self.args.max_scale_factor, self.args.workers)
+			obj = Compiler(algo, target, inputFile, outputFile, profileLogFile, self.args.max_scale_factor, self.args.workers)
 			obj.run()
 
 	def runConverterDriver(self):

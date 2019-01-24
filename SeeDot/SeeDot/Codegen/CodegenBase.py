@@ -262,7 +262,7 @@ class CodegenBase:
 
 	def printVarDecls(self):
 		for decl in self.decls:
-			if decl in self.VAR_IDF_INIT:
+			if decl in self.globalVars:
 				continue
 			typ_str = IR.DataType.getIntStr()
 			idf_str = decl
