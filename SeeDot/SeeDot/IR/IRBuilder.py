@@ -1155,43 +1155,45 @@ class IRBuilder(ASTVisitor):
 
 		return (prog_out, expr_out)
 
+	# out = sgn(in)
 	def visitSgn(self, node:AST.Func):
 
 		(prog_in, expr_in) = self.visit(node.expr)
 
-		typ_1 = node.expr.type
-		
-		x = self.getTempVar()
-		e = IRUtil.addIndex(expr_in, [IRUtil.zero] * typ_1.dim)
+		expr_out = self.getTempVar()
+		type_in = node.expr.type
 
-		cmd = IR.Assn(x, IRUtil.cond_zero(e, IRUtil.one, IRUtil.zero))
+		expr_in_idx = IRUtil.addIndex(expr_in, [IRUtil.zero] * type_in.dim)
 
-		prog_2 = IRUtil.concatPrograms(prog_in, IR.Prog([cmd]))
-		expr_out = x
-		
-		self.decls.update(dict((var.idf, Type.Int()) for var in [x]))
-		
-		return (prog_2, expr_out)
+		cmd0 = IR.Comment('sgn(' + expr_in.idf + ')')
+		cmd1 = IR.Assn(expr_out, IRUtil.cond_zero(expr_in_idx, IRUtil.one, IRUtil.zero))
 
+		prog_sgn = IR.Prog([cmd0, cmd1])
+
+		prog_out = IRUtil.concatPrograms(prog_in, prog_sgn)
+		
+		self.decls[expr_out.idf] = Type.Int()
+		
+		return (prog_out, expr_out)
+
+	# out = tanh(in)
 	def visitTanh(self, node:AST.Func):
 
 		(prog_in, expr_in) = self.visit(node.expr)
 
-		typ_1 = node.expr.type
-		[I, J] = typ_1.shape
+		type_in = node.expr.type
+		[I, J] = type_in.shape
 
-		p = self.scales[expr_in.idf]
+		scale_in = self.scales[expr_in.idf]
+		intv_in = self.intvs[expr_in.idf]
 
 		# Scale tanh limit
-		tanh_limit = int(np.ldexp(Common.tanh_limit, -p))
+		tanh_limit = int(np.ldexp(Common.tanh_limit, -scale_in))
 		assert tanh_limit < np.iinfo(IR.DataType.getIntClass()).max
 		tanh_limit = IR.DataType.getInt(tanh_limit)
 
-		tanh_limit_pos = IR.Int(tanh_limit)
-		tanh_limit_neg = IR.Int(-tanh_limit)
-
-		iters = self.getTempIterators(typ_1.dim)
-		expr_1_ite = IRUtil.addIndex(expr_in, iters)
+		tanh_intv = self.getInterval(scale_in, Common.tanh_limit, Common.tanh_limit)
+		intv_out = self.updateTanhIntv(intv_in, tanh_intv)
 
 		expr_in.inputVar = False
 
@@ -1204,28 +1206,17 @@ class IRBuilder(ASTVisitor):
 								IR.Int(tanh_limit): "threshold"
 								})
 
-		tanh_intv = self.getInterval(p, Common.tanh_limit, Common.tanh_limit)
-		intv_1 = self.intvs[expr_in.idf]
-		self.intvs[expr_in.idf] = self.updateTanhIntv(intv_1, tanh_intv)
+		prog_tanh = IR.Prog([cmd0, funcCall])
+		
+		prog_out = IRUtil.concatPrograms(prog_in, prog_tanh)
 
-		prog_2 = IRUtil.concatPrograms(prog_in, IR.Prog([cmd0, funcCall]))
+		self.intvs[expr_in.idf] = intv_out
 		expr_out = expr_in
 		
-		return (prog_2, expr_out)
+		return (prog_out, expr_out)
 
+	# out = $x[start:end] in
 	def visitSum(self, node:AST.Sum):
-
-		i_idf = node.name
-		self.decls[i_idf] = Type.Int()
-
-		(prog_in, expr_in) = self.visit(node.expr)
-
-		# i_{st,ed}, typ_2, typ_1_all
-		i_st, i_ed = node.start, node.end
-		
-		expr_out = self.getTempVar()
-		typ_2 = node.type
-		
 		'''
 		expr_out
 		i = 0
@@ -1238,125 +1229,146 @@ class IRBuilder(ASTVisitor):
 		2.    expr_out[i] = expr_out[i] + shr(expr_in[i])
 		'''
 
-		i_var = IR.Var(i_idf)
-		i_iter = self.getTempIterator()
-		iters = self.getTempIterators(typ_2.dim)
-
-		# p_2, intv_2, cmdl_sum, decls_sum
-		(p_2, H_1, H_2) = self.getScaleForTreeSum(self.scales[expr_in.idf], i_ed - i_st)
-
-		expr_1_elt = IRUtil.addIndex(expr_in, iters)
-		expr_2_elt = IRUtil.addIndex(expr_out, iters)
-
-		cmd1 = IR.Memset(expr_out, typ_2.size())
-		cmd2 = IR.Assn(expr_2_elt, IRUtil.add(expr_2_elt, IRUtil.shr(expr_1_elt, H_1)))
-		sum_loop = IRUtil.loop(typ_2.shape, iters, [cmd2])
-
-		cmd_sum = \
-			[cmd1,
-			IR.Assn(i_var, IR.Int(i_st)),
-			 IR.For(i_iter, 0, IRUtil.lt(i_iter, IR.Int(i_ed - i_st)),
-				prog_in.cmd_l + sum_loop + \
-				[IR.Assn(i_var, IRUtil.inc(i_var))])]
-
-		intv_2 = self.getIntervalForTreeSum(self.intvs[expr_in.idf], i_ed - i_st)
-
-		prog_2 = IR.Prog(cmd_sum)
-		
-		self.decls[expr_out.idf] = typ_2
-		self.scales[expr_out.idf] = p_2
-		self.intvs[expr_out.idf] = intv_2
-
-		return (prog_2, expr_out)
-
-	def visitCond(self, node:AST.Cond):
+		var_idf = node.name
+		self.decls[var_idf] = Type.Int()
 
 		(prog_in, expr_in) = self.visit(node.expr)
 
-		(prog_2, expr_2) = self.visit(node.trueBlock)
+		start, end = node.start, node.end
+		
+		expr_out = self.getTempVar()
+		type_out = node.type
 
-		(prog_3, expr_3) = self.visit(node.falseBlock)
+		var = IR.Var(var_idf)
+		var_iter = self.getTempIterator()
+		iters = self.getTempIterators(type_out.dim)
 
-		typ_1 = node.expr.type
-		typ_2 = node.trueBlock.type
-		if Type.isInt(typ_1): expr_1_elt = expr_in
-		else                      : expr_1_elt = IRUtil.addIndex(expr_in, [IRUtil.zero] * typ_1.dim)
+		(scale_out, height_shr, height_noshr) = self.getScaleForTreeSum(self.scales[expr_in.idf], end - start)
+		intv_out = self.getIntervalForTreeSum(self.intvs[expr_in.idf], end - start)
+
+		# Tree sum to sum output of each iteration
+		expr_in_idx = IRUtil.addIndex(expr_in, iters)
+		expr_out_idx = IRUtil.addIndex(expr_out, iters)
+
+		cmd1 = IR.Memset(expr_out, type_out.size())
+		cmd2 = IR.Assn(expr_out_idx, IRUtil.add(expr_out_idx, IRUtil.shr(expr_in_idx, height_shr)))
+		treeSum = IRUtil.loop(type_out.shape, iters, [cmd2])
+
+		# Final program to sum output of each iteration
+		prog_sum = [cmd1,
+					IR.Assn(var, IR.Int(start)),
+					IR.For(var_iter, 0, IRUtil.lt(var_iter, IR.Int(end - start)),
+					prog_in.cmd_l + treeSum + \
+					[IR.Assn(var, IRUtil.inc(var))])]
+
+		prog_out = IR.Prog(prog_sum)
+		
+		self.decls[expr_out.idf] = type_out
+		self.scales[expr_out.idf] = scale_out
+		self.intvs[expr_out.idf] = intv_out
+
+		return (prog_out, expr_out)
+
+	# out = in_cond > 0? in_A: in_B
+	def visitCond(self, node:AST.Cond):
+
+		(prog_in_cond, expr_in_cond) = self.visit(node.expr)
+
+		(prog_in_A, expr_in_A) = self.visit(node.trueBlock)
+
+		(prog_in_B, expr_in_B) = self.visit(node.falseBlock)
+
+		type_in_cond = node.expr.type
+		type_in_A = node.trueBlock.type
+		
+		if Type.isInt(type_in_cond):
+			expr_in_cond_idx = expr_in_cond
+		else:
+			expr_in_cond_idx = IRUtil.addIndex(expr_in_cond, [IRUtil.zero] * type_in_cond.dim)
 		
 		# e2,e3 : Int
-		if Type.isInt(typ_2):
-			prog_4 = IRUtil.concatPrograms(prog_in, prog_2, prog_3)
-			expr_4 = IRUtil.cond_zero(expr_1_elt, expr_2, expr_3)
+		if Type.isInt(type_in_A):
+			# TODO: Update the scale and intv of expr_out based on in_A and in_B
+			prog_out = IRUtil.concatPrograms(prog_in_cond, prog_in_A, prog_in_B)
+			expr_out = IRUtil.cond_zero(expr_in_cond_idx, expr_in_A, expr_in_B)
 
 		# e2,e3 : Tensor(), or Tensor(..)
 		else:
-			# decl fresh vars
-			expr_4 = self.getTempVar()
-			iters = self.getTempIterators(typ_2.dim)
+			expr_out = self.getTempVar()
+			iters = self.getTempIterators(type_in_A.dim)
 
-			# p_4, intv_4
-			(p_2, p_3) = (self.scales[expr_2.idf], self.scales[expr_3.idf])
-			(intv_2, intv_3) = (self.intvs[expr_2.idf], self.intvs[expr_3.idf])
-			(m_2, M_2) = intv_2
-			(m_3, M_3) = intv_3
-			if p_2 >= p_3: (shr_n_2, shr_n_3) = (0, p_2 - p_3)
-			else:          (shr_n_2, shr_n_3) = (p_3 - p_2, 0)
-			p_4 = max(p_2, p_3)
-			intv_4 = (min(m_2 >> shr_n_2, m_3 >> shr_n_3),
+			scale_in_A, scale_in_B = self.scales[expr_in_A.idf], self.scales[expr_in_B.idf]
+			intv_in_A, intv_in_B = self.intvs[expr_in_A.idf], self.intvs[expr_in_B.idf]
+			m_2, M_2 = intv_in_A
+			m_3, M_3 = intv_in_B
+
+			if scale_in_A >= scale_in_B:
+				shr_n_2, shr_n_3 = 0, scale_in_A - scale_in_B
+			else:
+				shr_n_2, shr_n_3 = scale_in_B - scale_in_A, 0
+
+			scale_out = max(scale_in_A, scale_in_B)
+			intv_out = (min(m_2 >> shr_n_2, m_3 >> shr_n_3),
 					  max(M_2 >> shr_n_2, M_3 >> shr_n_3))
 				
 			# prog_assn
-			expr_2_elt = IRUtil.addIndex(expr_2, iters)
-			expr_3_elt = IRUtil.addIndex(expr_3, iters)
-			expr_4_elt = IRUtil.addIndex(expr_4, iters)
-			rhs = IRUtil.cond_zero(expr_1_elt,
-							   IRUtil.shr(expr_2_elt, shr_n_2),
-							   IRUtil.shr(expr_3_elt, shr_n_3))
-			cmdl_assn = IRUtil.loop(typ_2.shape, iters, [IR.Assn(expr_4_elt, rhs)])
-			prog_assn = IR.Prog(cmdl_assn)
+			expr_in_A_idx = IRUtil.addIndex(expr_in_A, iters)
+			expr_in_B_idx = IRUtil.addIndex(expr_in_B, iters)
+			expr_out_idx = IRUtil.addIndex(expr_out, iters)
+			rhs = IRUtil.cond_zero(expr_in_cond_idx,
+							   IRUtil.shr(expr_in_A_idx, shr_n_2),
+							   IRUtil.shr(expr_in_B_idx, shr_n_3))
+			cmdl_assn = IRUtil.loop(type_in_A.shape, iters, [IR.Assn(expr_out_idx, rhs)])
+			prog_cond = IR.Prog(cmdl_assn)
 			
-			prog_4 = IRUtil.concatPrograms(prog_in, prog_2, prog_3, prog_assn)
+			prog_out = IRUtil.concatPrograms(prog_in_cond, prog_in_A, prog_in_B, prog_cond)
 			
-			self.decls[expr_4.idf] = typ_2
-			self.scales[expr_4.idf] = p_4
-			self.intvs[expr_4.idf] = intv_4
+			self.decls[expr_out.idf] = type_in_A
+			self.scales[expr_out.idf] = scale_out
+			self.intvs[expr_out.idf] = intv_out
 
-		return (prog_4, expr_4)
+		return (prog_out, expr_out)
 
+	# let idf = decl 'in' in
 	def visitLet(self, node:AST.Let):
 
-		(prog_in, expr_in) = self.visit(node.decl)
-		typ_1 = node.decl.type
+		(prog_decl, expr_decl) = self.visit(node.decl)
+		type_decl = node.decl.type
+		
 		idf = node.name
 
 		# e1 : Int
-		if Type.isInt(typ_1):
+		if Type.isInt(type_decl):
 			self.decls[idf] = Type.Int()
 
-			(prog_2, expr_out) = self.visit(node.expr)
+			(prog_in, expr_in) = self.visit(node.expr)
 
-			prog_assn = IR.Prog([IR.Assn(IR.Var(idf), expr_in)])
-			prog_3 = IRUtil.concatPrograms(prog_in, prog_assn, prog_2)
+			cmd = IR.Assn(IR.Var(idf), expr_decl)
+			prog_let = IR.Prog([cmd])
+			
+			prog_out = IRUtil.concatPrograms(prog_decl, prog_let, prog_in)
 
-			return (prog_3, expr_out)
+			return (prog_out, expr_in)
+		
 		# e1 : Tensor{(),(..)}
 		else:
-			self.scales[idf] = self.scales[expr_in.idf]
-			self.intvs[idf] = self.intvs[expr_in.idf]
+			self.scales[idf] = self.scales[expr_decl.idf]
+			self.intvs[idf] = self.intvs[expr_decl.idf]
 
 			if isinstance(node.decl, AST.Decl):
 				self.globalVars.append(idf)
 				self.decls[idf] = node.decl.type
-				expr_in.idf = idf
-				expr_in.inputVar = True
+				expr_decl.idf = idf
+				expr_decl.inputVar = True
 
-			(prog_2, expr_out) = self.visit(node.expr)
+			(prog_in, expr_in) = self.visit(node.expr)
 
-			prog_2 = prog_2.subst(idf, expr_in)
-			expr_out = expr_out.subst(idf, expr_in)
+			prog_in = prog_in.subst(idf, expr_decl)
+			expr_in = expr_in.subst(idf, expr_decl)
 			
-			prog_3 = IRUtil.concatPrograms(prog_in, prog_2)
+			prog_out = IRUtil.concatPrograms(prog_decl, prog_in)
 
-			return (prog_3, expr_out)
+			return (prog_out, expr_in)
 
 	# Computing exponent and intervals
 	def getScale(self, maxabs:float): # -> int
