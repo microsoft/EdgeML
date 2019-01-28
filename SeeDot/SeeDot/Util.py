@@ -41,7 +41,7 @@ def setProfileLogFile(file):
 def getExpBitLength():
 	return Config.expBigLength
 
-def getMaxExpnt():
+def getMaxScale():
 	return Config.maxExpnt
 
 def setMaxExpnt(x:int):

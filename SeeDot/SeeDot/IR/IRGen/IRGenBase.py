@@ -24,7 +24,7 @@ class IRGenBase(ASTVisitor):
 		
 		self.profileLoaded = False
 
-		if getMaxExpnt() == None:
+		if getMaxScale() == None:
 			# data-driven parameters
 			inputFile = getProfileLogFile()
 
@@ -40,7 +40,7 @@ class IRGenBase(ASTVisitor):
 			[m_all, M_all] = data[0]
 			self.MAX_EXPNT_ALL = self.get_expnt(max(abs(m_all), abs(M_all)))
 		else:
-			self.MAX_EXPNT_ALL = getMaxExpnt()
+			self.MAX_EXPNT_ALL = getMaxScale()
 
 		self.expTables = {}
 

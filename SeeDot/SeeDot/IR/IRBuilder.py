@@ -23,7 +23,7 @@ class IRBuilder(ASTVisitor):
 		
 		self.profileLoaded = False
 
-		if getMaxExpnt() == None:
+		if getMaxScale() == None:
 			# data-driven parameters
 			inputFile = getProfileLogFile()
 
@@ -37,9 +37,10 @@ class IRBuilder(ASTVisitor):
 					data.append(row)
 
 			[min_all, max_all] = data[0]
-			self.MAX_EXPNT_ALL = self.getScale(max(abs(min_all), abs(max_all)))
+			
+			self.MAX_SCALE = self.getScale(max(abs(min_all), abs(max_all)))
 		else:
-			self.MAX_EXPNT_ALL = getMaxExpnt()
+			self.MAX_SCALE = getMaxScale()
 
 		self.expTables = {}
 
@@ -72,7 +73,6 @@ class IRBuilder(ASTVisitor):
 				row = list(map(float, entries))
 				data.append(row)
 
-		[min_all, max_all] = data[0]
 		[min_exp, max_exp] = data[1]
 		#[min_exp, max_exp] = [0.022, 15.012]
 		
@@ -199,6 +199,7 @@ class IRBuilder(ASTVisitor):
 
 		# Declare variables
 		expr_out = self.getTempVar()
+
 		iters_in = self.getTempIterators(type_in.dim)
 		iters_out = self.getTempVars(type_out.dim)
 
@@ -228,8 +229,9 @@ class IRBuilder(ASTVisitor):
 
 		# Finalize
 		comment = IR.Comment("reshape(" + expr_in.idf + ", " + ', '.join(str(e) for e in type_out.shape) + ")")
-		reshape_prog = IR.Prog([comment] + cmd1 + loop2)
-		prog_2 = IRUtil.concatPrograms(prog_in, reshape_prog)
+		prog_reshape = IR.Prog([comment] + cmd1 + loop2)
+		
+		prog_out = IRUtil.concatPrograms(prog_in, prog_reshape)
 
 		# Update context
 		self.decls[expr_out.idf] = type_out
@@ -239,7 +241,7 @@ class IRBuilder(ASTVisitor):
 		# Update declarations
 		self.decls.update(dict((var.idf, Type.Int()) for var in iters_out))
 
-		return (prog_2, expr_out)
+		return (prog_out, expr_out)
 	
 	# out = maxpool(in, stride)
 	def visitMaxpool(self, node:AST.Maxpool):
@@ -524,18 +526,18 @@ class IRBuilder(ASTVisitor):
 		cmd0 = IR.Comment(expr_in_A.idf + ' * ' + expr_in_B.idf)
 
 		funcCall = IR.FuncCall("MatMul" + c, {
-									expr_in_A: "A",
-									expr_in_B: "B",
-									expr_out: "C",
-									expr_treeSum: "T",
-									IR.Int(I): "I",
-									IR.Int(J): "J",
-									IR.Int(K): "K",
-									shr_A: "shr1",
-									shr_B: "shr2",
-									IR.Int(height_shr): "H1",
-									IR.Int(height_noshr): "H2"
-									})
+								expr_in_A: "A",
+								expr_in_B: "B",
+								expr_out: "C",
+								expr_treeSum: "T",
+								IR.Int(I): "I",
+								IR.Int(J): "J",
+								IR.Int(K): "K",
+								shr_A: "shr1",
+								shr_B: "shr2",
+								IR.Int(height_shr): "H1",
+								IR.Int(height_noshr): "H2"
+								})
 
 		prog_mul = IR.Prog([cmd0, funcCall])
 		
@@ -954,12 +956,12 @@ class IRBuilder(ASTVisitor):
 		# Tunable parameter
 		MIN = 0.1
 
-		self.set_arg(node.expr, node)
 		(prog_in, expr_in) = self.visit(node.expr)
 
-		typ_1 = node.expr.type
-		p_1 = self.scales[expr_in.idf]
-		intv_1 = self.intvs[expr_in.idf]
+		type_in = node.expr.type
+		
+		scale_in = self.scales[expr_in.idf]
+		intv_in = self.intvs[expr_in.idf]
 
 		'''
 		1.  y = ((int) (exp(((float)e) / shr1) * shr2))
@@ -968,30 +970,29 @@ class IRBuilder(ASTVisitor):
 		maxExp = np.exp(-MIN)
 
 		expr_out = self.getTempVar()
-		p_2 = self.getScale(maxExp)
-		intv_2 = self.getInterval(p_2, maxExp, maxExp)
-
-		shr1 = IR.Int(2 ** -p_1)
-		shr2 = IR.Int(2 ** -p_2)
-
-		expr_1_elt = IRUtil.addIndex(expr_in, [IRUtil.zero] * typ_1.dim)
-		expr_2_elt = IRUtil.addIndex(expr_out, [IRUtil.zero] * typ_1.dim)
-
-		cmd = IR.Assn(expr_2_elt, IRUtil.castToInt(IRUtil.mul(IR.Exp(IRUtil.div(IRUtil.castToFloat(expr_1_elt), shr1)), shr2)))
 		
+		scale_out = self.getScale(maxExp)
+		intv_out = self.getInterval(scale_out, maxExp, maxExp)
+
+		shr1 = IR.Int(2 ** -scale_in)
+		shr2 = IR.Int(2 ** -scale_out)
+
+		expr_in_idx = IRUtil.addIndex(expr_in, [IRUtil.zero] * type_in.dim)
+		expr_out_idx = IRUtil.addIndex(expr_out, [IRUtil.zero] * type_in.dim)
+
 		cmd0 = IR.Comment('exp(' + expr_in.idf + ')')
 
-		# extra
-		#p = IR.PrintAsFloat(expr_1_elt, p_1)
+		cmd_assn = IR.Assn(expr_out_idx, IRUtil.castToInt(IRUtil.mul(IR.Exp(IRUtil.div(IRUtil.castToFloat(expr_in_idx), shr1)), shr2)))
 
-		prog_exp = IR.Prog([cmd0, cmd])
+		prog_exp = IR.Prog([cmd0, cmd_assn])
 
-		prog_2 = IRUtil.concatPrograms(prog_in, prog_exp)
-		self.decls[expr_out.idf] = typ_1
-		self.scales[expr_out.idf] = p_2
-		self.intvs[expr_out.idf] = intv_2
+		prog_out = IRUtil.concatPrograms(prog_in, prog_exp)
 
-		return (prog_2, expr_out)
+		self.decls[expr_out.idf] = type_in
+		self.scales[expr_out.idf] = scale_out
+		self.intvs[expr_out.idf] = intv_out
+
+		return (prog_out, expr_out)
 
 	# Note: We assume e<=0 for exp(e)
 	def visitTableExp(self, node:AST.Func):
@@ -999,14 +1000,15 @@ class IRBuilder(ASTVisitor):
 		(prog_in, expr_in) = self.visit(node.expr)
 
 		# TODO: use MAX_VAL_EXP
-		typ_1 = node.expr.type
-		p_1 = self.scales[expr_in.idf]
-		intv_1 = self.intvs[expr_in.idf]
+		type_in = node.expr.type
+		
+		scale_in = self.scales[expr_in.idf]
+		intv_in = self.intvs[expr_in.idf]
 
 		[m, M] = self.expRange
-		[m_scale, M_scale] = [int(np.ldexp(m, -p_1)), int(np.ldexp(M, -p_1))]
+		[m_scale, M_scale] = [int(np.ldexp(m, -scale_in)), int(np.ldexp(M, -scale_in))]
 
-		max = int(np.ldexp(M - m, -p_1))
+		max = int(np.ldexp(M - m, -scale_in))
 		shl = self.getShl(max)
 		
 		input = self.getTempVar()
@@ -1029,15 +1031,15 @@ class IRBuilder(ASTVisitor):
 		mask = IR.Int(2 ** self.expB - 1)
 		shrI = Common.wordLength - self.expB
 		shrJ = Common.wordLength - self.expB * 2
-		table = self.getExpTable(p_1)
+		table = self.getExpTable(scale_in)
 
-		p1 = self.getScale(1)
-		p2 = self.getScale(abs(np.exp(-m)))
+		scale1 = self.getScale(1)
+		scale2 = self.getScale(abs(np.exp(-m)))
 
-		[shr1, shr2] = self.getShrForMul(p1, p2)
+		[shr1, shr2] = self.getShrForMul(scale1, scale2)
 
-		expr_1_elt = IRUtil.addIndex(expr_in, [IRUtil.zero] * typ_1.dim)
-		expr_2_elt = IRUtil.addIndex(expr_out, [IRUtil.zero] * typ_1.dim)
+		expr_1_elt = IRUtil.addIndex(expr_in, [IRUtil.zero] * type_in.dim)
+		expr_2_elt = IRUtil.addIndex(expr_out, [IRUtil.zero] * type_in.dim)
 
 		cond = IRUtil.lt(IRUtil.negate(expr_1_elt), IR.Int(m_scale))
 		
@@ -1049,22 +1051,24 @@ class IRBuilder(ASTVisitor):
 		cmd8 = IR.Assn(j, IRUtil.bitAnd(IRUtil.shrUint(input, shrJ), mask))
 		
 		cmd1 = IR.If(cond, [cmd2, cmd3], [cmd6, cmd7, cmd8])
-		cmd10 = IR.Assn(expr_2_elt, IRUtil.mul(IRUtil.shrUint(IRUtil.addIndex(table[0], [i]), shr1),	IRUtil.shrUint(IRUtil.addIndex(table[1], [j]), shr2)))
+		cmd10 = IR.Assn(expr_2_elt, IRUtil.mul(IRUtil.shrUint(IRUtil.addIndex(table[0], [i]), shr1), IRUtil.shrUint(IRUtil.addIndex(table[1], [j]), shr2)))
 
-		p_2 = self.getScaleForExp(p1, shr1, p2, shr2)
-		intv_2 = self.getIntervalForExp(p_2, [-m_scale, -M_scale])
+		scale_out = self.getScaleForExp(scale1, shr1, scale2, shr2)
+		intv_out = self.getIntervalForExp(scale_out, [-m_scale, -M_scale])
 		
 		cmd0 = IR.Comment('exp(' + expr_in.idf + ')')
 
 		prog_exp = IR.Prog([cmd0, cmd1, cmd10])
-		prog_2 = IRUtil.concatPrograms(prog_in, prog_exp)
-		
-		self.decls[expr_out.idf] = typ_1
-		self.decls.update(dict((var.idf, Type.Int()) for var in [input, i, j]))
-		self.scales[expr_out.idf] = p_2
-		self.intvs[expr_out.idf] = intv_2
 
-		return (prog_2, expr_out)
+		prog_out = IRUtil.concatPrograms(prog_in, prog_exp)
+		
+		self.decls[expr_out.idf] = type_in
+		self.scales[expr_out.idf] = scale_out
+		self.intvs[expr_out.idf] = intv_out
+
+		self.decls.update(dict((var.idf, Type.Int()) for var in [input, i, j]))
+
+		return (prog_out, expr_out)
 
 	def getShl(self, n:int):
 		assert n != 0
@@ -1393,19 +1397,19 @@ class IRBuilder(ASTVisitor):
 
 		return (m, M)
 
-	def getScaleForTreeSum(self, p:int, n:int): # -> int^3
+	def getScaleForTreeSum(self, p:int, n:int):
 		H_tot = int(np.ceil(np.log2(n)))
-		if p >= self.MAX_EXPNT_ALL:
+		if p >= self.MAX_SCALE:
 			p_res = p
 		else:
-			p_res = min(p + H_tot, self.MAX_EXPNT_ALL)
+			p_res = min(p + H_tot, self.MAX_SCALE)
 		H_1 = p_res - p
 		assert H_1 >= 0
 		H_2 = H_tot - H_1
 		assert H_2 >= 0
 		return (p_res, H_1, H_2)
 
-	def getIntervalForTreeSum(self, intv, n:int): # int^2 -> int^2
+	def getIntervalForTreeSum(self, intv, n:int):
 		max_abs = (1 << Common.wordLength - 2) - 1
 		(m, M) = intv
 		m = max(n * m, -max_abs)
@@ -1413,7 +1417,6 @@ class IRBuilder(ASTVisitor):
 		return (m, M)
 
 	def getScaleAndIntervalForAdd(self, p_1:int, p_2:int, intv_1, intv_2, op_fn):
-		# int * int * int^2 * int^2 -> int * int^2 * int list (len 3)
 		(m_1, M_1) = intv_1
 		(m_2, M_2) = intv_2
 
@@ -1426,7 +1429,7 @@ class IRBuilder(ASTVisitor):
 		m = op_fn(m_1 >> shr_n[0], m_2 >> shr_n[1])
 		M = op_fn(M_1 >> shr_n[0], M_2 >> shr_n[1])
 		
-		if max(abs(m),abs(M)) >= (1 << (Common.wordLength - 2)) and p < self.MAX_EXPNT_ALL:
+		if max(abs(m),abs(M)) >= (1 << (Common.wordLength - 2)) and p < self.MAX_SCALE:
 			shr_n[2] = 1
 			p += 1
 		max_abs = (1 << Common.wordLength - 2) - 1
@@ -1447,10 +1450,10 @@ class IRBuilder(ASTVisitor):
 	def getShrForMul(self, p1, p2):
 		shr = (Common.wordLength - 2) // 2
 		pRes = (p1 + shr) + (p2 + shr)
-		if pRes < self.MAX_EXPNT_ALL:
+		if pRes < self.MAX_SCALE:
 			return [shr, shr]
 		else:
-			save = abs(abs(pRes) - abs(self.MAX_EXPNT_ALL))
+			save = abs(abs(pRes) - abs(self.MAX_SCALE))
 			save1 = save // 2
 			save2 = save - save1
 			shr1 = max(shr - save1, 0)
