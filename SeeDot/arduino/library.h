@@ -9,7 +9,7 @@
 #include "predict.h"
 
 // C = A + B
-inline __attribute__((always_inline)) void MatAdd(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
+inline __attribute__((always_inline)) void MatAdd(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
@@ -18,14 +18,17 @@ inline __attribute__((always_inline)) void MatAdd(MYINT *A, MYINT *B, MYINT *C, 
 			a = a / shrA;
 			b = b / shrB;
 
-			C[i * J + j] = a + b;
+			MYINT c = a + b;
+			c = c / shrC;
+
+			C[i * J + j] = c;
 		}
 	}
 	return;
 }
 
 // C = A - B
-inline __attribute__((always_inline)) void MatSub(MYINT *A, const MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
+inline __attribute__((always_inline)) void MatSub(MYINT *A, const MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
@@ -34,7 +37,10 @@ inline __attribute__((always_inline)) void MatSub(MYINT *A, const MYINT *B, MYIN
 			a = a / shrA;
 			b = b / shrB;
 
-			C[i * J + j] = a - b;
+			MYINT c = a - b;
+			c = c / shrC;
+
+			C[i * J + j] = c;
 		}
 	}
 	return;
