@@ -119,6 +119,35 @@ class Arduino(CodegenBase):
 		else:
 			super().printAssn(ir)
 
+	def printFuncCall(self, ir):
+		self.out.printf("%s(" % ir.name, indent = True)
+		keys = list(ir.argList)
+		for i in range(len(keys)):
+			arg = keys[i]
+
+			if arg.idf == 'X':
+				continue
+
+			if isinstance(arg, IR.Var) and arg.idf in self.decls.keys() and not arg.idf == 'X':
+				type = self.decls[arg.idf]
+				if isinstance(type, Type.Tensor):
+					if type.dim == 0:
+						x = -1
+					else:
+						x = type.dim - len(arg.idx)
+				else:
+					x = -1
+			else:
+				x = 0
+			if x != 0:
+				self.out.printf("&")
+			self.print(arg)
+			if x != 0 and x != -1:
+				self.out.printf("[0]" * x)
+			if i != len(keys) - 1:
+				self.out.printf(", ")
+		self.out.printf(");\n\n")
+
 	def printPrint(self, ir):
 		self.out.printf('Serial.println(', indent=True)
 		self.print(ir.expr)
