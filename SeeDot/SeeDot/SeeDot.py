@@ -317,9 +317,18 @@ class MainDriver:
 		if not os.path.isdir(self.args.model):
 			raise Exception("Model directory doesn't exist")
 
+	def checkMSBuildPath(self):
+		found = False
+		for path in Common.msbuildPathOptions:
+			if os.path.isfile(path):
+				found = True
+				Common.msbuildPath = path
+		
+		if not found:
+			raise Exception("Msbuild.exe not found at the following locations:\n%s\nPlease change the path and run again" % (Common.msbuildPathOptions))
+
 	def run(self):
-		if not os.path.isfile(Common.msbuildPath):
-			raise Exception("Msbuild.exe not found at the following location:\n%s\nPlease change the path and run again" % (Common.msbuildPath))
+		self.checkMSBuildPath()
 
 		algo, trainingInput, testingInput, modelDir = self.args.algo, self.args.train, self.args.test, self.args.model
 
