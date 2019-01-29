@@ -77,7 +77,7 @@ class Main:
 
 		try:
 			obj = Converter(self.algo, version, datasetType, target, datasetOutputDir, outputDir, self.numWorkers)
-			obj.setInput(self.modelDir, "tsv", self.trainingFile, self.testingFile)
+			obj.setInput(self.modelDir, self.trainingFile, self.testingFile)
 			obj.run()
 		except Exception as e:
 			traceback.print_exc()

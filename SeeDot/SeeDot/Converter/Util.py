@@ -3,6 +3,7 @@
 
 import math
 import os
+from sklearn.datasets import load_svmlight_file
 
 import Common
 
@@ -78,18 +79,15 @@ def getModelDir():
 def setModelDir(modelDir):
 	Config.modelDir = modelDir
 
-def setDatasetTSVInput(trainingFile, testingFile):
-	Config.datasetFileType = "tsv"
+def setDatasetInput(trainingFile, testingFile):
 	Config.trainingFile = trainingFile
 	Config.testingFile = testingFile
 
-def setDatasetCSVInput(trainingDir, testingDir):
-	Config.datasetFileType = "csv"
-	Config.trainingDir = trainingDir
-	Config.testingDir = testingDir
+def usingLibSVM():
+	return Common.inputFileType == "libsvm"
 
 def usingTSV():
-	return Config.datasetFileType == "tsv"
+	return Common.inputFileType == "tsv"
 
 def dumpDataset():
 	return Config.dumpDataset
@@ -142,11 +140,29 @@ def matShape(mat):
 def listRange(list):
 	return min(list), max(list)
 
-def readXandY(trainingDataset=False):
-	if usingTSV():
-		return readXandYasTSV(trainingDataset)
+def readXandY(useTrainingSet=False):
+	if usingLibSVM():
+		return readXandYasLibSVM(useTrainingSet)
+	elif usingTSV():
+		return readXandYasTSV(useTrainingSet)
 	else:
-		return readXandYasCSV(trainingDataset)
+		return readXandYasCSV(useTrainingSet)
+
+def readXandYasLibSVM(trainingDataset):
+	if trainingDataset == True or usingTrainingDataset() == True:
+		inputFile = Config.trainingFile
+	else:
+		inputFile = Config.testingFile
+
+	data = load_svmlight_file(inputFile)
+
+	X = data[0].todense().tolist()
+
+	Y = data[1].tolist()
+	Y = list(map(int, Y))
+	Y = [[classID] for classID in Y]
+
+	return X, Y
 
 def readXandYasTSV(trainingDataset):
 	'''
@@ -185,11 +201,11 @@ def readXandYasCSV(trainingDataset):
 	X contains feature vector and Y contains the class ID of each data point
 	'''
 	if trainingDataset == True or usingTrainingDataset() == True:
-		X = readFileAsMat(os.path.join(Config.trainingDir, "X.csv"), ", ", float)
-		Y = readFileAsMat(os.path.join(Config.trainingDir, "Y.csv"), ", ", int)
+		X = readFileAsMat(os.path.join(Config.trainingFile, "X.csv"), ", ", float)
+		Y = readFileAsMat(os.path.join(Config.trainingFile, "Y.csv"), ", ", int)
 	else:
-		X = readFileAsMat(os.path.join(Config.testingDir, "X.csv"), ", ", float)
-		Y = readFileAsMat(os.path.join(Config.testingDir, "Y.csv"), ", ", int)
+		X = readFileAsMat(os.path.join(Config.testingFile, "X.csv"), ", ", float)
+		Y = readFileAsMat(os.path.join(Config.testingFile, "Y.csv"), ", ", int)
 	return X, Y
 
 # Parse the file using the delimited and store it as a matrix

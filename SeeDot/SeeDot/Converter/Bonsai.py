@@ -198,7 +198,7 @@ class BonsaiFixed(Bonsai):
 		if usingTrainingDataset():
 			self.X_train = list(self.X)
 		else:
-			self.X_train, _ = readXandY(trainingDataset=True)
+			self.X_train, _ = readXandY(useTrainingSet=True)
 
 		# Trim some data points from X_train
 		self.X_train, _ = trimMatrix(self.X_train)

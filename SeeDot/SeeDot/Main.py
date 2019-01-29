@@ -42,9 +42,18 @@ class MainDriver:
 		if not isinstance(self.args.datasetType, list):	self.args.datasetType = [self.args.datasetType]
 		if not isinstance(self.args.target, list): self.args.target = [self.args.target]
 
+	def checkMSBuildPath(self):
+		found = False
+		for path in Common.msbuildPathOptions:
+			if os.path.isfile(path):
+				found = True
+				Common.msbuildPath = path
+		
+		if not found:
+			raise Exception("Msbuild.exe not found at the following locations:\n%s\nPlease change the path and run again" % (Common.msbuildPathOptions))
+
 	def run(self):
-		if not os.path.isfile(Common.msbuildPath):
-			raise Exception("Msbuild.exe not found at the following location:\n%s\nPlease change the path and run again" % (Common.msbuildPath))
+		self.checkMSBuildPath()
 
 		if self.args.driver is None:
 			self.runMainDriver()

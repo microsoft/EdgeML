@@ -21,10 +21,12 @@ The project contains 4 sub-projects placed in different folders.
 **Requirements**
 
 1. [**Python 3**](https://www.python.org/)
-   - **[Antrl4](http://www.antlr.org/)** (antlr4-python3-runtime): Used by the compiler for lexing and parsing
+   - **[Antrl4](http://www.antlr.org/)** (antlr4-python-runtime)
    - **[Numpy](http://www.numpy.org/)**: Math computation
-2. [**Arduino IDE**](https://www.arduino.cc/en/Main/Software): To upload the code to the Arduino device
-3. **[msbuild](https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild)**: Used to build and execute code in the Predictor project
+2. Visual Studio 2017 with the following components workloads
+   - .NET desktop development
+   - Desktop development with C++
+3. [**Arduino IDE**](https://www.arduino.cc/en/Main/Software): To upload the code to the Arduino device
 
 **Usage**
 

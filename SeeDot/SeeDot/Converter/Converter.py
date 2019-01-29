@@ -25,7 +25,7 @@ class Converter:
 		setDatasetOutputDir(datasetOutputDir)
 		setOutputDir(outputDir)
 
-	def setInput(self, modelDir, inputType, trainingInput, testingInput):
+	def setInput(self, modelDir, trainingInput, testingInput):
 		setModelDir(modelDir)
 		
 		# Type of normalization: 0 - No norm, 1 - MinMax norm, 2 - L2 norm, 3 - MeanVar norm
@@ -34,14 +34,7 @@ class Converter:
 		else:
 			setNormType(0)
 		
-		if inputType == "tsv":
-			# Set the TSV training and testing file paths
-			setDatasetTSVInput(trainingInput, testingInput)
-		elif inputType == "csv":
-			# Set the CSV training and testing directory paths containing the corresponding X.csv and Y.csv
-			setDatasetCSVInput(trainingInput, testingInput)
-		else:
-			raise Exception("Unsupported value for input type")
+		setDatasetInput(trainingInput, testingInput)
 		
 		self.inputSet = True
 

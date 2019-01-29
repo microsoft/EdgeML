@@ -4,6 +4,8 @@
 # Target word length. Currently set to match the word length of Arduino (2 bytes)
 wordLength = 16
 
+inputFileType = "tsv"
+
 # Range of max scale factor used for exploration
 maxScaleRange = 0, -wordLength
 
