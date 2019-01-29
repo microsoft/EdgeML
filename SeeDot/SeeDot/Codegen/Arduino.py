@@ -125,7 +125,7 @@ class Arduino(CodegenBase):
 		for i in range(len(keys)):
 			arg = keys[i]
 
-			if arg.idf == 'X':
+			if isinstance(arg, IR.Var) and arg.idf == 'X':
 				continue
 
 			if isinstance(arg, IR.Var) and arg.idf in self.decls.keys() and not arg.idf == 'X':
