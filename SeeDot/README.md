@@ -20,12 +20,13 @@ The project contains 4 sub-projects placed in different folders.
 
 **Requirements**
 
-1. [**Python 3**](https://www.python.org/)
+1. [**Python 3**](https://www.python.org/) with following packages:
    - **[Antrl4](http://www.antlr.org/)** (antlr4-python-runtime)
-   - **[Numpy](http://www.numpy.org/)**: Math computation
-2. Visual Studio 2017 with the following components workloads
-   - .NET desktop development
+   - **[Numpy](http://www.numpy.org/)**
+   - **[Scikit-learn](https://scikit-learn.org/stable/)**
+2. **[Visual Studio 2017](https://visualstudio.microsoft.com/downloads/)** with following workloads:
    - Desktop development with C++
+   - .NET desktop development
 3. [**Arduino IDE**](https://www.arduino.cc/en/Main/Software): To upload the code to the Arduino device
 
 **Usage**
