@@ -19,13 +19,14 @@ class Main:
 	def __init__(self, algo, version, target, trainingFile, testingFile, modelDir, sf, workers):
 		self.algo, self.version, self.target, self.trainingFile, self.testingFile, self.modelDir, self.sf, self.numWorkers = algo, version, target, trainingFile, testingFile, modelDir, sf, workers
 		self.accuracy = {}
+		self.useHandWrittenFloat = False
 
 	# Generate the fixed-point code using the input generated from the Converter project
 	def compile(self, target, sf):
 		print("Generating code...", end='')
 
 		# Set input and output files
-		inputFile = os.path.join("..", "Predictor", "seedot_fixed", "testing", "input.sd")
+		inputFile = os.path.join("..", "Predictor", "seedot_" + self.version, "testing", "input.sd")
 		profileLogFile = os.path.join("..", "Predictor", "output", self.algo + "-float", "profile.txt")
 
 		if target == Common.Target.Arduino:
@@ -35,14 +36,14 @@ class Main:
 		elif target == Common.Target.Verilog:
 			outputFile = os.path.join("..", "verilog", "predict.cpp")
 		elif target == Common.Target.X86:
-			outputFile = os.path.join("..", "Predictor", "seedot_fixed.cpp")
+			outputFile = os.path.join("..", "Predictor", "seedot_" + self.version + ".cpp")
 		
 		try:
-			obj = Compiler(self.algo, target, inputFile, outputFile, profileLogFile, sf, self.numWorkers)
+			obj = Compiler(self.algo, self.version, target, inputFile, outputFile, profileLogFile, sf, self.numWorkers)
 			obj.run()
 		except:
 			print("failed!\n")
-			#traceback.print_exc()
+			traceback.print_exc()
 			return False
 
 		print("completed")
@@ -66,7 +67,10 @@ class Main:
 			if version == Common.Version.Fixed:
 				outputDir = os.path.join("..", "Predictor", "seedot_fixed", "testing")
 				datasetOutputDir = os.path.join("..", "Predictor", "seedot_fixed", datasetType)
-			elif version == Common.Version.Float:
+			elif version == Common.Version.Float and self.useHandWrittenFloat is False:
+				outputDir = os.path.join("..", "Predictor", "seedot_float", "testing")
+				datasetOutputDir = os.path.join("..", "Predictor", "seedot_float", datasetType)
+			elif version == Common.Version.Float and self.useHandWrittenFloat:
 				outputDir = os.path.join("..", "Predictor", self.algo + "_float", "testing")
 				datasetOutputDir = os.path.join("..", "Predictor", self.algo + "_float", datasetType)
 		else:
@@ -259,6 +263,10 @@ class Main:
 		print("---------------------------\n")
 
 		res = self.convert(Common.Version.Float, Common.DatasetType.Testing, Common.Target.X86)
+		if res == False:
+			return False
+
+		res = self.compile(Common.Target.X86, self.sf)
 		if res == False:
 			return False
 

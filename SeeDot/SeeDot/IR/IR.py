@@ -34,18 +34,25 @@ class Int(IntExpr):
 	def subst(self, from_idf:str, to_e:Expr):
 		return Int(self.n)
 
+class Float(IntExpr):
+	def __init__(self, n:float):
+		self.n = n
+	def subst(self, from_idf:str, to_e:Expr):
+		return Float(self.n)
+
 class Var(IntExpr):
-	def __init__(self, idf:str, idx:list=[], inputVar=False):
+	def __init__(self, idf:str, idx:list=[], inputVar=False, internalVar=False):
 		self.idf = idf
 		self.idx = idx
 		self.inputVar = inputVar
+		self.internalVar = internalVar
 	def subst(self, from_idf:str, to_e:Expr):
 		idx_new = list(map(lambda e: e.subst(from_idf, to_e), self.idx))
 		if self.idf != from_idf:
-			return Var(self.idf, idx_new, self.inputVar)
+			return Var(self.idf, idx_new, self.inputVar, self.internalVar)
 		else:
 			if isinstance(to_e, Var):
-				return Var(to_e.idf, to_e.idx + idx_new, to_e.inputVar and self.inputVar)
+				return Var(to_e.idf, to_e.idx + idx_new, to_e.inputVar and self.inputVar, self.internalVar)
 			elif isinstance(to_e, Int):
 				return to_e
 			else:

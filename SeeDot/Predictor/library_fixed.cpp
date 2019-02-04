@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "datatypes.h"
-#include "library.h"
+#include "library_fixed.h"
 
 // C = A + B
 void MatAdd(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {

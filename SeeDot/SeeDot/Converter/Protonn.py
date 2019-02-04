@@ -98,6 +98,36 @@ class Protonn:
 
 		self.computeVars()
 
+	# Write the ProtoNN algorithm in terms of the compiler DSL.
+	# Compiler takes this as input and generates fixed-point code.
+	def genInputForCompiler(self):
+		with open(self.inputFile, 'w') as file:
+			# Matrix declarations
+			file.write("let X   = (%d, 1)   in [%.6f, %.6f] in\n" % ((len(self.X[0]),) + self.trainDatasetRange))
+			file.write("let W  = (%d, %d)    in [%.6f, %.6f] in\n" % ((self.d, self.D) + matRange(self.W)))
+			file.write("let B  = (%d, %d, 1) in [%.6f, %.6f] in\n" % ((self.p, self.d) + matRange(self.B)))
+			file.write("let Z  = (%d, %d, 1) in [%.6f, %.6f] in\n" % ((self.p, self.c) + matRange(self.Z)))
+			if noNorm() == False:
+				file.write("let norm = (%d, 1)   in [%.6f, %.6f] in\n" % ((self.d,) + listRange(self.Norm)))
+			file.write("let g2 = %.6f in\n\n" % (self.g2))
+
+			# Algorithm
+			if useSparseMat():
+				s = "W |*| X"
+			else:
+				s = "W * X"
+
+			if noNorm() == False:
+				s = s + " - norm"
+
+			file.write("let WX = %s in\n" % (s))
+			file.write("let res = $(i = [0:%d])\n" % (self.p))
+			file.write("(\n")
+			file.write("\tlet del = WX - B[i] in\n")
+			file.write("\tZ[i] * exp(-g2 * (del^T * del))\n")
+			file.write(") in\n")
+			file.write("argmax(res)\n")
+
 	def computeModelSize(self):
 		if noNorm():
 			norm_num = 0
@@ -215,36 +245,6 @@ class ProtonnFixed(Protonn):
 			file.write("Range of training dataset: [%.6f, %.6f]\n" % (self.trainDatasetRange))
 			file.write("Test dataset scaled by: %d\n\n" % (scale))
 
-	# Write the ProtoNN algorithm in terms of the compiler DSL.
-	# Compiler takes this as input and generates fixed-point code.
-	def genInputForCompiler(self):
-		with open(self.inputFile, 'w') as file:
-			# Matrix declarations
-			file.write("let X   = (%d, 1)   in [%.6f, %.6f] in\n" % ((len(self.X[0]),) + self.trainDatasetRange))
-			file.write("let W  = (%d, %d)    in [%.6f, %.6f] in\n" % ((self.d, self.D) + matRange(self.W)))
-			file.write("let B  = (%d, %d, 1) in [%.6f, %.6f] in\n" % ((self.p, self.d) + matRange(self.B)))
-			file.write("let Z  = (%d, %d, 1) in [%.6f, %.6f] in\n" % ((self.p, self.c) + matRange(self.Z)))
-			if noNorm() == False:
-				file.write("let norm = (%d, 1)   in [%.6f, %.6f] in\n" % ((self.d,) + listRange(self.Norm)))
-			file.write("let g2 = %.6f in\n\n" % (self.g2))
-
-			# Algorithm
-			if useSparseMat():
-				s = "W |*| X"
-			else:
-				s = "W * X"
-
-			if noNorm() == False:
-				s = s + " - norm"
-
-			file.write("let WX = %s in\n" % (s))
-			file.write("let res = $(i = [0:%d])\n" % (self.p))
-			file.write("(\n")
-			file.write("\tlet del = WX - B[i] in\n")
-			file.write("\tZ[i] * exp(-g2 * (del^T * del))\n")
-			file.write(") in\n")
-			file.write("argmax(res)\n")
-
 	# Quantize the matrices
 	def transformModel(self):
 		if dumpDataset():
@@ -325,8 +325,18 @@ class ProtonnFloat(Protonn):
 				file.write("Trimmed the dataset from %d to %d data points; %.3f%%\n" % (beforeLen, afterLen, float(beforeLen - afterLen) / beforeLen * 100))
 				file.write("New range of X: [%.6f, %.6f]\n" % (afterRange))
 
+			self.trainDatasetRange = afterRange
+		else:
+			self.X_train, _ = readXandY(useTrainingSet=True)
+
+			# Trim some data points from X_train
+			self.X_train, _ = trimMatrix(self.X_train)
+
+			self.trainDatasetRange = matRange(self.X_train)
+
 	def transformModel(self):
-		pass
+		if dumpDataset():
+			self.genInputForCompiler()
 
 	# Writing the model as a bunch of variables, arrays and matrices to a file
 	def writeModel(self):

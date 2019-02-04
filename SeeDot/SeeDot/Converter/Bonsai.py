@@ -108,6 +108,53 @@ class Bonsai:
 			print("Warning: Empty matrix T\n")
 			self.T = [[-0.000001, 0.000001]]
 
+	# Write the Bonsai algorithm in terms of the compiler DSL.
+	# Compiler takes this as input and generates fixed-point code.
+	def genInputForCompiler(self):
+		# Threshold for mean
+		m_mean, M_mean = listRange(self.mean)
+		if abs(m_mean) < 0.0000005:
+			m_mean = -0.000001
+		if abs(M_mean) < 0.0000005:
+			M_mean = 0.000001
+
+		with open(self.inputFile, 'w') as file:
+			# Matrix declarations
+			file.write("let X   = (%d, 1)   in [%.6f, %.6f] in\n" % ((len(self.X[0]),) + self.trainDatasetRange))
+			file.write("let Z   = (%d, %d)  in [%.6f, %.6f] in\n" % ((self.d, self.D) + matRange(self.Z)))
+			file.write("let W   = (%d, %d, %d) in [%.6f, %.6f] in\n" % ((self.totalNodes, self.numClasses, self.d) + matRange(self.W)))
+			file.write("let V   = (%d, %d, %d) in [%.6f, %.6f] in\n" % ((self.totalNodes, self.numClasses, self.d) + matRange(self.V)))
+			file.write("let T   = (%d, 1, %d) in [%.6f, %.6f] in\n" % ((self.internalNodes, self.d) + matRange(self.T)))
+			file.write("let mean = (%d, 1) in [%.6f, %.6f] in\n\n" % (self.d, m_mean, M_mean))
+
+			if useSparseMat():
+				file.write("let ZX = Z |*| X - mean in\n\n")
+			else:
+				file.write("let ZX = Z * X - mean in\n\n")
+
+			# Computing score for depth == 0
+			file.write("// depth 0\n")
+			file.write("let node0   = 0    in\n")
+			file.write("let W0      = W[node0] * ZX in\n")
+			file.write("let V0      = V[node0] * ZX in\n")
+			file.write("let V0_tanh = tanh(V0) in\n")
+			file.write("let score0  = W0 <*> V0_tanh in\n\n")
+
+			# Computing score for depth > 0
+			for i in range(1, self.depth + 1):
+				file.write("// depth %d\n" % (i))
+				file.write("let node%d   = (T[node%d] * ZX) >= 0? 2 * node%d + 1 : 2 * node%d + 2 in\n" % (i, i - 1, i - 1, i - 1))
+				file.write("let W%d      = W[node%d] * ZX in\n" % (i, i))
+				file.write("let V%d      = V[node%d] * ZX in\n" % (i, i))
+				file.write("let V%d_tanh = tanh(V%d) in\n" % (i, i))
+				file.write("let score%d  = score%d + W%d <*> V%d_tanh in\n\n" % (i, i - 1, i, i))
+
+			# Predicting the class
+			if self.numClasses <= 2:
+				file.write("sgn(score%d)\n" % (self.depth))
+			else:
+				file.write("argmax(score%d)\n" % (self.depth))
+
 	def computeModelSize(self):
 		mean_num = len(self.mean)
 		if useSparseMat():
@@ -215,53 +262,6 @@ class BonsaiFixed(Bonsai):
 			file.write("Range of training dataset: [%.6f, %.6f]\n" % (self.trainDatasetRange))
 			file.write("Test dataset scaled by: %d\n\n" % (scale))
 
-	# Write the Bonsai algorithm in terms of the compiler DSL.
-	# Compiler takes this as input and generates fixed-point code.
-	def genInputForCompiler(self):
-		# Threshold for mean
-		m_mean, M_mean = listRange(self.mean)
-		if abs(m_mean) < 0.0000005:
-			m_mean = -0.000001
-		if abs(M_mean) < 0.0000005:
-			M_mean = 0.000001
-
-		with open(self.inputFile, 'w') as file:
-			# Matrix declarations
-			file.write("let X   = (%d, 1)   in [%.6f, %.6f] in\n" % ((len(self.X[0]),) + self.trainDatasetRange))
-			file.write("let Z   = (%d, %d)  in [%.6f, %.6f] in\n" % ((self.d, self.D) + matRange(self.Z)))
-			file.write("let W   = (%d, %d, %d) in [%.6f, %.6f] in\n" % ((self.totalNodes, self.numClasses, self.d) + matRange(self.W)))
-			file.write("let V   = (%d, %d, %d) in [%.6f, %.6f] in\n" % ((self.totalNodes, self.numClasses, self.d) + matRange(self.V)))
-			file.write("let T   = (%d, 1, %d) in [%.6f, %.6f] in\n" % ((self.internalNodes, self.d) + matRange(self.T)))
-			file.write("let mean = (%d, 1) in [%.6f, %.6f] in\n\n" % (self.d, m_mean, M_mean))
-
-			if useSparseMat():
-				file.write("let ZX = Z |*| X - mean in\n\n")
-			else:
-				file.write("let ZX = Z * X - mean in\n\n")
-
-			# Computing score for depth == 0
-			file.write("// depth 0\n")
-			file.write("let node0   = 0    in\n")
-			file.write("let W0      = W[node0] * ZX in\n")
-			file.write("let V0      = V[node0] * ZX in\n")
-			file.write("let V0_tanh = tanh(V0) in\n")
-			file.write("let score0  = W0 <*> V0_tanh in\n\n")
-
-			# Computing score for depth > 0
-			for i in range(1, self.depth + 1):
-				file.write("// depth %d\n" % (i))
-				file.write("let node%d   = (T[node%d] * ZX) >= 0? 2 * node%d + 1 : 2 * node%d + 2 in\n" % (i, i - 1, i - 1, i - 1))
-				file.write("let W%d      = W[node%d] * ZX in\n" % (i, i))
-				file.write("let V%d      = V[node%d] * ZX in\n" % (i, i))
-				file.write("let V%d_tanh = tanh(V%d) in\n" % (i, i))
-				file.write("let score%d  = score%d + W%d <*> V%d_tanh in\n\n" % (i, i - 1, i, i))
-
-			# Predicting the class
-			if self.numClasses <= 2:
-				file.write("sgn(score%d)\n" % (self.depth))
-			else:
-				file.write("argmax(score%d)\n" % (self.depth))
-
 	# Quantize the matrices
 	def transformModel(self):
 		if dumpDataset():
@@ -347,35 +347,55 @@ class BonsaiFloat(Bonsai):
 				file.write("Trimmed the dataset from %d to %d data points; %.3f%%\n" % (beforeLen, afterLen, float(beforeLen - afterLen) / beforeLen * 100))
 				file.write("New range of X: [%.6f, %.6f]\n" % (afterRange))
 
+			self.trainDatasetRange = afterRange
+		else:
+			self.X_train, _ = readXandY(useTrainingSet=True)
+
+			# Trim some data points from X_train
+			self.X_train, _ = trimMatrix(self.X_train)
+
+			self.trainDatasetRange = matRange(self.X_train)
+
 	def transformModel(self):
-		pass
+		if dumpDataset():
+			self.genInputForCompiler()
 
 	# Writing the model as a bunch of variables, arrays and matrices to a file
 	def writeModel(self):
-		lists = {'mean': self.mean}
-		mats = {}
+		self.writeHeader()
+
+		writeVars({'D': self.D, 'd': self.d, 'c': self.numClasses, 'depth': self.depth,
+						'totalNodes': self.totalNodes, 'internalNodes': self.internalNodes,
+						'tanh_limit': Common.tanh_limit}, self.headerFile)
+
+		if forArduino():
+			writeListAsArray(self.X[0], 'X', self.headerFile)
+			writeVars({'Y': self.Y[0][0]}, self.headerFile)
+
+		writeListAsArray(self.mean, 'mean', self.headerFile,
+						 shapeStr="[%d]" * 2 % (self.d, 1))
 
 		# Sparse matrices are converted in to two arrays containing values and indices to reduce space
 		if useSparseMat():
 			Z_transp = matTranspose(self.Z)
 			Zval, Zidx = convertToSparse(Z_transp)
-			lists.update({'Zval': Zval, 'Zidx': Zidx})
+			writeListsAsArray({'Zval': Zval, 'Zidx': Zidx}, self.headerFile)
 		else:
-			mats['Z'] = self.Z
+			writeMatAsArray(self.Z, 'Z', self.headerFile)
 
-		mats.update({'W': self.W, 'V': self.V, 'T': self.T})
+		# If T_m is 0, the generated code will throw an error
+		# Hence, setting it to 1
+		T_m = self.internalNodes
+		if T_m == 0:
+			T_m = 1
 
-		self.writeHeader()
-		writeVars({'D': self.D, 'd': self.d, 'c': self.numClasses, 'depth': self.depth,
-								'totalNodes': self.totalNodes, 'internalNodes': self.internalNodes,
-								'tanh_limit': Common.tanh_limit}, self.headerFile)
-		
-		if forArduino():
-			writeListAsArray(self.X[0], 'X', self.headerFile)
-			writeVars({'Y': self.Y[0][0]}, self.headerFile)
+		writeMatAsArray(self.W, 'W', self.headerFile,
+						shapeStr="[%d]" * 3 % (self.totalNodes, self.numClasses, self.d))
+		writeMatAsArray(self.V, 'V', self.headerFile,
+						shapeStr="[%d]" * 3 % (self.totalNodes, self.numClasses, self.d))
+		writeMatAsArray(self.T, 'T', self.headerFile,
+						shapeStr="[%d]" * 3 % (T_m, 1, self.d))
 
-		writeListsAsArray(lists, self.headerFile)
-		writeMatsAsArray(mats, self.headerFile)
 		self.writeFooter()
 
 	def writeModelForHls(self):

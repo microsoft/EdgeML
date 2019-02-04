@@ -33,7 +33,13 @@
     <ClCompile Include="seedot_fixed.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="library.cpp">
+    <ClCompile Include="library_fixed.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="library_float.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="seedot_float.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,16 +47,16 @@
     <ClInclude Include="datatypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="model.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="profile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="library.h">
+    <ClInclude Include="predictors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="predictors.h">
+    <ClInclude Include="library_fixed.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="library_float.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

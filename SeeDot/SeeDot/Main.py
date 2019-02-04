@@ -4,6 +4,8 @@ import json
 import os
 from itertools import product
 
+from Converter.Converter import Converter
+
 import Common
 from Compiler import Compiler
 from SeeDot import Main
@@ -115,6 +117,8 @@ class MainDriver:
 				expectedAcc = curr['accuracy']
 				if version == Common.Version.Fixed:
 					bestScale = curr['sf']
+				else:
+					bestScale = results[algo]['int16'][dataset]['sf']
 
 			except Exception as e:
 				assert self.args.load_sf == False
@@ -142,8 +146,8 @@ class MainDriver:
 				Util.Config.codegen = prev
 
 	def runCompilerDriver(self):
-		for iter in product(self.args.algo, self.args.target):
-			algo, target = iter
+		for iter in product(self.args.algo, self.args.version, self.args.target):
+			algo, version, target = iter
 
 			print("\nGenerating code for " + algo + " " + target + "...")
 					
@@ -154,7 +158,7 @@ class MainDriver:
 			os.makedirs(outputDir, exist_ok=True)
 
 			outputFile = os.path.join(outputDir, algo + "-fixed.cpp")
-			obj = Compiler(algo, target, inputFile, outputFile, profileLogFile, self.args.max_scale_factor, self.args.workers)
+			obj = Compiler(algo, version, target, inputFile, outputFile, profileLogFile, self.args.max_scale_factor, self.args.workers)
 			obj.run()
 
 	def runConverterDriver(self):
@@ -180,7 +184,7 @@ class MainDriver:
 			testingInput = os.path.join(datasetDir, "testing.tsv")
 							
 			obj = Converter(algo, version, datasetType, target, outputDir, outputDir,self.args.workers)
-			obj.setInput(modelDir, "tsv", trainingInput, testingInput)
+			obj.setInput(modelDir, trainingInput, testingInput)
 			obj.run()
 
 	def runPredictorDriver(self):
@@ -216,7 +220,7 @@ class MainDriver:
 			testingInput = os.path.join(datasetDir, "testing.tsv")
 							
 			obj = Converter(algo, version, datasetType, Common.Target.X86, datasetOutputDir, outputDir, self.args.workers)
-			obj.setInput(modelDir, "tsv", trainingInput, testingInput)
+			obj.setInput(modelDir, trainingInput, testingInput)
 			obj.run()
 
 			print("Building and executing " + algo + " " + version + " " + dataset + " " + datasetType + "...")

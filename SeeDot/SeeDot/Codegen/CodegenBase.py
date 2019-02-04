@@ -27,6 +27,9 @@ class CodegenBase:
 		else:
 			assert False
 
+	def printFloat(self, ir):
+		self.out.printf('%ff', ir.n)
+
 	def printVar(self, ir):
 		self.out.printf('%s', ir.idf)
 		for e in ir.idx:
@@ -180,7 +183,7 @@ class CodegenBase:
 	def printMemset(self, ir):
 		self.out.printf('memset(', indent = True)
 		self.print(ir.e)
-		self.out.printf(', 0, sizeof(%s) * %d);\n' % (IR.DataType.getIntStr(), ir.len))
+		self.out.printf(', 0, sizeof(%s) * %d);\n' % ("float" if forFloat() else "MYINT", ir.len))
 
 	def printPrint(self, ir):
 		self.out.printf('cout << ', indent=True)
@@ -208,6 +211,8 @@ class CodegenBase:
 	def print(self, ir):
 		if isinstance(ir, IR.Int):
 			return self.printInt(ir)
+		elif isinstance(ir, IR.Float):
+			return self.printFloat(ir)
 		elif isinstance(ir, IR.Var):
 			return self.printVar(ir)
 		elif isinstance(ir, IR.Bool):
@@ -264,7 +269,12 @@ class CodegenBase:
 		for decl in self.decls:
 			if decl in self.globalVars:
 				continue
-			typ_str = IR.DataType.getIntStr()
+			
+			if forFloat() and decl not in self.internalVars:
+				typ_str = IR.DataType.getFloatStr()
+			else:
+				typ_str = IR.DataType.getIntStr()
+			
 			idf_str = decl
 			type = self.decls[decl]
 			if Type.isInt(type): shape_str = ''

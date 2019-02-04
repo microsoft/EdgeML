@@ -13,7 +13,7 @@ from Util import *
 
 class X86(CodegenBase):
 
-	def __init__(self, writer, decls, scales, intvs, cnsts, expTables, globalVars):
+	def __init__(self, writer, decls, scales, intvs, cnsts, expTables, globalVars, internalVars):
 		self.out = writer
 		self.decls = decls
 		self.scales = scales
@@ -21,6 +21,7 @@ class X86(CodegenBase):
 		self.cnsts = cnsts
 		self.expTables = expTables
 		self.globalVars = globalVars
+		self.internalVars = internalVars
 
 	def printPrefix(self):
 		self.printCincludes()
@@ -39,10 +40,10 @@ class X86(CodegenBase):
 		self.out.printf('#include <iostream>\n\n', indent=True)
 		self.out.printf('#include "datatypes.h"\n', indent=True)
 		self.out.printf('#include "predictors.h"\n', indent=True)
-		self.out.printf('#include "library.h"\n', indent=True)
-		self.out.printf('#include "model.h"\n\n', indent=True)
+		self.out.printf('#include "library_%s.h"\n' % (getVersion()), indent=True)
+		self.out.printf('#include "seedot_%s\\testing\\model.h"\n\n' % (getVersion()), indent=True)
 		self.out.printf('using namespace std;\n', indent=True)
-		self.out.printf('using namespace %s_fixed;\n\n' % (getAlgo()), indent=True)
+		self.out.printf('using namespace %s_%s;\n\n' % (getAlgo(), getVersion()), indent=True)
 
 	def printExpTables(self):
 		for exp, [table, [tableVarA, tableVarB]] in self.expTables.items():
@@ -60,7 +61,13 @@ class X86(CodegenBase):
 		self.out.printf('\n};\n')
 
 	def printCHeader(self):
-		self.out.printf('int seedotFixed(MYINT **X) {\n', indent=True)
+		if forFloat():
+			func = "Float"
+			type = "float"
+		else:
+			func = "Fixed"
+			type = "MYINT"
+		self.out.printf('int seedot%s(%s **X) {\n' % (func, type), indent=True)
 		self.out.increaseIndent()
 
 	def printSuffix(self, expr:IR.Expr):

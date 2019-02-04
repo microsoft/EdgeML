@@ -29,11 +29,12 @@ from Writer import Writer
 
 class Compiler:
 
-	def __init__(self, algo, target, inputFile, outputFile, profileLogFile, maxExpnt, numWorkers):
+	def __init__(self, algo, version, target, inputFile, outputFile, profileLogFile, maxExpnt, numWorkers):
 		if os.path.isfile(inputFile) == False:
 			raise Exception("Input file doesn't exist")
 
 		setAlgo(algo)
+		setVersion(version)
 		setTarget(target)
 		setNumWorkers(numWorkers)
 		self.input = FileStream(inputFile)
@@ -90,7 +91,7 @@ class Compiler:
 		
 		res = compiler.visit(ast)
 
-		state = compiler.decls, compiler.scales, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.globalVars
+		state = compiler.decls, compiler.scales, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.globalVars, compiler.internalVars
 
 		return res, state
 

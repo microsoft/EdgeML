@@ -56,6 +56,7 @@ class IRBuilder(ASTVisitor):
 		self.scales = {}
 		self.intvs = {}
 		self.cnsts = {}
+		self.internalVars = []
 
 	def readProfileFile(self):
 		if self.profileLoaded == True:
@@ -1156,6 +1157,7 @@ class IRBuilder(ASTVisitor):
 		prog_out = IRUtil.concatPrograms(prog_in, prog_argmax)
 		
 		self.decls[expr_out.idf] = Type.Int()
+		self.internalVars.append(expr_out.idf)
 
 		return (prog_out, expr_out)
 
@@ -1177,6 +1179,7 @@ class IRBuilder(ASTVisitor):
 		prog_out = IRUtil.concatPrograms(prog_in, prog_sgn)
 		
 		self.decls[expr_out.idf] = Type.Int()
+		self.internalVars.append(expr_out.idf)
 		
 		return (prog_out, expr_out)
 
@@ -1191,10 +1194,14 @@ class IRBuilder(ASTVisitor):
 		scale_in = self.scales[expr_in.idf]
 		intv_in = self.intvs[expr_in.idf]
 
-		# Scale tanh limit
-		tanh_limit = int(np.ldexp(Common.tanh_limit, -scale_in))
-		assert tanh_limit < np.iinfo(IR.DataType.getIntClass()).max
-		tanh_limit = IR.DataType.getInt(tanh_limit)
+		if forFloat():
+			tanh_limit = IR.Float(Common.tanh_limit)
+		else:
+			# Scale tanh limit
+			tanh_limit = int(np.ldexp(Common.tanh_limit, -scale_in))
+			assert tanh_limit < np.iinfo(IR.DataType.getIntClass()).max
+			tanh_limit = IR.DataType.getInt(tanh_limit)
+			tanh_limit = IR.Int(tanh_limit)
 
 		tanh_intv = self.getInterval(scale_in, Common.tanh_limit, Common.tanh_limit)
 		intv_out = self.updateTanhIntv(intv_in, tanh_intv)
@@ -1207,7 +1214,7 @@ class IRBuilder(ASTVisitor):
 								expr_in: "A",
 								IR.Int(I): "I",
 								IR.Int(J): "J",
-								IR.Int(tanh_limit): "threshold"
+								tanh_limit: "threshold"
 								})
 
 		prog_tanh = IR.Prog([cmd0, funcCall])
@@ -1344,6 +1351,7 @@ class IRBuilder(ASTVisitor):
 		# e1 : Int
 		if Type.isInt(type_decl):
 			self.decls[idf] = Type.Int()
+			self.internalVars.append(idf)
 
 			(prog_in, expr_in) = self.visit(node.expr)
 

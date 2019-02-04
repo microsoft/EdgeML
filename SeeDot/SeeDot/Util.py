@@ -14,6 +14,15 @@ def getAlgo():
 def setAlgo(algo:str):
 	Config.algo = algo
 
+def getVersion():
+	return Config.version
+
+def setVersion(version:str):
+	Config.version = version
+
+def forFloat():
+	return Config.version == Common.Version.Float
+
 def getTarget():
 	return Config.target
 

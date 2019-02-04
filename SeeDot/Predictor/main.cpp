@@ -114,7 +114,8 @@ int main(int argc, char *argv[]) {
 	if (version == Fixed)
 		inputDir = "seedot_fixed\\" + datasetTypeStr + "\\";
 	else
-		inputDir = algoStr + "_float\\" + datasetTypeStr + "\\";
+		//inputDir = algoStr + "_float\\" + datasetTypeStr + "\\";
+		inputDir = "seedot_float\\" + datasetTypeStr + "\\";
 
 	ifstream featuresFile(inputDir + "X.csv");
 	ifstream lablesFile(inputDir + "Y.csv");
@@ -137,7 +138,7 @@ int main(int argc, char *argv[]) {
 	bool alloc = false;
 	int features_size = -1;
 	MYINT **features_int = NULL;
-	float *features_float = NULL;
+	float **features_float = NULL;
 
 	// Initialize variables used for profiling
 	initializeProfiling();
@@ -157,8 +158,11 @@ int main(int argc, char *argv[]) {
 				for (int i = 0; i < features_size; i++)
 					features_int[i] = new MYINT[1];
 			}
-			else
-				features_float = new float[features_size];
+			else {
+				features_float = new float*[features_size];
+				for (int i = 0; i < features_size; i++)
+					features_float[i] = new float[1];
+			}
 
 			alloc = true;
 		}
@@ -175,22 +179,25 @@ int main(int argc, char *argv[]) {
 			}
 		else
 			for (int i = 0; i < features_size; i++)
-				features_float[i] = (float)(atof(features.at(i).c_str()));
+				features_float[i][0] = (float)(atof(features.at(i).c_str()));
 
 		// Invoke the predictor function
 		int res;
 		if (algo == Bonsai && version == Fixed)
 			res = seedotFixed(features_int);
 		else if (algo == Bonsai && version == Float)
-			res = bonsaiFloat(features_float);
+			//res = bonsaiFloat(features_float);
+			res = seedotFloat(features_float);
 		else if (algo == Lenet && version == Fixed)
 			res = seedotFixed(features_int);
 		else if (algo == Lenet && version == Float)
-			res = lenetFloat(features_float);
+			//res = lenetFloat(features_float);
+			res = seedotFloat(features_float);
 		else if (algo == Protonn && version == Fixed)
 			res = seedotFixed(features_int);
 		else if (algo == Protonn && version == Float)
-			res = protonnFloat(features_float);
+			//res = protonnFloat(features_float);
+			res = seedotFloat(features_float);
 
 		if ((res + 1) == label) {
 			correct++;
@@ -208,8 +215,11 @@ int main(int argc, char *argv[]) {
 			delete features_int[i];
 		delete features_int;
 	}
-	else
+	else {
+		for (int i = 0; i < features_size; i++)
+			delete features_float[i];
 		delete features_float;
+	}
 
 	float accuracy = (float)correct / total * 100.0f;
 
