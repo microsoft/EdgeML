@@ -326,7 +326,17 @@ class ProtonnFloat(Protonn):
 				file.write("New range of X: [%.6f, %.6f]\n" % (afterRange))
 
 	def transformModel(self):
-		pass
+		self.W_float = self.W
+		self.B_float = self.B
+		self.Z_float = self.Z
+		if noNorm() == False:
+			self.Norm_float = self.Norm
+		
+		self.W, _ = scaleMat(self.W)
+		self.B, _ = scaleMat(self.B)
+		self.Z, _ = scaleMat(self.Z)
+		if noNorm() == False:
+			self.Norm, _ = scaleList(self.Norm)
 
 	# Writing the model as a bunch of variables, arrays and matrices to a file
 	def writeModel(self):
@@ -354,6 +364,20 @@ class ProtonnFloat(Protonn):
 
 		writeVars({'D': self.D, 'd': self.d, 'p': self.p,
 				   'c': self.c, 'g2': self.g2}, self.headerFile)
+
+		writeVars({'Z_min': matMin(self.Z_float),
+					'Z_max': matMax(self.Z_float),
+					'W_min': matMin(self.W_float),
+					'W_max': matMax(self.W_float),
+					'B_min': matMin(self.B_float),
+					'B_max': matMax(self.B_float)
+					}, self.headerFile)
+		
+		if noNorm() == False:
+			writeVars({'norm_min': min(self.Norm_float),
+						'norm_max': max(self.Norm_float)
+						}, self.headerFile)
+
 		writeListsAsArray(lists, self.headerFile)
 		writeMatsAsArray(mats, self.headerFile)
 		self.writeFooter()

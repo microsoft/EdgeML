@@ -213,7 +213,23 @@ class LenetFloat(Lenet):
 				file.write("New range of X: [%.6f, %.6f]\n" % (afterRange))
 
 	def transformModel(self):
-		pass
+		self.Wc1_float = self.Wc1
+		self.Wc2_float = self.Wc2
+		self.Wf1_float = self.Wf1
+		self.Wf2_float = self.Wf2
+		self.Bc1_float = self.Bc1
+		self.Bc2_float = self.Bc2
+		self.Bf1_float = self.Bf1
+		self.Bf2_float = self.Bf2
+
+		self.Wc1, _ = scaleMat(self.Wc1)
+		self.Wc2, _ = scaleMat(self.Wc2)
+		self.Wf1, _ = scaleMat(self.Wf1)
+		self.Wf2, _ = scaleMat(self.Wf2)
+		self.Bc1, _ = scaleMat(self.Bc1)
+		self.Bc2, _ = scaleMat(self.Bc2)
+		self.Bf1, _ = scaleMat(self.Bf1)
+		self.Bf2, _ = scaleMat(self.Bf2)
 
 	# Writing the model as a bunch of variables, arrays and matrices to a file
 	def writeModel(self):
@@ -222,6 +238,24 @@ class LenetFloat(Lenet):
 		if forArduino():
 			writeListAsArray(self.X[0], 'X', self.headerFile)
 			writeVars({'Y': self.Y[0][0]}, self.headerFile)
+
+		writeVars({'Wc1_min': matMin(self.Wc1_float),
+					'Wc1_max': matMax(self.Wc1_float),
+					'Wc2_min': matMin(self.Wc2_float),
+					'Wc2_max': matMax(self.Wc2_float),
+					'Wf1_min': matMin(self.Wf1_float),
+					'Wf1_max': matMax(self.Wf1_float),
+					'Wf2_min': matMin(self.Wf2_float),
+					'Wf2_max': matMax(self.Wf2_float),
+					'Bc1_min': matMin(self.Bc1_float),
+					'Bc1_max': matMax(self.Bc1_float),
+					'Bc2_min': matMin(self.Bc2_float),
+					'Bc2_max': matMax(self.Bc2_float),
+					'Bf1_min': matMin(self.Bf1_float),
+					'Bf1_max': matMax(self.Bf1_float),
+					'Bf2_min': matMin(self.Bf2_float),
+					'Bf2_max': matMax(self.Bf2_float)
+					}, self.headerFile)
 
 		writeMatAsArray(self.Wc1, 'Wc1', self.headerFile, shapeStr="[%d]" * 4 % (5, 5, 3, 4))
 		writeMatAsArray(self.Wc2, 'Wc2', self.headerFile, shapeStr="[%d]" * 4 % (5, 5, 4, 12))

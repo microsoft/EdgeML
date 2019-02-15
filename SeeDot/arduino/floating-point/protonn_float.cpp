@@ -22,12 +22,15 @@ int predict() {
 		float input = getFloatFeature(i);
 
 #if P_SPARSE_W
-		index = ((MYINT) pgm_read_word_near(&Widx[ite_idx]));
+		index = ((int8_t) pgm_read_byte_near(&Widx[ite_idx]));
 		while (index != 0) {
-			WX[index - 1] += ((float) pgm_read_float_near(&Wval[ite_val])) * input;
+			// HERE
+			float w = W_min + ((W_max - W_min) * ((int8_t) pgm_read_byte_near(&Wval[ite_val]))) / 128;
+
+			WX[index - 1] += w * input;
 			ite_idx++;
 			ite_val++;
-			index = ((MYINT) pgm_read_word_near(&Widx[ite_idx]));
+			index = ((int8_t) pgm_read_byte_near(&Widx[ite_idx]));
 		}
 		ite_idx++;
 #else
@@ -38,8 +41,12 @@ int predict() {
 
 #if P_NORM == 0
 #elif P_NORM == 1
-	for (MYINT i = 0; i < d; i++)
-		WX[i] -= ((float) pgm_read_float_near(&norm[i]));
+	for (MYINT i = 0; i < d; i++) {
+		// HERE
+		float n = norm_min + ((norm_max - norm_min) * ((int8_t) pgm_read_byte_near(&norm[i]))) / 128;
+		
+		WX[i] -= n;
+	}
 #endif
 
 	float score[c];
@@ -50,15 +57,22 @@ int predict() {
 		// Norm of WX - B
 		float v = 0;
 		for (MYINT j = 0; j < d; j++) {
-			float t = WX[j] - ((float) pgm_read_float_near(&B[j][i]));
+			// HERE
+			float b = B_min + ((B_max - B_min) * ((int8_t) pgm_read_byte_near(&B[j][i]))) / 128;
+
+			float t = WX[j] - b;
 			v += t * t;
 		}
 
 		// Prediction distribution
 		float e = exp(-g2 * v);
 
-		for (MYINT j = 0; j < c; j++)
-			score[j] += ((float) pgm_read_float_near(&Z[j][i])) * e;
+		for (MYINT j = 0; j < c; j++) {
+			// HERE
+			float z = Z_min + ((Z_max - Z_min) * ((int8_t) pgm_read_byte_near(&Z[j][i]))) / 128;
+			
+			score[j] += z * e;
+		}
 	}
 
 	// Argmax of score

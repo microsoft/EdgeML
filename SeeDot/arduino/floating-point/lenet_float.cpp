@@ -9,7 +9,7 @@
 
 using namespace model;
 
-void convolution(float *input, const float *weight, const float *bias, float *output, MYUINT H, MYUINT W, MYUINT CI, MYUINT HF, MYUINT WF, MYUINT CO) {
+void convolution(float *input, const int8_t *weight, const int8_t *bias, float *output, MYUINT H, MYUINT W, MYUINT CI, MYUINT HF, MYUINT WF, MYUINT CO, float weight_min, float weight_max, float bias_min, float bias_max) {
 	MYUINT padH = (HF - 1) / 2;
 	MYUINT padW = (WF - 1) / 2;
 
@@ -22,13 +22,20 @@ void convolution(float *input, const float *weight, const float *bias, float *ou
 					for (MYUINT wf = 0; (wf < WF); wf++) {
 						for (MYUINT ci = 0; (ci < CI); ci++) {
 							float in = (((((h + hf) < padH) || ((h + hf) >= (H + padH))) || (((w + wf) < padW) || ((w + wf) >= (W + padW)))) ? 0 : input[((h + hf) - padH) * W * CI + ((w + wf) - padW) * CI + ci]);
-							float we = ((float)(pgm_read_float_near(&weight[hf * WF * CI * CO + wf * CI * CO + ci * CO + co])));
+							
+							// HERE
+							int8_t we_int = (int8_t) pgm_read_byte_near(&weight[hf * WF * CI * CO + wf * CI * CO + ci * CO + co]);
+							float we = weight_min + ((weight_max - weight_min) * (we_int)) / 128;
+							
 							acc += (in * we);
 						}
 					}
 				}
 
-				float res = acc + ((float)(pgm_read_float_near(&bias[co])));
+				// HERE
+				float b = bias_min + ((bias_max - bias_min) * ((int8_t) pgm_read_byte_near(&bias[co]))) / 128;
+
+				float res = acc + b;
 				res = (res > 0) ? res : 0;
 
 				output[h * W * CO + w * CO + co] = res;
@@ -62,14 +69,21 @@ void maxpool(float *input, float *output, MYUINT H, MYUINT W, MYUINT C, MYUINT s
 	return;
 }
 
-void matMul(float *x, const float *y, float *z, const float *bias, MYUINT K, MYUINT J, bool relu) {
+void matMul(float *x, const int8_t *y, float *z, const int8_t *bias, MYUINT K, MYUINT J, bool relu, float y_min, float y_max, float bias_min, float bias_max) {
 
 	for (MYUINT j = 0; j < J; j++) {
 		float acc = 0;
-		for (MYUINT k = 0; k < K; k++)
-			acc += (x[k] * ((float)(pgm_read_float_near(&y[k * J + j]))));
+		for (MYUINT k = 0; k < K; k++) {
+			// HERE
+			float yy = y_min + ((y_max - y_min) * ((int8_t) pgm_read_byte_near(&y[k * J + j]))) / 128;
 
-		float res = acc + ((float)(pgm_read_float_near(&bias[j])));
+			acc += (x[k] * yy);
+		}
+
+		// HERE
+		float b = bias_min + ((bias_max - bias_min) * ((int8_t) pgm_read_byte_near(&bias[j]))) / 128;
+		
+		float res = acc + b;
 
 		if (relu)
 			res = (res > 0) ? res : 0;
@@ -132,11 +146,11 @@ int predict() {
 		}
 	}
 
-	convolution(input, &Wc1[0][0][0][0], &Bc1[0], output, c1InputDim, c1InputDim, inputChannels, kernelSize, kernelSize, c1Channels);
+	convolution(input, &Wc1[0][0][0][0], &Bc1[0], output, c1InputDim, c1InputDim, inputChannels, kernelSize, kernelSize, c1Channels, Wc1_min, Wc1_max, Bc1_min, Bc1_max);
 	maxpool(output, input, c1InputDim, c1InputDim, c1Channels, 2);
 
 
-	convolution(input, &Wc2[0][0][0][0], &Bc2[0], output, c2InputDim, c2InputDim, c1Channels, kernelSize, kernelSize, c2Channels);
+	convolution(input, &Wc2[0][0][0][0], &Bc2[0], output, c2InputDim, c2InputDim, c1Channels, kernelSize, kernelSize, c2Channels, Wc2_min, Wc2_max, Bc2_min, Bc2_max);
 	maxpool(output, input, c2InputDim, c2InputDim, c2Channels, 2);
 
 
@@ -152,8 +166,8 @@ int predict() {
 		}
 	}
 
-	matMul(output, &Wf1[0][0], input, &Bf1[0], fc1_m, fc1_n, true);
-	matMul(input, &Wf2[0][0], output, &Bf2[0], fc2_m, fc2_n, false);
+	matMul(output, &Wf1[0][0], input, &Bf1[0], fc1_m, fc1_n, true, Wf1_min, Wf1_max, Bf1_min, Bf1_max);
+	matMul(input, &Wf2[0][0], output, &Bf2[0], fc2_m, fc2_n, false, Wf2_min, Wf2_max, Bf2_min, Bf2_max);
 	//matMul(&fcOutput2[0][0], &Wf3[0][0], &fcOutput3[0][0], &Bf3[0], fc3_m, fc3_n, false);
 
 

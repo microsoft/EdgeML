@@ -8,11 +8,6 @@
 #include "model.h"
 
 #define TANH 0
-#define PROFILE 1
-
-#if  PROFILE
-#include "profile.h"
-#endif
 
 using namespace std;
 using namespace bonsai_float;
@@ -27,9 +22,6 @@ int bonsaiFloat(float *X) {
 	ite_val = 0;
 	// Dimensionality reduction
 	for (MYINT i = 0; i < D; i++) {
-#if  PROFILE
-		updateRange(X[i]);
-#endif
 		float input = X[i];
 		/*
 		// Read each feature
@@ -45,14 +37,10 @@ int bonsaiFloat(float *X) {
 #if B_SPARSE_Z
 		index = Zidx[ite_idx];
 		while (index != 0) {
-#if  PROFILE
-			updateRange(ZX[index - 1]);
-			updateRange(Zval[ite_val]);
-			updateRange(input);
-			updateRange(Zval[ite_val] * input);
-			updateRange(ZX[index - 1] + Zval[ite_val] * input);
-#endif
-			ZX[index - 1] += Zval[ite_val] * input;
+			// HERE
+			float z = Z_min + ((Z_max - Z_min) * (Zval[ite_val])) / 128;
+
+			ZX[index - 1] += z * input;
 			ite_idx++;
 			ite_val++;
 			index = Zidx[ite_idx];
@@ -60,24 +48,16 @@ int bonsaiFloat(float *X) {
 		ite_idx++;
 #else
 		for (MYINT j = 0; j < d; j++) {
-#if  PROFILE
-			updateRange(ZX[j]);
-			updateRange(Z[j][i]);
-			updateRange(input);
-			updateRange(Z[j][i] * input);
-			updateRange(ZX[j] + Z[j][i] * input);
-#endif
 			ZX[j] += Z[j][i] * input;
 		}
 #endif
 	}
 
 	for (MYINT i = 0; i < d; i++) {
-#if  PROFILE
-		updateRange(mean[i]);
-		updateRange(-mean[i]);
-#endif
-		ZX[i] -= mean[i];
+		// HERE
+		float m = mean_min + ((mean_max - mean_min) * (mean[i])) / 128;
+
+		ZX[i] -= m;
 	}
 
 	MYINT currNode = 0;
@@ -93,21 +73,12 @@ int bonsaiFloat(float *X) {
 		// Accumulating score at each node
 		for (MYINT i = 0; i < d; i++) {
 			for (MYINT j = currNode * c; j < (currNode + 1) * c; j++) {
-#if  PROFILE
-				updateRange(WZX[j % c]);
-				updateRange(W[j][i]);
-				updateRange(ZX[i]);
-				updateRange(W[j][i] * ZX[i]);
-				updateRange(WZX[j % c] + W[j][i] * ZX[i]);
+				// HERE
+				float w = W_min + ((W_max - W_min) * (W[j][i])) / 128;
+				float v = V_min + ((V_max - V_min) * (V[j][i])) / 128;
 
-				updateRange(VZX[j % c]);
-				updateRange(V[j][i]);
-				updateRange(ZX[i]);
-				updateRange(V[j][i] * ZX[i]);
-				updateRange(VZX[j % c] + V[j][i] * ZX[i]);
-#endif
-				WZX[j % c] += W[j][i] * ZX[i];
-				VZX[j % c] += V[j][i] * ZX[i];
+				WZX[j % c] += w * ZX[i];
+				VZX[j % c] += v * ZX[i];
 			}
 		}
 
@@ -120,14 +91,6 @@ int bonsaiFloat(float *X) {
 			else
 				t = VZX[i];
 
-#if  PROFILE
-			updateRange(score[i]);
-			updateRange(WZX[i]);
-			updateRange(t);
-			updateRange(WZX[i] * t);
-			updateRange(score[i] + WZX[i] * t);
-#endif
-
 #if TANH
 			score[i] += WZX[i] * tanh(VZX[i]);
 #else
@@ -138,14 +101,10 @@ int bonsaiFloat(float *X) {
 		// Computing theta value for branching into a child node
 		float val = 0;
 		for (MYINT i = 0; i < d; i++) {
-#if  PROFILE
-			updateRange(val);
-			updateRange(T[currNode][i]);
-			updateRange(ZX[i]);
-			updateRange(T[currNode][i] * ZX[i]);
-			updateRange(val + T[currNode][i] * ZX[i]);
-#endif
-			val += T[currNode][i] * ZX[i];
+			// HERE
+			float t = T_min + ((T_max - T_min) * (T[currNode][i])) / 128;
+
+			val += t * ZX[i];
 		}
 
 		if (val > 0)
@@ -160,21 +119,12 @@ int bonsaiFloat(float *X) {
 	// Accumulating score for the last node
 	for (MYINT i = 0; i < d; i++) {
 		for (MYINT j = currNode * c; j < (currNode + 1) * c; j++) {
-#if  PROFILE
-			updateRange(WZX[j % c]);
-			updateRange(W[j][i]);
-			updateRange(ZX[i]);
-			updateRange(W[j][i] * ZX[i]);
-			updateRange(WZX[j % c] + W[j][i] * ZX[i]);
+			// HERE
+			float w = W_min + ((W_max - W_min) * (W[j][i])) / 128;
+			float v = V_min + ((V_max - V_min) * (V[j][i])) / 128;
 
-			updateRange(VZX[j % c]);
-			updateRange(V[j][i]);
-			updateRange(ZX[i]);
-			updateRange(V[j][i] * ZX[i]);
-			updateRange(VZX[j % c] + V[j][i] * ZX[i]);
-#endif
-			WZX[j % c] += W[j][i] * ZX[i];
-			VZX[j % c] += V[j][i] * ZX[i];
+			WZX[j % c] += w * ZX[i];
+			VZX[j % c] += v * ZX[i];
 		}
 	}
 
@@ -186,14 +136,6 @@ int bonsaiFloat(float *X) {
 			t = -tanh_limit;
 		else
 			t = VZX[i];
-
-#if  PROFILE
-		updateRange(score[i]);
-		updateRange(WZX[i]);
-		updateRange(t);
-		updateRange(WZX[i] * t);
-		updateRange(score[i] + WZX[i] * t);
-#endif
 
 #if TANH
 		score[i] += WZX[i] * tanh(VZX[i]);

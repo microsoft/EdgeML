@@ -348,7 +348,17 @@ class BonsaiFloat(Bonsai):
 				file.write("New range of X: [%.6f, %.6f]\n" % (afterRange))
 
 	def transformModel(self):
-		pass
+		self.Z_float = self.Z
+		self.W_float = self.W
+		self.V_float = self.V
+		self.T_float = self.T
+		self.mean_float = self.mean
+		
+		self.Z, _ = scaleMat(self.Z)
+		self.W, _ = scaleMat(self.W)
+		self.V, _ = scaleMat(self.V)
+		self.T, _ = scaleMat(self.T)
+		self.mean, _ = scaleList(self.mean)
 
 	# Writing the model as a bunch of variables, arrays and matrices to a file
 	def writeModel(self):
@@ -369,6 +379,18 @@ class BonsaiFloat(Bonsai):
 		writeVars({'D': self.D, 'd': self.d, 'c': self.numClasses, 'depth': self.depth,
 								'totalNodes': self.totalNodes, 'internalNodes': self.internalNodes,
 								'tanh_limit': Common.tanh_limit}, self.headerFile)
+
+		writeVars({'Z_min': matMin(self.Z_float),
+					'Z_max': matMax(self.Z_float),
+					'W_min': matMin(self.W_float),
+					'W_max': matMax(self.W_float),
+					'V_min': matMin(self.V_float),
+					'V_max': matMax(self.V_float),
+					'T_min': matMin(self.T_float),
+					'T_max': matMax(self.T_float),
+					'mean_min': min(self.mean_float),
+					'mean_max': max(self.mean_float),
+					}, self.headerFile)
 		
 		if forArduino():
 			writeListAsArray(self.X[0], 'X', self.headerFile)

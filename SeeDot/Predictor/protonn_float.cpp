@@ -26,9 +26,6 @@ int protonnFloat(float *X) {
 	ite_val = 0;
 	// Dimensionality reduction
 	for (MYINT i = 0; i < D; i++) {
-#if  PROFILE
-		updateRange(X[i]);
-#endif
 		float input = X[i];
 		/*
 		// Read each feature
@@ -44,14 +41,10 @@ int protonnFloat(float *X) {
 #if P_SPARSE_W
 		index = Widx[ite_idx];
 		while (index != 0) {
-#if  PROFILE
-			updateRange(WX[index - 1]);
-			updateRange(Wval[ite_val]);
-			updateRange(input);
-			updateRange(Wval[ite_val] * input);
-			updateRange(WX[index - 1] + Wval[ite_val] * input);
-#endif
-			WX[index - 1] += Wval[ite_val] * input;
+			// HERE
+			float w = W_min + ((W_max - W_min) * (Wval[ite_val])) / 128;
+
+			WX[index - 1] += w * input;
 			ite_idx++;
 			ite_val++;
 			index = Widx[ite_idx];
@@ -59,13 +52,6 @@ int protonnFloat(float *X) {
 		ite_idx++;
 #else
 		for (MYINT j = 0; j < d; j++) {
-#if  PROFILE
-			updateRange(WX[j]);
-			updateRange(W[j][i]);
-			updateRange(input);
-			updateRange(W[j][i] * input);
-			updateRange(WX[j] + W[j][i] * input);
-#endif
 			WX[j] += W[j][i] * input;
 		}
 #endif
@@ -75,11 +61,10 @@ int protonnFloat(float *X) {
 #if P_NORM == 0
 #elif P_NORM == 1
 	for (MYINT i = 0; i < d; i++) {
-#if  PROFILE
-		updateRange(norm[i]);
-		updateRange(-norm[i]);
-#endif
-		WX[i] -= norm[i];
+		// HERE
+		float n = norm_min + ((norm_max - norm_min) * (norm[i])) / 128;
+		
+		WX[i] -= n;
 	}
 #endif
 
@@ -91,43 +76,24 @@ int protonnFloat(float *X) {
 		// Norm of WX - B
 		float v = 0;
 		for (MYINT j = 0; j < d; j++) {
-#if  PROFILE
-			updateRange(WX[j]);
-			updateRange(B[j][i]);
-			updateRange(WX[j] - B[j][i]);
-#endif
-			float t = WX[j] - B[j][i];
-#if  PROFILE
-			updateRange(v);
-			updateRange(t);
-			updateRange(t);
-			updateRange(t * t);
-			updateRange(v + t * t);
-#endif
+			// HERE
+			float b = B_min + ((B_max - B_min) * (B[j][i])) / 128;
+
+			float t = WX[j] - b;
 			v += t * t;
 		}
 
 		// Prediction distribution
 #if  PROFILE
-		updateRange(g2);
-		updateRange(v);
-		updateRange(-g2);
-		updateRange(-g2 * v);
-		updateRange(exp(-g2 * v));
-
 		updateRangeOfExp(g2 * v);
 #endif
 		float e = exp(-g2 * v);
 
 		for (MYINT j = 0; j < c; j++) {
-#if  PROFILE
-			updateRange(score[j]);
-			updateRange(Z[j][i]);
-			updateRange(e);
-			updateRange(Z[j][i] * e);
-			updateRange(score[j] + Z[j][i] * e);
-#endif
-			score[j] += Z[j][i] * e;
+			// HERE
+			float z = Z_min + ((Z_max - Z_min) * (Z[j][i])) / 128;
+			
+			score[j] += z * e;
 		}
 	}
 

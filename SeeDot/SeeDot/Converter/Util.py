@@ -119,7 +119,7 @@ def getMaxInt():
 # Format specifiers for various datatypes
 def getDataType(num):
 	if isinstance(num, int):
-		return 'MYINT', '%d'
+		return 'int8_t', '%d'
 	elif isinstance(num, float):
 		return 'float', '%.6f'
 	else:
