@@ -12,5 +12,6 @@ In this directory, we provide resources for
 
 Read more about GesturePod and access the public dataset from our
 [Technical Report](https://www.microsoft.com/en-us/research/publication/gesturepod-programmable-gesture-recognition-augmenting-assistive-devices/).
+The dataset can be downloaded [here](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar.gz).
 
 

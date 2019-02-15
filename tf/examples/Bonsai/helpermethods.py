@@ -120,6 +120,25 @@ def getArgs():
     return parser.parse_args()
 
 
+def getQuantArgs():
+    '''
+    Function to parse arguments for Model Quantisation
+    '''
+    parser = argparse.ArgumentParser(
+        description='Arguments for quantizing Fast models. ' +
+        'Works only for piece-wise linear non-linearities, ' +
+        'like relu, quantTanh, quantSigm (check rnn.py for the definitions)')
+    parser.add_argument('-dir', '--model-dir', required=True,
+                        help='model directory containing' +
+                        '*.npy weight files dumped from the trained model')
+    parser.add_argument('-m', '--max-val', type=checkIntNneg, default=127,
+                        help='this represents the maximum possible value ' +
+                        'in model, essentially the byte complexity, ' +
+                        '127=> 1 byte is default')
+
+    return parser.parse_args()
+
+
 def createTimeStampDir(dataDir):
     '''
     Creates a Directory with timestamp as it's name
@@ -205,10 +224,13 @@ def preProcessData(dataDir, isRegression=False):
     testBias = np.ones([Xtest.shape[0], 1])
     Xtest = np.append(Xtest, testBias, axis=1)
 
+    mean = np.append(mean, np.array([0]))
+    std = np.append(std, np.array([1]))
+    
     if (isRegression == False):
-        return dataDimension + 1, numClasses, Xtrain, Ytrain, Xtest, Ytest
+        return dataDimension + 1, numClasses, Xtrain, Ytrain, Xtest, Ytest, mean, std
     elif (isRegression == True):
-        return dataDimension + 1, numClasses, Xtrain, Ytrain.reshape((-1, 1)), Xtest, Ytest.reshape((-1, 1))
+        return dataDimension + 1, numClasses, Xtrain, Ytrain.reshape((-1, 1)), Xtest, Ytest.reshape((-1, 1)), mean, std
 
 
 def dumpCommand(list, currDir):
@@ -223,3 +245,11 @@ def dumpCommand(list, currDir):
 
     commandFile.flush()
     commandFile.close()
+
+
+def saveMeanStd(mean, std, currDir):
+    '''
+    Function to save Mean and Std vectors
+    '''
+    np.save(currDir + '/mean.npy', mean)
+    np.save(currDir + '/std.npy', std)

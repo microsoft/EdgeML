@@ -95,19 +95,19 @@ int main()
     auto modelBytes = trainer.getSparseModelSize();
     auto model = new char[modelBytes];
 
-    auto meanVarBytes = trainer.getMeanVarSize();
-    auto meanVar = new char[meanVarBytes];
+    auto meanStdBytes = trainer.getMeanStdSize();
+    auto meanStd = new char[meanStdBytes];
 
     // trainer.exportModel(modelBytes, model); 
     trainer.exportSparseModel(modelBytes, model);
 
-    trainer.exportMeanVar(meanVarBytes, meanVar);
+    trainer.exportMeanStd(meanStdBytes, meanStd);
 
     // BonsaiPredictor predictor(modelBytes, model);
 
     BonsaiPredictor predictor(modelBytes, model, false);
 
-    predictor.importMeanVar(meanVarBytes, meanVar);
+    predictor.importMeanStd(meanStdBytes, meanStd);
 
     FP_TYPE *scoreArray = new FP_TYPE[hyperParam.numClasses];
 
@@ -188,21 +188,21 @@ int main()
   //   trainer->finalizeData();
 
   //   // std::cout<<trainer->mean<<std::endl<<std::endl;
-  //   // std::cout<<trainer->variance<<std::endl<<std::endl;
+  //   // std::cout<<trainer->stdDev<<std::endl<<std::endl;
   
   //   trainer->train();
 
   //   auto modelBytes = trainer->getModelSize();
   //   auto model = new char[modelBytes];
 
-  //   auto meanVarBytes = trainer->getMeanVarSize();
-  //   auto meanVar = new char[meanVarBytes];
+  //   auto meanStdBytes = trainer->getMeanStdSize();
+  //   auto meanStd = new char[meanStdBytes];
   
   //   trainer->exportModel(modelBytes, model);
-  //   trainer->exportMeanVar(meanVarBytes, meanVar);
+  //   trainer->exportMeanStd(meanStdBytes, meanStd);
 
   //   auto predictor = new BonsaiPredictor(modelBytes, model);
-  //   predictor->importMeanVar(meanVarBytes, meanVar);
+  //   predictor->importMeanStd(meanStdBytes, meanStd);
 
 
 

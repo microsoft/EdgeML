@@ -77,7 +77,7 @@ BonsaiPredict:
     -f    : [Required] Input format. Takes two values [0 and 1]. 0 is for libsvmFormat(default), 1 is for tab/space separated input.
     -N    : [Required] Number of data points in the test data.
     -D    : [Required] Directory of data with test.txt present in it.
-    -M    : [Required] Directory of the Model (loadableModel and loadableMeanVar).
+    -M    : [Required] Directory of the Model (loadableModel and loadableMeanStd).
 
 ## Data Format    
     
@@ -107,11 +107,11 @@ The DataFolder will have a new forlder named "BonsaiResults" with the following 
 
     (a) A directory for each run with the signature hrs_min_sec_day_month with the following in it:
         (1) loadableModel - Char file which can be directly loaded using the inbuilt load model functions
-        (2) loadableMeanVar - Char file which can be directly loaded using inbuilt load mean-var functions
+        (2) loadableMeanStd - Char file which can be directly loaded using inbuilt load mean-var functions
         (3) predClassAndScore - File with Prediction Score and Predicted Class for each Data point in the test set
         (4) runInfo - File with the hyperparameters for that run of Bonsai along with Test Accuracy and Total NonZeros in the model
         (5) timerLog - Created on using the `TIMER` flag. This file stores proc time and wall time taken to execute various function calls in the code. Indicates the degree of parallelization and is useful for identifying bottlenecks to optimize the code. On specifying the `CONCISE` flag, timing information will only be printed if running time is higher than a threshold specified in `src/common/timer.cpp`
-        (6) Params - A directory with readable files with Z, W, V, Theta, Mean and Variance
+        (6) Params - A directory with readable files with Z, W, V, Theta, Mean and Std
     (b) A file resultDump which has consolidated results and map to the respective run directory
 
 ##  Notes
