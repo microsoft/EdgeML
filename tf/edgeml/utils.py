@@ -90,6 +90,13 @@ def crossEntropyLoss(logits, label):
                                                    labels=tf.stop_gradient(label)))
 
 
+def mean_absolute_error(logits, label):
+    '''
+    Function to compute the mean absolute error.
+    '''
+    return tf.reduce_mean(tf.abs(tf.subtract(logits, label)))
+
+
 def hardThreshold(A, s):
     '''
     Hard thresholding function on Tensor A with sparsity s
