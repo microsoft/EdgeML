@@ -3,8 +3,8 @@
 
 #pragma once
 
-#define ACCURACY
-//#define PREDICTIONTIME
+//#define ACCURACY
+#define PREDICTIONTIME
 
 #define INT16
 //#define INT32

@@ -32,7 +32,12 @@ inline __attribute__((always_inline)) void MatSub(MYINT *A, const MYINT *B, MYIN
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
+
+			#ifdef INT16
 			MYINT b = ((MYINT) pgm_read_word_near(&B[i * J + j]));
+			#else
+			MYINT b = ((MYINT) pgm_read_dword_near(&B[i * J + j]));
+			#endif
 
 			a = a / shrA;
 			b = b / shrB;
@@ -99,7 +104,12 @@ inline __attribute__((always_inline)) void MatMulCN(const MYINT *A, MYINT *B, MY
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
 			for (MYINT k = 0; k < K; k++) {
+				#ifdef INT16
 				MYINT a = ((MYINT) pgm_read_word_near(&A[i * K + k]));
+				#else
+				MYINT a = ((MYINT) pgm_read_dword_near(&A[i * K + k]));
+				#endif
+				
 				MYINT b = B[k * J + j];
 
 				a = a / shrA;
@@ -147,7 +157,12 @@ inline __attribute__((always_inline)) void MatMulNC(MYINT *A, const MYINT *B, MY
 		for (MYINT j = 0; j < J; j++) {
 			for (MYINT k = 0; k < K; k++) {
 				MYINT a = A[i * K + k];
+
+				#ifdef INT16
 				MYINT b = ((MYINT) pgm_read_word_near(&B[k * J + j]));
+				#else
+				MYINT b = ((MYINT) pgm_read_dword_near(&B[k * J + j]));
+				#endif
 
 				a = a / shrA;
 				b = b / shrB;
@@ -193,8 +208,17 @@ inline __attribute__((always_inline)) void MatMulCC(const MYINT *A, const MYINT 
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
 			for (MYINT k = 0; k < K; k++) {
+				#ifdef INT16
 				MYINT a = ((MYINT) pgm_read_word_near(&A[i * K + k]));
+				#else
+				MYINT a = ((MYINT) pgm_read_dword_near(&A[i * K + k]));
+				#endif
+
+				#ifdef INT16
 				MYINT b = ((MYINT) pgm_read_word_near(&B[k * J + j]));
+				#else
+				MYINT b = ((MYINT) pgm_read_dword_near(&B[k * J + j]));
+				#endif
 
 				a = a / shrA;
 				b = b / shrB;
@@ -243,9 +267,19 @@ inline __attribute__((always_inline)) void SparseMatMul(const MYINT *Aidx, const
 		//MYINT b = B[k * 1][0];
 		b = b / shrB;
 
+		#ifdef INT16
 		MYINT idx = ((MYINT) pgm_read_word_near(&Aidx[ite_idx]));
+		#else
+		MYINT idx = ((MYINT) pgm_read_dword_near(&Aidx[ite_idx]));
+		#endif
+
 		while (idx != 0) {
+			#ifdef INT16
 			MYINT a = ((MYINT) pgm_read_word_near(&Aval[ite_val]));
+			#else
+			MYINT a = ((MYINT) pgm_read_dword_near(&Aval[ite_val]));
+			#endif
+			
 			a = a / shrA;
 
 			MYINT c = a * b;
@@ -256,7 +290,11 @@ inline __attribute__((always_inline)) void SparseMatMul(const MYINT *Aidx, const
 			ite_idx++;
 			ite_val++;
 
+			#ifdef INT16
 			idx = ((MYINT) pgm_read_word_near(&Aidx[ite_idx]));
+			#else
+			idx = ((MYINT) pgm_read_dword_near(&Aidx[ite_idx]));
+			#endif
 		}
 		ite_idx++;
 	}
@@ -368,7 +406,12 @@ inline __attribute__((always_inline)) void Conv(MYINT *A, const MYINT *B, MYINT 
 								MYINT a = (((((h + hf) < padH) || ((h + hf) >= (H + padH))) || (((w + wf) < padW) || ((w + wf) >= (W + padW)))) ? 0 : A[n * H * W * CI + ((h + hf) - padH) * W * CI + ((w + wf) - padW) * CI + ci]);
 								a = a / shrA;
 
+								#ifdef INT16
 								MYINT b = ((MYINT) pgm_read_word_near(&B[hf * WF * CI * CO + wf * CI * CO + ci * CO + co]));
+								#else
+								MYINT b = ((MYINT) pgm_read_dword_near(&B[hf * WF * CI * CO + wf * CI * CO + ci * CO + co]));
+								#endif
+
 								b = b / shrB;
 
 								tmp[counter] = a * b;
@@ -424,7 +467,12 @@ inline __attribute__((always_inline)) void AddOrSubCir4D(MYINT *A, const MYINT *
 					MYINT a = A[n * H * W * C + h * W * C + w * C + c];
 					a = a / shrA;
 
+					#ifdef INT16
 					MYINT b = ((MYINT) pgm_read_word_near(&B[c]));
+					#else
+					MYINT b = ((MYINT) pgm_read_dword_near(&B[c]));
+					#endif
+
 					b = b / shrB;
 
 					MYINT res;
@@ -453,7 +501,12 @@ inline __attribute__((always_inline)) void AddOrSubCir2D(MYINT *A, const MYINT *
 			MYINT a = A[h * W + w];
 			a = a / shrA;
 
+			#ifdef INT16
 			MYINT b = ((MYINT) pgm_read_word_near(&B[w]));
+			#else
+			MYINT b = ((MYINT) pgm_read_dword_near(&B[w]));
+			#endif
+
 			b = b / shrB;
 
 			MYINT res;

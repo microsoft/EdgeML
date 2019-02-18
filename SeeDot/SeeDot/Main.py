@@ -4,6 +4,8 @@ import json
 import os
 from itertools import product
 
+from Converter.Converter import Converter
+
 import Common
 from Compiler import Compiler
 from SeeDot import Main
@@ -180,7 +182,7 @@ class MainDriver:
 			testingInput = os.path.join(datasetDir, "testing.tsv")
 							
 			obj = Converter(algo, version, datasetType, target, outputDir, outputDir,self.args.workers)
-			obj.setInput(modelDir, "tsv", trainingInput, testingInput)
+			obj.setInput(modelDir, trainingInput, testingInput)
 			obj.run()
 
 	def runPredictorDriver(self):
