@@ -44,43 +44,43 @@
 		},
 		"int32": {
 			"cifar-binary": {
-				"sf": 0,
+				"sf": -19,
 				"accuracy": 75.63
 			},
 			"cr-binary": {
-				"sf": 0,
+				"sf": -23,
 				"accuracy": 73.913
 			},
 			"cr-multiclass": {
-				"sf": 0,
+				"sf": -18,
 				"accuracy": 10.809
 			},
 			"curet-multiclass": {
-				"sf": 0,
+				"sf": -24,
 				"accuracy": 45.189
 			},
 			"letter-multiclass": {
-				"sf": 0,
+				"sf": -24,
 				"accuracy": 64.92
 			},
 			"mnist-binary": {
-				"sf": 0,
+				"sf": -20,
 				"accuracy": 96.01
 			},
 			"mnist-multiclass": {
-				"sf": 0,
+				"sf": -25,
 				"accuracy": 93.43
 			},
 			"usps-binary": {
-				"sf": 0,
+				"sf": -15,
 				"accuracy": 94.519
 			},
 			"usps-multiclass": {
-				"sf": 0,
+				"sf": -21,
 				"accuracy": 91.978
 			},
 			"ward-binary": {
-				"sf": 0,
+				"sf": -20,
 				"accuracy": 95.236
 			}
 		},
@@ -162,43 +162,43 @@
 		},
 		"int32": {
 			"cifar-binary": {
-				"sf": 0,
+				"sf": -13,
 				"accuracy": 76.46
 			},
 			"cr-binary": {
-				"sf": 0,
+				"sf": -14,
 				"accuracy": 73.171
 			},
 			"cr-multiclass": {
-				"sf": 0,
+				"sf": -10,
 				"accuracy": 32.846
 			},
 			"curet-multiclass": {
-				"sf": 0,
+				"sf": -15,
 				"accuracy": 54.455
 			},
 			"letter-multiclass": {
-				"sf": 0,
+				"sf": -17,
 				"accuracy": 84.06
 			},
 			"mnist-binary": {
-				"sf": 0,
+				"sf": -20,
 				"accuracy": 95.22
 			},
 			"mnist-multiclass": {
-				"sf": 0,
+				"sf": -19,
 				"accuracy": 92.03
 			},
 			"usps-binary": {
-				"sf": 0,
+				"sf": -13,
 				"accuracy": 94.32
 			},
 			"usps-multiclass": {
-				"sf": 0,
+				"sf": -13,
 				"accuracy": 92.576
 			},
 			"ward-binary": {
-				"sf": 0,
+				"sf": -14,
 				"accuracy": 94.925
 			}
 		},
