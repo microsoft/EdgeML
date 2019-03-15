@@ -166,6 +166,9 @@ int main(int argc, char *argv[]) {
 		// Populate the array using the feature vector
 		if (version == Fixed)
 			for (int i = 0; i < features_size; i++) {
+#ifdef INT8
+				features_int[i][0] = (MYINT)(atoi(features.at(i).c_str()));
+#endif
 #ifdef INT16
 				features_int[i][0] = (MYINT)(atol(features.at(i).c_str()));
 #endif

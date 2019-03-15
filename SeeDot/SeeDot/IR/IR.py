@@ -3,6 +3,7 @@
 
 from enum import Enum
 import numpy as np
+import traceback
 
 import Common
 from Util import *
@@ -32,7 +33,7 @@ class Int(IntExpr):
 	def __init__(self, n:int):
 		self.n = DataType.getInt(n)
 	def subst(self, from_idf:str, to_e:Expr):
-		return Int(self.n)
+		return self
 
 class Var(IntExpr):
 	def __init__(self, idf:str, idx:list=[], inputVar=False):
@@ -231,7 +232,17 @@ class DataType:
 	def getInt(x:int):
 		target = getTarget()
 		wordLen = Common.wordLength
-		return DataType.intType[target][wordLen](x)
+		x_np = DataType.intType[target][wordLen](x)
+		if x_np != x:
+			x_np = DataType.intType[target][wordLen * 2](x)
+			if x_np != x:
+				print('Warning: Integer overflow for %d' % (x))
+				#traceback.print_stack()
+				#assert False
+			else:
+				print('Integer overflow for %d handled' % (x))
+				#traceback.print_stack()
+		return x_np
 	@staticmethod
 	def getIntClass():
 		target = getTarget()

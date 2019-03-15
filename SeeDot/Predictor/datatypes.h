@@ -3,9 +3,13 @@
 
 #pragma once
 
-#define INT16
+#define INT8
+//#define INT16
 //#define INT32
 
+#ifdef INT8
+typedef int8_t MYINT;
+#endif
 
 #ifdef INT16
 typedef int16_t MYINT;
@@ -15,4 +19,5 @@ typedef int16_t MYINT;
 typedef int32_t MYINT;
 #endif
 
+typedef int16_t MYITE;
 typedef uint16_t MYUINT;

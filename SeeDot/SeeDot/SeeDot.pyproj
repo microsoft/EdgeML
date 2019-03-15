@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>c7a84875-f8bd-4981-8b7c-54ecf140be72</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>SeeDot.py</StartupFile>
+    <StartupFile>Main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -12,8 +12,7 @@
     <Name>SeeDot</Name>
     <RootNamespace>SeeDot</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>
-    </CommandLineArguments>
+    <CommandLineArguments>--driver compiler -a bonsai -v fixed</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -80,6 +79,7 @@
     <Compile Include="IR\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Main.py" />
     <Compile Include="Predictor.py" />
     <Compile Include="SeeDot.py" />
     <Compile Include="Type.py" />
