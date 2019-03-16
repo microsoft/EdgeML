@@ -32,29 +32,29 @@ def quantizeFastModels(modelDir, maxValue=127, scalarScaleFactor=1000):
         if file.endswith("npy"):
             if file.startswith("W"):
                 paramNameList.append(file)
-                temp = np.load(modelDir + "/" + file)
+                temp = np.load(os.path.join(modelDir, file))
                 paramWeightList.append(temp)
                 paramLimitList.append(min_max(temp, file))
             elif file.startswith("U"):
                 paramNameList.append(file)
-                temp = np.load(modelDir + "/" + file)
+                temp = np.load(os.path.join(modelDir, file))
                 paramWeightList.append(temp)
                 paramLimitList.append(min_max(temp, file))
             elif file.startswith("B"):
                 paramNameList.append(file)
-                temp = np.load(modelDir + "/" + file)
+                temp = np.load(os.path.join(modelDir, file))
                 paramWeightList.append(temp)
                 paramLimitList.append(min_max(temp, file))
             elif file.startswith("FC"):
                 classifierNameList.append(file)
-                temp = np.load(modelDir + "/" + file)
+                temp = np.load(os.path.join(modelDir, file))
                 classifierWeightList.append(temp)
                 classifierLimitList.append(min_max(temp, file))
             elif file.startswith("mean") or file.startswith("std"):
                 continue
             else:
                 scalarNameList.append(file)
-                scalarWeightList.append(np.load(modelDir + "/" + file))
+                scalarWeightList.append(np.load(os.path.join(modelDir, file)))
 
     paramLimit = np.max(paramLimitList)
     classifierLimit = np.max(classifierLimitList)
@@ -97,30 +97,30 @@ def quantizeFastModels(modelDir, maxValue=127, scalarScaleFactor=1000):
         quantScalarWeights.append(
             np.round(scalarScaleFactor * sigmoid(scalar)).astype('int32'))
 
-    if os.path.isdir(modelDir + '/QuantizedFastModel') is False:
+    quantModelDir = os.path.join(modelDir, 'QuantizedFastModel')
+    if not os.path.isdir(quantModelDir):
         try:
-            os.mkdir(modelDir + '/QuantizedFastModel')
-            quantModelDir = modelDir + '/QuantizedFastModel'
+            os.makedirs(quantModelDir, exist_ok=True)
         except OSError:
-            print("Creation of the directory %s failed" %
-                  modelDir + '/QuantizedFastModel')
+            print("Creation of the directory %s failed" % quantModelDir)
 
-    np.save(quantModelDir + "/paramScaleFactor.npy",
+    np.save(os.path.join(quantModelDir, "paramScaleFactor.npy"),
             paramScaleFactor.astype('int32'))
-    np.save(quantModelDir + "/classifierScaleFactor.npy",
+    np.save(os.path.join(quantModelDir, "classifierScaleFactor.npy"),
             classifierScaleFactor)
-    np.save(quantModelDir + "/scalarScaleFactor", scalarScaleFactor)
+    np.save(os.path.join(quantModelDir, "scalarScaleFactor"), scalarScaleFactor)
 
     for i in range(0, len(scalarNameList)):
-        np.save(quantModelDir + "/q" +
-                scalarNameList[i], quantScalarWeights[i])
+        np.save(os.path.join(quantModelDir, "q" +
+                scalarNameList[i]), quantScalarWeights[i])
 
     for i in range(len(classifierNameList)):
-        np.save(quantModelDir + "/q" +
-                classifierNameList[i], quantClassifierWeights[i])
+        np.save(os.path.join(quantModelDir, "q" +
+                classifierNameList[i]), quantClassifierWeights[i])
 
     for i in range(len(paramNameList)):
-        np.save(quantModelDir + "/q" + paramNameList[i], quantParamWeights[i])
+        np.save(os.path.join(quantModelDir, "q" + paramNameList[i]),
+                quantParamWeights[i])
 
     print("\n\nQuantized Model Dir: " + quantModelDir)
 

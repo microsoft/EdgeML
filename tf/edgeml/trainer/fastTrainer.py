@@ -234,38 +234,38 @@ class FastTrainer:
         Function to save Parameter matrices
         '''
         if self.numMatrices[0] == 1:
-            np.save(currDir + '/W.npy', self.FastParams[0].eval())
+            np.save(os.path.join(currDir, "W.npy"), self.FastParams[0].eval())
         else:
-            np.save(currDir + '/W1.npy', self.FastParams[0].eval())
-            np.save(currDir + '/W2.npy', self.FastParams[1].eval())
+            np.save(os.path.join(currDir, "W1.npy"), self.FastParams[0].eval())
+            np.save(os.path.join(currDir, "W2.npy"), self.FastParams[1].eval())
 
         if self.numMatrices[1] == 1:
-            np.save(currDir + '/U.npy',
+            np.save(os.path.join(currDir, "U.npy"),
                     self.FastParams[self.numMatrices[0]].eval())
         else:
-            np.save(currDir + '/U1.npy',
+            np.save(os.path.join(currDir, "U1.npy"),
                     self.FastParams[self.numMatrices[0]].eval())
-            np.save(currDir + '/U2.npy',
+            np.save(os.path.join(currDir, "U2.npy"),
                     self.FastParams[self.numMatrices[0] + 1].eval())
 
         if self.FastObj.cellType == "FastGRNN":
-            np.save(currDir + '/Bg.npy',
+            np.save(os.path.join(currDir, "Bg.npy"),
                     self.FastParams[self.totalMatrices].eval())
-            np.save(currDir + '/Bh.npy',
+            np.save(os.path.join(currDir, "Bh.npy"),
                     self.FastParams[self.totalMatrices + 1].eval())
-            np.save(currDir + '/zeta.npy',
+            np.save(os.path.join(currDir, "zeta.npy"),
                     self.FastParams[self.totalMatrices + 2].eval())
-            np.save(currDir + '/nu.npy',
+            np.save(os.path.join(currDir, "nu.npy"),
                     self.FastParams[self.totalMatrices + 3].eval())
         elif self.FastObj.cellType == "FastRNN":
-            np.save(currDir + '/B.npy',
+            np.save(os.path.join(currDir, "B.npy"),
                     self.FastParams[self.totalMatrices].eval())
-            np.save(currDir + '/alpha.npy', self.FastParams[
+            np.save(os.path.join(currDir, "alpha.npy"), self.FastParams[
                     self.totalMatrices + 1].eval())
-            np.save(currDir + '/beta.npy',
+            np.save(os.path.join(currDir, "beta.npy"),
                     self.FastParams[self.totalMatrices + 2].eval())
-        np.save(currDir + '/FC.npy', self.FC.eval())
-        np.save(currDir + '/FCbias.npy', self.FCbias.eval())
+        np.save(os.path.join(currDir, "FC.npy"), self.FC.eval())
+        np.save(os.path.join(currDir, "FCbias.npy"), self.FCbias.eval())
 
     def train(self, batchSize, totalEpochs, sess,
               Xtrain, Xtest, Ytrain, Ytest,
@@ -273,8 +273,8 @@ class FastTrainer:
         '''
         The Dense - IHT - Sparse Retrain Routine for FastCell Training
         '''
-        resultFile = open(
-            dataDir + '/' + str(self.FastObj.cellType) + 'Results.txt', 'a+')
+        fileName = str(self.FastObj.cellType) + 'Results.txt'
+        resultFile = open(os.path.join(dataDir, fileName), 'a+')
         numIters = int(np.ceil(float(Xtrain.shape[0]) / float(batchSize)))
         totalBatches = numIters * totalEpochs
 
@@ -385,6 +385,13 @@ class FastTrainer:
                          str(os.path.abspath(currDir)) + "\n")
 
         print("The Model Directory: " + currDir + "\n")
+
+        # output the tensorflow model
+        model_dir = os.path.join(currDir, "model")
+        os.makedirs(model_dir, exist_ok=True)
+
+        saver = tf.train.Saver(tf.global_variables())
+        saver.save(sess, os.path.join(model_dir, "model.ckpt"), global_step=totalEpochs)
 
         resultFile.close()
         self.outFile.flush()

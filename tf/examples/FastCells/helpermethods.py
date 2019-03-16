@@ -6,9 +6,42 @@
  for the example script.
 '''
 import argparse
+import bz2
 import datetime
 import os
+
 import numpy as np
+import requests
+
+
+def decompress(filepath):
+    print("extracting: ", filepath)
+    zipfile = bz2.BZ2File(filepath)  # open the file
+    data = zipfile.read()  # get the decompressed data
+    newfilepath = os.path.splitext(filepath)[0]  # assuming the filepath ends with .bz2
+    with open(newfilepath, 'wb') as f:
+        f.write(data)  # write a uncompressed file
+    return newfilepath
+
+
+def download_file(url, local_folder=None):
+    """Downloads file pointed to by `url`.
+    If `local_folder` is not supplied, downloads to the current folder.
+    """
+    filename = os.path.basename(url)
+    if local_folder:
+        filename = os.path.join(local_folder, filename)
+
+    # Download the file
+    print("Downloading: " + url)
+    response = requests.get(url, stream=True)
+    if response.status_code != 200:
+        raise Exception("download file failed with status code: %d, fetching url '%s'" % (response.status_code, url))
+
+    # Write the file to disk
+    with open(filename, "wb") as handle:
+        handle.write(response.content)
+    return filename
 
 
 def checkIntPos(value):
