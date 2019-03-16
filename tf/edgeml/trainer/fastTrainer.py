@@ -2,11 +2,12 @@
 # Licensed under the MIT license.
 
 from __future__ import print_function
+import os
+import sys
 import tensorflow as tf
 import edgeml.utils as utils
 import numpy as np
-import os
-import sys
+from tensorflow.python.framework import graph_util
 
 
 class FastTrainer:
@@ -41,7 +42,7 @@ class FastTrainer:
         else:
             self.outFile = sys.stdout
 
-        self.lr = tf.placeholder("float")
+        self.lr = tf.placeholder("float", name="lr")
 
         self.logits, self.finalHiddenState, self.predictions = self.computeGraph()
 
@@ -79,7 +80,7 @@ class FastTrainer:
         finalHiddenState = self.RNN(self.X, self.timeSteps, self.FastObj)
 
         logits = self.classifier(finalHiddenState)
-        predictions = tf.nn.softmax(logits)
+        predictions = tf.nn.softmax(logits, name='predictions')
 
         return logits, finalHiddenState, predictions
 
@@ -392,6 +393,17 @@ class FastTrainer:
 
         saver = tf.train.Saver(tf.global_variables())
         saver.save(sess, os.path.join(model_dir, "model.ckpt"), global_step=totalEpochs)
+                
+        # Turn all the variables into inline constants inside the graph and save it.
+        frozen_graph_def = graph_util.convert_variables_to_constants(
+            sess, sess.graph_def, ['predictions'])
+        tf.train.write_graph(
+            frozen_graph_def,
+            model_dir,
+            os.path.basename("model.pb"),
+            as_text=False)
+
+        tf.summary.FileWriter(os.path.join(model_dir, "logs"), frozen_graph_def).close()
 
         resultFile.close()
         self.outFile.flush()

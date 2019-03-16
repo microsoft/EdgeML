@@ -174,23 +174,23 @@ def createTimeStampDir(dataDir, cell):
     '''
     Creates a Directory with timestamp as it's name
     '''
-    if os.path.isdir(dataDir + '/' + str(cell) + 'Results') is False:
+    if os.path.isdir(os.path.join(dataDir, str(cell) + 'Results')) is False:
         try:
-            os.mkdir(dataDir + '/' + str(cell) + 'Results')
+            os.mkdir(os.path.join(dataDir, str(cell) + 'Results'))
         except OSError:
             print("Creation of the directory %s failed" %
-                  dataDir + '/' + str(cell) + 'Results')
+                  os.path.join(dataDir, str(cell) + 'Results'))
 
     currDir = str(cell) + 'Results/' + \
         datetime.datetime.now().strftime("%H_%M_%S_%d_%m_%y")
-    if os.path.isdir(dataDir + '/' + currDir) is False:
+    if os.path.isdir(os.path.join(dataDir, currDir)) is False:
         try:
-            os.mkdir(dataDir + '/' + currDir)
+            os.mkdir(os.path.join(dataDir, currDir))
         except OSError:
             print("Creation of the directory %s failed" %
-                  dataDir + '/' + currDir)
+                  os.path.join(dataDir, currDir))
         else:
-            return (dataDir + '/' + currDir)
+            return (os.path.join(dataDir, currDir))
     return None
 
 
@@ -205,8 +205,8 @@ def preProcessData(dataDir):
     Outputs train and test set datapoints
     dataDimension, numClasses are inferred directly
     '''
-    train = np.load(dataDir + '/train.npy')
-    test = np.load(dataDir + '/test.npy')
+    train = np.load(os.path.join(dataDir, 'train.npy'))
+    test = np.load(os.path.join(dataDir, 'test.npy'))
 
     dataDimension = int(train.shape[1]) - 1
 
@@ -249,7 +249,7 @@ def dumpCommand(list, currDir):
     '''
     Dumps the current command to a file for further use
     '''
-    commandFile = open(currDir + '/command.txt', 'w')
+    commandFile = open(os.path.join(currDir, 'command.txt'), 'w')
     command = "python"
 
     command = command + " " + ' '.join(list)
@@ -263,5 +263,5 @@ def saveMeanStd(mean, std, currDir):
     '''
     Function to save Mean and Std vectors
     '''
-    np.save(currDir + '/mean.npy', mean)
-    np.save(currDir + '/std.npy', std)
+    np.save(os.path.join(dataDir, 'mean.npy'), mean)
+    np.save(os.path.join(dataDir, 'std.npy'), std)
