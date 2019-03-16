@@ -3,43 +3,45 @@
 #
 # Setting up the USPS Data.
 
-import subprocess
+import bz2
 import os
-import numpy as np
-from sklearn.datasets import load_svmlight_file
+import subprocess
 import sys
 
-def downloadData(workingDir, downloadDir, linkTrain, linkTest):
-    def runcommand(command):
-        p = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
-        output, error = p.communicate()
-        assert(p.returncode == 0), 'Command failed: %s' % command
+import requests
+import numpy as np
+from sklearn.datasets import load_svmlight_file
+from helpermethods import download_file, decompress
 
+
+
+def downloadData(workingDir, downloadDir, linkTrain, linkTest):
     path = workingDir + '/' + downloadDir
     path = os.path.abspath(path)
     try:
-        os.mkdir(path)
+        os.makedirs(path, exist_ok=True)
     except OSError:
         print("Could not create %s. Make sure the path does" % path)
-        print("not already exist and you have permisions to create it.")
+        print("not already exist and you have permissions to create it.")
         return False
-    cwd = os.getcwd()
-    os.chdir(path)
-    print("Downloading data")
-    command = 'wget %s' % linkTrain
-    runcommand(command)
-    command = 'wget %s' % linkTest
-    runcommand(command)
-    print("Extracting data")
-    command = 'bzip2 -d usps.bz2'
-    runcommand(command)
-    command = 'bzip2 -d usps.t.bz2'
-    runcommand(command)
-    command = 'mv usps train.txt'
-    runcommand(command)
-    command = 'mv usps.t test.txt'
-    runcommand(command)
-    os.chdir(cwd)
+
+    training_data_bz2 = download_file(linkTrain, path)
+    test_data_bz2 = download_file(linkTest, path)
+
+    training_data = decompress(training_data_bz2)
+    test_data = decompress(test_data_bz2)
+    
+    train = os.path.join(path, "train.txt")
+    test = os.path.join(path, "test.txt")
+    if os.path.isfile(train):
+        os.remove(train)
+    if os.path.isfile(test):
+        os.remove(test)
+
+    os.rename(training_data, train)
+    os.rename(test_data, test)
+    os.remove(training_data_bz2)
+    os.remove(test_data_bz2)
     return True
 
 if __name__ == '__main__':
@@ -61,4 +63,4 @@ To manually perform the download
 
     if not downloadData(workingDir, downloadDir, linkTrain, linkTest):
         exit(failureMsg)
-    print("Done")
+    print("Done: see ", downloadDir)
