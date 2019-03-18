@@ -27,7 +27,7 @@ void MatAdd(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT sh
 
 // C = A - B
 // TODO: shrB is int16_t because in 8-bit code, shrB is usually very high and int8_t will overflow.
-void MatSub(MYINT *A, const MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, int16_t shrB, MYINT shrC) {
+void MatSub(MYINT *A, const MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
