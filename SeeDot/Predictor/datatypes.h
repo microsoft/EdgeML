@@ -3,8 +3,8 @@
 
 #pragma once
 
-#define INT8
-//#define INT16
+//#define INT8
+#define INT16
 //#define INT32
 
 #ifdef INT8

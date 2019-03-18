@@ -12,7 +12,7 @@
     <Name>SeeDot</Name>
     <RootNamespace>SeeDot</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>--driver compiler -a bonsai -v fixed</CommandLineArguments>
+    <CommandLineArguments>-a bonsai -v fixed -d cr-multiclass</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

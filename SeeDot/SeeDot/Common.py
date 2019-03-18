@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 
 # Target word length. Currently set to match the word length of Arduino (2 bytes)
-wordLength = 8
+wordLength = 16
 
 inputFileType = "tsv"
 
