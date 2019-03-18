@@ -41,7 +41,7 @@ The following sample run on usps10 should validate your library:
 ```bash
 python bonsai_example.py -dir usps10/ -d 3 -p 28 -rW 0.001 -rZ 0.0001 -rV 0.001 -rT 0.001 -sZ 0.2 -sW 0.3 -sV 0.3 -sT 0.62 -e 100 -s 1
 ```
-This command should give you a final output screen which reads roughly similar to(might not be exact numbers due to various version mismatches):
+This command should give you a final output screen which reads roughly similar to (might not be exact numbers due to various version mismatches):
 ```
 Maximum Test accuracy at compressed model size(including early stopping): 0.94369704 at Epoch: 66
 Final Test Accuracy: 0.93024415
