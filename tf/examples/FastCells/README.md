@@ -21,7 +21,8 @@ is assumed that train and test data is contained in two files, `train.npy` and
 numberOfFeatures]`. numberOfFeatures is `timesteps x inputDims`, flattened
 across timestep dimension. So the input of 1st timestep followed by second and
 so on.  For an N-Class problem, we assume the labels are integers from 0
-through N-1.
+through N-1. Lastly, the training data, `train.npy`, is assumed to well shuffled 
+as the training routine doesn't shuffle internally.
 
 **Tested With:** Tensorflow >1.6 with Python 2 and Python 3
 
@@ -47,7 +48,7 @@ So the number of timesteps = 16 and inputDims = 16
 ```bash
 python fastcell_example.py -dir usps10/ -id 16 -hd 32
 ```
-This command should give you a final output screen which reads roughly similar to(might not be exact numbers due to various version mismatches):
+This command should give you a final output screen which reads roughly similar to (might not be exact numbers due to various version mismatches):
 
 ```
 Maximum Test accuracy at compressed model size(including early stopping): 0.9407075 at Epoch: 262

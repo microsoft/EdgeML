@@ -17,7 +17,9 @@ label information.  For an N-Class problem, we assume the labels are integers
 from 0 through N-1. `bonsai_example.py` also supports univariate regression 
 and can be accessed using the help options of the script. Multivariate regression 
 requires restructuring of the input data format and can further help in extending 
-bonsai to multi-label classification and multi-variate regression.
+bonsai to multi-label classification and multi-variate regression. Lastly, 
+the training data, `train.npy`, is assumed to well shuffled 
+as the training routine doesn't shuffle internally.
 
 **Tested With:** Tensorflow >1.6 with Python 2 and Python 3
 
