@@ -8,6 +8,7 @@
 import argparse
 import bz2
 import datetime
+import json
 import os
 
 import numpy as np
@@ -181,8 +182,8 @@ def createTimeStampDir(dataDir, cell):
             print("Creation of the directory %s failed" %
                   os.path.join(dataDir, str(cell) + 'Results'))
 
-    currDir = str(cell) + 'Results/' + \
-        datetime.datetime.now().strftime("%H_%M_%S_%d_%m_%y")
+    currDir = os.path.join(str(cell) + 'Results',
+        datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S"))
     if os.path.isdir(os.path.join(dataDir, currDir)) is False:
         try:
             os.mkdir(os.path.join(dataDir, currDir))
@@ -265,3 +266,8 @@ def saveMeanStd(mean, std, currDir):
     '''
     np.save(os.path.join(dataDir, 'mean.npy'), mean)
     np.save(os.path.join(dataDir, 'std.npy'), std)
+
+
+def saveJSon(data, filename):
+    with open(filename, "w") as outfile:
+        json.dump(data, outfile, indent=2)
