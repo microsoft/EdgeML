@@ -2,11 +2,12 @@
 # Licensed under the MIT license.
 
 from __future__ import print_function
+import os
+import sys
 import tensorflow as tf
 import edgeml.utils as utils
 import numpy as np
-import os
-import sys
+from tensorflow.python.framework import graph_util
 
 
 class FastTrainer:
@@ -41,7 +42,7 @@ class FastTrainer:
         else:
             self.outFile = sys.stdout
 
-        self.lr = tf.placeholder("float")
+        self.lr = tf.placeholder("float", name="lr")
 
         self.logits, self.finalHiddenState, self.predictions = self.computeGraph()
 
@@ -79,7 +80,7 @@ class FastTrainer:
         finalHiddenState = self.RNN(self.X, self.timeSteps, self.FastObj)
 
         logits = self.classifier(finalHiddenState)
-        predictions = tf.nn.softmax(logits)
+        predictions = tf.nn.softmax(logits, name='predictions')
 
         return logits, finalHiddenState, predictions
 
@@ -296,6 +297,8 @@ class FastTrainer:
             if i % decayStep == 0 and i != 0:
                 self.learningRate = self.learningRate * decayRate
 
+            shuffled = list(range(Xtrain.shape[0]))
+            np.random.shuffle(shuffled)
             trainAcc = 0.0
             trainLoss = 0.0
 
@@ -307,12 +310,9 @@ class FastTrainer:
                     print("\n%s%s%s\n" %
                           (header, msg, header), file=self.outFile)
 
-                if j == numIters - 1:
-                    batchX = Xtrain[j * batchSize:]
-                    batchY = Ytrain[j * batchSize:]
-                else:
-                    batchX = Xtrain[j * batchSize:(j + 1) * batchSize]
-                    batchY = Ytrain[j * batchSize:(j + 1) * batchSize]
+                k = shuffled[j * batchSize:(j+1) * batchSize]
+                batchX = Xtrain[k]
+                batchY = Ytrain[k]
 
                 # Mini-batch training
                 _, batchLoss, batchAcc = sess.run([self.trainOp, self.lossOp, self.accuracy], feed_dict={
@@ -389,9 +389,6 @@ class FastTrainer:
         # output the tensorflow model
         model_dir = os.path.join(currDir, "model")
         os.makedirs(model_dir, exist_ok=True)
-
-        saver = tf.train.Saver(tf.global_variables())
-        saver.save(sess, os.path.join(model_dir, "model.ckpt"), global_step=totalEpochs)
 
         resultFile.close()
         self.outFile.flush()
