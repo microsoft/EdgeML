@@ -17,7 +17,7 @@ the notebooks in the the `examples` directory.
 
 ## Dependencies
 
-Tested on both Python2.7 and >= Python3.5 with >= Tensorflow 1.6.0.
+Tested on >= Python3.5 with >= Tensorflow 1.6.0.
 
 ### CPU
 ``` 
