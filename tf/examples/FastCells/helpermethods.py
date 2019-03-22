@@ -264,8 +264,8 @@ def saveMeanStd(mean, std, currDir):
     '''
     Function to save Mean and Std vectors
     '''
-    np.save(os.path.join(dataDir, 'mean.npy'), mean)
-    np.save(os.path.join(dataDir, 'std.npy'), std)
+    np.save(os.path.join(currDir, 'mean.npy'), mean)
+    np.save(os.path.join(currDir, 'std.npy'), std)
 
 
 def saveJSon(data, filename):
