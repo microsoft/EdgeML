@@ -1498,9 +1498,12 @@ class IRBuilder(ASTVisitor):
 		if shrType == "shr" or shrType == "shr+":
 			return IR.Int(n)
 		elif shrType == "div":
-			intVar = IR.Int(2 ** n)
-			if intVar.n == 0:
+			if n >= Common.wordLength:
 				return IR.Int(IR.Int.max())
-			return intVar
+			else:
+				intVar = IR.Int(2 ** n)
+				if intVar.n == 0:
+					assert False
+				return intVar
 		else:
 			assert False

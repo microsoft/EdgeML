@@ -18,4 +18,5 @@ typedef int16_t MYINT;
 typedef int32_t MYINT;
 #endif
 
+typedef int16_t MYITE;
 typedef uint16_t MYUINT;

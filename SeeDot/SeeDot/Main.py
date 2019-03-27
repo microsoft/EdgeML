@@ -1,8 +1,9 @@
 
 import argparse
-import json
-import os
 from itertools import product
+import json
+import numpy as np
+import os
 
 from Converter.Converter import Converter
 
@@ -54,8 +55,13 @@ class MainDriver:
 		if not found:
 			raise Exception("Msbuild.exe not found at the following locations:\n%s\nPlease change the path and run again" % (Common.msbuildPathOptions))
 
+	def setGlobalFlags(self):
+		np.seterr(all='warn')
+
 	def run(self):
 		self.checkMSBuildPath()
+
+		self.setGlobalFlags()
 
 		if self.args.driver is None:
 			self.runMainDriver()
@@ -105,6 +111,8 @@ class MainDriver:
 			try:
 				if version == Common.Version.Float:
 					key = 'float32'
+				elif Common.wordLength == 8:
+					key = 'int8'
 				elif Common.wordLength == 16:
 					key = 'int16'
 				elif Common.wordLength == 32:

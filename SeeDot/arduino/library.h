@@ -10,8 +10,8 @@
 
 // C = A + B
 inline __attribute__((always_inline)) void MatAdd(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
-	for (MYINT i = 0; i < I; i++) {
-		for (MYINT j = 0; j < J; j++) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
 			MYINT b = B[i * J + j];
 
@@ -28,11 +28,12 @@ inline __attribute__((always_inline)) void MatAdd(MYINT *A, MYINT *B, MYINT *C, 
 }
 
 // C = A - B
-inline __attribute__((always_inline)) void MatSub(MYINT *A, const MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
-	for (MYINT i = 0; i < I; i++) {
-		for (MYINT j = 0; j < J; j++) {
+// TODO: shrB is int32_t because in 8-bit/16-bit code, shrB is usually very high and int8_t/int16_t will overflow.
+inline __attribute__((always_inline)) void MatSub(MYINT *A, const MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
-
+			
 			#ifdef INT16
 			MYINT b = ((MYINT) pgm_read_word_near(&B[i * J + j]));
 			#else
@@ -54,9 +55,9 @@ inline __attribute__((always_inline)) void MatSub(MYINT *A, const MYINT *B, MYIN
 // C = A * B
 inline __attribute__((always_inline)) void MatMulNN(MYINT *A, MYINT *B, MYINT *C, MYINT *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
-	for (MYINT i = 0; i < I; i++) {
-		for (MYINT j = 0; j < J; j++) {
-			for (MYINT k = 0; k < K; k++) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			for (MYITE k = 0; k < K; k++) {
 				MYINT a = A[i * K + k];
 				MYINT b = B[k * J + j];
 
@@ -66,14 +67,14 @@ inline __attribute__((always_inline)) void MatMulNN(MYINT *A, MYINT *B, MYINT *C
 				tmp[k] = a * b;
 			}
 
-			MYINT count = K, depth = 0;
+			MYITE count = K, depth = 0;
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
 				if (depth >= H1)
 					shr = false;
 
-				for (MYINT p = 0; p < (K / 2 + 1); p++) {
+				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					MYINT sum;
 					if (p < (count >> 1))
 						sum = tmp[2 * p] + tmp[(2 * p) + 1];
@@ -101,15 +102,15 @@ inline __attribute__((always_inline)) void MatMulNN(MYINT *A, MYINT *B, MYINT *C
 // C = A * B
 inline __attribute__((always_inline)) void MatMulCN(const MYINT *A, MYINT *B, MYINT *C, MYINT *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
-	for (MYINT i = 0; i < I; i++) {
-		for (MYINT j = 0; j < J; j++) {
-			for (MYINT k = 0; k < K; k++) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			for (MYITE k = 0; k < K; k++) {
 				#ifdef INT16
 				MYINT a = ((MYINT) pgm_read_word_near(&A[i * K + k]));
 				#else
 				MYINT a = ((MYINT) pgm_read_dword_near(&A[i * K + k]));
 				#endif
-				
+
 				MYINT b = B[k * J + j];
 
 				a = a / shrA;
@@ -118,14 +119,14 @@ inline __attribute__((always_inline)) void MatMulCN(const MYINT *A, MYINT *B, MY
 				tmp[k] = a * b;
 			}
 
-			MYINT count = K, depth = 0;
+			MYITE count = K, depth = 0;
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
 				if (depth >= H1)
 					shr = false;
 
-				for (MYINT p = 0; p < (K / 2 + 1); p++) {
+				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					MYINT sum;
 					if (p < (count >> 1))
 						sum = tmp[2 * p] + tmp[(2 * p) + 1];
@@ -153,9 +154,9 @@ inline __attribute__((always_inline)) void MatMulCN(const MYINT *A, MYINT *B, MY
 // C = A * B
 inline __attribute__((always_inline)) void MatMulNC(MYINT *A, const MYINT *B, MYINT *C, MYINT *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
-	for (MYINT i = 0; i < I; i++) {
-		for (MYINT j = 0; j < J; j++) {
-			for (MYINT k = 0; k < K; k++) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			for (MYITE k = 0; k < K; k++) {
 				MYINT a = A[i * K + k];
 
 				#ifdef INT16
@@ -170,14 +171,14 @@ inline __attribute__((always_inline)) void MatMulNC(MYINT *A, const MYINT *B, MY
 				tmp[k] = a * b;
 			}
 
-			MYINT count = K, depth = 0;
+			MYITE count = K, depth = 0;
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
 				if (depth >= H1)
 					shr = false;
 
-				for (MYINT p = 0; p < (K / 2 + 1); p++) {
+				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					MYINT sum;
 					if (p < (count >> 1))
 						sum = tmp[2 * p] + tmp[(2 * p) + 1];
@@ -205,9 +206,9 @@ inline __attribute__((always_inline)) void MatMulNC(MYINT *A, const MYINT *B, MY
 // C = A * B
 inline __attribute__((always_inline)) void MatMulCC(const MYINT *A, const MYINT *B, MYINT *C, MYINT *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
-	for (MYINT i = 0; i < I; i++) {
-		for (MYINT j = 0; j < J; j++) {
-			for (MYINT k = 0; k < K; k++) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			for (MYITE k = 0; k < K; k++) {
 				#ifdef INT16
 				MYINT a = ((MYINT) pgm_read_word_near(&A[i * K + k]));
 				#else
@@ -226,14 +227,14 @@ inline __attribute__((always_inline)) void MatMulCC(const MYINT *A, const MYINT 
 				tmp[k] = a * b;
 			}
 
-			MYINT count = K, depth = 0;
+			MYITE count = K, depth = 0;
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
 				if (depth >= H1)
 					shr = false;
 
-				for (MYINT p = 0; p < (K / 2 + 1); p++) {
+				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					MYINT sum;
 					if (p < (count >> 1))
 						sum = tmp[2 * p] + tmp[(2 * p) + 1];
@@ -259,10 +260,11 @@ inline __attribute__((always_inline)) void MatMulCC(const MYINT *A, const MYINT 
 }
 
 // C = A |*| B
-inline __attribute__((always_inline)) void SparseMatMul(const MYINT *Aidx, const MYINT *Aval, MYINT *C, MYINT K, MYINT shrA, MYINT shrB, MYINT shrC) {
+// TODO: K is int16_t because K is usually very high and int8_t will overflow in 8-bit code.
+inline __attribute__((always_inline)) void SparseMatMul(const MYINT *Aidx, const MYINT *Aval, MYINT *C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC) {
 
-	MYINT ite_idx = 0, ite_val = 0;
-	for (MYINT k = 0; k < K; k++) {
+	MYITE ite_idx = 0, ite_val = 0;
+	for (MYITE k = 0; k < K; k++) {
 		MYINT b = getIntFeature(k);
 		//MYINT b = B[k * 1][0];
 		b = b / shrB;
@@ -279,7 +281,7 @@ inline __attribute__((always_inline)) void SparseMatMul(const MYINT *Aidx, const
 			#else
 			MYINT a = ((MYINT) pgm_read_dword_near(&Aval[ite_val]));
 			#endif
-			
+
 			a = a / shrA;
 
 			MYINT c = a * b;
@@ -304,8 +306,8 @@ inline __attribute__((always_inline)) void SparseMatMul(const MYINT *Aidx, const
 
 // C = A <*> B
 inline __attribute__((always_inline)) void MulCir(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
-	for (MYINT i = 0; i < I; i++) {
-		for (MYINT j = 0; j < J; j++) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
 			MYINT b = B[i * J + j];
 
@@ -320,8 +322,8 @@ inline __attribute__((always_inline)) void MulCir(MYINT *A, MYINT *B, MYINT *C, 
 
 // A = tanh(A)
 inline __attribute__((always_inline)) void TanH(MYINT *A, MYINT I, MYINT J, MYINT tanh_limit) {
-	for (MYINT i = 0; i < I; i++) {
-		for (MYINT j = 0; j < J; j++) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
 			MYINT x = A[i * J + j], y;
 
 			if (x >= tanh_limit)
@@ -340,10 +342,10 @@ inline __attribute__((always_inline)) void TanH(MYINT *A, MYINT I, MYINT J, MYIN
 // index = argmax(A)
 inline __attribute__((always_inline)) void ArgMax(MYINT *A, MYINT I, MYINT J, MYINT *index) {
 
-	MYINT max = A[0], maxIndex = 0;
-	MYINT counter = 0;
-	for (MYINT i = 0; i < I; i++) {
-		for (MYINT j = 0; j < J; j++) {
+	MYINT max = A[0];
+	MYITE maxIndex = 0, counter = 0;
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
 			MYINT x = A[i * J + j];
 
 			if (max < x) {
@@ -362,8 +364,8 @@ inline __attribute__((always_inline)) void ArgMax(MYINT *A, MYINT I, MYINT J, MY
 
 // A = A^T
 inline __attribute__((always_inline)) void Transpose(MYINT *A, MYINT *B, MYINT I, MYINT J) {
-	for (MYINT i = 0; i < I; i++) {
-		for (MYINT j = 0; j < J; j++) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
 			B[i * J + j] = A[j * I + i];
 		}
 	}
@@ -376,8 +378,8 @@ inline __attribute__((always_inline)) void ScalarMul(MYINT *A, MYINT *B, MYINT *
 	MYINT a = *A;
 	a = a / shrA;
 
-	for (MYINT i = 0; i < I; i++) {
-		for (MYINT j = 0; j < J; j++) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
 			MYINT b = B[i * J + j];
 			b = b / shrB;
 
@@ -391,18 +393,18 @@ inline __attribute__((always_inline)) void ScalarMul(MYINT *A, MYINT *B, MYINT *
 // C = A # B
 // A[N][H][W][CI], B[HF][WF][CI][CO], C[N][H][W][CO]
 inline __attribute__((always_inline)) void Conv(MYINT *A, const MYINT *B, MYINT *C, MYINT *tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
-	MYINT padH = (HF - 1) / 2;
-	MYINT padW = (WF - 1) / 2;
+	MYITE padH = (HF - 1) / 2;
+	MYITE padW = (WF - 1) / 2;
 
-	for (MYINT n = 0; n < N; n++) {
-		for (MYINT h = 0; h < H; h++) {
-			for (MYINT w = 0; w < W; w++) {
-				for (MYINT co = 0; co < CO; co++) {
+	for (MYITE n = 0; n < N; n++) {
+		for (MYITE h = 0; h < H; h++) {
+			for (MYITE w = 0; w < W; w++) {
+				for (MYITE co = 0; co < CO; co++) {
 
-					MYINT counter = 0;
-					for (MYINT hf = 0; hf < HF; hf++) {
-						for (MYINT wf = 0; wf < WF; wf++) {
-							for (MYINT ci = 0; ci < CI; ci++) {
+					MYITE counter = 0;
+					for (MYITE hf = 0; hf < HF; hf++) {
+						for (MYITE wf = 0; wf < WF; wf++) {
+							for (MYITE ci = 0; ci < CI; ci++) {
 								MYINT a = (((((h + hf) < padH) || ((h + hf) >= (H + padH))) || (((w + wf) < padW) || ((w + wf) >= (W + padW)))) ? 0 : A[n * H * W * CI + ((h + hf) - padH) * W * CI + ((w + wf) - padW) * CI + ci]);
 								a = a / shrA;
 
@@ -411,7 +413,6 @@ inline __attribute__((always_inline)) void Conv(MYINT *A, const MYINT *B, MYINT 
 								#else
 								MYINT b = ((MYINT) pgm_read_dword_near(&B[hf * WF * CI * CO + wf * CI * CO + ci * CO + co]));
 								#endif
-
 								b = b / shrB;
 
 								tmp[counter] = a * b;
@@ -420,15 +421,15 @@ inline __attribute__((always_inline)) void Conv(MYINT *A, const MYINT *B, MYINT 
 						}
 					}
 
-					MYINT totalEle = HF * WF * CI;
-					MYINT count = HF * WF * CI, depth = 0;
+					MYITE totalEle = HF * WF * CI;
+					MYITE count = HF * WF * CI, depth = 0;
 					bool shr = true;
 
 					while (depth < (H1 + H2)) {
 						if (depth >= H1)
 							shr = false;
 
-						for (MYINT p = 0; p < (totalEle / 2 + 1); p++) {
+						for (MYITE p = 0; p < (totalEle / 2 + 1); p++) {
 							MYINT sum;
 							if (p < (count >> 1))
 								sum = tmp[2 * p] + tmp[(2 * p) + 1];
@@ -460,10 +461,10 @@ inline __attribute__((always_inline)) void Conv(MYINT *A, const MYINT *B, MYINT 
 // A[N][H][W][C], B[C]
 inline __attribute__((always_inline)) void AddOrSubCir4D(MYINT *A, const MYINT *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
 
-	for (MYINT n = 0; n < N; n++) {
-		for (MYINT h = 0; h < H; h++) {
-			for (MYINT w = 0; w < W; w++) {
-				for (MYINT c = 0; c < C; c++) {
+	for (MYITE n = 0; n < N; n++) {
+		for (MYITE h = 0; h < H; h++) {
+			for (MYITE w = 0; w < W; w++) {
+				for (MYITE c = 0; c < C; c++) {
 					MYINT a = A[n * H * W * C + h * W * C + w * C + c];
 					a = a / shrA;
 
@@ -496,8 +497,8 @@ inline __attribute__((always_inline)) void AddOrSubCir4D(MYINT *A, const MYINT *
 // A[N][H][W][C], B[C]
 inline __attribute__((always_inline)) void AddOrSubCir2D(MYINT *A, const MYINT *B, MYINT H, MYINT W, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
 
-	for (MYINT h = 0; h < H; h++) {
-		for (MYINT w = 0; w < W; w++) {
+	for (MYITE h = 0; h < H; h++) {
+		for (MYITE w = 0; w < W; w++) {
 			MYINT a = A[h * W + w];
 			a = a / shrA;
 
@@ -528,10 +529,10 @@ inline __attribute__((always_inline)) void AddOrSubCir2D(MYINT *A, const MYINT *
 // A[N][H][W][C]
 inline __attribute__((always_inline)) void Relu4D(MYINT *A, MYINT N, MYINT H, MYINT W, MYINT C) {
 
-	for (MYINT n = 0; n < N; n++) {
-		for (MYINT h = 0; h < H; h++) {
-			for (MYINT w = 0; w < W; w++) {
-				for (MYINT c = 0; c < C; c++) {
+	for (MYITE n = 0; n < N; n++) {
+		for (MYITE h = 0; h < H; h++) {
+			for (MYITE w = 0; w < W; w++) {
+				for (MYITE c = 0; c < C; c++) {
 					MYINT a = A[n * H * W * C + h * W * C + w * C + c];
 					if (a < 0)
 						a = 0;
@@ -549,8 +550,8 @@ inline __attribute__((always_inline)) void Relu4D(MYINT *A, MYINT N, MYINT H, MY
 // A[N][H][W][C]
 inline __attribute__((always_inline)) void Relu2D(MYINT *A, MYINT H, MYINT W) {
 
-	for (MYINT h = 0; h < H; h++) {
-		for (MYINT w = 0; w < W; w++) {
+	for (MYITE h = 0; h < H; h++) {
+		for (MYITE w = 0; w < W; w++) {
 			MYINT a = A[h * W + w];
 			if (a < 0)
 				a = 0;
@@ -565,17 +566,17 @@ inline __attribute__((always_inline)) void Relu2D(MYINT *A, MYINT H, MYINT W) {
 // B = maxpool(A)
 // A[N][H][W][C], B[N][H][W][C]
 inline __attribute__((always_inline)) void Maxpool(MYINT *A, MYINT *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT stride) {
-	MYINT HO = H / stride;
-	MYINT WO = W / stride;
+	MYITE HO = H / stride;
+	MYITE WO = W / stride;
 
-	for (MYINT n = 0; n < N; n++) {
-		for (MYINT ho = 0; ho < HO; ho++) {
-			for (MYINT wo = 0; wo < WO; wo++) {
-				for (MYINT c = 0; c < C; c++) {
+	for (MYITE n = 0; n < N; n++) {
+		for (MYITE ho = 0; ho < HO; ho++) {
+			for (MYITE wo = 0; wo < WO; wo++) {
+				for (MYITE c = 0; c < C; c++) {
 
 					MYINT max = A[n * H * W * C + (stride * ho) * W * C + (stride * wo) * C + c];
-					for (MYINT hs = 0; hs < stride; hs++) {
-						for (MYINT ws = 0; ws < stride; ws++) {
+					for (MYITE hs = 0; hs < stride; hs++) {
+						for (MYITE ws = 0; ws < stride; ws++) {
 							MYINT a = A[n * H * W * C + ((stride * ho) + hs) * W * C + ((stride * wo) + ws) * C + c];
 							if (a > max)
 								max = a;
