@@ -345,8 +345,10 @@ class FastTrainer:
                               (header, msg, header), file=self.outFile)
                 counter += 1
 
-            print("Train Loss: " + str(trainLoss / numIters) +
-                  " Train Accuracy: " + str(trainAcc / numIters),
+            trainLoss /= numIters
+            trainAcc /= numIters
+            print("Train Loss: " + str(trainLoss) +
+                  " Train Accuracy: " + str(trainAcc),
                   file=self.outFile)
 
             testAcc, testLoss = sess.run([self.accuracy, self.lossOp], feed_dict={
@@ -394,3 +396,8 @@ class FastTrainer:
         self.outFile.flush()
         if self.outFile is not sys.stdout:
             self.outFile.close()
+
+        # save these so the caller can get them if needed.
+        self.trainAcc = trainAcc
+        self.testAcc = testAcc
+        self.maxTestAcc = maxTestAcc
