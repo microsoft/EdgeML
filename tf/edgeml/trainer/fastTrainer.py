@@ -362,7 +362,7 @@ class FastTrainer:
                     "epoch": i,
                     "trainAcc": trainAcc,
                     "trainLoss": trainLoss,
-                    "testAcc": testAcc
+                    "testAcc": testAcc,
                     "testLoss": testLoss
                 }
             ]
