@@ -1,6 +1,7 @@
 output/
 
 seedot_fixed/*
+seedot_float/*
 
 bonsai_float/*
 lenet_float/*

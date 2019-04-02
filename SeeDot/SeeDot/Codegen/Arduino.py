@@ -13,7 +13,7 @@ from Util import *
 
 class Arduino(CodegenBase):
 
-	def __init__(self, writer, decls, scales, intvs, cnsts, expTables, globalVars):
+	def __init__(self, writer, decls, scales, intvs, cnsts, expTables, globalVars, internalVars):
 		self.out = writer
 		self.decls = decls
 		self.scales = scales
@@ -21,6 +21,7 @@ class Arduino(CodegenBase):
 		self.cnsts = cnsts
 		self.expTables = expTables
 		self.globalVars = globalVars
+		self.internalVars = internalVars
 
 	def printPrefix(self):
 		self.printArduinoIncludes()
