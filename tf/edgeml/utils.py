@@ -291,6 +291,22 @@ def getMacroMicroFScore(cmatrix):
     return macro, micro
 
 
+def restructreMatrixBonsaiSeeDot(A, nClasses, nNodes):
+    '''
+    Restructures a matrix from [nNodes*nClasses, Proj] to 
+    [nClasses*nNodes, Proj] for SeeDot
+    '''
+    tempMatrix = np.zeros(A.shape)
+    rowIndex = 0
+
+    for i in range(0, nNodes):
+        for j in range(0, nClasses):
+            tempMatrix[rowIndex] = A[j * nClasses + i]
+            rowIndex += 1
+
+    return tempMatrix
+
+
 class GraphManager:
     '''
     Manages saving and restoring graphs. Designed to be used with EMI-RNN
