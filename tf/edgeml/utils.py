@@ -297,10 +297,12 @@ def restructreMatrixBonsaiSeeDot(A, nClasses, nNodes):
     [nClasses*nNodes, Proj] for SeeDot
     '''
     tempMatrix = np.zeros(A.shape)
+    rowIndex = 0
 
     for i in range(0, nClasses):
         for j in range(0, nNodes):
-            tempMatrix[i + j * nClasses] = A[i * nNodes + j]
+            tempMatrix[rowIndex] = A[j * nClasses + i]
+            rowIndex += 1
 
     return tempMatrix
 

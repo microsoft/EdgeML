@@ -226,7 +226,7 @@ def preProcessData(dataDir, isRegression=False):
 
     mean = np.append(mean, np.array([0]))
     std = np.append(std, np.array([1]))
-    
+
     if (isRegression == False):
         return dataDimension + 1, numClasses, Xtrain, Ytrain, Xtest, Ytest, mean, std
     elif (isRegression == True):
@@ -253,3 +253,18 @@ def saveMeanStd(mean, std, currDir):
     '''
     np.save(currDir + '/mean.npy', mean)
     np.save(currDir + '/std.npy', std)
+    saveMeanStdSeeDot(mean, std, currDir + "/SeeDot")
+
+
+def saveMeanStdSeeDot(mean, std, seeDotDir):
+    '''
+    Function to save Mean and Std vectors
+    '''
+    if os.path.isdir(seeDotDir) is False:
+        try:
+            os.mkdir(seeDotDir)
+        except OSError:
+            print("Creation of the directory %s failed" %
+                  seeDotDir)
+    np.savetxt(seeDotDir + '/Mean', mean, delimiter="\t")
+    np.savetxt(seeDotDir + '/Std', std, delimiter="\t")

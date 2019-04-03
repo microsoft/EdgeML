@@ -256,23 +256,19 @@ class BonsaiTrainer:
                 print("Creation of the directory %s failed" %
                       seeDotDir)
 
-        np.save(seeDotDir + "W.npy",
-                utils.restructreMatrixBonsaiSeeDot(self.bonsaiObj.W.eval(),
-                                                   self.bonsaiObj.numClasses,
-                                                   self.bonsaiObj.totalNodes))
-        np.save(seeDotDir + "V.npy",
-                utils.restructreMatrixBonsaiSeeDot(self.bonsaiObj.V.eval(),
-                                                   self.bonsaiObj.numClasses,
-                                                   self.bonsaiObj.totalNodes))
-        np.save(seeDotDir + "T.npy", self.bonsaiObj.T.eval())
-        np.save(seeDotDir + "Z.npy", self.bonsaiObj.Z.eval())
-        hyperParamDict = {'dataDim': self.bonsaiObj.dataDimension,
-                          'projDim': self.bonsaiObj.projectionDimension,
-                          'numClasses': self.bonsaiObj.numClasses,
-                          'depth': self.bonsaiObj.treeDepth,
-                          'sigma': self.bonsaiObj.sigma}
-        hyperParamFile = seeDotDir + 'hyperParam.npy'
-        np.save(hyperParamFile, hyperParamDict)
+        np.savetxt(seeDotDir + "W",
+                   utils.restructreMatrixBonsaiSeeDot(self.bonsaiObj.W.eval(),
+                                                      self.bonsaiObj.numClasses,
+                                                      self.bonsaiObj.totalNodes),
+                   delimiter="\t")
+        np.savetxt(seeDotDir + "V",
+                   utils.restructreMatrixBonsaiSeeDot(self.bonsaiObj.V.eval(),
+                                                      self.bonsaiObj.numClasses,
+                                                      self.bonsaiObj.totalNodes),
+                   delimiter="\t")
+        np.savetxt(seeDotDir + "T", self.bonsaiObj.T.eval(), delimiter="\t")
+        np.savetxt(seeDotDir + "Z", self.bonsaiObj.Z.eval(), delimiter="\t")
+        np.savetxt(seeDotDir + "Sigma", self.bonsaiObj.sigma)
 
     def loadModel(self, currDir):
         '''
