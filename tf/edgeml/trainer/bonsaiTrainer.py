@@ -268,7 +268,8 @@ class BonsaiTrainer:
                    delimiter="\t")
         np.savetxt(seeDotDir + "T", self.bonsaiObj.T.eval(), delimiter="\t")
         np.savetxt(seeDotDir + "Z", self.bonsaiObj.Z.eval(), delimiter="\t")
-        np.savetxt(seeDotDir + "Sigma", self.bonsaiObj.sigma)
+        np.savetxt(seeDotDir + "Sigma",
+                   np.array([self.bonsaiObj.sigma]), delimiter="\t")
 
     def loadModel(self, currDir):
         '''
