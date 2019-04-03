@@ -255,8 +255,7 @@ class BonsaiTrainer:
             except OSError:
                 print("Creation of the directory %s failed" %
                       seeDotDir)
-            else:
-                return (seeDotDir)
+
         np.save(seeDotDir + "W.npy",
                 utils.restructreMatrixBonsaiSeeDot(self.bonsaiObj.W.eval(),
                                                    self.bonsaiObj.numClasses,
