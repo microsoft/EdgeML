@@ -7,6 +7,7 @@ from itertools import product
 import Common
 from Compiler import Compiler
 from SeeDot import Main
+import Util
 
 class Dataset:
 	Common = ["cifar-binary", "cr-binary", "cr-multiclass", "curet-multiclass",
@@ -53,7 +54,8 @@ class MainDriver:
 			raise Exception("Msbuild.exe not found at the following locations:\n%s\nPlease change the path and run again" % (Common.msbuildPathOptions))
 
 	def run(self):
-		self.checkMSBuildPath()
+		if Util.windows():
+			self.checkMSBuildPath()
 
 		if self.args.driver is None:
 			self.runMainDriver()

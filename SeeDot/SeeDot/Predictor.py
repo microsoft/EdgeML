@@ -5,6 +5,7 @@ import os
 import subprocess
 
 import Common
+import Util
 
 # Program to build and run the predictor project using msbuild
 # The accuracy and other statistics are written to the output file specified
@@ -17,7 +18,7 @@ class Predictor:
 		self.outputDir = outputDir
 		os.makedirs(self.outputDir, exist_ok=True)
 
-	def build(self):
+	def buildForWindows(self):
 		'''
 		Builds using the Predictor.vcxproj project file and creates the executable
 		The target platform is currently set to x64
@@ -39,7 +40,29 @@ class Predictor:
 			print("success")
 			return True
 
-	def execute(self):
+	def buildForLinux(self):
+		print("Build...", end='')
+
+		args = ["make"]
+
+		logFile = os.path.join(self.outputDir, "msbuild.txt")
+		with open(logFile, 'w') as file:
+			process = subprocess.call(args, stdout=file)
+		
+		if process == 1:
+			print("FAILED!!\n")
+			return False
+		else:
+			print("success")
+			return True
+
+	def build(self):
+		if Util.windows():
+			return self.buildForWindows()
+		else:
+			return self.buildForLinux()
+
+	def executeForWindows(self):
 		'''
 		Invokes the executable with arguments
 		'''
@@ -59,6 +82,30 @@ class Predictor:
 			print("success")
 			acc = self.readStatsFile()
 			return acc
+
+	def executeForLinux(self):
+		print("Execution...", end='')
+
+		exeFile = os.path.join("./Predictor")
+		args = [exeFile, self.algo, self.version, self.datasetType]
+
+		logFile = os.path.join(self.outputDir, "exec.txt")
+		with open(logFile, 'w') as file:
+			process = subprocess.call(args, stdout=file)
+
+		if process == 1:
+			print("FAILED!!\n")
+			return None
+		else:
+			print("success")
+			acc = self.readStatsFile()
+			return acc
+
+	def execute(self):
+		if Util.windows():
+			return self.executeForWindows()
+		else:
+			return self.executeForLinux()
 
 	# Read statistics of execution (currently only accuracy)
 	def readStatsFile(self):

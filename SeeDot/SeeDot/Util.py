@@ -1,12 +1,20 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+import platform
+
 import Common
 
 class Config:
 	expBigLength = 6
 	exp = "table" # "table" "math"
 	codegen = "funcCall" # "funcCall" "inline"
+
+def windows():
+	return platform.system() == "Windows"
+
+def linux():
+	return platform.system() == "Linux"
 
 def getAlgo():
 	return Config.algo

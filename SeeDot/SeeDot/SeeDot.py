@@ -12,6 +12,7 @@ from Converter.Converter import Converter
 import Common
 from Compiler import Compiler
 from Predictor import Predictor
+import Util
 
 
 class Main:
@@ -328,7 +329,8 @@ class MainDriver:
 			raise Exception("Msbuild.exe not found at the following locations:\n%s\nPlease change the path and run again" % (Common.msbuildPathOptions))
 
 	def run(self):
-		self.checkMSBuildPath()
+		if Util.windows():
+			self.checkMSBuildPath()
 
 		algo, trainingInput, testingInput, modelDir = self.args.algo, self.args.train, self.args.test, self.args.model
 
