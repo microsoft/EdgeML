@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <cstring>
 
 #include "datatypes.h"
 #include "predictors.h"
@@ -37,7 +38,7 @@ vector<string> getFeatures(string line) {
 	if (featuresLength == -1)
 		featuresLength = (int)features.size();
 
-	if (features.size() != featuresLength)
+	if ((int)features.size() != featuresLength)
 		throw "Number of row entries in X is inconsistent";
 
 	return features;
@@ -51,7 +52,7 @@ int getLabel(string line) {
 	if (labelLength == -1)
 		labelLength = (int)labels.size();
 
-	if (labels.size() != labelLength || labels.size() != 1)
+	if ((int)labels.size() != labelLength || labels.size() != 1)
 		throw "Number of row entries in Y is inconsistent";
 
 	return (int)atoi(labels.front().c_str());
@@ -109,10 +110,10 @@ int main(int argc, char *argv[]) {
 		throw "Input files doesn't exist";
 
 	// Create output directory and files
-	string outputDir = "output\\" + algoStr + "-" + versionStr;
+	string outputDir = "output/" + algoStr + "-" + versionStr;
 
-	string outputFile = outputDir + "\\prediction-info-" + datasetTypeStr + ".txt";
-	string statsFile = outputDir + "\\stats-" + datasetTypeStr + ".txt";
+	string outputFile = outputDir + "/prediction-info-" + datasetTypeStr + ".txt";
+	string statsFile = outputDir + "/stats-" + datasetTypeStr + ".txt";
 
 	ofstream output(outputFile);
 	ofstream stats(statsFile);
@@ -163,7 +164,7 @@ int main(int argc, char *argv[]) {
 				features_float[i] = (float)(atof(features.at(i).c_str()));
 
 		// Invoke the predictor function
-		int res;
+		int res = -1;
 		if (algo == Bonsai && version == Fixed)
 			res = seedotFixed(features_int);
 		else if (algo == Bonsai && version == Float)
@@ -217,7 +218,7 @@ int main(int argc, char *argv[]) {
 	stats.close();
 
 	if (datasetType == Training)
-		dumpRange(outputDir + "\\profile.txt");
+		dumpRange(outputDir + "/profile.txt");
 
 	return 0;
 }

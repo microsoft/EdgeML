@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 #include <iostream>
+#include <cstring>
 
 #include "datatypes.h"
 #include "predictors.h"

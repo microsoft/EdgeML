@@ -36,7 +36,9 @@ class X86(CodegenBase):
 		self.out.printf('\n')
 
 	def printCincludes(self):
-		self.out.printf('#include <iostream>\n\n', indent=True)
+		self.out.printf('#include <iostream>\n', indent=True)
+		self.out.printf('#include <cstring>\n', indent=True)
+		self.out.printf('#include <cmath>\n\n', indent=True)
 		self.out.printf('#include "datatypes.h"\n', indent=True)
 		self.out.printf('#include "predictors.h"\n', indent=True)
 		self.out.printf('#include "library.h"\n', indent=True)

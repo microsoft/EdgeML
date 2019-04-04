@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <string>
+
 void initializeProfiling();
 
 void updateRange(float x);
