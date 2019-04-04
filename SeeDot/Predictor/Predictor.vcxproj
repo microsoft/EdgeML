@@ -128,11 +128,14 @@
     <ClCompile Include="protonn_float.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bonsai_float_model.h" />
+    <ClInclude Include="lenet_float_model.h" />
     <ClInclude Include="library.h" />
     <ClInclude Include="datatypes.h" />
-    <ClInclude Include="model.h" />
     <ClInclude Include="predictors.h" />
     <ClInclude Include="profile.h" />
+    <ClInclude Include="protonn_float_model.h" />
+    <ClInclude Include="seedot_fixed_model.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

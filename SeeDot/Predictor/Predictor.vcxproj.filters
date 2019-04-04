@@ -41,9 +41,6 @@
     <ClInclude Include="datatypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="model.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="profile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -51,6 +48,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="predictors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bonsai_float_model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lenet_float_model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="protonn_float_model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="seedot_fixed_model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

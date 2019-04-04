@@ -5,7 +5,6 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <Windows.h>
 
 #include "datatypes.h"
 #include "predictors.h"
@@ -58,15 +57,6 @@ int getLabel(string line) {
 	return (int)atoi(labels.front().c_str());
 }
 
-// Windows specific sys call for creating directories
-void createDir(string dir) {
-	bool result = CreateDirectory(dir.c_str(), NULL) || GetLastError() == ERROR_ALREADY_EXISTS;
-	if (result == false)
-		throw "Creating output directory failed!";
-
-	return;
-}
-
 int main(int argc, char *argv[]) {
 	if (argc == 1) {
 		cout << "No arguments supplied" << endl;
@@ -110,7 +100,7 @@ int main(int argc, char *argv[]) {
 	string datasetTypeStr = argv[3];
 
 	// Reading the dataset
-	string inputDir = "input\\";
+	string inputDir = "input/";
 
 	ifstream featuresFile(inputDir + "X.csv");
 	ifstream lablesFile(inputDir + "Y.csv");
@@ -120,7 +110,6 @@ int main(int argc, char *argv[]) {
 
 	// Create output directory and files
 	string outputDir = "output\\" + algoStr + "-" + versionStr;
-	createDir(outputDir);
 
 	string outputFile = outputDir + "\\prediction-info-" + datasetTypeStr + ".txt";
 	string statsFile = outputDir + "\\stats-" + datasetTypeStr + ".txt";
