@@ -110,11 +110,7 @@ int main(int argc, char *argv[]) {
 	string datasetTypeStr = argv[3];
 
 	// Reading the dataset
-	string inputDir;
-	if (version == Fixed)
-		inputDir = "seedot_fixed\\" + datasetTypeStr + "\\";
-	else
-		inputDir = algoStr + "_float\\" + datasetTypeStr + "\\";
+	string inputDir = "input\\";
 
 	ifstream featuresFile(inputDir + "X.csv");
 	ifstream lablesFile(inputDir + "Y.csv");

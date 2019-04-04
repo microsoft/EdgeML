@@ -5,7 +5,7 @@
 
 #include "datatypes.h"
 #include "predictors.h"
-#include "model.h"
+#include "protonn_float_model.h"
 
 #define PROFILE 1
 

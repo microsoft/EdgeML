@@ -40,7 +40,7 @@ class X86(CodegenBase):
 		self.out.printf('#include "datatypes.h"\n', indent=True)
 		self.out.printf('#include "predictors.h"\n', indent=True)
 		self.out.printf('#include "library.h"\n', indent=True)
-		self.out.printf('#include "model.h"\n\n', indent=True)
+		self.out.printf('#include "seedot_fixed_model.h"\n\n', indent=True)
 		self.out.printf('using namespace std;\n', indent=True)
 		self.out.printf('using namespace %s_fixed;\n\n' % (getAlgo()), indent=True)
 

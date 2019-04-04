@@ -5,7 +5,7 @@
 
 #include "datatypes.h"
 #include "predictors.h"
-#include "model.h"
+#include "bonsai_float_model.h"
 
 #define TANH 0
 #define PROFILE 1

@@ -25,7 +25,7 @@ class Main:
 		print("Generating code...", end='')
 
 		# Set input and output files
-		inputFile = os.path.join("..", "Predictor", "seedot_fixed", "testing", "input.sd")
+		inputFile = os.path.join("..", "Predictor", "input.sd")
 		profileLogFile = os.path.join("..", "Predictor", "output", self.algo + "-float", "profile.txt")
 
 		if target == Common.Target.Arduino:
@@ -64,11 +64,11 @@ class Main:
 			datasetOutputDir = os.path.join("..", "Streamer", "input")
 		elif target == Common.Target.X86:
 			if version == Common.Version.Fixed:
-				outputDir = os.path.join("..", "Predictor", "seedot_fixed", "testing")
-				datasetOutputDir = os.path.join("..", "Predictor", "seedot_fixed", datasetType)
+				outputDir = os.path.join("..", "Predictor")
+				datasetOutputDir = os.path.join("..", "Predictor", "input")
 			elif version == Common.Version.Float:
-				outputDir = os.path.join("..", "Predictor", self.algo + "_float", "testing")
-				datasetOutputDir = os.path.join("..", "Predictor", self.algo + "_float", datasetType)
+				outputDir = os.path.join("..", "Predictor")
+				datasetOutputDir = os.path.join("..", "Predictor", "input")
 		else:
 			assert False
 		

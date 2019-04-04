@@ -169,7 +169,10 @@ class Bonsai:
 			self.writeModelForHls()
 
 	def run(self):
-		self.headerFile = os.path.join(getOutputDir(), "model.h")
+		if getVersion() == Common.Version.Float:
+			self.headerFile = os.path.join(getOutputDir(), "bonsai_float_model.h")
+		else:
+			self.headerFile = os.path.join(getOutputDir(), "seedot_fixed_model.h")
 		self.inputFile = os.path.join(getOutputDir(), "input.sd")
 		self.infoFile = os.path.join(getOutputDir(), "info.txt")
 		self.fpgaFile = os.path.join(getOutputDir(), "CustomTypes.sv")

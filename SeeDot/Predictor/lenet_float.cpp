@@ -6,7 +6,7 @@
 
 #include "datatypes.h"
 #include "predictors.h"
-#include "model.h"
+#include "lenet_float_model.h"
 
 using namespace std;
 using namespace lenet_float;
