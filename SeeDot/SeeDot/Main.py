@@ -1,8 +1,10 @@
 
 import argparse
+import datetime
 import json
 import os
 from itertools import product
+import tempfile
 
 import Common
 from Compiler import Compiler
@@ -34,6 +36,8 @@ class MainDriver:
 		parser.add_argument("-sf", "--max-scale-factor", type = int, metavar = '', help = "Max scaling factor for code generation")
 		parser.add_argument("--load-sf", action = "store_true", help = "Verify the accuracy of the generated code")
 		parser.add_argument("--workers", type=int, default = 1, metavar = '', help = "number of worker threads to parallelize SparseMul on FPGAs only")
+		parser.add_argument("--tempdir", metavar='', help="Scratch directory")
+		parser.add_argument("-o", "--outdir", metavar='', help="Directory to output the generated Arduino sketch")
 		
 		self.args = parser.parse_args()
 
@@ -42,6 +46,20 @@ class MainDriver:
 		if not isinstance(self.args.dataset, list): self.args.dataset = [self.args.dataset]
 		if not isinstance(self.args.datasetType, list):	self.args.datasetType = [self.args.datasetType]
 		if not isinstance(self.args.target, list): self.args.target = [self.args.target]
+
+		if self.args.tempdir is not None:
+			assert os.path.isdir(self.args.tempdir), "Scratch directory doesn't exist"
+			Common.tempdir = self.args.tempdir
+		else:
+			Common.tempdir = os.path.join(tempfile.gettempdir(), "SeeDot", datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+			os.makedirs(Common.tempdir, exist_ok=True)
+
+		if self.args.outdir is not None:
+			assert os.path.isdir(self.args.outdir), "Output directory doesn't exist"
+			Common.outdir = self.args.outdir
+		else:
+			Common.outdir = os.path.join(Common.tempdir, "arduino")
+			os.makedirs(Common.outdir, exist_ok=True)
 
 	def checkMSBuildPath(self):
 		found = False

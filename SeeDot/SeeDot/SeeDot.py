@@ -2,9 +2,12 @@
 # Licensed under the MIT license.
 
 import argparse
+import datetime
+from distutils.dir_util import copy_tree
 import os
 import shutil
 import operator
+import tempfile
 import traceback
 
 from Converter.Converter import Converter
@@ -21,22 +24,26 @@ class Main:
 		self.algo, self.version, self.target, self.trainingFile, self.testingFile, self.modelDir, self.sf, self.numWorkers = algo, version, target, trainingFile, testingFile, modelDir, sf, workers
 		self.accuracy = {}
 
+	def setup(self):
+		copy_tree(os.path.join("..", "Predictor"), Common.tempdir)
+
+		for fileName in ["arduino.ino", "config.h", "library.h", "predict.h"]:
+			srcFile = os.path.join("..", "arduino", fileName)
+			destFile = os.path.join(Common.outdir, fileName)
+			shutil.copyfile(srcFile, destFile)
+
 	# Generate the fixed-point code using the input generated from the Converter project
 	def compile(self, target, sf):
 		print("Generating code...", end='')
 
 		# Set input and output files
-		inputFile = os.path.join("..", "Predictor", "input.sd")
-		profileLogFile = os.path.join("..", "Predictor", "output", self.algo + "-float", "profile.txt")
+		inputFile = os.path.join(Common.tempdir, "input.sd")
+		profileLogFile = os.path.join(Common.tempdir, "output", self.algo + "-float", "profile.txt")
 
 		if target == Common.Target.Arduino:
-			outputFile = os.path.join("..", "arduino", "predict.cpp")			
-		elif target == Common.Target.Hls:
-			outputFile = os.path.join("..", "hls", "predict.cpp")
-		elif target == Common.Target.Verilog:
-			outputFile = os.path.join("..", "verilog", "predict.cpp")
+			outputFile = os.path.join(Common.outdir, "predict.cpp")
 		elif target == Common.Target.X86:
-			outputFile = os.path.join("..", "Predictor", "seedot_fixed.cpp")
+			outputFile = os.path.join(Common.tempdir, "seedot_fixed.cpp")
 		
 		try:
 			obj = Compiler(self.algo, target, inputFile, outputFile, profileLogFile, sf, self.numWorkers)
@@ -55,21 +62,11 @@ class Main:
 
 		# Create output dirs
 		if target == Common.Target.Arduino:
-			outputDir = os.path.join("..", "Streamer", "input")
+			outputDir = os.path.join(Common.outdir, "input")
 			datasetOutputDir = outputDir
-		elif target == Common.Target.Hls:
-			outputDir = os.path.join("..", "hls", "input")
-			datasetOutputDir = os.path.join("..", "Streamer", "input")
-		elif target == Common.Target.Verilog:
-			outputDir = os.path.join("..", "verilog", "input")
-			datasetOutputDir = os.path.join("..", "Streamer", "input")
 		elif target == Common.Target.X86:
-			if version == Common.Version.Fixed:
-				outputDir = os.path.join("..", "Predictor")
-				datasetOutputDir = os.path.join("..", "Predictor", "input")
-			elif version == Common.Version.Float:
-				outputDir = os.path.join("..", "Predictor")
-				datasetOutputDir = os.path.join("..", "Predictor", "input")
+			outputDir = Common.tempdir
+			datasetOutputDir = os.path.join(Common.tempdir, "input")
 		else:
 			assert False
 		
@@ -89,10 +86,10 @@ class Main:
 
 	# Build and run the Predictor project
 	def predict(self, version, datasetType):
-		outputDir = os.path.join("..", "Predictor", "output", self.algo + "-" + version)
+		outputDir = os.path.join(Common.tempdir, "output", self.algo + "-" + version)
 
 		curDir = os.getcwd()
-		os.chdir(os.path.join("..", "Predictor"))
+		os.chdir(Common.tempdir)
 
 		obj = Predictor(self.algo, version, datasetType, outputDir)
 		acc = obj.run()
@@ -222,8 +219,8 @@ class Main:
 			return False
 
 		# Copy file
-		srcFile = os.path.join("..", "Streamer", "input", "model.h")
-		destFile = os.path.join("..", self.target, "model.h")
+		srcFile = os.path.join(Common.outdir, "input", "seedot_fixed_model.h")
+		destFile = os.path.join(Common.outdir, "model.h")
 		shutil.copyfile(srcFile, destFile)
 
 		res = self.compile(self.target, self.sf)
@@ -280,18 +277,21 @@ class Main:
 			return False
 
 		# Copy model.h
-		srcFile = os.path.join("..", "Streamer", "input", "model.h")
-		destFile = os.path.join("..", "arduino", "model.h")
+		srcFile = os.path.join(Common.outdir, "input", self.algo + "_" + "float_model.h")
+		destFile = os.path.join(Common.outdir, "model.h")
 		shutil.copyfile(srcFile, destFile)
 
 		# Copy predict.cpp
 		srcFile = os.path.join("..", "arduino", "floating-point", self.algo + "_float.cpp")
-		destFile = os.path.join("..", "arduino", "predict.cpp")
+		destFile = os.path.join(Common.outdir, "predict.cpp")
 		shutil.copyfile(srcFile, destFile)
 
 		return True
 
 	def run(self):
+
+		self.setup()
+
 		if self.version == Common.Version.Fixed:
 			return self.runForFixed()
 		else:
@@ -307,16 +307,29 @@ class MainDriver:
 		parser.add_argument("--train", required=True, metavar='', help="Training set file")
 		parser.add_argument("--test", required=True, metavar='', help="Testing set file")
 		parser.add_argument("--model", required=True, metavar='', help="Directory containing trained model")
+		parser.add_argument("--tempdir", metavar='', help="Scratch directory")
+		parser.add_argument("-o", "--outdir", metavar='', help="Directory to output the generated Arduino sketch")
 		
 		self.args = parser.parse_args()
 
 		# Verify the input files and directory exists
-		if not os.path.isfile(self.args.train):
-			raise Exception("Training set doesn't exist")
-		if not os.path.isfile(self.args.test):
-			raise Exception("Testing set doesn't exist")
-		if not os.path.isdir(self.args.model):
-			raise Exception("Model directory doesn't exist")
+		assert os.path.isfile(self.args.train), "Training set doesn't exist"
+		assert os.path.isfile(self.args.test), "Testing set doesn't exist"
+		assert os.path.isdir(self.args.model), "Model directory doesn't exist"
+		
+		if self.args.tempdir is not None:
+			assert os.path.isdir(self.args.tempdir), "Scratch directory doesn't exist"
+			Common.tempdir = self.args.tempdir
+		else:
+			Common.tempdir = os.path.join(tempfile.gettempdir(), "SeeDot", datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+			os.makedirs(Common.tempdir, exist_ok=True)
+
+		if self.args.outdir is not None:
+			assert os.path.isdir(self.args.outdir), "Output directory doesn't exist"
+			Common.outdir = self.args.outdir
+		else:
+			Common.outdir = os.path.join(Common.tempdir, "arduino")
+			os.makedirs(Common.outdir, exist_ok=True)
 
 	def checkMSBuildPath(self):
 		found = False
