@@ -20,9 +20,9 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{FCF52402-0D2F-43E7-BB43-213252444552}</ProjectGuid>
+    <ProjectGuid>{BF07EAE7-2FC0-4BB8-B0C3-2B2309AF5A48}</ProjectGuid>
     <RootNamespace>Predictor</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -85,9 +85,6 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
-    <Link>
-      <SubSystem>Console</SubSystem>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -115,23 +112,22 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="library.cpp" />
     <ClCompile Include="bonsai_float.cpp" />
     <ClCompile Include="lenet_float.cpp" />
+    <ClCompile Include="library.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="profile.cpp" />
-    <ClCompile Include="seedot_fixed.cpp" />
     <ClCompile Include="protonn_float.cpp" />
+    <ClCompile Include="seedot_fixed.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bonsai_float_model.h" />
+    <ClInclude Include="datatypes.h" />
     <ClInclude Include="lenet_float_model.h" />
     <ClInclude Include="library.h" />
-    <ClInclude Include="datatypes.h" />
     <ClInclude Include="predictors.h" />
     <ClInclude Include="profile.h" />
     <ClInclude Include="protonn_float_model.h" />

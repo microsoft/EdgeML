@@ -21,6 +21,9 @@
     <ClCompile Include="lenet_float.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="library.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -33,15 +36,15 @@
     <ClCompile Include="seedot_fixed.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="library.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bonsai_float_model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="datatypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="profile.h">
+    <ClInclude Include="lenet_float_model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="library.h">
@@ -50,10 +53,7 @@
     <ClInclude Include="predictors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="bonsai_float_model.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="lenet_float_model.h">
+    <ClInclude Include="profile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="protonn_float_model.h">

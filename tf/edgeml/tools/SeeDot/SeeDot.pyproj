@@ -2,19 +2,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>c7a84875-f8bd-4981-8b7c-54ecf140be72</ProjectGuid>
+    <ProjectGuid>818ba787-0ee4-4fcd-803a-559dce50a83e</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>SeeDot.py</StartupFile>
+    <StartupFile>
+    </StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>SeeDot</Name>
     <RootNamespace>SeeDot</RootNamespace>
-    <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>
-    </CommandLineArguments>
-    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -50,9 +47,7 @@
     <Compile Include="Codegen\CodegenBase.py" />
     <Compile Include="Codegen\Hls.py" />
     <Compile Include="Codegen\Verilog.py" />
-    <Compile Include="Codegen\X86.py">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Codegen\X86.py" />
     <Compile Include="Codegen\__init__.py">
       <SubType>Code</SubType>
     </Compile>
@@ -80,6 +75,7 @@
     <Compile Include="IR\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Main.py" />
     <Compile Include="Predictor.py" />
     <Compile Include="SeeDot.py" />
     <Compile Include="Type.py" />
