@@ -273,7 +273,7 @@ namespace EdgeML
       featureCount_t* feedDataFeatureBuffer; ///< Buffer to hold incoming Label values
 
       MatrixXuf mean; ///< Object to hold the mean of the train data
-      MatrixXuf variance; ///< Object to hold variance of the train data
+      MatrixXuf stdDev; ///< Object to hold stdDev of the train data
 
       ///
       /// Function to support various normalisations
@@ -486,15 +486,15 @@ namespace EdgeML
       size_t getModelSize();
       size_t getSparseModelSize();
 
-      void exportMeanVar(
-        const size_t& meanVarSize,
+      void exportMeanStd(
+        const size_t& meanStdSize,
         char *const buffer);
-      void exportMeanVar(
-        const size_t& meanVarSize,
+      void exportMeanStd(
+        const size_t& meanStdSize,
         char *const buffer,
         const std::string& currResultsPath);
 
-      size_t getMeanVarSize();
+      size_t getMeanStdSize();
 
       ///
       /// Gives reloadablity for a pretrained model stored after training in the results directory
@@ -531,14 +531,14 @@ namespace EdgeML
       void exportThetaDense(int bufferSize, char *const buf);
 
       ///
-      /// Function to Dump Readable Mean, Variance and Model 
+      /// Function to Dump Readable Mean, StdDev and Model 
       ///
-      void dumpModelMeanVar(const std::string& currResultsPath);
+      void dumpModelMeanStd(const std::string& currResultsPath);
 
       ///
-      /// Function to Dump Loadable Mean, Variance and Model 
+      /// Function to Dump Loadable Mean, StdDev and Model 
       ///
-      void getLoadableModelMeanVar(char *const modelBuffer, const size_t& modelBytes, char *const meanVarBuffer, const size_t& meanVarBytes, const std::string& currResultsPath);
+      void getLoadableModelMeanStd(char *const modelBuffer, const size_t& modelBytes, char *const meanStdBuffer, const size_t& meanStdBytes, const std::string& currResultsPath);
 
       size_t totalNonZeros();
     };
@@ -553,7 +553,7 @@ namespace EdgeML
       featureCount_t* feedDataFeatureBuffer; ///< Buffer to hold incoming Label values
 
       MatrixXuf mean; ///< Object to hold the mean of the train data from imported model
-      MatrixXuf variance; ///< Object to hold variance of the train data from imported model
+      MatrixXuf stdDev; ///< Object to hold stdDev of the train data from imported model
 
       BonsaiModel model; ///< Object to hold the imported model
       Data testData;
@@ -583,15 +583,15 @@ namespace EdgeML
       ~BonsaiPredictor();
 
       ///
-      /// Function to import stored Mean and Variance
+      /// Function to import stored Mean and stdDev
       ///
-      void importMeanVar(const size_t numBytes,
+      void importMeanStd(const size_t numBytes,
         const char *const fromBuffer);
 
       ///
-      /// Function to import stored Mean and Variance
+      /// Function to import stored Mean and stdDev
       ///
-      void importMeanVar(std::string meanVarFile);
+      void importMeanStd(std::string meanStdFile);
 
       ///
       /// Function to Score an incoming Dense Data Point.Not thread safe

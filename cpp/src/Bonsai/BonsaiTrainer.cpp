@@ -46,7 +46,7 @@ BonsaiTrainer::BonsaiTrainer(
   feedDataFeatureBuffer = new featureCount_t[5];
 
   mean = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
-  variance = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
+  stdDev = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
 
   data.loadDataFromFile(model.hyperParams.dataformatType, dataDir + "/train.txt", dataDir + "/test.txt", "");
   finalizeData();
@@ -81,7 +81,7 @@ BonsaiTrainer::BonsaiTrainer(
   feedDataFeatureBuffer = new featureCount_t[5];
 
   mean = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
-  variance = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
+  stdDev = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
 
   data.loadDataFromFile(model.hyperParams.dataformatType, dataDir + "/train.txt", dataDir + "/test.txt", "");
   finalizeData();
@@ -110,7 +110,7 @@ BonsaiTrainer::BonsaiTrainer(
   feedDataFeatureBuffer = new featureCount_t[model.hyperParams.dataDimension + 5];
 
   mean = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
-  variance = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
+  stdDev = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
 
   initializeModel();
 }
@@ -118,7 +118,7 @@ BonsaiTrainer::BonsaiTrainer(
 BonsaiTrainer::~BonsaiTrainer()
 {
   mean.resize(0, 0);
-  variance.resize(0, 0);
+  stdDev.resize(0, 0);
   delete[] feedDataValBuffer;
   delete[] feedDataFeatureBuffer;
 }
@@ -171,7 +171,7 @@ void BonsaiTrainer::finalizeData()
 
   initializeTrainVariables(data.Ytrain);
 
-  meanVarNormalize(data.Xtrain, mean, variance);
+  meanVarNormalize(data.Xtrain, mean, stdDev);
 }
 
 FP_TYPE BonsaiTrainer::computeObjective(const MatrixXuf& ZX, const LabelMatType& Y)
@@ -285,19 +285,19 @@ void BonsaiTrainer::exportModel(
   modelExporter.close();
 }
 
-void BonsaiTrainer::getLoadableModelMeanVar(
+void BonsaiTrainer::getLoadableModelMeanStd(
   char *const modelBuffer,
   const size_t& modelBytes,
-  char *const meanVarBuffer,
-  const size_t& meanVarBytes,
+  char *const meanStdBuffer,
+  const size_t& meanStdBytes,
   const std::string& currResultsPath)
 {
   std::ofstream modelExporter(currResultsPath + "/loadableModel", std::ios::out | std::ios::binary);
   modelExporter.write(modelBuffer, modelBytes);
   modelExporter.close();
-  std::ofstream meanVarExporter(currResultsPath + "/loadableMeanVar", std::ios::out | std::ios::binary);
-  meanVarExporter.write(meanVarBuffer, meanVarBytes);
-  meanVarExporter.close();
+  std::ofstream meanStdExporter(currResultsPath + "/loadableMeanStd", std::ios::out | std::ios::binary);
+  meanStdExporter.write(meanStdBuffer, meanStdBytes);
+  meanStdExporter.close();
 }
 
 void BonsaiTrainer::exportSparseModel(
@@ -313,48 +313,48 @@ void BonsaiTrainer::exportSparseModel(
   modelExporter.close();
 }
 
-size_t BonsaiTrainer::getMeanVarSize()
+size_t BonsaiTrainer::getMeanStdSize()
 {
   size_t offset = 0;
 
   offset += sizeof(size_t);
   offset += sizeof(FP_TYPE) * mean.rows() * mean.cols();
-  offset += sizeof(FP_TYPE) * variance.rows() * variance.cols();
+  offset += sizeof(FP_TYPE) * stdDev.rows() * stdDev.cols();
 
   return offset;
 }
 
-void BonsaiTrainer::exportMeanVar(
-  const size_t& meanVarSize,
+void BonsaiTrainer::exportMeanStd(
+  const size_t& meanStdSize,
   char *const buffer)
 {
-  assert(meanVarSize == getMeanVarSize());
+  assert(meanStdSize == getMeanStdSize());
 
   size_t offset = 0;
 
-  memcpy(buffer + offset, (void *)&meanVarSize, sizeof(meanVarSize));
-  offset += sizeof(meanVarSize);
+  memcpy(buffer + offset, (void *)&meanStdSize, sizeof(meanStdSize));
+  offset += sizeof(meanStdSize);
 
   memcpy(buffer + offset, mean.data(), sizeof(FP_TYPE) * mean.rows() * mean.cols());
   offset += sizeof(FP_TYPE) * mean.rows() * mean.cols();
 
-  memcpy(buffer + offset, variance.data(), sizeof(FP_TYPE) * variance.rows() * variance.cols());
-  offset += sizeof(FP_TYPE) * variance.rows() * variance.cols();
+  memcpy(buffer + offset, stdDev.data(), sizeof(FP_TYPE) * stdDev.rows() * stdDev.cols());
+  offset += sizeof(FP_TYPE) * stdDev.rows() * stdDev.cols();
 
   assert(offset < (size_t)(1 << 31)); // Because we make this promise to TLC.
 }
 
-void BonsaiTrainer::exportMeanVar(
-  const size_t& meanVarSize,
+void BonsaiTrainer::exportMeanStd(
+  const size_t& meanStdSize,
   char *const buffer,
   const std::string& currResultsPath)
 {
-  std::string loadableMeanvarPath = currResultsPath + "/loadableMeanVar";
-  exportMeanVar(meanVarSize, buffer);
+  std::string loadableMeanStdPath = currResultsPath + "/loadableMeanStd";
+  exportMeanStd(meanStdSize, buffer);
 
-  std::ofstream meanVarExporter(loadableMeanvarPath);
-  meanVarExporter.write(buffer, meanVarSize);
-  meanVarExporter.close();
+  std::ofstream meanStdExporter(loadableMeanStdPath);
+  meanStdExporter.write(buffer, meanStdSize);
+  meanStdExporter.close();
 }
 
 void BonsaiTrainer::normalize()
@@ -635,7 +635,7 @@ void BonsaiTrainer::exportThetaDense(int bufferSize, char *const buf)
   exportDenseMatrix(model.params.Theta, bufferSize, buf);
 }
 
-void BonsaiTrainer::dumpModelMeanVar(const std::string& currResultsPath)
+void BonsaiTrainer::dumpModelMeanStd(const std::string& currResultsPath)
 {
   std::string params_path = currResultsPath + "/Params";
   writeMatrixInASCII(MatrixXuf(model.params.Z), params_path, "Z");
@@ -644,7 +644,12 @@ void BonsaiTrainer::dumpModelMeanVar(const std::string& currResultsPath)
   writeMatrixInASCII(MatrixXuf(model.params.Theta), params_path, "Theta");
 
   writeMatrixInASCII(mean, params_path, "Mean");
-  writeMatrixInASCII(variance, params_path, "Variance");
+  writeMatrixInASCII(stdDev, params_path, "Std");
+
+  std::ofstream sigmaDumper(params_path + "/Sigma", std::ofstream::out);
+  sigmaDumper << model.hyperParams.Sigma;
+  sigmaDumper.close();
+
   LOG_INFO(currResultsPath);
 }
 

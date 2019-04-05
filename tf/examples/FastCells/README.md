@@ -4,12 +4,12 @@ This directory includes example notebook and general execution script of
 FastCells (FastRNN & FastGRNN) developed as part of EdgeML. Also, we include a
 sample cleanup and use-case on the USPS10 public dataset.
 
-`edgeml.graph.rnn` implements the custom RNN cells of FastGRNN and FastRNN with
+`edgeml.graph.rnn` implements the custom RNN cells of **FastRNN** ([`FastRNNCell`](../../edgeml/graph/rnn.py#L206)) and **FastGRNN** ([`FastGRNNCell`](../../edgeml/graph/rnn.py#L31)) with
 multiple additional features like Low-Rank parameterisation, custom
 non-linearities etc., Similar to Bonsai and ProtoNN, the three-phase training
-routine for FastGRNN and FastRNN is decoupled from the custom cells to
+routine for FastRNN and FastGRNN is decoupled from the custom cells to
 facilitate a plug and play behaviour of the custom RNN cells in other
-architectures (NMT, Encoder-Decoder etc.,).
+architectures (NMT, Encoder-Decoder etc.,) in place of the inbuilt `RNNCell`, `GRUCell`, `BasicLSTMCell` etc.,
 
 For training FastCells, `edgeml.trainer.fastTrainer` implements the three-phase
 FastCell training routine in Tensorflow. A simple example,
@@ -21,7 +21,8 @@ is assumed that train and test data is contained in two files, `train.npy` and
 numberOfFeatures]`. numberOfFeatures is `timesteps x inputDims`, flattened
 across timestep dimension. So the input of 1st timestep followed by second and
 so on.  For an N-Class problem, we assume the labels are integers from 0
-through N-1.
+through N-1. Lastly, the training data, `train.npy`, is assumed to well shuffled 
+as the training routine doesn't shuffle internally.
 
 **Tested With:** Tensorflow >1.6 with Python 2 and Python 3
 
@@ -47,7 +48,7 @@ So the number of timesteps = 16 and inputDims = 16
 ```bash
 python fastcell_example.py -dir usps10/ -id 16 -hd 32
 ```
-This command should give you a final output screen which reads roughly similar to(might not be exact numbers due to various version mismatches):
+This command should give you a final output screen which reads roughly similar to (might not be exact numbers due to various version mismatches):
 
 ```
 Maximum Test accuracy at compressed model size(including early stopping): 0.9407075 at Epoch: 262
@@ -55,8 +56,8 @@ Final Test Accuracy: 0.93721974
 
 Non-Zeros: 1932 Model Size: 7.546875 KB hasSparse: False
 ```
-`usps10/` directory will now have a consolidated results file called `FastGRNNResults.txt` or `FastRNNResults.txt` depending on the choice of the RNN cell.
-A directory `FastGRNNResults` or `FastRNNResults` with the corresponding models with each run of the code on the `usps10` dataset
+`usps10/` directory will now have a consolidated results file called `FastRNNResults.txt` or `FastGRNNResults.txt` depending on the choice of the RNN cell.
+A directory `FastRNNResults` or `FastGRNNResults` with the corresponding models with each run of the code on the `usps10` dataset
 
 ## Byte Quantization(Q) for model compression
 If you wish to quantize the generated model to use byte quantized integers use `quantizeFastModels.py`. Usage Instructions:

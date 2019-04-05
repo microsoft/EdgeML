@@ -41,8 +41,8 @@ def main():
     update_non_linearity = args.update_nl
     gate_non_linearity = args.gate_nl
 
-    (dataDimension, numClasses,
-        Xtrain, Ytrain, Xtest, Ytest) = helpermethods.preProcessData(dataDir)
+    (dataDimension, numClasses, Xtrain, Ytrain, Xtest, Ytest,
+     mean, std) = helpermethods.preProcessData(dataDir)
 
     assert dataDimension % inputDims == 0, "Infeasible per step input, " + \
         "Timesteps have to be integer"
@@ -54,6 +54,7 @@ def main():
     currDir = helpermethods.createTimeStampDir(dataDir, cell)
 
     helpermethods.dumpCommand(sys.argv, currDir)
+    helpermethods.saveMeanStd(mean, std, currDir)
 
     if cell == "FastGRNN":
         FastCell = FastGRNNCell(hiddenDims,

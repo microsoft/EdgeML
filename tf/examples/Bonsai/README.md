@@ -14,7 +14,12 @@ assumed that train and test data is contained in two files, `train.npy` and
 `test.npy`. Each containing a 2D numpy array of dimension `[numberOfExamples,
 numberOfFeatures + 1]`. The first column of each matrix is assumed to contain
 label information.  For an N-Class problem, we assume the labels are integers
-from 0 through N-1.
+from 0 through N-1. `bonsai_example.py` also supports univariate regression 
+and can be accessed using the help options of the script. Multivariate regression 
+requires restructuring of the input data format and can further help in extending 
+bonsai to multi-label classification and multi-variate regression. Lastly, 
+the training data, `train.npy`, is assumed to well shuffled 
+as the training routine doesn't shuffle internally.
 
 **Tested With:** Tensorflow >1.6 with Python 2 and Python 3
 
@@ -36,7 +41,7 @@ The following sample run on usps10 should validate your library:
 ```bash
 python bonsai_example.py -dir usps10/ -d 3 -p 28 -rW 0.001 -rZ 0.0001 -rV 0.001 -rT 0.001 -sZ 0.2 -sW 0.3 -sV 0.3 -sT 0.62 -e 100 -s 1
 ```
-This command should give you a final output screen which reads roughly similar to(might not be exact numbers due to various version mismatches):
+This command should give you a final output screen which reads roughly similar to (might not be exact numbers due to various version mismatches):
 ```
 Maximum Test accuracy at compressed model size(including early stopping): 0.94369704 at Epoch: 66
 Final Test Accuracy: 0.93024415
@@ -45,6 +50,16 @@ Non-Zeros: 4156.0 Model Size: 31.703125 KB hasSparse: True
 ```
 
 usps10 directory will now have a consolidated results file called `TFBonsaiResults.txt` and a directory `TFBonsaiResults` with the corresponding models with each run of the code on the usps10 dataset
+
+## Byte Quantization (Q) for model compression
+If you wish to quantize the generated model to use byte quantized integers use `quantizeBonsaiModels.py`. Usage Instructions:
+
+```
+python quantizeBonsaiModels.py -h
+```
+
+This will generate quantized models with a suffix of `q` before every param stored in a new directory `QuantizedTFBonsaiModel` inside the model directory.
+One can use this model further on edge devices.
 
 
 Copyright (c) Microsoft Corporation. All rights reserved. 
