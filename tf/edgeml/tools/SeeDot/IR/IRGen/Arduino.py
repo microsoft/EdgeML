@@ -5,7 +5,7 @@ import numpy as np
 import operator
 
 import AST.AST as AST
-from Antlr.SeeDotParser  import SeeDotParser
+from Antlr.SeeDotParser import SeeDotParser
 
 import Common
 
@@ -15,27 +15,28 @@ import IR.IR as IR
 import IR.IRUtil as IRUtil
 from Util import *
 
+
 class Arduino(IRGenBase):
 
-	def get_shr_mul(self, p1, p2):
-		shr = (Common.wordLength - 2) // 2
-		pRes = (p1 + shr) + (p2 + shr)
-		if pRes < self.MAX_EXPNT_ALL:
-			return [shr, shr]
-		else:
-			save = abs(abs(pRes) - abs(self.MAX_EXPNT_ALL))
-			save1 = save // 2
-			save2 = save - save1
-			shr1 = max(shr - save1, 0)
-			shr2 = max(shr - save2, 0)
-			return [shr1, shr2]
+    def get_shr_mul(self, p1, p2):
+        shr = (Common.wordLength - 2) // 2
+        pRes = (p1 + shr) + (p2 + shr)
+        if pRes < self.MAX_EXPNT_ALL:
+            return [shr, shr]
+        else:
+            save = abs(abs(pRes) - abs(self.MAX_EXPNT_ALL))
+            save1 = save // 2
+            save2 = save - save1
+            shr1 = max(shr - save1, 0)
+            shr2 = max(shr - save2, 0)
+            return [shr1, shr2]
 
-	def visitReshape(self, node:AST.Reshape):
+    def visitReshape(self, node: AST.Reshape):
 
-		self.set_arg(node.expr, node)
-		(prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
+        self.set_arg(node.expr, node)
+        (prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
 
-		'''
+        '''
 		reshape(A, n, h, w)
 
 		cmd1:  t1 = t2 = 0;
@@ -52,114 +53,122 @@ class Arduino(IRGenBase):
 		                 t1++;
 		'''
 
-		typ_1 = node.expr.type
-		typ_2 = node.type
+        typ_1 = node.expr.type
+        typ_2 = node.type
 
-		# Compute scaling factors
-		p_2 = expts_1[expr_1.idf]
-		intv_2 = intvs_1[expr_1.idf]
+        # Compute scaling factors
+        p_2 = expts_1[expr_1.idf]
+        intv_2 = intvs_1[expr_1.idf]
 
-		# Declare variables
-		expr_2 = self.getTempVar()
-		iters_1 = self.getTempIterators(typ_1.dim)
-		iters_2 = self.getTempVars(typ_2.dim)
+        # Declare variables
+        expr_2 = self.getTempVar()
+        iters_1 = self.getTempIterators(typ_1.dim)
+        iters_2 = self.getTempVars(typ_2.dim)
 
-		# Initialize to 0
-		cmd1 = [IR.Assn(var, IRUtil.zero) for var in iters_2]
+        # Initialize to 0
+        cmd1 = [IR.Assn(var, IRUtil.zero) for var in iters_2]
 
-		# Incrementing the first index
-		first_iter = iters_2[0]
-		cmd4 = IRUtil.incCmd(first_iter)
+        # Incrementing the first index
+        first_iter = iters_2[0]
+        cmd4 = IRUtil.incCmd(first_iter)
 
-		# Incrementing other indices using a loop
-		cmd5 = [cmd4]
-		for i in range(1, typ_2.dim):
-			curr_iter = iters_2[i]
-			curr_size = IR.Int(typ_2.shape[i])
-			cmd5 = [IRUtil.incCmd(curr_iter), IR.If(IRUtil.eq(curr_iter, curr_size), [IRUtil.initVarToZero(curr_iter)] + cmd5)]
-		
-		# Outer loop
-		loopShape = []
-		loopIters = []
-		for order in node.order:
-			order = order - 1
-			loopShape.append(typ_1.shape[order])
-			loopIters.append(iters_1[order])
+        # Incrementing other indices using a loop
+        cmd5 = [cmd4]
+        for i in range(1, typ_2.dim):
+            curr_iter = iters_2[i]
+            curr_size = IR.Int(typ_2.shape[i])
+            cmd5 = [IRUtil.incCmd(curr_iter), IR.If(IRUtil.eq(curr_iter, curr_size), [
+                IRUtil.initVarToZero(curr_iter)] + cmd5)]
 
-		loop2 = IRUtil.loop(loopShape, loopIters, [IR.Assn(IRUtil.addIndex(expr_2, iters_2), IRUtil.addIndex(expr_1, iters_1))] + cmd5)
+        # Outer loop
+        loopShape = []
+        loopIters = []
+        for order in node.order:
+            order = order - 1
+            loopShape.append(typ_1.shape[order])
+            loopIters.append(iters_1[order])
 
-		# Finalize
-		comment = IR.Comment("reshape(" + expr_1.idf + ", " + ', '.join(str(e) for e in typ_2.shape) + ")")
-		reshape_prog = IR.Prog([comment] + cmd1 + loop2)
-		prog_2 = IRUtil.concatPrograms(prog_1, reshape_prog)
+        loop2 = IRUtil.loop(loopShape, loopIters, [IR.Assn(IRUtil.addIndex(
+            expr_2, iters_2), IRUtil.addIndex(expr_1, iters_1))] + cmd5)
 
-		# Update context
-		decls_2 = copy_dict(decls_1, {expr_2.idf :  typ_2})
-		expts_2 = copy_dict(expts_1, {expr_2.idf :    p_2})
-		intvs_2 = copy_dict(intvs_1, {expr_2.idf : intv_2})
-		
-		# Update declarations
-		decls_2.update(dict((var.idf, Type.Int()) for var in iters_2))
+        # Finalize
+        comment = IR.Comment(
+            "reshape(" + expr_1.idf + ", " + ', '.join(str(e) for e in typ_2.shape) + ")")
+        reshape_prog = IR.Prog([comment] + cmd1 + loop2)
+        prog_2 = IRUtil.concatPrograms(prog_1, reshape_prog)
 
-		return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
+        # Update context
+        decls_2 = copy_dict(decls_1, {expr_2.idf:  typ_2})
+        expts_2 = copy_dict(expts_1, {expr_2.idf:    p_2})
+        intvs_2 = copy_dict(intvs_1, {expr_2.idf: intv_2})
 
-	def visitBopAddOrSubCir(self, node:AST.Bop1):
+        # Update declarations
+        decls_2.update(dict((var.idf, Type.Int()) for var in iters_2))
 
-		self.set_arg(node.expr1, node)
-		(prog_1, expr_1,  decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr1)
-		self.set_arg2(node.expr2, decls_1, expts_1, intvs_1, cnsts_1)
-		(prog_2, expr_2,  decls_2, expts_2, intvs_2, cnsts_2) = self.visit(node.expr2)
+        return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
 
-		op = node.op
-		typ_1 = node.expr1.type
-		typ_2 = node.expr2.type
-		typ_3 = node.type
+    def visitBopAddOrSubCir(self, node: AST.Bop1):
 
-		# decl fresh vars
-		expr_1_shr = self.getTempVar()
-		expr_2_shr = self.getTempVar()
-		sum = self.getTempVar()
-		iters = self.getTempIterators(typ_3.dim)
+        self.set_arg(node.expr1, node)
+        (prog_1, expr_1,  decls_1, expts_1,
+         intvs_1, cnsts_1) = self.visit(node.expr1)
+        self.set_arg2(node.expr2, decls_1, expts_1, intvs_1, cnsts_1)
+        (prog_2, expr_2,  decls_2, expts_2,
+         intvs_2, cnsts_2) = self.visit(node.expr2)
 
-		# p_3, intv_3, shr_n*
-		if   op == SeeDotParser.ADDCIR: (op_ir, op_fn) = (IR.Op.Op['+'], operator.add)
-		elif op == SeeDotParser.SUBCIR: (op_ir, op_fn) = (IR.Op.Op['-'], operator.sub)
-		(p_3, intv_3, [shr_n1, shr_n2, shr_n3]) = self.get_expnt_intv_add(expts_1[expr_1.idf], expts_2[expr_2.idf],
-										intvs_1[expr_1.idf], intvs_2[expr_2.idf], op_fn)
-			
-		# prog_assn
-		expr_1_elt = IRUtil.addIndex(expr_1,  iters)
-		expr_2_elt = IRUtil.addIndex(expr_2, [iters[-1]])
-		rhs_1 = IRUtil.shr(expr_1_elt, shr_n1)
-		rhs_2 = IRUtil.shr(expr_2_elt, shr_n2)
-		rhs_3 = IR.IntBop(expr_1_shr, op_ir, expr_2_shr)
-		rhs_4 = IRUtil.shr(sum, shr_n3)
-		cmdl_assn = IRUtil.loop(typ_3.shape, iters,
-			[IR.Assn(expr_1_shr, rhs_1),
-				IR.Assn(expr_2_shr, rhs_2),
-				IR.Assn(sum, rhs_3),
-				IR.Assn(expr_1_elt, rhs_4)])
+        op = node.op
+        typ_1 = node.expr1.type
+        typ_2 = node.expr2.type
+        typ_3 = node.type
 
-		comment = IR.Comment(expr_1.idf + " <" + op_ir.name + "> " + expr_2.idf)
-		prog_assn = IR.Prog([comment] + cmdl_assn)
-			
-		prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_assn)
-		#decls_3 = copy_dict(decls_2, {expr_1.idf :  typ_3})
-		decls_3 = decls_2
-		expts_3 = copy_dict(expts_2, {expr_1.idf :    p_3})
-		intvs_3 = copy_dict(intvs_2, {expr_1.idf : intv_3})
-		decls_3.update({expr_1_shr.idf : Type.Int(),
-						expr_2_shr.idf : Type.Int(),
-						sum.idf : Type.Int()})
+        # decl fresh vars
+        expr_1_shr = self.getTempVar()
+        expr_2_shr = self.getTempVar()
+        sum = self.getTempVar()
+        iters = self.getTempIterators(typ_3.dim)
 
-		return (prog_3, expr_1, decls_3, expts_3, intvs_3, cnsts_2)
+        # p_3, intv_3, shr_n*
+        if op == SeeDotParser.ADDCIR:
+            (op_ir, op_fn) = (IR.Op.Op['+'], operator.add)
+        elif op == SeeDotParser.SUBCIR:
+            (op_ir, op_fn) = (IR.Op.Op['-'], operator.sub)
+        (p_3, intv_3, [shr_n1, shr_n2, shr_n3]) = self.get_expnt_intv_add(expts_1[expr_1.idf], expts_2[expr_2.idf],
+                                                                          intvs_1[expr_1.idf], intvs_2[expr_2.idf], op_fn)
 
-	def visitRelu(self, node:AST.Func):
+        # prog_assn
+        expr_1_elt = IRUtil.addIndex(expr_1,  iters)
+        expr_2_elt = IRUtil.addIndex(expr_2, [iters[-1]])
+        rhs_1 = IRUtil.shr(expr_1_elt, shr_n1)
+        rhs_2 = IRUtil.shr(expr_2_elt, shr_n2)
+        rhs_3 = IR.IntBop(expr_1_shr, op_ir, expr_2_shr)
+        rhs_4 = IRUtil.shr(sum, shr_n3)
+        cmdl_assn = IRUtil.loop(typ_3.shape, iters,
+                                [IR.Assn(expr_1_shr, rhs_1),
+                                 IR.Assn(expr_2_shr, rhs_2),
+                                    IR.Assn(sum, rhs_3),
+                                    IR.Assn(expr_1_elt, rhs_4)])
 
-		self.set_arg(node.expr, node)
-		(prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
+        comment = IR.Comment(expr_1.idf + " <" +
+                             op_ir.name + "> " + expr_2.idf)
+        prog_assn = IR.Prog([comment] + cmdl_assn)
 
-		'''
+        prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_assn)
+        #decls_3 = copy_dict(decls_2, {expr_1.idf :  typ_3})
+        decls_3 = decls_2
+        expts_3 = copy_dict(expts_2, {expr_1.idf:    p_3})
+        intvs_3 = copy_dict(intvs_2, {expr_1.idf: intv_3})
+        decls_3.update({expr_1_shr.idf: Type.Int(),
+                        expr_2_shr.idf: Type.Int(),
+                        sum.idf: Type.Int()})
+
+        return (prog_3, expr_1, decls_3, expts_3, intvs_3, cnsts_2)
+
+    def visitRelu(self, node: AST.Func):
+
+        self.set_arg(node.expr, node)
+        (prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
+
+        '''
 		relu(A)
 
 		for i in 0:I:
@@ -167,33 +176,33 @@ class Arduino(IRGenBase):
 		    A[i][j] = (A[i][j] > 0)? A[i][j]: 0;
 		'''
 
-		typ_1 = node.expr.type
+        typ_1 = node.expr.type
 
-		iters = self.getTempIterators(typ_1.dim)
+        iters = self.getTempIterators(typ_1.dim)
 
-		# prog_for
-		expr_1_elt = IRUtil.addIndex(expr_1, iters)
-		rhs = IRUtil.relu(expr_1_elt)
-		cmdl_for = IRUtil.loop(typ_1.shape, iters, [IR.Assn(expr_1_elt, rhs)])
-		
-		comment = IR.Comment("relu(" + expr_1.idf + ")")
-		prog_for = IR.Prog([comment] + cmdl_for)
+        # prog_for
+        expr_1_elt = IRUtil.addIndex(expr_1, iters)
+        rhs = IRUtil.relu(expr_1_elt)
+        cmdl_for = IRUtil.loop(typ_1.shape, iters, [IR.Assn(expr_1_elt, rhs)])
 
-		# p_2, intv_2
-		(m, M) = intvs_1[expr_1.idf]
-		intv_2 = (0, M)
-		
-		prog_2 = IRUtil.concatPrograms(prog_1, prog_for)
-		intvs_2 = copy_dict(intvs_1, {expr_1.idf : intv_2})
+        comment = IR.Comment("relu(" + expr_1.idf + ")")
+        prog_for = IR.Prog([comment] + cmdl_for)
 
-		return (prog_2, expr_1, decls_1, expts_1, intvs_2, cnsts_1)
+        # p_2, intv_2
+        (m, M) = intvs_1[expr_1.idf]
+        intv_2 = (0, M)
 
-	def visitMaxpool(self, node:AST.Maxpool):
+        prog_2 = IRUtil.concatPrograms(prog_1, prog_for)
+        intvs_2 = copy_dict(intvs_1, {expr_1.idf: intv_2})
 
-		self.set_arg(node.expr, node)
-		(prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
+        return (prog_2, expr_1, decls_1, expts_1, intvs_2, cnsts_1)
 
-		'''
+    def visitMaxpool(self, node: AST.Maxpool):
+
+        self.set_arg(node.expr, node)
+        (prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
+
+        '''
 		maxpool(A, F)
 
 		loop1: for n in 0:N:
@@ -208,59 +217,62 @@ class Arduino(IRGenBase):
 		cmd6:          B[n][h][w][c] = tmp
 		'''
 
-		typ_2 = node.type
-		[N, H, W, C] = typ_2.shape
-		F = node.dim
+        typ_2 = node.type
+        [N, H, W, C] = typ_2.shape
+        F = node.dim
 
-		# Compute scaling factor
-		p_2 = expts_1[expr_1.idf]
-		intv_2 = intvs_1[expr_1.idf]
+        # Compute scaling factor
+        p_2 = expts_1[expr_1.idf]
+        intv_2 = intvs_1[expr_1.idf]
 
-		# Declare variables
-		[_, tmp, a] = self.getTempVars(3)
-		[n, h, w, c] = self.getTempIterators(4)
-		[hf, wf] = self.getTempIterators(2)
+        # Declare variables
+        [_, tmp, a] = self.getTempVars(3)
+        [n, h, w, c] = self.getTempIterators(4)
+        [hf, wf] = self.getTempIterators(2)
 
-		# Inner loop
-		h_idx = IRUtil.mul(IR.Int(F), h)
-		w_idx = IRUtil.mul(IR.Int(F), w)
+        # Inner loop
+        h_idx = IRUtil.mul(IR.Int(F), h)
+        w_idx = IRUtil.mul(IR.Int(F), w)
 
-		hf_idx = IRUtil.add(h_idx, hf)
-		wf_idx = IRUtil.add(w_idx, wf)
+        hf_idx = IRUtil.add(h_idx, hf)
+        wf_idx = IRUtil.add(w_idx, wf)
 
-		cmd4 = IR.Assn(a, IRUtil.addIndex(expr_1, [n, hf_idx, wf_idx, c]))
-		cmd5 = IR.Assn(tmp, IRUtil.max(a, tmp))
-		loop3 = IRUtil.loop([F, F], [hf, wf], [cmd4, cmd5])
+        cmd4 = IR.Assn(a, IRUtil.addIndex(expr_1, [n, hf_idx, wf_idx, c]))
+        cmd5 = IR.Assn(tmp, IRUtil.max(a, tmp))
+        loop3 = IRUtil.loop([F, F], [hf, wf], [cmd4, cmd5])
 
-		# Filter loop
-		cmd2 = IR.Assn(tmp, IRUtil.addIndex(expr_1, [n, h_idx, w_idx, c]))
-		cmd6 = IR.Assn(IRUtil.addIndex(expr_1, [n, h, w, c]), tmp)
-		loop1 = IRUtil.loop([N, H, W, C], [n, h, w, c], [cmd2] + loop3 + [cmd6])
+        # Filter loop
+        cmd2 = IR.Assn(tmp, IRUtil.addIndex(expr_1, [n, h_idx, w_idx, c]))
+        cmd6 = IR.Assn(IRUtil.addIndex(expr_1, [n, h, w, c]), tmp)
+        loop1 = IRUtil.loop([N, H, W, C], [n, h, w, c],
+                            [cmd2] + loop3 + [cmd6])
 
-		# Finalize
-		comment = IR.Comment("maxpool(" + expr_1.idf + ", " + str(F) + ")")
-		prog_for = IR.Prog([comment] + loop1)
-		prog_2 = IRUtil.concatPrograms(prog_1, prog_for)
+        # Finalize
+        comment = IR.Comment("maxpool(" + expr_1.idf + ", " + str(F) + ")")
+        prog_for = IR.Prog([comment] + loop1)
+        prog_2 = IRUtil.concatPrograms(prog_1, prog_for)
 
-		# Update declarations
-		#decls_2 = copy_dict(decls_1, {expr_2.idf :  typ_2})
-		decls_2 = decls_1
-		expts_2 = copy_dict(expts_1, {expr_1.idf :    p_2})
-		intvs_2 = copy_dict(intvs_1, {expr_1.idf : intv_2})
-		
-		decls_2.update({tmp.idf : Type.Int()})
-		decls_2.update({a.idf : Type.Int()})
+        # Update declarations
+        #decls_2 = copy_dict(decls_1, {expr_2.idf :  typ_2})
+        decls_2 = decls_1
+        expts_2 = copy_dict(expts_1, {expr_1.idf:    p_2})
+        intvs_2 = copy_dict(intvs_1, {expr_1.idf: intv_2})
 
-		return (prog_2, expr_1, decls_2, expts_2, intvs_2, cnsts_1)
+        decls_2.update({tmp.idf: Type.Int()})
+        decls_2.update({a.idf: Type.Int()})
 
-	def visitBopConv(self, node:AST.Bop1):
+        return (prog_2, expr_1, decls_2, expts_2, intvs_2, cnsts_1)
 
-		self.set_arg(node.expr1, node)
-		(prog_1, expr_1,  decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr1)
-		self.set_arg2(node.expr2, decls_1, expts_1, intvs_1, cnsts_1)
-		(prog_2, expr_2,  decls_2, expts_2, intvs_2, cnsts_2) = self.visit(node.expr2)
+    def visitBopConv(self, node: AST.Bop1):
 
-		'''
+        self.set_arg(node.expr1, node)
+        (prog_1, expr_1,  decls_1, expts_1,
+         intvs_1, cnsts_1) = self.visit(node.expr1)
+        self.set_arg2(node.expr2, decls_1, expts_1, intvs_1, cnsts_1)
+        (prog_2, expr_2,  decls_2, expts_2,
+         intvs_2, cnsts_2) = self.visit(node.expr2)
+
+        '''
 		C = A # B
 
 		cmd1:  for n in 0:N:
@@ -281,238 +293,251 @@ class Arduino(IRGenBase):
 		cmd14:               k += 1;
 		cmd15:         C[n][h][w][co] = TreeSum(Sum);
 		'''
-		
-		[N , H , W , CI] = node.expr1.type.shape
-		[HF, WF, CI, CO] = node.expr2.type.shape
 
-		typ_mul = Type.Tensor([HF * WF * CI])
-		typ_3 = node.type
+        [N, H, W, CI] = node.expr1.type.shape
+        [HF, WF, CI, CO] = node.expr2.type.shape
 
-		# Compute padding
-		padH = (HF - 1) // 2
-		padW = (WF - 1) // 2
+        typ_mul = Type.Tensor([HF * WF * CI])
+        typ_3 = node.type
 
-		# Declare variables
-		[expr_3, sum] = self.getTempVars(2)
-		[t1, t2, k] = self.getTempVars(3)
-		[n, h, w, ci] = self.getTempIterators(4)
-		[hf, wf, co] = self.getTempIterators(3)
+        # Compute padding
+        padH = (HF - 1) // 2
+        padW = (WF - 1) // 2
 
-		# Compute scale reductions and new scaling factors
-		p1 = expts_1[expr_1.idf]
-		p2 = expts_2[expr_2.idf]
-		intv1 = intvs_1[expr_1.idf]
-		intv2 = intvs_2[expr_2.idf]
+        # Declare variables
+        [expr_3, sum] = self.getTempVars(2)
+        [t1, t2, k] = self.getTempVars(3)
+        [n, h, w, ci] = self.getTempIterators(4)
+        [hf, wf, co] = self.getTempIterators(3)
 
-		[shr1, shr2] = self.get_shr_mul(p1, p2)
+        # Compute scale reductions and new scaling factors
+        p1 = expts_1[expr_1.idf]
+        p2 = expts_2[expr_2.idf]
+        intv1 = intvs_1[expr_1.idf]
+        intv2 = intvs_2[expr_2.idf]
 
-		p_mul = self.get_expnt_mul(p1, shr1, p2, shr2)
-		intv_mul = self.get_intv_mul(intv1, shr1, intv2, shr2)
+        [shr1, shr2] = self.get_shr_mul(p1, p2)
 
-		(p_3, H_1, H_2) = self.get_expnt_sum(p_mul, HF * WF * CI)
-		intv_3 = self.get_intv_sum(intv_mul, HF * WF * CI)
+        p_mul = self.get_expnt_mul(p1, shr1, p2, shr2)
+        intv_mul = self.get_intv_mul(intv1, shr1, intv2, shr2)
 
-		# Inner loop
-		h_index = IRUtil.add(h, hf)
-		w_index = IRUtil.add(w, wf)
+        (p_3, H_1, H_2) = self.get_expnt_sum(p_mul, HF * WF * CI)
+        intv_3 = self.get_intv_sum(intv_mul, HF * WF * CI)
 
-		padH_limit = IRUtil.add(padH, H)
-		padW_limit = IRUtil.add(padW, W)
+        # Inner loop
+        h_index = IRUtil.add(h, hf)
+        w_index = IRUtil.add(w, wf)
 
-		e1_idx = IRUtil.addIndex(expr_1, [n, IRUtil.sub(h_index, IR.Int(padH)), IRUtil.sub(w_index, IR.Int(padW)), ci])
-		e2_idx = IRUtil.addIndex(expr_2, [hf, wf, ci, co])
-		e3_idx = IRUtil.addIndex(expr_3, [n, h, w, co])
+        padH_limit = IRUtil.add(padH, H)
+        padW_limit = IRUtil.add(padW, W)
 
-		cmd9_1 = IRUtil.orr(IRUtil.lt(h_index, IR.Int(padH)), IRUtil.gte(h_index, IR.Int(padH + H)))
-		cmd9_2 = IRUtil.orr(IRUtil.lt(w_index, IR.Int(padW)), IRUtil.gte(w_index, IR.Int(padW + W)))
-		cmd9_3 = IRUtil.orr(cmd9_1, cmd9_2)
-		
-		cmd9 = IR.Assn(t1, IR.CExpr(cmd9_3, IRUtil.zero, e1_idx))
-		cmd10 = IR.Assn(t1, IRUtil.shr(t1, shr1))
+        e1_idx = IRUtil.addIndex(expr_1, [n, IRUtil.sub(
+            h_index, IR.Int(padH)), IRUtil.sub(w_index, IR.Int(padW)), ci])
+        e2_idx = IRUtil.addIndex(expr_2, [hf, wf, ci, co])
+        e3_idx = IRUtil.addIndex(expr_3, [n, h, w, co])
 
-		cmd11 = IR.Assn(t2, e2_idx)
-		cmd12 = IR.Assn(t2, IRUtil.shr(t2, shr2))
+        cmd9_1 = IRUtil.orr(IRUtil.lt(h_index, IR.Int(padH)),
+                            IRUtil.gte(h_index, IR.Int(padH + H)))
+        cmd9_2 = IRUtil.orr(IRUtil.lt(w_index, IR.Int(padW)),
+                            IRUtil.gte(w_index, IR.Int(padW + W)))
+        cmd9_3 = IRUtil.orr(cmd9_1, cmd9_2)
 
-		cmd13 = IR.Assn(IRUtil.addIndex(sum, [k]), IRUtil.mul(t1, t2))
-		cmd14 = IRUtil.incCmd(k)
+        cmd9 = IR.Assn(t1, IR.CExpr(cmd9_3, IRUtil.zero, e1_idx))
+        cmd10 = IR.Assn(t1, IRUtil.shr(t1, shr1))
 
-		loop6 = IRUtil.loop([HF, WF, CI], [hf, wf, ci], [cmd9, cmd10, cmd11, cmd12, cmd13, cmd14])
+        cmd11 = IR.Assn(t2, e2_idx)
+        cmd12 = IR.Assn(t2, IRUtil.shr(t2, shr2))
 
-		# Tree sum
-		cmd5 = IRUtil.initVarToZero(k)
-		(cmd15, decls_sum) = self.compile_sum(HF * WF * CI, H_1, H_2, sum, e3_idx, False)
-		
-		# Outer loop
-		loop1 = IRUtil.loop([N, H, W, CO], [n, h, w, co], [cmd5] + loop6 + cmd15)
+        cmd13 = IR.Assn(IRUtil.addIndex(sum, [k]), IRUtil.mul(t1, t2))
+        cmd14 = IRUtil.incCmd(k)
 
-		# Finalize
-		comment = IR.Comment(expr_1.idf + ' # ' + expr_2.idf)
-		prog_conv = IR.Prog([comment] + loop1)
-		prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_conv)
-		
-		# Update context for output variable
-		decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
-		expts_3 = copy_dict(expts_2, {expr_3.idf :    p_3})
-		intvs_3 = copy_dict(intvs_2, {expr_3.idf : intv_3})
-		
-		# Update declarations
-		decls_3.update({sum.idf : typ_mul})
-		decls_3.update(dict((var.idf, Type.Int()) for var in [t1, t2, k]))
-		decls_3.update(decls_sum)
+        loop6 = IRUtil.loop([HF, WF, CI], [hf, wf, ci], [
+                            cmd9, cmd10, cmd11, cmd12, cmd13, cmd14])
 
-		return (prog_3, expr_3, decls_3, expts_3, intvs_3, cnsts_2)
+        # Tree sum
+        cmd5 = IRUtil.initVarToZero(k)
+        (cmd15, decls_sum) = self.compile_sum(
+            HF * WF * CI, H_1, H_2, sum, e3_idx, False)
 
-	def visitBopMul2DTensor(self, node:AST.Bop1):
-		
-		self.set_arg(node.expr1, node)
-		(prog_1, expr_1,  decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr1)
-		self.set_arg2(node.expr2, decls_1, expts_1, intvs_1, cnsts_1)
-		(prog_2, expr_2,  decls_2, expts_2, intvs_2, cnsts_2) = self.visit(node.expr2)
+        # Outer loop
+        loop1 = IRUtil.loop([N, H, W, CO], [n, h, w, co],
+                            [cmd5] + loop6 + cmd15)
 
-		typ_1 = node.expr1.type
-		typ_2 = node.expr2.type
-		typ_3 = node.type
+        # Finalize
+        comment = IR.Comment(expr_1.idf + ' # ' + expr_2.idf)
+        prog_conv = IR.Prog([comment] + loop1)
+        prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_conv)
 
-		[I, J] = typ_1.shape
-		[J, K] = typ_2.shape
-		typ_mul = Type.Tensor([J])
+        # Update context for output variable
+        decls_3 = copy_dict(decls_2, {expr_3.idf:  typ_3})
+        expts_3 = copy_dict(expts_2, {expr_3.idf:    p_3})
+        intvs_3 = copy_dict(intvs_2, {expr_3.idf: intv_3})
 
-		# decl fresh vars
-		expr_3 = self.getTempVar()
-		expr_1_shr = self.getTempVar()
-		expr_2_shr = self.getTempVar()
-		expr_mul = self.getTempVar()  # I*K*J
-		[i, j, k] = self.getTempIterators(3)
+        # Update declarations
+        decls_3.update({sum.idf: typ_mul})
+        decls_3.update(dict((var.idf, Type.Int()) for var in [t1, t2, k]))
+        decls_3.update(decls_sum)
 
-		p1 = expts_1[expr_1.idf]
-		p2 = expts_2[expr_2.idf]
-		intv1 = intvs_1[expr_1.idf]
-		intv2 = intvs_2[expr_2.idf]
+        return (prog_3, expr_3, decls_3, expts_3, intvs_3, cnsts_2)
 
-		[shr1, shr2] = self.get_shr_mul(p1, p2)
+    def visitBopMul2DTensor(self, node: AST.Bop1):
 
-		# cmdl_{shr1, shr2, mul}
-		expr_1_elt = IRUtil.addIndex(expr_1, [i,j])
-		expr_2_elt = IRUtil.addIndex(expr_2, [j,k])
+        self.set_arg(node.expr1, node)
+        (prog_1, expr_1,  decls_1, expts_1,
+         intvs_1, cnsts_1) = self.visit(node.expr1)
+        self.set_arg2(node.expr2, decls_1, expts_1, intvs_1, cnsts_1)
+        (prog_2, expr_2,  decls_2, expts_2,
+         intvs_2, cnsts_2) = self.visit(node.expr2)
 
-		[tmp1, tmp2] = self.getTempVars(2)
-		assn1 = IR.Assn(tmp1, expr_1_elt)
-		assn2 = IR.Assn(tmp2, expr_2_elt)
+        typ_1 = node.expr1.type
+        typ_2 = node.expr2.type
+        typ_3 = node.type
 
-		cmd_1 = IR.Assn(expr_1_shr, IRUtil.shr(tmp1, shr1))
-		cmd_2 = IR.Assn(expr_2_shr, IRUtil.shr(tmp2, shr2))
-		cmd_3 = IR.Assn(IRUtil.addIndex(expr_mul, [j]), IRUtil.mul(expr_1_shr, expr_2_shr))
-		loop_1 = IRUtil.loop([J], [j], [assn1, assn2, cmd_1, cmd_2, cmd_3])
+        [I, J] = typ_1.shape
+        [J, K] = typ_2.shape
+        typ_mul = Type.Tensor([J])
 
-		p_mul = self.get_expnt_mul(p1, shr1, p2, shr2)
-		intv_mul = self.get_intv_mul(intv1, shr1, intv2, shr2)
+        # decl fresh vars
+        expr_3 = self.getTempVar()
+        expr_1_shr = self.getTempVar()
+        expr_2_shr = self.getTempVar()
+        expr_mul = self.getTempVar()  # I*K*J
+        [i, j, k] = self.getTempIterators(3)
 
-		# p_3, intv_3, cmdl_sum, decls_sum
-		(p_3, H_1, H_2) = self.get_expnt_sum(p_mul, J)
-		intv_3 = self.get_intv_sum(intv_mul, J)
-		(cmdl_sum_body, decls_sum) = \
-			self.compile_sum(J, H_1, H_2,
-				expr_mul,
-				IRUtil.addIndex(expr_3, [i,k]), False)
-		cmdl_sum = IRUtil.loop([I,K], [i,k], loop_1 + cmdl_sum_body)
-		
-		# prog_assn
-		cmd0 = IR.Comment(expr_1.idf + ' * ' + expr_2.idf)
-		prog_assn = IR.Prog([cmd0] + cmdl_sum)
-		
-		prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_assn)
-		decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
-		expts_3 = copy_dict(expts_2, {expr_3.idf :    p_3})
-		intvs_3 = copy_dict(intvs_2, {expr_3.idf : intv_3})
-		decls_3.update({expr_1_shr.idf : Type.Int(),
-						expr_2_shr.idf : Type.Int(),
-						expr_mul  .idf : typ_mul,
-						tmp1.idf : Type.Int(),
-						tmp2.idf : Type.Int()
-						})
-		decls_3.update(decls_sum)
+        p1 = expts_1[expr_1.idf]
+        p2 = expts_2[expr_2.idf]
+        intv1 = intvs_1[expr_1.idf]
+        intv2 = intvs_2[expr_2.idf]
 
-		return (prog_3, expr_3, decls_3, expts_3, intvs_3, cnsts_2)
+        [shr1, shr2] = self.get_shr_mul(p1, p2)
 
-	def visitBopMulCir(self, node:AST.Bop1):
+        # cmdl_{shr1, shr2, mul}
+        expr_1_elt = IRUtil.addIndex(expr_1, [i, j])
+        expr_2_elt = IRUtil.addIndex(expr_2, [j, k])
 
-		self.set_arg(node.expr1, node)
-		(prog_1, expr_1,  decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr1)
-		self.set_arg2(node.expr2, decls_1, expts_1, intvs_1, cnsts_1)
-		(prog_2, expr_2,  decls_2, expts_2, intvs_2, cnsts_2) = self.visit(node.expr2)
+        [tmp1, tmp2] = self.getTempVars(2)
+        assn1 = IR.Assn(tmp1, expr_1_elt)
+        assn2 = IR.Assn(tmp2, expr_2_elt)
 
-		typ_1 = node.expr1.type
-		typ_2 = node.expr2.type
-		typ_3 = node.type
+        cmd_1 = IR.Assn(expr_1_shr, IRUtil.shr(tmp1, shr1))
+        cmd_2 = IR.Assn(expr_2_shr, IRUtil.shr(tmp2, shr2))
+        cmd_3 = IR.Assn(IRUtil.addIndex(
+            expr_mul, [j]), IRUtil.mul(expr_1_shr, expr_2_shr))
+        loop_1 = IRUtil.loop([J], [j], [assn1, assn2, cmd_1, cmd_2, cmd_3])
 
-		# decl fresh vars
-		expr_3 = self.getTempVar()
-		iters = self.getTempIterators(typ_3.dim)
+        p_mul = self.get_expnt_mul(p1, shr1, p2, shr2)
+        intv_mul = self.get_intv_mul(intv1, shr1, intv2, shr2)
 
-		p1 = expts_1[expr_1.idf]
-		p2 = expts_2[expr_2.idf]
-		intv1 = intvs_1[expr_1.idf]
-		intv2 = intvs_2[expr_2.idf]
+        # p_3, intv_3, cmdl_sum, decls_sum
+        (p_3, H_1, H_2) = self.get_expnt_sum(p_mul, J)
+        intv_3 = self.get_intv_sum(intv_mul, J)
+        (cmdl_sum_body, decls_sum) = \
+            self.compile_sum(J, H_1, H_2,
+                             expr_mul,
+                             IRUtil.addIndex(expr_3, [i, k]), False)
+        cmdl_sum = IRUtil.loop([I, K], [i, k], loop_1 + cmdl_sum_body)
 
-		[shr1, shr2] = self.get_shr_mul(p1, p2)
+        # prog_assn
+        cmd0 = IR.Comment(expr_1.idf + ' * ' + expr_2.idf)
+        prog_assn = IR.Prog([cmd0] + cmdl_sum)
 
-		# cmdl_*
-		'''
+        prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_assn)
+        decls_3 = copy_dict(decls_2, {expr_3.idf:  typ_3})
+        expts_3 = copy_dict(expts_2, {expr_3.idf:    p_3})
+        intvs_3 = copy_dict(intvs_2, {expr_3.idf: intv_3})
+        decls_3.update({expr_1_shr.idf: Type.Int(),
+                        expr_2_shr.idf: Type.Int(),
+                        expr_mul  .idf: typ_mul,
+                        tmp1.idf: Type.Int(),
+                        tmp2.idf: Type.Int()
+                        })
+        decls_3.update(decls_sum)
+
+        return (prog_3, expr_3, decls_3, expts_3, intvs_3, cnsts_2)
+
+    def visitBopMulCir(self, node: AST.Bop1):
+
+        self.set_arg(node.expr1, node)
+        (prog_1, expr_1,  decls_1, expts_1,
+         intvs_1, cnsts_1) = self.visit(node.expr1)
+        self.set_arg2(node.expr2, decls_1, expts_1, intvs_1, cnsts_1)
+        (prog_2, expr_2,  decls_2, expts_2,
+         intvs_2, cnsts_2) = self.visit(node.expr2)
+
+        typ_1 = node.expr1.type
+        typ_2 = node.expr2.type
+        typ_3 = node.type
+
+        # decl fresh vars
+        expr_3 = self.getTempVar()
+        iters = self.getTempIterators(typ_3.dim)
+
+        p1 = expts_1[expr_1.idf]
+        p2 = expts_2[expr_2.idf]
+        intv1 = intvs_1[expr_1.idf]
+        intv2 = intvs_2[expr_2.idf]
+
+        [shr1, shr2] = self.get_shr_mul(p1, p2)
+
+        # cmdl_*
+        '''
 		e3 = (e1 >> shr1) * (e2 * shr2);
 		'''
-		#cmdl_shr1 = IRUtil.loop_shr(expr_1_shr, expr_1, typ_3.shape, iters, shr1)
-		#cmdl_shr2 = IRUtil.loop_shr(expr_2_shr, expr_2, typ_3.shape, iters, shr2)
-		expr_1_elt = IRUtil.addIndex(expr_1, iters)
-		expr_2_elt = IRUtil.addIndex(expr_2, iters)
-		expr_3_elt = IRUtil.addIndex(expr_3, iters)
-		e1_shr = IRUtil.shr(expr_1_elt, shr1)
-		e2_shr = IRUtil.shr(expr_2_elt, shr2)
-		rhs = IRUtil.mul(e1_shr, e2_shr)
-		cmdl_mul = IRUtil.loop(typ_3.shape, iters, [IR.Assn(expr_3_elt, rhs)])
+        #cmdl_shr1 = IRUtil.loop_shr(expr_1_shr, expr_1, typ_3.shape, iters, shr1)
+        #cmdl_shr2 = IRUtil.loop_shr(expr_2_shr, expr_2, typ_3.shape, iters, shr2)
+        expr_1_elt = IRUtil.addIndex(expr_1, iters)
+        expr_2_elt = IRUtil.addIndex(expr_2, iters)
+        expr_3_elt = IRUtil.addIndex(expr_3, iters)
+        e1_shr = IRUtil.shr(expr_1_elt, shr1)
+        e2_shr = IRUtil.shr(expr_2_elt, shr2)
+        rhs = IRUtil.mul(e1_shr, e2_shr)
+        cmdl_mul = IRUtil.loop(typ_3.shape, iters, [IR.Assn(expr_3_elt, rhs)])
 
-		# prog_assn, p_3, intv_3
-		prog_assn = IR.Prog(cmdl_mul)
-		
-		p_3 = self.get_expnt_mul(p1, shr1, p2, shr2)
-		intv_3 = self.get_intv_mul(intv1, shr1, intv2, shr2)
-		#p_3 = self.get_expnt_mul(expts_1[expr_1.idf], expts_2[expr_2.idf])
-		#intv_3 = self.get_intv_mul(intvs_1[expr_1.idf], intvs_2[expr_2.idf])
+        # prog_assn, p_3, intv_3
+        prog_assn = IR.Prog(cmdl_mul)
 
-		prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_assn)
-		decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
-		expts_3 = copy_dict(expts_2, {expr_3.idf :    p_3})
-		intvs_3 = copy_dict(intvs_2, {expr_3.idf : intv_3})
+        p_3 = self.get_expnt_mul(p1, shr1, p2, shr2)
+        intv_3 = self.get_intv_mul(intv1, shr1, intv2, shr2)
+        #p_3 = self.get_expnt_mul(expts_1[expr_1.idf], expts_2[expr_2.idf])
+        #intv_3 = self.get_intv_mul(intvs_1[expr_1.idf], intvs_2[expr_2.idf])
 
-		return (prog_3, expr_3, decls_3, expts_3, intvs_3, cnsts_2)
+        prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog_assn)
+        decls_3 = copy_dict(decls_2, {expr_3.idf:  typ_3})
+        expts_3 = copy_dict(expts_2, {expr_3.idf:    p_3})
+        intvs_3 = copy_dict(intvs_2, {expr_3.idf: intv_3})
 
-	# C = A |*| B, where A(P,Q) and B(Q,1)
-	def visitBopSparseMul(self, node:AST.Bop1):
+        return (prog_3, expr_3, decls_3, expts_3, intvs_3, cnsts_2)
 
-		self.set_arg(node.expr1, node)
-		(prog_1, expr_1,  decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr1)
-		self.set_arg2(node.expr2, decls_1, expts_1, intvs_1, cnsts_1)
-		(prog_2, expr_2,  decls_2, expts_2, intvs_2, cnsts_2) = self.visit(node.expr2)
+    # C = A |*| B, where A(P,Q) and B(Q,1)
+    def visitBopSparseMul(self, node: AST.Bop1):
 
-		[P, Q] = node.expr1.type.shape
-		[Q, R] = node.expr2.type.shape
-		assert R == 1
+        self.set_arg(node.expr1, node)
+        (prog_1, expr_1,  decls_1, expts_1,
+         intvs_1, cnsts_1) = self.visit(node.expr1)
+        self.set_arg2(node.expr2, decls_1, expts_1, intvs_1, cnsts_1)
+        (prog_2, expr_2,  decls_2, expts_2,
+         intvs_2, cnsts_2) = self.visit(node.expr2)
 
-		# Initialize C
-		expr_3 = self.getTempVar()
-		typ_3 = node.type
+        [P, Q] = node.expr1.type.shape
+        [Q, R] = node.expr2.type.shape
+        assert R == 1
 
-		p1, p2 = expts_1[expr_1.idf], expts_2[expr_2.idf]
-		intv1, intv2 = intvs_1[expr_1.idf], intvs_2[expr_2.idf]
+        # Initialize C
+        expr_3 = self.getTempVar()
+        typ_3 = node.type
 
-		[shr1, shr2] = self.get_shr_mul(p1, p2)
+        p1, p2 = expts_1[expr_1.idf], expts_2[expr_2.idf]
+        intv1, intv2 = intvs_1[expr_1.idf], intvs_2[expr_2.idf]
 
-		p_mul = self.get_expnt_mul(p1, shr1, p2, shr2)
-		intv_mul = self.get_intv_mul(intv1, shr1, intv2, shr2)
+        [shr1, shr2] = self.get_shr_mul(p1, p2)
 
-		(p_3, H_1, H_2) = self.get_expnt_sum(p_mul, Q)
-		intv_3 = self.get_intv_sum(intv_mul, Q)
-		
-		'''
+        p_mul = self.get_expnt_mul(p1, shr1, p2, shr2)
+        intv_mul = self.get_intv_mul(intv1, shr1, intv2, shr2)
+
+        (p_3, H_1, H_2) = self.get_expnt_sum(p_mul, Q)
+        intv_3 = self.get_intv_sum(intv_mul, Q)
+
+        '''
 		Decls: i_idx, i_val, j, a, b, t
 
 		1.   zero(C)
@@ -535,80 +560,83 @@ class Arduino(IRGenBase):
 		17.    i_idx++
 		'''
 
-		# decl fresh vars
-		[i_idx, i_val, j, a, b, t] = self.getTempVars(6)
-		i = self.getTempIterator()
+        # decl fresh vars
+        [i_idx, i_val, j, a, b, t] = self.getTempVars(6)
+        i = self.getTempIterator()
 
-		Aidx = IR.Var(expr_1.idf[0] + 'idx', expr_1.idx, inputVar = True)
-		Aval = IR.Var(expr_1.idf[0] + 'val', expr_1.idx, inputVar = True)
+        Aidx = IR.Var(expr_1.idf[0] + 'idx', expr_1.idx, inputVar=True)
+        Aval = IR.Var(expr_1.idf[0] + 'val', expr_1.idx, inputVar=True)
 
-		cmd0 = IR.Comment(expr_1.idf + ' |*| ' + expr_2.idf)
-		cmd1 = IR.Memset(expr_3, typ_3.size())
-		cmd2 = IRUtil.initVarToZero(i_idx)
-		cmd3 = IRUtil.initVarToZero(i_val)
+        cmd0 = IR.Comment(expr_1.idf + ' |*| ' + expr_2.idf)
+        cmd1 = IR.Memset(expr_3, typ_3.size())
+        cmd2 = IRUtil.initVarToZero(i_idx)
+        cmd3 = IRUtil.initVarToZero(i_val)
 
-		cmd5 = IR.Assn(b, IRUtil.addIndex(expr_2, [i, IR.Int(0)]))
-		cmd6 = IR.Assn(b, IRUtil.shr(b, shr2))
-		cmd7 = IR.Assn(j, IRUtil.addIndex(Aidx, [i_idx]))
+        cmd5 = IR.Assn(b, IRUtil.addIndex(expr_2, [i, IR.Int(0)]))
+        cmd6 = IR.Assn(b, IRUtil.shr(b, shr2))
+        cmd7 = IR.Assn(j, IRUtil.addIndex(Aidx, [i_idx]))
 
-		cmd9 = IR.Assn(a, IRUtil.addIndex(Aval, [i_val]))
-		cmd10 = IR.Assn(a, IRUtil.shr(a, shr1))
-		cmd11 = IR.Assn(t, IRUtil.mul(a, b))
-		cmd12 = IR.Assn(t, IRUtil.shr(t, H_1))
-		
-		minus = IRUtil.sub(j, IR.Int(1))
-		c_idx = IRUtil.addIndex(expr_3, [minus, IR.Int(0)])
-		cmd13 = IR.Assn(c_idx, IRUtil.add(c_idx, t))
+        cmd9 = IR.Assn(a, IRUtil.addIndex(Aval, [i_val]))
+        cmd10 = IR.Assn(a, IRUtil.shr(a, shr1))
+        cmd11 = IR.Assn(t, IRUtil.mul(a, b))
+        cmd12 = IR.Assn(t, IRUtil.shr(t, H_1))
 
-		cmd14 = IRUtil.incCmd(i_idx)
-		cmd15 = IRUtil.incCmd(i_val)
-		cmd16 = IR.Assn(j, IRUtil.addIndex(Aidx, [i_idx]))
+        minus = IRUtil.sub(j, IR.Int(1))
+        c_idx = IRUtil.addIndex(expr_3, [minus, IR.Int(0)])
+        cmd13 = IR.Assn(c_idx, IRUtil.add(c_idx, t))
 
-		cmd17 = IRUtil.incCmd(i_idx)
+        cmd14 = IRUtil.incCmd(i_idx)
+        cmd15 = IRUtil.incCmd(i_val)
+        cmd16 = IR.Assn(j, IRUtil.addIndex(Aidx, [i_idx]))
 
-		loop8 = IR.While(IRUtil.neq(j, IR.Int(0)), [cmd9, cmd10, cmd11, cmd12, cmd13, cmd14, cmd15, cmd16])
-		loop4 = IRUtil.loop([Q], [i], [cmd5, cmd6, cmd7] + [loop8] + [cmd17])
+        cmd17 = IRUtil.incCmd(i_idx)
 
-		# extra
-		#iters = self.getTempIterators(typ_3.dim)
-		#p = IRUtil.print_loop(typ_3.shape, iters, [IR.PrintAsFloat(IRUtil.addIndex(expr_3, iters), p_3)])
+        loop8 = IR.While(IRUtil.neq(j, IR.Int(0)), [
+                         cmd9, cmd10, cmd11, cmd12, cmd13, cmd14, cmd15, cmd16])
+        loop4 = IRUtil.loop([Q], [i], [cmd5, cmd6, cmd7] + [loop8] + [cmd17])
 
-		prog = IR.Prog([cmd0, cmd1, cmd2, cmd3] + loop4)
-		prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog)
+        # extra
+        #iters = self.getTempIterators(typ_3.dim)
+        #p = IRUtil.print_loop(typ_3.shape, iters, [IR.PrintAsFloat(IRUtil.addIndex(expr_3, iters), p_3)])
 
-		decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
-		expts_3 = copy_dict(expts_2, {expr_3.idf :    p_3})
-		intvs_3 = copy_dict(intvs_2, {expr_3.idf : intv_3})
-		decls_3.update({i_idx.idf : Type.Int(),
-						i_val.idf : Type.Int(),
-						j.idf : Type.Int(),
-						a.idf : Type.Int(),
-						b.idf : Type.Int(),
-						t.idf : Type.Int(),
-						})
+        prog = IR.Prog([cmd0, cmd1, cmd2, cmd3] + loop4)
+        prog_3 = IRUtil.concatPrograms(prog_1, prog_2, prog)
 
-		return (prog_3, expr_3, decls_3, expts_3, intvs_3, cnsts_2)
+        decls_3 = copy_dict(decls_2, {expr_3.idf:  typ_3})
+        expts_3 = copy_dict(expts_2, {expr_3.idf:    p_3})
+        intvs_3 = copy_dict(intvs_2, {expr_3.idf: intv_3})
+        decls_3.update({i_idx.idf: Type.Int(),
+                        i_val.idf: Type.Int(),
+                        j.idf: Type.Int(),
+                        a.idf: Type.Int(),
+                        b.idf: Type.Int(),
+                        t.idf: Type.Int(),
+                        })
 
-	def visitBopSparseMulOld(self, node:AST.Bop1):
+        return (prog_3, expr_3, decls_3, expts_3, intvs_3, cnsts_2)
 
-		assert False
+    def visitBopSparseMulOld(self, node: AST.Bop1):
 
-		self.set_arg(node.expr1, node)
-		(prog_1, expr_1,  decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr1)
-		self.set_arg2(node.expr2, decls_1, expts_1, intvs_1, cnsts_1)
-		(prog_2, expr_2,  decls_2, expts_2, intvs_2, cnsts_2) = self.visit(node.expr2)
+        assert False
 
-		# op, typ_{1,2,3}
-		op = node.op
-		typ_1 = node.expr1.type
-		typ_2 = node.expr2.type
-		typ_3 = node.type
+        self.set_arg(node.expr1, node)
+        (prog_1, expr_1,  decls_1, expts_1,
+         intvs_1, cnsts_1) = self.visit(node.expr1)
+        self.set_arg2(node.expr2, decls_1, expts_1, intvs_1, cnsts_1)
+        (prog_2, expr_2,  decls_2, expts_2,
+         intvs_2, cnsts_2) = self.visit(node.expr2)
 
-		[I, J] = typ_1.shape
-		[J, K] = typ_2.shape
-		typ_mul = Type.Tensor([J])
+        # op, typ_{1,2,3}
+        op = node.op
+        typ_1 = node.expr1.type
+        typ_2 = node.expr2.type
+        typ_3 = node.type
 
-		'''
+        [I, J] = typ_1.shape
+        [J, K] = typ_2.shape
+        typ_mul = Type.Tensor([J])
+
+        '''
 		1.  Ai_idx = 0;
 		2.  Aval_idx = 0;
 		3.  for each i in [0, I-1]
@@ -631,98 +659,101 @@ class Arduino(IRGenBase):
 		20.     TreeSum(T,n); C[i][k] = T[0]
 		'''
 
-		# decl fresh vars
-		expr_3 = self.getTempVar()
-		[i,k] = self.getTempIterators(2)
-		j = self.getTempVar()
+        # decl fresh vars
+        expr_3 = self.getTempVar()
+        [i, k] = self.getTempIterators(2)
+        j = self.getTempVar()
 
-		p1 = expts_1[expr_1.idf]
-		p2 = expts_2[expr_2.idf]
-		intv1 = intvs_1[expr_1.idf]
-		intv2 = intvs_2[expr_2.idf]
+        p1 = expts_1[expr_1.idf]
+        p2 = expts_2[expr_2.idf]
+        intv1 = intvs_1[expr_1.idf]
+        intv2 = intvs_2[expr_2.idf]
 
-		[shr1, shr2] = self.get_shr_mul(p1, p2)
+        [shr1, shr2] = self.get_shr_mul(p1, p2)
 
-		Ai = IR.Var(expr_1.idf[0] + 'idx', expr_1.idx)
-		Aval = IR.Var(expr_1.idf[0] + 'val', expr_1.idx)
-					
-		[Ai_idx, Aval_idx] = self.getTempVars(2)
-		[Ai_start, Aval_start] = self.getTempVars(2)
+        Ai = IR.Var(expr_1.idf[0] + 'idx', expr_1.idx)
+        Aval = IR.Var(expr_1.idf[0] + 'val', expr_1.idx)
 
-		[x, y] = self.getTempVars(2)
-		T = self.getTempVar()
+        [Ai_idx, Aval_idx] = self.getTempVars(2)
+        [Ai_start, Aval_start] = self.getTempVars(2)
 
-		n = self.getTempVar()
+        [x, y] = self.getTempVars(2)
+        T = self.getTempVar()
 
-		cmd1 = IR.Assn(Ai_idx, IRUtil.zero)
-		cmd2 = IR.Assn(Aval_idx, IRUtil.zero)
+        n = self.getTempVar()
 
-		cmd4 = IR.Assn(Ai_start, Ai_idx)
-		cmd5 = IR.Assn(Aval_start, Aval_idx)
+        cmd1 = IR.Assn(Ai_idx, IRUtil.zero)
+        cmd2 = IR.Assn(Aval_idx, IRUtil.zero)
 
-		cmd7 = IR.Assn(Ai_idx, Ai_start)
-		cmd8 = IR.Assn(Aval_idx, Aval_start)
-					
-		cmd9 = IR.Assn(n, IRUtil.zero)
-		cmd10 = IR.Assn(j, IRUtil.addIndex(Ai, [Ai_idx]))
+        cmd4 = IR.Assn(Ai_start, Ai_idx)
+        cmd5 = IR.Assn(Aval_start, Aval_idx)
 
-		# cmdl_{shr1, shr2, mul}
-		cmd12 = IR.Assn(x, IRUtil.shr(IRUtil.addIndex(Aval, [Aval_idx]), shr1))
-		cmd13 = IR.Assn(y, IRUtil.shr(IRUtil.addIndex(expr_2, [j,k]), shr2))
-					
-		cmd14 = IR.Assn(IRUtil.addIndex(T, [n]), IRUtil.mul(x, y))
-		cmd15 = IRUtil.incCmd(n)
+        cmd7 = IR.Assn(Ai_idx, Ai_start)
+        cmd8 = IR.Assn(Aval_idx, Aval_start)
 
-		cmd16 = IRUtil.incCmd(Aval_idx)
+        cmd9 = IR.Assn(n, IRUtil.zero)
+        cmd10 = IR.Assn(j, IRUtil.addIndex(Ai, [Ai_idx]))
 
-		cmd17 = IRUtil.incCmd(Ai_idx)
-		cmd18 = IR.Assn(j, IRUtil.addIndex(Ai, [Ai_idx]))
+        # cmdl_{shr1, shr2, mul}
+        cmd12 = IR.Assn(x, IRUtil.shr(IRUtil.addIndex(Aval, [Aval_idx]), shr1))
+        cmd13 = IR.Assn(y, IRUtil.shr(IRUtil.addIndex(expr_2, [j, k]), shr2))
 
-		cmd19 = IRUtil.incCmd(Ai_idx)
+        cmd14 = IR.Assn(IRUtil.addIndex(T, [n]), IRUtil.mul(x, y))
+        cmd15 = IRUtil.incCmd(n)
 
-		loop11 = [IR.While(IRUtil.gte(j, IRUtil.zero), [cmd12, cmd13, cmd14, cmd15, cmd16, cmd17, cmd18])]
+        cmd16 = IRUtil.incCmd(Aval_idx)
 
-		# loop_1 = IRUtil.loop([J], [j], [cmd_1, cmd_2, cmd_3])
+        cmd17 = IRUtil.incCmd(Ai_idx)
+        cmd18 = IR.Assn(j, IRUtil.addIndex(Ai, [Ai_idx]))
 
-		p_mul = self.get_expnt_mul(p1, shr1, p2, shr2)
-		intv_mul = self.get_intv_mul(intv1, shr1, intv2, shr2)
+        cmd19 = IRUtil.incCmd(Ai_idx)
 
-		# p_3, intv_3, cmdl_sum, decls_sum
-		(p_3, H_1, H_2) = self.get_expnt_sum(p_mul, J)
-		intv_3 = self.get_intv_sum(intv_mul, J)
-		(sparseSumCmds, decls_sum) = self.sparseSum(n, H_1, H_2, T, IRUtil.addIndex(expr_3, [i,k]), False)
-					
-		loop6 = IRUtil.loop([K], [k], [cmd7, cmd8, cmd9, cmd10] + loop11 + [cmd19] + sparseSumCmds)
+        loop11 = [IR.While(IRUtil.gte(j, IRUtil.zero), [
+                           cmd12, cmd13, cmd14, cmd15, cmd16, cmd17, cmd18])]
 
-		loop3 = IRUtil.loop([I], [i], [cmd4, cmd5] + loop6)
+        # loop_1 = IRUtil.loop([J], [j], [cmd_1, cmd_2, cmd_3])
 
-		prog = IR.Prog([cmd1, cmd2] + loop3)
-					
-		prog_3 = IRUtil.concatPrograms(prog)
-		decls_3 = copy_dict(decls_2, {expr_3.idf :  typ_3})
-		expts_3 = copy_dict(expts_2, {expr_3.idf :    p_3})
-		intvs_3 = copy_dict(intvs_2, {expr_3.idf : intv_3})
-		decls_3.update({x.idf : Type.Int(),
-						y.idf : Type.Int(),
-						n.idf : Type.Int(),
-						j.idf : Type.Int(),
-						Ai_idx.idf : Type.Int(),
-						Aval_idx.idf : Type.Int(),
-						Ai_start.idf : Type.Int(),
-						Aval_start.idf : Type.Int(),
-						T.idf : typ_mul})
-		decls_3.update(decls_sum)
+        p_mul = self.get_expnt_mul(p1, shr1, p2, shr2)
+        intv_mul = self.get_intv_mul(intv1, shr1, intv2, shr2)
 
-		return (prog_3, expr_3, decls_3, expts_3, intvs_3, cnsts_2)
+        # p_3, intv_3, cmdl_sum, decls_sum
+        (p_3, H_1, H_2) = self.get_expnt_sum(p_mul, J)
+        intv_3 = self.get_intv_sum(intv_mul, J)
+        (sparseSumCmds, decls_sum) = self.sparseSum(
+            n, H_1, H_2, T, IRUtil.addIndex(expr_3, [i, k]), False)
 
-	def visitArgMax(self, node:AST.Func):
-		
-		self.set_arg(node.expr, node)
-		(prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
+        loop6 = IRUtil.loop([K], [k], [cmd7, cmd8, cmd9,
+                                       cmd10] + loop11 + [cmd19] + sparseSumCmds)
 
-		typ_1 = node.expr.type
+        loop3 = IRUtil.loop([I], [i], [cmd4, cmd5] + loop6)
 
-		'''
+        prog = IR.Prog([cmd1, cmd2] + loop3)
+
+        prog_3 = IRUtil.concatPrograms(prog)
+        decls_3 = copy_dict(decls_2, {expr_3.idf:  typ_3})
+        expts_3 = copy_dict(expts_2, {expr_3.idf:    p_3})
+        intvs_3 = copy_dict(intvs_2, {expr_3.idf: intv_3})
+        decls_3.update({x.idf: Type.Int(),
+                        y.idf: Type.Int(),
+                        n.idf: Type.Int(),
+                        j.idf: Type.Int(),
+                        Ai_idx.idf: Type.Int(),
+                        Aval_idx.idf: Type.Int(),
+                        Ai_start.idf: Type.Int(),
+                        Aval_start.idf: Type.Int(),
+                        T.idf: typ_mul})
+        decls_3.update(decls_sum)
+
+        return (prog_3, expr_3, decls_3, expts_3, intvs_3, cnsts_2)
+
+    def visitArgMax(self, node: AST.Func):
+
+        self.set_arg(node.expr, node)
+        (prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
+
+        typ_1 = node.expr.type
+
+        '''
 		1.  j = 0
 		2.  idx = 0
 		3.  max = A[0]
@@ -733,199 +764,205 @@ class Arduino(IRGenBase):
 		8.    j++
 		'''
 
-		idx = self.getTempVar()
-		max = self.getTempVar()
-		j = self.getTempVar()
-		iters = self.getTempIterators(typ_1.dim)
+        idx = self.getTempVar()
+        max = self.getTempVar()
+        j = self.getTempVar()
+        iters = self.getTempIterators(typ_1.dim)
 
-		cmd1 = IR.Assn(j, IRUtil.zero)
-		cmd2 = IR.Assn(idx, IRUtil.zero)
-		cmd3 = IR.Assn(max, IRUtil.addIndex(expr_1, [IRUtil.zero] * len(iters)))
+        cmd1 = IR.Assn(j, IRUtil.zero)
+        cmd2 = IR.Assn(idx, IRUtil.zero)
+        cmd3 = IR.Assn(max, IRUtil.addIndex(
+            expr_1, [IRUtil.zero] * len(iters)))
 
-		cmd6 = IR.Assn(idx, j)
-		cmd7 = IR.Assn(max, IRUtil.addIndex(expr_1, iters))
-		
-		if5 = IR.If(IRUtil.lt(max, IRUtil.addIndex(expr_1, iters)), [cmd6, cmd7], [])
+        cmd6 = IR.Assn(idx, j)
+        cmd7 = IR.Assn(max, IRUtil.addIndex(expr_1, iters))
 
-		cmd8 = IRUtil.incCmd(j)
+        if5 = IR.If(IRUtil.lt(max, IRUtil.addIndex(
+            expr_1, iters)), [cmd6, cmd7], [])
 
-		for4 = IRUtil.loop(typ_1.shape, iters, [if5, cmd8])
+        cmd8 = IRUtil.incCmd(j)
 
-		# extra
-		#p = IRUtil.print_loop(typ_1.shape, iters, [IR.PrintAsFloat(IRUtil.addIndex(expr_1, iters), expts_1[expr_1.idf])])
+        for4 = IRUtil.loop(typ_1.shape, iters, [if5, cmd8])
 
-		prog = IR.Prog([cmd1, cmd2, cmd3] + for4)
-			
-		prog_2 = IRUtil.concatPrograms(prog_1, prog)
-		expr_2 = idx
-		decls_2 = copy_dict(decls_1, dict((var.idf, Type.Int()) for var in [j, idx, max]))
-		expts_2 = expts_1
-		intvs_2 = intvs_1
+        # extra
+        #p = IRUtil.print_loop(typ_1.shape, iters, [IR.PrintAsFloat(IRUtil.addIndex(expr_1, iters), expts_1[expr_1.idf])])
 
-		return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
-	
-	def visitTanh(self, node:AST.Func):
-		self.set_arg(node.expr, node)
-		(prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
+        prog = IR.Prog([cmd1, cmd2, cmd3] + for4)
 
-		typ_1 = node.expr.type
-		[I, J] = typ_1.shape
+        prog_2 = IRUtil.concatPrograms(prog_1, prog)
+        expr_2 = idx
+        decls_2 = copy_dict(decls_1, dict((var.idf, Type.Int())
+                                          for var in [j, idx, max]))
+        expts_2 = expts_1
+        intvs_2 = intvs_1
 
-		p = expts_1[expr_1.idf]
+        return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
 
-		# Scale tanh limit
-		tanh_limit = int(np.ldexp(Common.tanh_limit, -p))
-		assert tanh_limit < np.iinfo(IR.DataType.getIntClass()).max
-		tanh_limit = IR.DataType.getInt(tanh_limit)
+    def visitTanh(self, node: AST.Func):
+        self.set_arg(node.expr, node)
+        (prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
 
-		tanh_limit_pos = IR.Int(tanh_limit)
-		tanh_limit_neg = IR.Int(-tanh_limit)
+        typ_1 = node.expr.type
+        [I, J] = typ_1.shape
 
-		iters = self.getTempIterators(typ_1.dim)
-		expr_1_ite = IRUtil.addIndex(expr_1, iters)
+        p = expts_1[expr_1.idf]
 
-		cmd0 = IR.Comment("tanh(" + expr_1.idf + ")")
-		loop = IRUtil.loop([I, J], iters,
-					[IR.Assn(expr_1_ite, IR.CExpr(IRUtil.gte(expr_1_ite, tanh_limit_pos), tanh_limit_pos, IR.CExpr(IRUtil.lte(expr_1_ite, tanh_limit_neg), tanh_limit_neg, expr_1_ite)))])
+        # Scale tanh limit
+        tanh_limit = int(np.ldexp(Common.tanh_limit, -p))
+        assert tanh_limit < np.iinfo(IR.DataType.getIntClass()).max
+        tanh_limit = IR.DataType.getInt(tanh_limit)
 
-		tanh_intv = self.get_intv(p, Common.tanh_limit, Common.tanh_limit)
-		intv_1 = intvs_1[expr_1.idf]
-		intv_2 = self.updateTanhIntv(intv_1, tanh_intv)
-		intvs_2 = copy_dict(intvs_1, {expr_1.idf: intv_2})
+        tanh_limit_pos = IR.Int(tanh_limit)
+        tanh_limit_neg = IR.Int(-tanh_limit)
 
-		prog_2 = IRUtil.concatPrograms(prog_1, IR.Prog([cmd0] + loop))
-		expr_2 = expr_1
-		decls_2 = decls_1
-		expts_2 = expts_1
-		
-		return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
+        iters = self.getTempIterators(typ_1.dim)
+        expr_1_ite = IRUtil.addIndex(expr_1, iters)
 
-	def updateTanhIntv(self, intv_1, intv_tanh):
-		m_e, M_e = intv_1
-		m_t, M_t = intv_tanh
-		return min(m_e, m_t), min(M_e, M_t)
+        cmd0 = IR.Comment("tanh(" + expr_1.idf + ")")
+        loop = IRUtil.loop([I, J], iters,
+                           [IR.Assn(expr_1_ite, IR.CExpr(IRUtil.gte(expr_1_ite, tanh_limit_pos), tanh_limit_pos, IR.CExpr(IRUtil.lte(expr_1_ite, tanh_limit_neg), tanh_limit_neg, expr_1_ite)))])
 
-	# sgn(e)
-	def visitSgn(self, node:AST.Func):
+        tanh_intv = self.get_intv(p, Common.tanh_limit, Common.tanh_limit)
+        intv_1 = intvs_1[expr_1.idf]
+        intv_2 = self.updateTanhIntv(intv_1, tanh_intv)
+        intvs_2 = copy_dict(intvs_1, {expr_1.idf: intv_2})
 
-		self.set_arg(node.expr, node)
-		(prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
+        prog_2 = IRUtil.concatPrograms(prog_1, IR.Prog([cmd0] + loop))
+        expr_2 = expr_1
+        decls_2 = decls_1
+        expts_2 = expts_1
 
-		typ_1 = node.expr.type
+        return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
 
-		# x = e > 0?  1: 0;
-		
-		x = self.getTempVar()
-		e = IRUtil.addIndex(expr_1, [IRUtil.zero] * typ_1.dim)
+    def updateTanhIntv(self, intv_1, intv_tanh):
+        m_e, M_e = intv_1
+        m_t, M_t = intv_tanh
+        return min(m_e, m_t), min(M_e, M_t)
 
-		cmd = IR.Assn(x, IRUtil.cond_zero(e, IRUtil.one, IRUtil.zero))
-		#cmd = IR.Assn(x, IR.CExpr(IRUtil.gt(e,IRUtil.zero), IRUtil.one,
-		#IR.CExpr(IRUtil.eq(e, IRUtil.zero), IRUtil.zero, IRUtil.negone)))
+    # sgn(e)
+    def visitSgn(self, node: AST.Func):
 
-		prog_2 = IRUtil.concatPrograms(prog_1, IR.Prog([cmd]))
-		expr_2 = x
-		decls_2 = copy_dict(decls_1, dict((var.idf, Type.Int()) for var in [x]))
-		expts_2 = expts_1
-		intvs_2 = intvs_1
-		
-		return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
+        self.set_arg(node.expr, node)
+        (prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
 
-	def visitDecl(self, node:AST.Decl):
-		(decls_0, expts_0, intvs_0, cnsts_0) = node.decls, node.expts, node.intvs, node.cnsts
+        typ_1 = node.expr.type
 
-		r1, r2 = node.range
-		p = self.get_expnt(max(abs(r1), abs(r2)))
-		intv = self.get_intv(p, r1, r2)
+        # x = e > 0?  1: 0;
 
-		prog_1 = IR.Prog([])
-		expr_1 = self.getTempVar()
-		expr_1.inputVar = True
-		
-		#decls_1 = copy_dict(decls_0, {expr_1.idf : node.type})
-		decls_1 = decls_0
-		expts_1 = copy_dict(expts_0, {expr_1.idf :       p})
-		intvs_1 = copy_dict(intvs_0, {expr_1.idf :    intv})
+        x = self.getTempVar()
+        e = IRUtil.addIndex(expr_1, [IRUtil.zero] * typ_1.dim)
 
-		return (prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_0)
+        cmd = IR.Assn(x, IRUtil.cond_zero(e, IRUtil.one, IRUtil.zero))
+        # cmd = IR.Assn(x, IR.CExpr(IRUtil.gt(e,IRUtil.zero), IRUtil.one,
+        # IR.CExpr(IRUtil.eq(e, IRUtil.zero), IRUtil.zero, IRUtil.negone)))
 
-	def visitExp(self, node:AST.Func):
-		
-		self.readProfileFile()
-		
-		if useMathExp():
-			return self.visitMathExp(node)
-		elif useTableExp():
-			return self.visitTableExp(node)
-		else:
-			assert False
+        prog_2 = IRUtil.concatPrograms(prog_1, IR.Prog([cmd]))
+        expr_2 = x
+        decls_2 = copy_dict(decls_1, dict((var.idf, Type.Int())
+                                          for var in [x]))
+        expts_2 = expts_1
+        intvs_2 = intvs_1
 
-	# Note: We assume e<=0 for exp(e)
-	def visitMathExp(self, node:AST.Func):
+        return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
 
-		# Tunable parameter
-		MIN = 0.1
+    def visitDecl(self, node: AST.Decl):
+        (decls_0, expts_0, intvs_0,
+         cnsts_0) = node.decls, node.expts, node.intvs, node.cnsts
 
-		self.set_arg(node.expr, node)
-		(prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
+        r1, r2 = node.range
+        p = self.get_expnt(max(abs(r1), abs(r2)))
+        intv = self.get_intv(p, r1, r2)
 
-		typ_1 = node.expr.type
-		p_1 = expts_1[expr_1.idf]
-		intv_1 = intvs_1[expr_1.idf]
+        prog_1 = IR.Prog([])
+        expr_1 = self.getTempVar()
+        expr_1.inputVar = True
 
-		'''
+        #decls_1 = copy_dict(decls_0, {expr_1.idf : node.type})
+        decls_1 = decls_0
+        expts_1 = copy_dict(expts_0, {expr_1.idf:       p})
+        intvs_1 = copy_dict(intvs_0, {expr_1.idf:    intv})
+
+        return (prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_0)
+
+    def visitExp(self, node: AST.Func):
+
+        self.readProfileFile()
+
+        if useMathExp():
+            return self.visitMathExp(node)
+        elif useTableExp():
+            return self.visitTableExp(node)
+        else:
+            assert False
+
+    # Note: We assume e<=0 for exp(e)
+    def visitMathExp(self, node: AST.Func):
+
+        # Tunable parameter
+        MIN = 0.1
+
+        self.set_arg(node.expr, node)
+        (prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
+
+        typ_1 = node.expr.type
+        p_1 = expts_1[expr_1.idf]
+        intv_1 = intvs_1[expr_1.idf]
+
+        '''
 		1.  y = ((int) (exp(((float)e) / shr1) * shr2))
 		'''
-		
-		maxExp = np.exp(-MIN)
 
-		expr_2 = self.getTempVar()
-		p_2 = self.get_expnt(maxExp)
-		intv_2 = self.get_intv(p_2, maxExp, maxExp)
+        maxExp = np.exp(-MIN)
 
-		shr1 = IR.Int(2 ** -p_1)
-		shr2 = IR.Int(2 ** -p_2)
+        expr_2 = self.getTempVar()
+        p_2 = self.get_expnt(maxExp)
+        intv_2 = self.get_intv(p_2, maxExp, maxExp)
 
-		expr_1_elt = IRUtil.addIndex(expr_1, [IRUtil.zero] * typ_1.dim)
-		expr_2_elt = IRUtil.addIndex(expr_2, [IRUtil.zero] * typ_1.dim)
+        shr1 = IR.Int(2 ** -p_1)
+        shr2 = IR.Int(2 ** -p_2)
 
-		cmd = IR.Assn(expr_2_elt, IRUtil.castToInt(IRUtil.mul(IR.Exp(IRUtil.div(IRUtil.castToFloat(expr_1_elt), shr1)), shr2)))
-		
-		cmd0 = IR.Comment('exp(' + expr_1.idf + ')')
+        expr_1_elt = IRUtil.addIndex(expr_1, [IRUtil.zero] * typ_1.dim)
+        expr_2_elt = IRUtil.addIndex(expr_2, [IRUtil.zero] * typ_1.dim)
 
-		# extra
-		#p = IR.PrintAsFloat(expr_1_elt, p_1)
+        cmd = IR.Assn(expr_2_elt, IRUtil.castToInt(IRUtil.mul(
+            IR.Exp(IRUtil.div(IRUtil.castToFloat(expr_1_elt), shr1)), shr2)))
 
-		prog_exp = IR.Prog([cmd0, cmd])
+        cmd0 = IR.Comment('exp(' + expr_1.idf + ')')
 
-		prog_2 = IRUtil.concatPrograms(prog_1, prog_exp)
-		decls_2 = copy_dict(decls_1, {expr_2.idf : typ_1})
-		expts_2 = copy_dict(expts_1, {expr_2.idf : p_2})
-		intvs_2 = copy_dict(intvs_1, {expr_2.idf : intv_2})
+        # extra
+        #p = IR.PrintAsFloat(expr_1_elt, p_1)
 
-		return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
+        prog_exp = IR.Prog([cmd0, cmd])
 
-	# Note: We assume e<=0 for exp(e)
-	def visitTableExp(self, node:AST.Func):
+        prog_2 = IRUtil.concatPrograms(prog_1, prog_exp)
+        decls_2 = copy_dict(decls_1, {expr_2.idf: typ_1})
+        expts_2 = copy_dict(expts_1, {expr_2.idf: p_2})
+        intvs_2 = copy_dict(intvs_1, {expr_2.idf: intv_2})
 
-		self.set_arg(node.expr, node)
-		(prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
+        return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
 
-		# TODO: use MAX_VAL_EXP
-		typ_1 = node.expr.type
-		p_1 = expts_1[expr_1.idf]
-		intv_1 = intvs_1[expr_1.idf]
+    # Note: We assume e<=0 for exp(e)
+    def visitTableExp(self, node: AST.Func):
 
-		[m, M] = self.expRange
-		[m_scale, M_scale] = [int(np.ldexp(m, -p_1)), int(np.ldexp(M, -p_1))]
+        self.set_arg(node.expr, node)
+        (prog_1, expr_1, decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
 
-		max = int(np.ldexp(M - m, -p_1))
-		shl = self.getShl(max)
-		
-		input = self.getTempVar()
-		[i, j] = self.getTempVars(2)
-		expr_2 = self.getTempVar()
+        # TODO: use MAX_VAL_EXP
+        typ_1 = node.expr.type
+        p_1 = expts_1[expr_1.idf]
+        intv_1 = intvs_1[expr_1.idf]
 
-		'''
+        [m, M] = self.expRange
+        [m_scale, M_scale] = [int(np.ldexp(m, -p_1)), int(np.ldexp(M, -p_1))]
+
+        max = int(np.ldexp(M - m, -p_1))
+        shl = self.getShl(max)
+
+        input = self.getTempVar()
+        [i, j] = self.getTempVars(2)
+        expr_2 = self.getTempVar()
+
+        '''
 		1.  if ((-x) < min) {
 		2.  	i = 0;
 		3.  	j = 0;
@@ -937,121 +974,127 @@ class Arduino(IRGenBase):
 		9.  }
 		10. ans = T[i] * U[j]
 		'''
-		
-		mask = IR.Int(2 ** self.expB - 1)
-		shrI = Common.wordLength - self.expB
-		shrJ = Common.wordLength - self.expB * 2
-		table = self.getExpTable(p_1)
 
-		p1 = self.get_expnt(1)
-		p2 = self.get_expnt(abs(np.exp(-m)))
+        mask = IR.Int(2 ** self.expB - 1)
+        shrI = Common.wordLength - self.expB
+        shrJ = Common.wordLength - self.expB * 2
+        table = self.getExpTable(p_1)
 
-		[shr1, shr2] = self.get_shr_mul(p1, p2)
+        p1 = self.get_expnt(1)
+        p2 = self.get_expnt(abs(np.exp(-m)))
 
-		expr_1_elt = IRUtil.addIndex(expr_1, [IRUtil.zero] * typ_1.dim)
-		expr_2_elt = IRUtil.addIndex(expr_2, [IRUtil.zero] * typ_1.dim)
+        [shr1, shr2] = self.get_shr_mul(p1, p2)
 
-		cond = IRUtil.lt(IRUtil.negate(expr_1_elt), IR.Int(m_scale))
-		
-		cmd2 = IR.Assn(i, IR.Int(0))
-		cmd3 = IR.Assn(j, IR.Int(0))
+        expr_1_elt = IRUtil.addIndex(expr_1, [IRUtil.zero] * typ_1.dim)
+        expr_2_elt = IRUtil.addIndex(expr_2, [IRUtil.zero] * typ_1.dim)
 
-		cmd6 = IR.Assn(input, IRUtil.shl(IRUtil.sub(IRUtil.negate(expr_1_elt), IR.Int(m_scale)), shl))
-		cmd7 = IR.Assn(i, IRUtil.bitAnd(IRUtil.shrUint(input, shrI), mask))
-		cmd8 = IR.Assn(j, IRUtil.bitAnd(IRUtil.shrUint(input, shrJ), mask))
-		
-		cmd1 = IR.If(cond, [cmd2, cmd3], [cmd6, cmd7, cmd8])
-		cmd10 = IR.Assn(expr_2_elt, IRUtil.mul(IRUtil.shrUint(IRUtil.addIndex(table[0], [i]), shr1),	IRUtil.shrUint(IRUtil.addIndex(table[1], [j]), shr2)))
+        cond = IRUtil.lt(IRUtil.negate(expr_1_elt), IR.Int(m_scale))
 
-		p_2 = self.get_expnt_exp(p1, shr1, p2, shr2)
-		intv_2 = self.get_intv_exp(p_2, [-m_scale, -M_scale])
-		
-		cmd0 = IR.Comment('exp(' + expr_1.idf + ')')
+        cmd2 = IR.Assn(i, IR.Int(0))
+        cmd3 = IR.Assn(j, IR.Int(0))
 
-		prog_exp = IR.Prog([cmd0, cmd1, cmd10])
-		prog_2 = IRUtil.concatPrograms(prog_1, prog_exp)
-		decls_2 = copy_dict(decls_1, {expr_2.idf : typ_1})
-		decls_2.update(dict((var.idf, Type.Int()) for var in [input, i, j]))
-		expts_2 = copy_dict(expts_1, {expr_2.idf : p_2})
-		intvs_2 = copy_dict(intvs_1, {expr_2.idf : intv_2})
+        cmd6 = IR.Assn(input, IRUtil.shl(IRUtil.sub(
+            IRUtil.negate(expr_1_elt), IR.Int(m_scale)), shl))
+        cmd7 = IR.Assn(i, IRUtil.bitAnd(IRUtil.shrUint(input, shrI), mask))
+        cmd8 = IR.Assn(j, IRUtil.bitAnd(IRUtil.shrUint(input, shrJ), mask))
 
-		return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
+        cmd1 = IR.If(cond, [cmd2, cmd3], [cmd6, cmd7, cmd8])
+        cmd10 = IR.Assn(expr_2_elt, IRUtil.mul(IRUtil.shrUint(IRUtil.addIndex(
+            table[0], [i]), shr1),	IRUtil.shrUint(IRUtil.addIndex(table[1], [j]), shr2)))
 
-	def get_expnt_exp(self, p1:int, shr1:int, p2:int, shr2:int):
-		return (p1 + shr1) + (p2 + shr2)
+        p_2 = self.get_expnt_exp(p1, shr1, p2, shr2)
+        intv_2 = self.get_intv_exp(p_2, [-m_scale, -M_scale])
 
-	def getShl(self, n:int):
-		assert n != 0
+        cmd0 = IR.Comment('exp(' + expr_1.idf + ')')
 
-		shl = 0
-		while(n != 0):
-			n = n >> 1
-			shl += 1
-		return min(Common.wordLength - shl, Common.wordLength - self.expB * 2)
+        prog_exp = IR.Prog([cmd0, cmd1, cmd10])
+        prog_2 = IRUtil.concatPrograms(prog_1, prog_exp)
+        decls_2 = copy_dict(decls_1, {expr_2.idf: typ_1})
+        decls_2.update(dict((var.idf, Type.Int()) for var in [input, i, j]))
+        expts_2 = copy_dict(expts_1, {expr_2.idf: p_2})
+        intvs_2 = copy_dict(intvs_1, {expr_2.idf: intv_2})
 
-	def getExpTable(self, p):
-		table = self.expTables.get(p)
-		if table == None:
-			table = self.populateExpTable(p)
-			self.expTables[p] = table
+        return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
 
-		return table[1]
+    def get_expnt_exp(self, p1: int, shr1: int, p2: int, shr2: int):
+        return (p1 + shr1) + (p2 + shr2)
 
-	def populateExpTable(self, p):
-		[table_m, table_n] = self.expTableShape
-		b = np.log2(table_n)
-		
-		# Currently looking at only 2D arrays
-		assert table_m == 2
+    def getShl(self, n: int):
+        assert n != 0
 
-		[m, M] = self.expRange
-		max = int(np.ldexp(M - m, -p))
-		shl = self.getShl(max)
-		
-		#alpha_count = self.getAlphaCount(max, shl)
-		alpha_count = table_n
-		beta_count = table_n
+        shl = 0
+        while(n != 0):
+            n = n >> 1
+            shl += 1
+        return min(Common.wordLength - shl, Common.wordLength - self.expB * 2)
 
-		table = [[0 for _ in range(alpha_count)], [0 for _ in range(beta_count)]]
+    def getExpTable(self, p):
+        table = self.expTables.get(p)
+        if table == None:
+            table = self.populateExpTable(p)
+            self.expTables[p] = table
 
-		alpha = Common.wordLength - shl - b
-		pRes = self.get_expnt(1)
-		for i in range(alpha_count):
-			num = i * 2 ** (alpha + p)
-			exp = np.exp(-num)
-			table[0][i] = int(np.ldexp(exp, -pRes))
+        return table[1]
 
-		beta = alpha - b
-		pRes = self.get_expnt(abs(np.exp(-m)))
-		for i in range(beta_count):
-			num = m + i * 2 ** (beta + p)
-			exp = np.exp(-num)
-			table[1][i] = int(np.ldexp(exp, -pRes))
+    def populateExpTable(self, p):
+        [table_m, table_n] = self.expTableShape
+        b = np.log2(table_n)
 
-		tableVar = [IR.Var('EXP' + str(abs(p)) + 'A', inputVar = True), IR.Var('EXP' + str(abs(p)) + 'B', inputVar = True)]
+        # Currently looking at only 2D arrays
+        assert table_m == 2
 
-		return [table, tableVar]
+        [m, M] = self.expRange
+        max = int(np.ldexp(M - m, -p))
+        shl = self.getShl(max)
 
-	def getAlphaCount(self, max, shl):
-		mask = 2 ** self.expB - 1
-		shr = Common.wordLength - shl - self.expB
-		return ((max >> shr) & mask) + 1
+        #alpha_count = self.getAlphaCount(max, shl)
+        alpha_count = table_n
+        beta_count = table_n
 
-	# This is only for farmbeats project
-	def visitSumFarmBeats(self, node:AST.Sum):
-		(decls_0, expts_0, intvs_0, cnsts_0) = node.decls, node.expts, node.intvs, node.cnsts
-		i_idf = node.name
-		decls_0 = copy_dict(decls_0, {i_idf : Type.Int()})
-		self.set_arg2(node.expr, decls_0, expts_0, intvs_0, cnsts_0)
-		(prog_1, expr_1,  decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
+        table = [[0 for _ in range(alpha_count)], [
+            0 for _ in range(beta_count)]]
 
-		# i_{st,ed}, typ_2, typ_1_all
-		i_st, i_ed = node.start, node.end
-		
-		expr_2 = self.getTempVar()
-		typ_2 = node.type
-		
-		'''
+        alpha = Common.wordLength - shl - b
+        pRes = self.get_expnt(1)
+        for i in range(alpha_count):
+            num = i * 2 ** (alpha + p)
+            exp = np.exp(-num)
+            table[0][i] = int(np.ldexp(exp, -pRes))
+
+        beta = alpha - b
+        pRes = self.get_expnt(abs(np.exp(-m)))
+        for i in range(beta_count):
+            num = m + i * 2 ** (beta + p)
+            exp = np.exp(-num)
+            table[1][i] = int(np.ldexp(exp, -pRes))
+
+        tableVar = [IR.Var('EXP' + str(abs(p)) + 'A', inputVar=True),
+                    IR.Var('EXP' + str(abs(p)) + 'B', inputVar=True)]
+
+        return [table, tableVar]
+
+    def getAlphaCount(self, max, shl):
+        mask = 2 ** self.expB - 1
+        shr = Common.wordLength - shl - self.expB
+        return ((max >> shr) & mask) + 1
+
+    # This is only for farmbeats project
+    def visitSumFarmBeats(self, node: AST.Sum):
+        (decls_0, expts_0, intvs_0,
+         cnsts_0) = node.decls, node.expts, node.intvs, node.cnsts
+        i_idf = node.name
+        decls_0 = copy_dict(decls_0, {i_idf: Type.Int()})
+        self.set_arg2(node.expr, decls_0, expts_0, intvs_0, cnsts_0)
+        (prog_1, expr_1,  decls_1, expts_1,
+         intvs_1, cnsts_1) = self.visit(node.expr)
+
+        # i_{st,ed}, typ_2, typ_1_all
+        i_st, i_ed = node.start, node.end
+
+        expr_2 = self.getTempVar()
+        typ_2 = node.type
+
+        '''
 		expr_2
 		i = 0
 		for (j = 0; j < n; j++)
@@ -1063,40 +1106,44 @@ class Arduino(IRGenBase):
 		2.    expr_2[i] = expr_2[i] + shr(expr_1[i])
 		'''
 
-		i_var = IR.Var(i_idf)
-		i_iter = self.getTempIterator()
-		iters = self.getTempIterators(typ_2.dim)
+        i_var = IR.Var(i_idf)
+        i_iter = self.getTempIterator()
+        iters = self.getTempIterators(typ_2.dim)
 
-		expr_1_elt = IRUtil.addIndex(expr_1, iters)
-		expr_2_elt = IRUtil.addIndex(expr_2, [i_var])
+        expr_1_elt = IRUtil.addIndex(expr_1, iters)
+        expr_2_elt = IRUtil.addIndex(expr_2, [i_var])
 
-		cmd2 = IRUtil.loop(typ_2.shape, iters, [IR.Assn(expr_2_elt, expr_1_elt)])
+        cmd2 = IRUtil.loop(typ_2.shape, iters, [
+                           IR.Assn(expr_2_elt, expr_1_elt)])
 
-		cmd_sum = [IR.Assn(i_var, IR.Int(i_st)), IR.For(i_iter, 0, IRUtil.lt(i_iter, IR.Int(i_ed - i_st)), prog_1.cmd_l + cmd2 + [IR.Assn(i_var, IRUtil.inc(i_var))])]
+        cmd_sum = [IR.Assn(i_var, IR.Int(i_st)), IR.For(i_iter, 0, IRUtil.lt(i_iter, IR.Int(
+            i_ed - i_st)), prog_1.cmd_l + cmd2 + [IR.Assn(i_var, IRUtil.inc(i_var))])]
 
-		intv_2 = self.get_intv_sum(intvs_1[expr_1.idf], i_ed - i_st)
+        intv_2 = self.get_intv_sum(intvs_1[expr_1.idf], i_ed - i_st)
 
-		prog_2 = IR.Prog(cmd_sum)
-		decls_2 = copy_dict(decls_1, {expr_2.idf : Type.Tensor([i_ed - i_st])})
-		expts_2 = copy_dict(expts_1, {expr_2.idf : expts_1[expr_1.idf]})
-		intvs_2 = copy_dict(intvs_1, {expr_2.idf : intvs_1[expr_1.idf]})
+        prog_2 = IR.Prog(cmd_sum)
+        decls_2 = copy_dict(decls_1, {expr_2.idf: Type.Tensor([i_ed - i_st])})
+        expts_2 = copy_dict(expts_1, {expr_2.idf: expts_1[expr_1.idf]})
+        intvs_2 = copy_dict(intvs_1, {expr_2.idf: intvs_1[expr_1.idf]})
 
-		return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
+        return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
 
-	def visitSum(self, node:AST.Sum):
-		(decls_0, expts_0, intvs_0, cnsts_0) = node.decls, node.expts, node.intvs, node.cnsts
-		i_idf = node.name
-		decls_0 = copy_dict(decls_0, {i_idf : Type.Int()})
-		self.set_arg2(node.expr, decls_0, expts_0, intvs_0, cnsts_0)
-		(prog_1, expr_1,  decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
+    def visitSum(self, node: AST.Sum):
+        (decls_0, expts_0, intvs_0,
+         cnsts_0) = node.decls, node.expts, node.intvs, node.cnsts
+        i_idf = node.name
+        decls_0 = copy_dict(decls_0, {i_idf: Type.Int()})
+        self.set_arg2(node.expr, decls_0, expts_0, intvs_0, cnsts_0)
+        (prog_1, expr_1,  decls_1, expts_1,
+         intvs_1, cnsts_1) = self.visit(node.expr)
 
-		# i_{st,ed}, typ_2, typ_1_all
-		i_st, i_ed = node.start, node.end
-		
-		expr_2 = self.getTempVar()
-		typ_2 = node.type
-		
-		'''
+        # i_{st,ed}, typ_2, typ_1_all
+        i_st, i_ed = node.start, node.end
+
+        expr_2 = self.getTempVar()
+        typ_2 = node.type
+
+        '''
 		expr_2
 		i = 0
 		for (j = 0; j < n; j++)
@@ -1108,59 +1155,62 @@ class Arduino(IRGenBase):
 		2.    expr_2[i] = expr_2[i] + shr(expr_1[i])
 		'''
 
-		i_var = IR.Var(i_idf)
-		i_iter = self.getTempIterator()
-		iters = self.getTempIterators(typ_2.dim)
+        i_var = IR.Var(i_idf)
+        i_iter = self.getTempIterator()
+        iters = self.getTempIterators(typ_2.dim)
 
-		# p_2, intv_2, cmdl_sum, decls_sum
-		(p_2, H_1, H_2) = self.get_expnt_sum(expts_1[expr_1.idf], i_ed - i_st)
+        # p_2, intv_2, cmdl_sum, decls_sum
+        (p_2, H_1, H_2) = self.get_expnt_sum(expts_1[expr_1.idf], i_ed - i_st)
 
-		expr_1_elt = IRUtil.addIndex(expr_1, iters)
-		expr_2_elt = IRUtil.addIndex(expr_2, iters)
+        expr_1_elt = IRUtil.addIndex(expr_1, iters)
+        expr_2_elt = IRUtil.addIndex(expr_2, iters)
 
-		cmd1 = IR.Memset(expr_2, typ_2.size())
-		cmd2 = IR.Assn(expr_2_elt, IRUtil.add(expr_2_elt, IRUtil.shr(expr_1_elt, H_1)))
-		sum_loop = IRUtil.loop(typ_2.shape, iters, [cmd2])
+        cmd1 = IR.Memset(expr_2, typ_2.size())
+        cmd2 = IR.Assn(expr_2_elt, IRUtil.add(
+            expr_2_elt, IRUtil.shr(expr_1_elt, H_1)))
+        sum_loop = IRUtil.loop(typ_2.shape, iters, [cmd2])
 
-		cmd_sum = \
-			[cmd1,
-			IR.Assn(i_var, IR.Int(i_st)),
-			 IR.For(i_iter, 0, IRUtil.lt(i_iter, IR.Int(i_ed - i_st)),
-				prog_1.cmd_l + sum_loop + \
-				[IR.Assn(i_var, IRUtil.inc(i_var))])]
+        cmd_sum = \
+            [cmd1,
+             IR.Assn(i_var, IR.Int(i_st)),
+             IR.For(i_iter, 0, IRUtil.lt(i_iter, IR.Int(i_ed - i_st)),
+                    prog_1.cmd_l + sum_loop +
+                    [IR.Assn(i_var, IRUtil.inc(i_var))])]
 
-		intv_2 = self.get_intv_sum(intvs_1[expr_1.idf], i_ed - i_st)
+        intv_2 = self.get_intv_sum(intvs_1[expr_1.idf], i_ed - i_st)
 
-		prog_2 = IR.Prog(cmd_sum)
-		decls_2 = copy_dict(decls_1, {expr_2.idf :  typ_2})
-		expts_2 = copy_dict(expts_1, {expr_2.idf :    p_2})
-		intvs_2 = copy_dict(intvs_1, {expr_2.idf : intv_2})
+        prog_2 = IR.Prog(cmd_sum)
+        decls_2 = copy_dict(decls_1, {expr_2.idf:  typ_2})
+        expts_2 = copy_dict(expts_1, {expr_2.idf:    p_2})
+        intvs_2 = copy_dict(intvs_1, {expr_2.idf: intv_2})
 
-		return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
+        return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
 
-	def visitSumOld(self, node:AST.Sum):
-		(decls_0, expts_0, intvs_0, cnsts_0) = node.decls, node.expts, node.intvs, node.cnsts
-		i_idf = node.name
-		decls_0 = copy_dict(decls_0, {i_idf : Type.Int()})
-		self.set_arg2(node.expr, decls_0, expts_0, intvs_0, cnsts_0)
-		(prog_1, expr_1,  decls_1, expts_1, intvs_1, cnsts_1) = self.visit(node.expr)
+    def visitSumOld(self, node: AST.Sum):
+        (decls_0, expts_0, intvs_0,
+         cnsts_0) = node.decls, node.expts, node.intvs, node.cnsts
+        i_idf = node.name
+        decls_0 = copy_dict(decls_0, {i_idf: Type.Int()})
+        self.set_arg2(node.expr, decls_0, expts_0, intvs_0, cnsts_0)
+        (prog_1, expr_1,  decls_1, expts_1,
+         intvs_1, cnsts_1) = self.visit(node.expr)
 
-		# i_{st,ed}, typ_2, typ_1_all
-		i_st, i_ed = node.start, node.end
-		typ_2 = node.type
-		typ_1_all = Type.Tensor([i_ed - i_st] + typ_2.shape)
-		
-		# decl fresh vars
-		expr_2 = self.getTempVar()  # : typ_2
-		expr_1_all = self.getTempVar()  # : typ_1_all
-		
-		i_var = IR.Var(i_idf)
-		i_iter = self.getTempIterator()
-		
-		iters = self.getTempIterators(typ_2.dim)
+        # i_{st,ed}, typ_2, typ_1_all
+        i_st, i_ed = node.start, node.end
+        typ_2 = node.type
+        typ_1_all = Type.Tensor([i_ed - i_st] + typ_2.shape)
 
-		# cmdl_for
-		'''
+        # decl fresh vars
+        expr_2 = self.getTempVar()  # : typ_2
+        expr_1_all = self.getTempVar()  # : typ_1_all
+
+        i_var = IR.Var(i_idf)
+        i_iter = self.getTempIterator()
+
+        iters = self.getTempIterators(typ_2.dim)
+
+        # cmdl_for
+        '''
 		cmdl_for = []
 		for i in range(i_st, i_ed):
 			prog_1_subst = \
@@ -1169,29 +1219,30 @@ class Arduino(IRGenBase):
 			cmdl_for += prog_1_subst.cmd_l
 		'''
 
-		prog_1 = prog_1.subst(expr_1.idf, IRUtil.addIndex(expr_1_all, [i_iter]))
-		cmdl_for = \
-			[IR.Assn(i_var, IR.Int(i_st)),
-			 IR.For(i_iter, 0, IRUtil.lt(i_iter, IR.Int(i_ed - i_st)),
-				prog_1.cmd_l + \
-				[IR.Assn(i_var, IRUtil.inc(i_var))])]
+        prog_1 = prog_1.subst(
+            expr_1.idf, IRUtil.addIndex(expr_1_all, [i_iter]))
+        cmdl_for = \
+            [IR.Assn(i_var, IR.Int(i_st)),
+             IR.For(i_iter, 0, IRUtil.lt(i_iter, IR.Int(i_ed - i_st)),
+                    prog_1.cmd_l +
+                    [IR.Assn(i_var, IRUtil.inc(i_var))])]
 
-		# p_2, intv_2, cmdl_sum, decls_sum
-		(p_2, H_1, H_2) = self.get_expnt_sum(expts_1[expr_1.idf], i_ed - i_st)
-		intv_2 = self.get_intv_sum(intvs_1[expr_1.idf], i_ed - i_st)
-		(cmdl_sum_body, decls_sum) = \
-			self.compile_sum(i_ed - i_st, H_1, H_2,
-				IRUtil.addIndex(expr_1_all, iters),
-				IRUtil.addIndex(expr_2    , iters), True)
-		cmdl_sum = IRUtil.loop(typ_2.shape, iters, cmdl_sum_body)
-		
-		prog_2 = IR.Prog(cmdl_for + cmdl_sum)
-		decls_2 = copy_dict(decls_1, {expr_2.idf :  typ_2})
-		# Remove the previous temp variable
-		decls_2.pop(expr_1.idf)
-		expts_2 = copy_dict(expts_1, {expr_2.idf :    p_2})
-		intvs_2 = copy_dict(intvs_1, {expr_2.idf : intv_2})
-		decls_2.update({expr_1_all.idf : typ_1_all})
-		decls_2.update(decls_sum)
+        # p_2, intv_2, cmdl_sum, decls_sum
+        (p_2, H_1, H_2) = self.get_expnt_sum(expts_1[expr_1.idf], i_ed - i_st)
+        intv_2 = self.get_intv_sum(intvs_1[expr_1.idf], i_ed - i_st)
+        (cmdl_sum_body, decls_sum) = \
+            self.compile_sum(i_ed - i_st, H_1, H_2,
+                             IRUtil.addIndex(expr_1_all, iters),
+                             IRUtil.addIndex(expr_2, iters), True)
+        cmdl_sum = IRUtil.loop(typ_2.shape, iters, cmdl_sum_body)
 
-		return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)
+        prog_2 = IR.Prog(cmdl_for + cmdl_sum)
+        decls_2 = copy_dict(decls_1, {expr_2.idf:  typ_2})
+        # Remove the previous temp variable
+        decls_2.pop(expr_1.idf)
+        expts_2 = copy_dict(expts_1, {expr_2.idf:    p_2})
+        intvs_2 = copy_dict(intvs_1, {expr_2.idf: intv_2})
+        decls_2.update({expr_1_all.idf: typ_1_all})
+        decls_2.update(decls_sum)
+
+        return (prog_2, expr_2, decls_2, expts_2, intvs_2, cnsts_1)

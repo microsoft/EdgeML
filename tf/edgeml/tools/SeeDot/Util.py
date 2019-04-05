@@ -5,81 +5,107 @@ import platform
 
 import Common
 
+
 class Config:
-	expBigLength = 6
-	exp = "table" # "table" "math"
-	codegen = "funcCall" # "funcCall" "inline"
+    expBigLength = 6
+    exp = "table"  # "table" "math"
+    codegen = "funcCall"  # "funcCall" "inline"
+
 
 def windows():
-	return platform.system() == "Windows"
+    return platform.system() == "Windows"
+
 
 def linux():
-	return platform.system() == "Linux"
+    return platform.system() == "Linux"
+
 
 def getAlgo():
-	return Config.algo
+    return Config.algo
 
-def setAlgo(algo:str):
-	Config.algo = algo
+
+def setAlgo(algo: str):
+    Config.algo = algo
+
 
 def getTarget():
-	return Config.target
+    return Config.target
 
-def setTarget(target:str):
-	Config.target = target
+
+def setTarget(target: str):
+    Config.target = target
+
 
 def forArduino():
-	return Config.target == Common.Target.Arduino
+    return Config.target == Common.Target.Arduino
+
 
 def forHls():
-	return Config.target == Common.Target.Hls
+    return Config.target == Common.Target.Hls
+
 
 def forVerilog():
-	return Config.target == Common.Target.Verilog
+    return Config.target == Common.Target.Verilog
+
 
 def forX86():
-	return Config.target == Common.Target.X86
+    return Config.target == Common.Target.X86
+
 
 def getProfileLogFile():
-	return Config.profileLogFile
+    return Config.profileLogFile
+
 
 def setProfileLogFile(file):
-	Config.profileLogFile = file
+    Config.profileLogFile = file
+
 
 def getExpBitLength():
-	return Config.expBigLength
+    return Config.expBigLength
+
 
 def getMaxScale():
-	return Config.maxExpnt
+    return Config.maxExpnt
 
-def setMaxExpnt(x:int):
-	Config.maxExpnt = x
+
+def setMaxExpnt(x: int):
+    Config.maxExpnt = x
+
 
 def getShrType():
-	# "shr" "shr+" "div" "negate"
-	return "div"
+    # "shr" "shr+" "div" "negate"
+    return "div"
+
 
 def useMathExp():
-	return Config.exp == "math"
+    return Config.exp == "math"
+
 
 def useTableExp():
-	return Config.exp == "table"
+    return Config.exp == "table"
+
 
 def genFuncCalls():
-	return Config.codegen == "funcCall"
+    return Config.codegen == "funcCall"
 
-def copy_dict(dict_src:dict, diff={}):
-	dict_res = dict(dict_src)
-	dict_res.update(diff)
-	return dict_res
 
-#set number of workers for FPGA sparseMUL
+def copy_dict(dict_src: dict, diff={}):
+    dict_res = dict(dict_src)
+    dict_res.update(diff)
+    return dict_res
+
+# set number of workers for FPGA sparseMUL
+
+
 def setNumWorkers(WorkerThreads):
-	Config.numWorkers = WorkerThreads
+    Config.numWorkers = WorkerThreads
+
 
 def getNumWorkers():
-	return Config.numWorkers
+    return Config.numWorkers
 
 # z = [y1,y2,..] = [[x1,..], [x2,..], ..] --> [x1,.., x2,.., ..]
-def flatten(z:list): 
-	return [x for y in z for x in y]
+
+
+def flatten(z: list):
+    return [x for y in z for x in y]

@@ -27,85 +27,86 @@ from Type import InferType
 from Util import *
 from Writer import Writer
 
+
 class Compiler:
 
-	def __init__(self, algo, target, inputFile, outputFile, profileLogFile, maxExpnt, numWorkers):
-		if os.path.isfile(inputFile) == False:
-			raise Exception("Input file doesn't exist")
+    def __init__(self, algo, target, inputFile, outputFile, profileLogFile, maxExpnt, numWorkers):
+        if os.path.isfile(inputFile) == False:
+            raise Exception("Input file doesn't exist")
 
-		setAlgo(algo)
-		setTarget(target)
-		setNumWorkers(numWorkers)
-		self.input = FileStream(inputFile)
-		self.outputFile = outputFile
-		setProfileLogFile(profileLogFile)
-		setMaxExpnt(maxExpnt)
-	
-	def run(self):
-		# Parse and generate CST for the input
-		lexer = SeeDotLexer(self.input)
-		tokens = CommonTokenStream(lexer)
-		parser = SeeDotParser(tokens)
-		tree = parser.expr()
+        setAlgo(algo)
+        setTarget(target)
+        setNumWorkers(numWorkers)
+        self.input = FileStream(inputFile)
+        self.outputFile = outputFile
+        setProfileLogFile(profileLogFile)
+        setMaxExpnt(maxExpnt)
 
-		# Generate AST
-		ast = ASTBuilder.ASTBuilder().visit(tree)
+    def run(self):
+        # Parse and generate CST for the input
+        lexer = SeeDotLexer(self.input)
+        tokens = CommonTokenStream(lexer)
+        parser = SeeDotParser(tokens)
+        tree = parser.expr()
 
-		# Pretty printing AST
-		# PrintAST().visit(ast)
+        # Generate AST
+        ast = ASTBuilder.ASTBuilder().visit(tree)
 
-		# Perform type inference
-		InferType().visit(ast)
+        # Pretty printing AST
+        # PrintAST().visit(ast)
 
-		IRUtil.init()
+        # Perform type inference
+        InferType().visit(ast)
 
-		res, state = self.compile(ast)
+        IRUtil.init()
 
-		writer = Writer(self.outputFile)
+        res, state = self.compile(ast)
 
-		if forArduino():
-			codegen = ArduinoCodegen(writer, *state)
-		elif forHls():
-			codegen = HlsCodegen(writer, *state)
-		elif forVerilog():
-			codegen = VerilogCodegen(writer, *state)
-		elif forX86():
-			codegen = X86Codegen(writer, *state)
-		else:
-			assert False
+        writer = Writer(self.outputFile)
 
-		codegen.printAll(*res)
+        if forArduino():
+            codegen = ArduinoCodegen(writer, *state)
+        elif forHls():
+            codegen = HlsCodegen(writer, *state)
+        elif forVerilog():
+            codegen = VerilogCodegen(writer, *state)
+        elif forX86():
+            codegen = X86Codegen(writer, *state)
+        else:
+            assert False
 
-		writer.close()
+        codegen.printAll(*res)
 
-	def compile(self, ast):
-		if genFuncCalls():
-			return self.genCodeWithFuncCalls(ast)
-		else:
-			return self.genCodeWithoutFuncCalls(ast)
+        writer.close()
 
-	def genCodeWithFuncCalls(self, ast):
+    def compile(self, ast):
+        if genFuncCalls():
+            return self.genCodeWithFuncCalls(ast)
+        else:
+            return self.genCodeWithoutFuncCalls(ast)
 
-		compiler = IRBuilder()
-		
-		res = compiler.visit(ast)
+    def genCodeWithFuncCalls(self, ast):
 
-		state = compiler.decls, compiler.scales, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.globalVars
+        compiler = IRBuilder()
 
-		return res, state
+        res = compiler.visit(ast)
 
-	def genCodeWithoutFuncCalls(self, ast):
-		
-		if forArduino() or forX86():
-			compiler = ArduinoIRGen()
-		elif forHls():
-			compiler = HlsIRGen()
-		else:
-			assert False
+        state = compiler.decls, compiler.scales, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.globalVars
 
-		prog, expr,	decls, scales, intvs, cnsts = compiler.visit(ast)
+        return res, state
 
-		res = prog, expr
-		state = decls, scales, intvs, cnsts, compiler.expTables, compiler.VAR_IDF_INIT
+    def genCodeWithoutFuncCalls(self, ast):
 
-		return res, state
+        if forArduino() or forX86():
+            compiler = ArduinoIRGen()
+        elif forHls():
+            compiler = HlsIRGen()
+        else:
+            assert False
+
+        prog, expr,	decls, scales, intvs, cnsts = compiler.visit(ast)
+
+        res = prog, expr
+        state = decls, scales, intvs, cnsts, compiler.expTables, compiler.VAR_IDF_INIT
+
+        return res, state

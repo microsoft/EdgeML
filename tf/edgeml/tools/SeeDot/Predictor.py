@@ -10,119 +10,121 @@ import Util
 # Program to build and run the predictor project using msbuild
 # The accuracy and other statistics are written to the output file specified
 
+
 class Predictor:
 
-	def __init__(self, algo, version, datasetType, outputDir):
-		self.algo, self.version, self.datasetType = algo, version, datasetType
+    def __init__(self, algo, version, datasetType, outputDir):
+        self.algo, self.version, self.datasetType = algo, version, datasetType
 
-		self.outputDir = outputDir
-		os.makedirs(self.outputDir, exist_ok=True)
+        self.outputDir = outputDir
+        os.makedirs(self.outputDir, exist_ok=True)
 
-	def buildForWindows(self):
-		'''
-		Builds using the Predictor.vcxproj project file and creates the executable
-		The target platform is currently set to x64
-		'''
-		print("Build...", end='')
+    def buildForWindows(self):
+        '''
+        Builds using the Predictor.vcxproj project file and creates the executable
+        The target platform is currently set to x64
+        '''
+        print("Build...", end='')
 
-		projFile = "Predictor.vcxproj"
-		args = [Common.msbuildPath, projFile, r"/t:Build",
-				r"/p:Configuration=Release", r"/p:Platform=x64"]
+        projFile = "Predictor.vcxproj"
+        args = [Common.msbuildPath, projFile, r"/t:Build",
+                r"/p:Configuration=Release", r"/p:Platform=x64"]
 
-		logFile = os.path.join(self.outputDir, "msbuild.txt")
-		with open(logFile, 'w') as file:
-			process = subprocess.call(args, stdout=file)
-		
-		if process == 1:
-			print("FAILED!!\n")
-			return False
-		else:
-			print("success")
-			return True
+        logFile = os.path.join(self.outputDir, "msbuild.txt")
+        with open(logFile, 'w') as file:
+            process = subprocess.call(args, stdout=file)
 
-	def buildForLinux(self):
-		print("Build...", end='')
+        if process == 1:
+            print("FAILED!!\n")
+            return False
+        else:
+            print("success")
+            return True
 
-		args = ["make"]
+    def buildForLinux(self):
+        print("Build...", end='')
 
-		logFile = os.path.join(self.outputDir, "msbuild.txt")
-		with open(logFile, 'w') as file:
-			process = subprocess.call(args, stdout=file)
-		
-		if process == 1:
-			print("FAILED!!\n")
-			return False
-		else:
-			print("success")
-			return True
+        args = ["make"]
 
-	def build(self):
-		if Util.windows():
-			return self.buildForWindows()
-		else:
-			return self.buildForLinux()
+        logFile = os.path.join(self.outputDir, "msbuild.txt")
+        with open(logFile, 'w') as file:
+            process = subprocess.call(args, stdout=file)
 
-	def executeForWindows(self):
-		'''
-		Invokes the executable with arguments
-		'''
-		print("Execution...", end='')
+        if process == 1:
+            print("FAILED!!\n")
+            return False
+        else:
+            print("success")
+            return True
 
-		exeFile = os.path.join("x64", "Release", "Predictor.exe")
-		args = [exeFile, self.algo, self.version, self.datasetType]
+    def build(self):
+        if Util.windows():
+            return self.buildForWindows()
+        else:
+            return self.buildForLinux()
 
-		logFile = os.path.join(self.outputDir, "exec.txt")
-		with open(logFile, 'w') as file:
-			process = subprocess.call(args, stdout=file)
+    def executeForWindows(self):
+        '''
+        Invokes the executable with arguments
+        '''
+        print("Execution...", end='')
 
-		if process == 1:
-			print("FAILED!!\n")
-			return None
-		else:
-			print("success")
-			acc = self.readStatsFile()
-			return acc
+        exeFile = os.path.join("x64", "Release", "Predictor.exe")
+        args = [exeFile, self.algo, self.version, self.datasetType]
 
-	def executeForLinux(self):
-		print("Execution...", end='')
+        logFile = os.path.join(self.outputDir, "exec.txt")
+        with open(logFile, 'w') as file:
+            process = subprocess.call(args, stdout=file)
 
-		exeFile = os.path.join("./Predictor")
-		args = [exeFile, self.algo, self.version, self.datasetType]
+        if process == 1:
+            print("FAILED!!\n")
+            return None
+        else:
+            print("success")
+            acc = self.readStatsFile()
+            return acc
 
-		logFile = os.path.join(self.outputDir, "exec.txt")
-		with open(logFile, 'w') as file:
-			process = subprocess.call(args, stdout=file)
+    def executeForLinux(self):
+        print("Execution...", end='')
 
-		if process == 1:
-			print("FAILED!!\n")
-			return None
-		else:
-			print("success")
-			acc = self.readStatsFile()
-			return acc
+        exeFile = os.path.join("./Predictor")
+        args = [exeFile, self.algo, self.version, self.datasetType]
 
-	def execute(self):
-		if Util.windows():
-			return self.executeForWindows()
-		else:
-			return self.executeForLinux()
+        logFile = os.path.join(self.outputDir, "exec.txt")
+        with open(logFile, 'w') as file:
+            process = subprocess.call(args, stdout=file)
 
-	# Read statistics of execution (currently only accuracy)
-	def readStatsFile(self):
-		statsFile = os.path.join("output", self.algo + "-" + self.version, "stats-" + self.datasetType + ".txt")
+        if process == 1:
+            print("FAILED!!\n")
+            return None
+        else:
+            print("success")
+            acc = self.readStatsFile()
+            return acc
 
-		with open(statsFile, 'r') as file:
-			content = file.readlines()
-			
-		stats = [x.strip() for x in content]
+    def execute(self):
+        if Util.windows():
+            return self.executeForWindows()
+        else:
+            return self.executeForLinux()
 
-		return float(stats[0])
+    # Read statistics of execution (currently only accuracy)
+    def readStatsFile(self):
+        statsFile = os.path.join(
+            "output", self.algo + "-" + self.version, "stats-" + self.datasetType + ".txt")
 
-	def run(self):
-		res = self.build()
-		if res == False:
-			return None
+        with open(statsFile, 'r') as file:
+            content = file.readlines()
 
-		acc = self.execute()
+        stats = [x.strip() for x in content]
 
-		return acc
+        return float(stats[0])
+
+    def run(self):
+        res = self.build()
+        if res == False:
+            return None
+
+        acc = self.execute()
+
+        return acc
