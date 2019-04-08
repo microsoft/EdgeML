@@ -4,7 +4,6 @@
 import os
 
 from Converter.Bonsai import *
-from Converter.Lenet import *
 from Converter.Protonn import *
 from Converter.Util import *
 
@@ -50,10 +49,6 @@ class Converter:
             obj = BonsaiFixed()
         elif algo == Common.Algo.Bonsai and version == Common.Version.Float:
             obj = BonsaiFloat()
-        elif algo == Common.Algo.Lenet and version == Common.Version.Fixed:
-            obj = LenetFixed()
-        elif algo == Common.Algo.Lenet and version == Common.Version.Float:
-            obj = LenetFloat()
         elif algo == Common.Algo.Protonn and version == Common.Version.Fixed:
             obj = ProtonnFixed()
         elif algo == Common.Algo.Protonn and version == Common.Version.Float:

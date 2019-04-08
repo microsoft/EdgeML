@@ -18,9 +18,6 @@
     <ClCompile Include="bonsai_float.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lenet_float.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="library.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -42,9 +39,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="datatypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="lenet_float_model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="library.h">

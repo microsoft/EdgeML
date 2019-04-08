@@ -28,10 +28,9 @@ vivadoInstallPath = r"C:\Xilinx\Vivado\2018.2\bin"
 
 class Algo:
     Bonsai = "bonsai"
-    Lenet = "lenet"
     Protonn = "protonn"
     Default = [Bonsai, Protonn]
-    All = [Bonsai, Lenet, Protonn]
+    All = [Bonsai, Protonn]
 
 
 class Version:

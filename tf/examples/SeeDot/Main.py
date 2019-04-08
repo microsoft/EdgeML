@@ -6,6 +6,8 @@ import os
 from itertools import product
 import tempfile
 
+sys.path.insert(0, '../../')
+
 import Common
 from Compiler import Compiler
 from SeeDot import Main

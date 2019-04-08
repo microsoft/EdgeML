@@ -13,7 +13,7 @@
 
 using namespace std;
 
-enum Algo { Bonsai, Lenet, Protonn };
+enum Algo { Bonsai, Protonn };
 enum Version { Fixed, Float };
 enum DatasetType { Training, Testing };
 
@@ -68,8 +68,6 @@ int main(int argc, char *argv[]) {
 	Algo algo;
 	if (strcmp(argv[1], "bonsai") == 0)
 		algo = Bonsai;
-	else if (strcmp(argv[1], "lenet") == 0)
-		algo = Lenet;
 	else if (strcmp(argv[1], "protonn") == 0)
 		algo = Protonn;
 	else {
@@ -169,10 +167,6 @@ int main(int argc, char *argv[]) {
 			res = seedotFixed(features_int);
 		else if (algo == Bonsai && version == Float)
 			res = bonsaiFloat(features_float);
-		else if (algo == Lenet && version == Fixed)
-			res = seedotFixed(features_int);
-		else if (algo == Lenet && version == Float)
-			res = lenetFloat(features_float);
 		else if (algo == Protonn && version == Fixed)
 			res = seedotFixed(features_int);
 		else if (algo == Protonn && version == Float)

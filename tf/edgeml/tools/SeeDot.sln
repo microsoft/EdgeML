@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.572
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "SeeDot", "SeeDot\SeeDot.pyproj", "{818BA787-0EE4-4FCD-803A-559DCE50A83E}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "SeeDot", "SeeDot\seedot.pyproj", "{818BA787-0EE4-4FCD-803A-559DCE50A83E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Predictor", "SeeDot\Predictor\Predictor.vcxproj", "{BF07EAE7-2FC0-4BB8-B0C3-2B2309AF5A48}"
 EndProject

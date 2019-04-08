@@ -3,14 +3,14 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>818ba787-0ee4-4fcd-803a-559dce50a83e</ProjectGuid>
-    <ProjectHome>.</ProjectHome>
-    <StartupFile>
-    </StartupFile>
+    <ProjectHome>
+    </ProjectHome>
+    <StartupFile>Main.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
-    <Name>SeeDot</Name>
+    <Name>seedot</Name>
     <RootNamespace>SeeDot</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -55,7 +55,6 @@
     <Compile Include="Compiler.py" />
     <Compile Include="Converter\Bonsai.py" />
     <Compile Include="Converter\Converter.py" />
-    <Compile Include="Converter\Lenet.py" />
     <Compile Include="Converter\Protonn.py" />
     <Compile Include="Converter\Test.py" />
     <Compile Include="Converter\Util.py" />
