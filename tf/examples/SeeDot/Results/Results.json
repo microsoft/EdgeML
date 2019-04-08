@@ -1,0 +1,257 @@
+{
+	"bonsai": {
+		"int16": {
+			"cifar-binary": {
+				"sf": -10,
+				"accuracy": 75.49
+			},
+			"cr-binary": {
+				"sf": -11,
+				"accuracy": 74.019
+			},
+			"cr-multiclass": {
+				"sf": -12,
+				"accuracy": 10.339
+			},
+			"curet-multiclass": {
+				"sf": -11,
+				"accuracy": 43.835
+			},
+			"letter-multiclass": {
+				"sf": -10,
+				"accuracy": 64.76
+			},
+			"mnist-binary": {
+				"sf": -10,
+				"accuracy": 95.94
+			},
+			"mnist-multiclass": {
+				"sf": -11,
+				"accuracy": 93.36
+			},
+			"usps-binary": {
+				"sf": -11,
+				"accuracy": 94.619
+			},
+			"usps-multiclass": {
+				"sf": -11,
+				"accuracy": 91.679
+			},
+			"ward-binary": {
+				"sf": -8,
+				"accuracy": 95.132
+			}
+		},
+		"int32": {
+			"cifar-binary": {
+				"sf": 0,
+				"accuracy": 75.63
+			},
+			"cr-binary": {
+				"sf": 0,
+				"accuracy": 73.913
+			},
+			"cr-multiclass": {
+				"sf": 0,
+				"accuracy": 10.809
+			},
+			"curet-multiclass": {
+				"sf": 0,
+				"accuracy": 45.189
+			},
+			"letter-multiclass": {
+				"sf": 0,
+				"accuracy": 64.92
+			},
+			"mnist-binary": {
+				"sf": 0,
+				"accuracy": 96.01
+			},
+			"mnist-multiclass": {
+				"sf": 0,
+				"accuracy": 93.43
+			},
+			"usps-binary": {
+				"sf": 0,
+				"accuracy": 94.519
+			},
+			"usps-multiclass": {
+				"sf": 0,
+				"accuracy": 91.978
+			},
+			"ward-binary": {
+				"sf": 0,
+				"accuracy": 95.236
+			}
+		},
+		"float32": {
+			"cifar-binary": {
+				"accuracy": 75.48
+			},
+			"cr-binary": {
+				"accuracy": 73.86
+			},
+			"cr-multiclass": {
+				"accuracy": 10.757
+			},
+			"curet-multiclass": {
+				"accuracy": 45.545
+			},
+			"letter-multiclass": {
+				"accuracy": 64.88
+			},
+			"mnist-binary": {
+				"accuracy": 95.98
+			},
+			"mnist-multiclass": {
+				"accuracy": 93.38
+			},
+			"usps-binary": {
+				"accuracy": 94.619
+			},
+			"usps-multiclass": {
+				"accuracy": 91.978
+			},
+			"ward-binary": {
+				"accuracy": 95.287
+			}
+		}
+	},
+	"protonn": {
+		"int16": {
+			"cifar-binary": {
+				"sf": -6,
+				"accuracy": 75.4
+			},
+			"cr-binary": {
+				"sf": -2,
+				"accuracy": 70.785
+			},
+			"cr-multiclass": {
+				"sf": -6,
+				"accuracy": 31.593
+			},
+			"curet-multiclass": {
+				"sf": -2,
+				"accuracy": 50.463
+			},
+			"letter-multiclass": {
+				"sf": -6,
+				"accuracy": 76.72
+			},
+			"mnist-binary": {
+				"sf": -6,
+				"accuracy": 94.28
+			},
+			"mnist-multiclass": {
+				"sf": -6,
+				"accuracy": 91.44
+			},
+			"usps-binary": {
+				"sf": -6,
+				"accuracy": 94.17
+			},
+			"usps-multiclass": {
+				"sf": -1,
+				"accuracy": 91.978
+			},
+			"ward-binary": {
+				"sf": -2,
+				"accuracy": 94.2
+			}
+		},
+		"int32": {
+			"cifar-binary": {
+				"sf": 0,
+				"accuracy": 76.46
+			},
+			"cr-binary": {
+				"sf": 0,
+				"accuracy": 73.171
+			},
+			"cr-multiclass": {
+				"sf": 0,
+				"accuracy": 32.846
+			},
+			"curet-multiclass": {
+				"sf": 0,
+				"accuracy": 54.455
+			},
+			"letter-multiclass": {
+				"sf": 0,
+				"accuracy": 84.06
+			},
+			"mnist-binary": {
+				"sf": 0,
+				"accuracy": 95.22
+			},
+			"mnist-multiclass": {
+				"sf": 0,
+				"accuracy": 92.03
+			},
+			"usps-binary": {
+				"sf": 0,
+				"accuracy": 94.32
+			},
+			"usps-multiclass": {
+				"sf": 0,
+				"accuracy": 92.576
+			},
+			"ward-binary": {
+				"sf": 0,
+				"accuracy": 94.925
+			}
+		},
+		"float32": {
+			"cifar-binary": {
+				"accuracy": 76.45
+			},
+			"cr-binary": {
+				"accuracy": 72.906
+			},
+			"cr-multiclass": {
+				"accuracy": 32.742
+			},
+			"curet-multiclass": {
+				"accuracy": 54.526
+			},
+			"letter-multiclass": {
+				"accuracy": 84.02
+			},
+			"mnist-binary": {
+				"accuracy": 95.21
+			},
+			"mnist-multiclass": {
+				"accuracy": 92.06
+			},
+			"usps-binary": {
+				"accuracy": 94.27
+			},
+			"usps-multiclass": {
+				"accuracy": 92.526
+			},
+			"ward-binary": {
+				"accuracy": 94.873
+			}
+		}
+	},
+	"lenet": {
+		"int16": {
+			"cifar-10": {
+				"sf": -8,
+				"accuracy": 64.98
+			}
+		},
+		"int32": {
+			"cifar-10": {
+				"sf": -24,
+				"accuracy": 67.430
+			}
+		},
+		"float32": {
+			"cifar-10": {
+				"accuracy": 67.430
+			}
+		}
+	}
+}

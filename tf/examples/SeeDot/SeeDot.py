@@ -6,18 +6,19 @@ import datetime
 from distutils.dir_util import copy_tree
 import os
 import shutil
+import sys
 import operator
 import tempfile
 import traceback
 
 sys.path.insert(0, '../../')
 
-from Converter.Converter import Converter
+from edgeml.tools.seedot.converter.converter import Converter
 
-import Common
-from Compiler import Compiler
-from Predictor import Predictor
-import Util
+import edgeml.tools.seedot.common as Common
+from edgeml.tools.seedot.compiler import Compiler
+from edgeml.tools.seedot.predictor import Predictor
+import edgeml.tools.seedot.util as Util
 
 
 class MainDriver:

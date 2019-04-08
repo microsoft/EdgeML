@@ -1,17 +1,20 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
 
 import argparse
 import datetime
+from itertools import product
 import json
 import os
-from itertools import product
+import sys
 import tempfile
 
 sys.path.insert(0, '../../')
 
-import Common
-from Compiler import Compiler
-from SeeDot import Main
-import Util
+import edgeml.tools.seedot.common as Common
+from edgeml.tools.seedot.compiler import Compiler
+from edgeml.tools.seedot.seedot import Main
+import edgeml.tools.seedot.util as Util
 
 
 class Dataset:
