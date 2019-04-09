@@ -13,15 +13,10 @@ import edgeml.tools.seedot.ast.astBuilder as ASTBuilder
 from edgeml.tools.seedot.ast.printAST import PrintAST
 
 from edgeml.tools.seedot.codegen.arduino import Arduino as ArduinoCodegen
-from edgeml.tools.seedot.codegen.hls import Hls as HlsCodegen
-from edgeml.tools.seedot.codegen.verilog import Verilog as VerilogCodegen
 from edgeml.tools.seedot.codegen.x86 import X86 as X86Codegen
 
 from edgeml.tools.seedot.ir.irBuilder import IRBuilder
 import edgeml.tools.seedot.ir.irUtil as IRUtil
-
-from edgeml.tools.seedot.ir.irGen.arduino import Arduino as ArduinoIRGen
-from edgeml.tools.seedot.ir.irGen.hls import Hls as HlsIRGen
 
 from edgeml.tools.seedot.type import InferType
 from edgeml.tools.seedot.util import *

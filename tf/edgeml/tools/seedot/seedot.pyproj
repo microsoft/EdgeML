@@ -44,8 +44,6 @@
     </Compile>
     <Compile Include="codegen\arduino.py" />
     <Compile Include="codegen\codegenBase.py" />
-    <Compile Include="codegen\hls.py" />
-    <Compile Include="codegen\verilog.py" />
     <Compile Include="codegen\x86.py" />
     <Compile Include="codegen\__init__.py">
       <SubType>Code</SubType>

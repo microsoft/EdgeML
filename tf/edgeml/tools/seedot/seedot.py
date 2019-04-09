@@ -55,7 +55,7 @@ class Main:
             obj.run()
         except:
             print("failed!\n")
-            traceback.print_exc()
+            #traceback.print_exc()
             return False
 
         print("completed")

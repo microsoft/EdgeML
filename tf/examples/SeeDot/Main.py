@@ -141,8 +141,6 @@ class MainDriver:
 
             if algo == Common.Algo.Bonsai:
                 modelDir = os.path.join(modelDir, "BonsaiResults", "Params")
-            elif algo == Common.Algo.Lenet:
-                modelDir = os.path.join(modelDir, "LenetModel")
             else:
                 modelDir = os.path.join(modelDir, "ProtoNNResults")
 
