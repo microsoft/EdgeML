@@ -68,20 +68,6 @@ def forArduino():
     return getTarget() == Common.Target.Arduino
 
 
-def forHls():
-    return getTarget() == Common.Target.Hls
-
-# set number of workers for FPGA sparseMUL
-
-
-def setNumWorkers(WorkerThreads):
-    Config.numWorkers = WorkerThreads
-
-
-def getNumWorkers():
-    return Config.numWorkers
-
-
 def getDatasetOutputDir():
     return Config.datasetOuputDir
 
@@ -434,18 +420,6 @@ def writeVars(vars: dict, fileName: str):
                 file.write(("const %s %s = " + formatSpecifier + ";\n") %
                            ("int", key, vars[key]))
         file.write("\n")
-
-
-def writeVarsFpga(vars: dict, fileName: str):
-    file = open(fileName, "w")
-    dpath = '''"../fpga/output/lut/"'''
-    file.write(
-        "`ifndef CUSTOM_TYPES_SV_INCLUDED \n `define CUSTOM_TYPES_SV_INCLUDED \n")
-    file.write("`define dpath %s \n" % (dpath))
-    for key in vars:
-        file.write("localparam " + key + '\t = \t' + str(vars[key]) + ";\n")
-    file.write("`endif\n")
-    file.close()
 
 
 def matMul(X, Y):

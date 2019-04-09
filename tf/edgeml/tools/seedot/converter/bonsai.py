@@ -179,8 +179,6 @@ class Bonsai:
         self.transformModel()
         self.computeModelSize()
         self.writeModel()
-        if forHls():
-            self.writeModelForHls()
 
     def run(self):
         if getVersion() == Common.Version.Float:
@@ -191,8 +189,6 @@ class Bonsai:
                 getOutputDir(), "seedot_fixed_model.h")
         self.inputFile = os.path.join(getOutputDir(), "input.sd")
         self.infoFile = os.path.join(getOutputDir(), "info.txt")
-        self.fpgaFile = os.path.join(getOutputDir(), "CustomTypes.sv")
-        self.LUTdir = os.path.join(getOutputDir(), "lut")
 
         open(self.headerFile, 'w').close()
         open(self.infoFile, 'w').close()
@@ -338,28 +334,6 @@ class BonsaiFixed(Bonsai):
 
         self.writeFooter()
 
-    def writeModelForHls(self):
-        # Reformat Z_idx and Z_val to work with worker threads of SparseMul
-        if useSparseMat():
-            Z_transp = matTranspose(self.Z)
-            Zval, Zidx = convertToSparse(Z_transp)
-        numWorkers = getNumWorkers()
-        numJobs = self.D
-        jobsPerThread = int((numJobs - (numJobs * (0.25))) // numWorkers)
-        extraJobs = numJobs - (jobsPerThread * numWorkers)
-        maxJobSize = jobsPerThread + extraJobs
-        totVal = len(Zidx)
-
-        SpDict = {}
-        SpDict, maxJobSize, maxJobLen, offsetDict, indexDict, maxIndex = transformZ_offsetGen(
-            Zidx, Zval, self.D, "Z")
-        writeListsAsLUTs(SpDict, self.LUTdir)
-        writeListsAsLUTs(offsetDict, self.LUTdir)
-        varDict = {'WIDTH': 16, 'D': self.D, 'd': self.d, 'NUM_THREADS': numWorkers, 'JOBS_PER_THREAD': jobsPerThread,
-                   'COMMON_JOB_CNT': extraJobs, 'TOT_VAL': totVal, 'maxIndex': maxIndex, 'H_1': Common.H_1, 'shr1': Common.shr1, 'shr2': Common.shr2}
-        varDict.update(indexDict)
-        writeVarsFpga(varDict, self.fpgaFile)
-
 
 class BonsaiFloat(Bonsai):
 
@@ -413,6 +387,3 @@ class BonsaiFloat(Bonsai):
         writeListsAsArray(lists, self.headerFile)
         writeMatsAsArray(mats, self.headerFile)
         self.writeFooter()
-
-    def writeModelForHls(self):
-        pass

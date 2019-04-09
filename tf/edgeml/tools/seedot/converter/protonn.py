@@ -174,8 +174,6 @@ class Protonn:
         self.transformModel()
         self.computeModelSize()
         self.writeModel()
-        if forHls():
-            self.writeModelForHls()
 
     def run(self):
         if getVersion() == Common.Version.Float:
@@ -186,8 +184,6 @@ class Protonn:
                 getOutputDir(), "seedot_fixed_model.h")
         self.inputFile = os.path.join(getOutputDir(), "input.sd")
         self.infoFile = os.path.join(getOutputDir(), "info.txt")
-        self.fpgaFile = os.path.join(getOutputDir(), "CustomTypes.sv")
-        self.LUTdir = os.path.join(getOutputDir(), "lut")
 
         open(self.headerFile, 'w').close()
         open(self.infoFile, 'w').close()
@@ -310,28 +306,6 @@ class ProtonnFixed(Protonn):
 
         self.writeFooter()
 
-    def writeModelForHls(self):
-        # Reformat Z_idx and Z_val to work with worker threads of SparseMul
-        if useSparseMat():
-            W_transp = matTranspose(self.W)
-            Wval, Widx = convertToSparse(W_transp)
-        numWorkers = getNumWorkers()
-        numJobs = self.D
-        jobsPerThread = int((numJobs - (numJobs * (0.25))) // numWorkers)
-        extraJobs = numJobs - (jobsPerThread * numWorkers)
-        maxJobSize = jobsPerThread + extraJobs
-        totVal = len(Widx)
-
-        SpDict = {}
-        SpDict, maxJobSize, maxJobLen, offsetDict, indexDict, maxIndex = transformZ_offsetGen(
-            Widx, Wval, self.D, "W")
-        writeListsAsLUTs(SpDict, self.LUTdir)
-        writeListsAsLUTs(offsetDict, self.LUTdir)
-        varDict = {'WIDTH': 16, 'D': self.D, 'd': self.d, 'NUM_THREADS': numWorkers,
-                   'JOBS_PER_THREAD': jobsPerThread, 'COMMON_JOB_CNT': extraJobs, 'TOT_VAL': totVal, 'maxIndex': maxIndex}
-        varDict.update(indexDict)
-        writeVarsFpga(varDict, self.fpgaFile)
-
 
 class ProtonnFloat(Protonn):
 
@@ -387,6 +361,3 @@ class ProtonnFloat(Protonn):
         writeListsAsArray(lists, self.headerFile)
         writeMatsAsArray(mats, self.headerFile)
         self.writeFooter()
-
-    def writeModelForHls(self):
-        pass

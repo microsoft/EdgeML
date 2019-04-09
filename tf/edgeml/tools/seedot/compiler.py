@@ -61,10 +61,6 @@ class Compiler:
 
         if forArduino():
             codegen = ArduinoCodegen(writer, *state)
-        elif forHls():
-            codegen = HlsCodegen(writer, *state)
-        elif forVerilog():
-            codegen = VerilogCodegen(writer, *state)
         elif forX86():
             codegen = X86Codegen(writer, *state)
         else:
@@ -94,8 +90,6 @@ class Compiler:
 
         if forArduino() or forX86():
             compiler = ArduinoIRGen()
-        elif forHls():
-            compiler = HlsIRGen()
         else:
             assert False
 

@@ -48,8 +48,6 @@ class DatasetType:
 
 class Target:
     Arduino = "arduino"
-    Hls = "hls"
-    Verilog = "verilog"
     X86 = "x86"
     Default = Arduino
-    All = [Arduino, Hls, Verilog, X86]
+    All = [Arduino, X86]

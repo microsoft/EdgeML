@@ -295,13 +295,9 @@ class Prog:
 
 class DataType:
     intType = {Common.Target.Arduino: {8: np.int8, 16: np.int16, 32: np.int32, 64: np.int64},
-               Common.Target.Hls: {8: np.int8, 16: np.int16, 32: np.int32, 64: np.int64},
-               Common.Target.Verilog: {8: np.int8, 16: np.int16, 32: np.int32, 64: np.int64},
                Common.Target.X86: {8: np.int8, 16: np.int16, 32: np.int32, 64: np.int64}
                }
     intStr = {Common.Target.Arduino: 'MYINT',
-              Common.Target.Hls: 'MYINT',
-              Common.Target.Verilog: 'MYINT',
               Common.Target.X86: 'MYINT'
               }
     floatStr = "float"

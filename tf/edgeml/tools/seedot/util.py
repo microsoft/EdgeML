@@ -40,14 +40,6 @@ def forArduino():
     return Config.target == Common.Target.Arduino
 
 
-def forHls():
-    return Config.target == Common.Target.Hls
-
-
-def forVerilog():
-    return Config.target == Common.Target.Verilog
-
-
 def forX86():
     return Config.target == Common.Target.X86
 
@@ -93,16 +85,6 @@ def copy_dict(dict_src: dict, diff={}):
     dict_res = dict(dict_src)
     dict_res.update(diff)
     return dict_res
-
-# set number of workers for FPGA sparseMUL
-
-
-def setNumWorkers(WorkerThreads):
-    Config.numWorkers = WorkerThreads
-
-
-def getNumWorkers():
-    return Config.numWorkers
 
 # z = [y1,y2,..] = [[x1,..], [x2,..], ..] --> [x1,.., x2,.., ..]
 
