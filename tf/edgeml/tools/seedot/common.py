@@ -5,7 +5,7 @@
 # bytes)
 wordLength = 16
 
-inputFileType = "tsv"
+inputFileType = "npy"
 
 # Range of max scale factor used for exploration
 maxScaleRange = 0, -wordLength

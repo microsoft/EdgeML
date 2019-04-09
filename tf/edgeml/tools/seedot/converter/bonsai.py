@@ -38,13 +38,13 @@ class Bonsai:
         self.W = readFileAsMat(os.path.join(getModelDir(), "W"), "\t", float)
         self.V = readFileAsMat(os.path.join(getModelDir(), "V"), "\t", float)
         self.T = readFileAsMat(os.path.join(
-            getModelDir(), "Theta"), "\t", float)
+            getModelDir(), "T"), "\t", float)
         self.Sigma = readFileAsMat(os.path.join(
             getModelDir(), "Sigma"), "\t", float)
         self.Mean = readFileAsMat(os.path.join(
             getModelDir(), "Mean"), "\t", float)
         self.Variance = readFileAsMat(os.path.join(
-            getModelDir(), "Variance"), "\t", float)
+            getModelDir(), "Std"), "\t", float)
 
     def validateModel(self):
         Z_m, Z_n = matShape(self.Z)

@@ -26,7 +26,6 @@
     <Folder Include="codegen\" />
     <Folder Include="converter\" />
     <Folder Include="ir\" />
-    <Folder Include="ir\irGen\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="antlr\seedotLexer.py" />
@@ -60,13 +59,6 @@
     </Compile>
     <Compile Include="ir\ir.py" />
     <Compile Include="ir\irBuilder.py" />
-    <Compile Include="ir\irGen\arduino.py" />
-    <Compile Include="ir\irGen\hls.py" />
-    <Compile Include="ir\irGen\irGenBase.py" />
-    <Compile Include="ir\irGen\resourceEstimation.py" />
-    <Compile Include="ir\irGen\__init__.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="ir\irUtil.py" />
     <Compile Include="ir\__init__.py">
       <SubType>Code</SubType>

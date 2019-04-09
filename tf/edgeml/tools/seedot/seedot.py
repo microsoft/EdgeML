@@ -21,7 +21,9 @@ import edgeml.tools.seedot.util as Util
 class Main:
 
     def __init__(self, algo, version, target, trainingFile, testingFile, modelDir, sf, workers):
-        self.algo, self.version, self.target, self.trainingFile, self.testingFile, self.modelDir, self.sf, self.numWorkers = algo, version, target, trainingFile, testingFile, modelDir, sf, workers
+        self.algo, self.version, self.target = algo, version, target
+        self.trainingFile, self.testingFile, self.modelDir = trainingFile, testingFile, modelDir
+        self.sf, self.numWorkers = sf, workers
         self.accuracy = {}
 
     def setup(self):

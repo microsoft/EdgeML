@@ -2,6 +2,7 @@
 # Licensed under the MIT license.
 
 import math
+import numpy as np
 import os
 from sklearn.datasets import load_svmlight_file
 
@@ -118,6 +119,14 @@ def usingTSV():
     return Common.inputFileType == "tsv"
 
 
+def usingCSV():
+    return Common.inputFileType == "csv"
+
+
+def usingNPY():
+    return Common.inputFileType == "npy"
+
+
 def dumpDataset():
     return Config.dumpDataset
 
@@ -191,8 +200,12 @@ def readXandY(useTrainingSet=False):
         return readXandYasLibSVM(useTrainingSet)
     elif usingTSV():
         return readXandYasTSV(useTrainingSet)
-    else:
+    elif usingCSV():
         return readXandYasCSV(useTrainingSet)
+    elif usingNPY():
+        return readXandYasNPY(useTrainingSet)
+    else:
+        assert False
 
 
 def readXandYasLibSVM(trainingDataset):
@@ -261,9 +274,22 @@ def readXandYasCSV(trainingDataset):
         Y = readFileAsMat(os.path.join(Config.testingFile, "Y.csv"), ", ", int)
     return X, Y
 
+
+def readXandYasNPY(trainingDataset):
+    '''
+    In TSV format, the input is a file containing tab seperated values.
+    In each row of the TSV file, the class ID will be the first entry followed by the feature vector of the data point
+    The file is initially read as a matrix and later X and Y are extracted
+    '''
+    if trainingDataset == True or usingTrainingDataset() == True:
+        mat = np.load(Config.trainingFile).tolist()
+    else:
+        mat = np.load(Config.testingFile).tolist()
+    X, Y = extractXandYfromMat(mat)
+    return X, Y
+
+
 # Parse the file using the delimited and store it as a matrix
-
-
 def readFileAsMat(fileName: str, delimiter: str, dataType):
     mat = []
     rowLength = -1
