@@ -21,8 +21,7 @@ class Dataset:
     Common = ["cifar-binary", "cr-binary", "cr-multiclass", "curet-multiclass",
               "letter-multiclass", "mnist-binary", "mnist-multiclass",
               "usps-binary", "usps-multiclass", "ward-binary"]
-    Extra = ["cifar-10", "eye-binary", "farm-beats",
-             "interactive-cane", "whale-binary"]
+    Extra = ["eye-binary", "whale-binary"]
     Default = Common
     All = Common + Extra
 
@@ -121,16 +120,16 @@ class MainDriver:
                   (algo, version, dataset, target))
             print("========================================\n")
 
-            datasetDir = os.path.join("datasets", "datasets", dataset)
-            modelDir = os.path.join("model", dataset)
+            datasetDir = os.path.join("..", "datasets", dataset)
+            modelDir = os.path.join("..", "model", dataset)
 
             if algo == Common.Algo.Bonsai:
                 modelDir = os.path.join(modelDir, "BonsaiResults", "Params")
             else:
                 modelDir = os.path.join(modelDir, "ProtoNNResults")
 
-            trainingInput = os.path.join(datasetDir, "training-full.tsv")
-            testingInput = os.path.join(datasetDir, "testing.tsv")
+            trainingInput = os.path.join(datasetDir, "train.npy")
+            testingInput = os.path.join(datasetDir, "test.npy")
 
             try:
                 if version == Common.Version.Float:
@@ -158,7 +157,7 @@ class MainDriver:
                 sf = self.args.max_scale_factor
 
             obj = Main(algo, version, target, trainingInput,
-                       testingInput, modelDir, sf, self.args.workers)
+                       testingInput, modelDir, sf)
             obj.run()
 
             acc = obj.testingAccuracy
@@ -185,7 +184,7 @@ class MainDriver:
 
             outputFile = os.path.join(outputDir, algo + "-fixed.cpp")
             obj = Compiler(algo, target, inputFile, outputFile,
-                           profileLogFile, self.args.max_scale_factor, self.args.workers)
+                           profileLogFile, self.args.max_scale_factor)
             obj.run()
 
     def runConverterDriver(self):
@@ -199,8 +198,8 @@ class MainDriver:
                 "Converter", "output", algo + "-" + version + "-" + datasetType, dataset)
             os.makedirs(outputDir, exist_ok=True)
 
-            datasetDir = os.path.join("datasets", "datasets", dataset)
-            modelDir = os.path.join("model", dataset)
+            datasetDir = os.path.join("..", "datasets", dataset)
+            modelDir = os.path.join("..", "model", dataset)
 
             if algo == Common.Algo.Bonsai:
                 modelDir = os.path.join(modelDir, "BonsaiResults", "Params")
@@ -209,11 +208,11 @@ class MainDriver:
             else:
                 modelDir = os.path.join(modelDir, "ProtoNNResults")
 
-            trainingInput = os.path.join(datasetDir, "training-full.tsv")
-            testingInput = os.path.join(datasetDir, "testing.tsv")
+            trainingInput = os.path.join(datasetDir, "train.npy")
+            testingInput = os.path.join(datasetDir, "test.npy")
 
             obj = Converter(algo, version, datasetType, target,
-                            outputDir, outputDir, self.args.workers)
+                            outputDir, outputDir)
             obj.setInput(modelDir, "tsv", trainingInput, testingInput)
             obj.run()
 
@@ -238,8 +237,8 @@ class MainDriver:
             os.makedirs(datasetOutputDir, exist_ok=True)
             os.makedirs(outputDir, exist_ok=True)
 
-            datasetDir = os.path.join("datasets", "datasets", dataset)
-            modelDir = os.path.join("model", dataset)
+            datasetDir = os.path.join("..", "datasets", dataset)
+            modelDir = os.path.join("..", "model", dataset)
 
             if algo == Common.Algo.Bonsai:
                 modelDir = os.path.join(modelDir, "BonsaiResults", "Params")
@@ -248,11 +247,11 @@ class MainDriver:
             else:
                 modelDir = os.path.join(modelDir, "ProtoNNResults")
 
-            trainingInput = os.path.join(datasetDir, "training-full.tsv")
-            testingInput = os.path.join(datasetDir, "testing.tsv")
+            trainingInput = os.path.join(datasetDir, "train.npy")
+            testingInput = os.path.join(datasetDir, "test.npy")
 
             obj = Converter(algo, version, datasetType, Common.Target.X86,
-                            datasetOutputDir, outputDir, self.args.workers)
+                            datasetOutputDir, outputDir)
             obj.setInput(modelDir, "tsv", trainingInput, testingInput)
             obj.run()
 

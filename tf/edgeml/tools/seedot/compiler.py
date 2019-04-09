@@ -25,13 +25,12 @@ from edgeml.tools.seedot.writer import Writer
 
 class Compiler:
 
-    def __init__(self, algo, target, inputFile, outputFile, profileLogFile, maxExpnt, numWorkers):
+    def __init__(self, algo, target, inputFile, outputFile, profileLogFile, maxExpnt):
         if os.path.isfile(inputFile) == False:
             raise Exception("Input file doesn't exist")
 
         setAlgo(algo)
         setTarget(target)
-        setNumWorkers(numWorkers)
         self.input = FileStream(inputFile)
         self.outputFile = outputFile
         setProfileLogFile(profileLogFile)

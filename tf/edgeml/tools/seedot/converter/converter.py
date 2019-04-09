@@ -14,12 +14,11 @@ import edgeml.tools.seedot.common as Common
 
 class Converter:
 
-    def __init__(self, algo, version, datasetType, target, datasetOutputDir, outputDir, workers):
+    def __init__(self, algo, version, datasetType, target, datasetOutputDir, outputDir):
         setAlgo(algo)
         setVersion(version)
         setDatasetType(datasetType)
         setTarget(target)
-        setNumWorkers(workers)
 
         # Set output directories
         setDatasetOutputDir(datasetOutputDir)

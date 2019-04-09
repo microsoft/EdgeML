@@ -20,10 +20,10 @@ import edgeml.tools.seedot.util as Util
 
 class Main:
 
-    def __init__(self, algo, version, target, trainingFile, testingFile, modelDir, sf, workers):
+    def __init__(self, algo, version, target, trainingFile, testingFile, modelDir, sf):
         self.algo, self.version, self.target = algo, version, target
         self.trainingFile, self.testingFile, self.modelDir = trainingFile, testingFile, modelDir
-        self.sf, self.numWorkers = sf, workers
+        self.sf = sf
         self.accuracy = {}
 
     def setup(self):
@@ -53,7 +53,7 @@ class Main:
 
         try:
             obj = Compiler(self.algo, target, inputFile,
-                           outputFile, profileLogFile, sf, self.numWorkers)
+                           outputFile, profileLogFile, sf)
             obj.run()
         except:
             print("failed!\n")
@@ -84,7 +84,7 @@ class Main:
 
         try:
             obj = Converter(self.algo, version, datasetType, target,
-                            datasetOutputDir, outputDir, self.numWorkers)
+                            datasetOutputDir, outputDir)
             obj.setInput(self.modelDir, self.trainingFile, self.testingFile)
             obj.run()
         except Exception as e:
