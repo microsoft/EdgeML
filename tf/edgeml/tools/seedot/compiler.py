@@ -70,10 +70,7 @@ class Compiler:
         writer.close()
 
     def compile(self, ast):
-        if genFuncCalls():
-            return self.genCodeWithFuncCalls(ast)
-        else:
-            return self.genCodeWithoutFuncCalls(ast)
+        return self.genCodeWithFuncCalls(ast)
 
     def genCodeWithFuncCalls(self, ast):
 
@@ -82,19 +79,5 @@ class Compiler:
         res = compiler.visit(ast)
 
         state = compiler.decls, compiler.scales, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.globalVars
-
-        return res, state
-
-    def genCodeWithoutFuncCalls(self, ast):
-
-        if forArduino() or forX86():
-            compiler = ArduinoIRGen()
-        else:
-            assert False
-
-        prog, expr,	decls, scales, intvs, cnsts = compiler.visit(ast)
-
-        res = prog, expr
-        state = decls, scales, intvs, cnsts, compiler.expTables, compiler.VAR_IDF_INIT
 
         return res, state

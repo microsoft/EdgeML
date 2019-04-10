@@ -29,9 +29,8 @@ def getAlgo():
 def setAlgo(algo: str):
     Config.algo = algo
 
+
 # Fixed-point or float-point
-
-
 def getVersion():
     return Config.version
 
@@ -39,9 +38,8 @@ def getVersion():
 def setVersion(version: str):
     Config.version = version
 
+
 # training or testing dataset
-
-
 def getDatasetType():
     return Config.datasetType
 
@@ -53,9 +51,8 @@ def setDatasetType(datasetType: str):
 def usingTrainingDataset():
     return getDatasetType() == Common.DatasetType.Training
 
+
 # Arduino code or desktop code (aka plain C++ code)
-
-
 def getTarget():
     return Config.target
 
@@ -148,9 +145,8 @@ def meanVarNorm():
 def getMaxInt():
     return (2 ** (Common.wordLength - 1)) - 1
 
+
 # Format specifiers for various datatypes
-
-
 def getDataType(num):
     if isinstance(num, int):
         return 'MYINT', '%d'
@@ -299,9 +295,8 @@ def readFileAsMat(fileName: str, delimiter: str, dataType):
             mat.append(row)
     return mat
 
+
 # Write the matrix as a CSV file
-
-
 def writeMatAsCSV(mat, fileName: str):
     m, n = matShape(mat)
     _, formatSpecifier = getDataType(mat[0][0])
@@ -469,17 +464,15 @@ def convertToSparse(mat):
 
     return matVal, matIdx
 
+
 # Custom function to compute the maximum scaling factor which can fit M
 # into an integer of Common.wordLength length
-
-
 def computeScale(m, M):
     maxAbs = max(abs(m), abs(M))
     return int(math.ceil(math.log2(maxAbs) - math.log2((1 << (Common.wordLength - 2)) - 1)))
 
+
 # Scaling the matrix using the scaling factor computed
-
-
 def scaleMat(mat, scale=None):
     if scale == None:
         scale = computeScale(*matRange(mat))
@@ -489,9 +482,8 @@ def scaleMat(mat, scale=None):
 
     return scaledMat, scale
 
+
 # Scaling an array using the scaling factor computed
-
-
 def scaleList(list, scale=None):
     if scale == None:
         scale = computeScale(*listRange(list))
@@ -500,10 +492,9 @@ def scaleList(list, scale=None):
 
     return scaledList, scale
 
+
 # Remove some data points in X whose value is an outlier compared to the
 # distribution of X
-
-
 def trimMatrix(X, Y=None):
     # The matrix is trimmed only if the range of the matrix is more than this threshold
     # Used to skip trimming when the range is already low
@@ -539,73 +530,3 @@ def trimMatrix(X, Y=None):
                 Y_trim.append(Y[i])
 
     return X_trim, Y_trim
-
-# transpose Zidx and Zval to work with worker threads
-
-
-def transformZ_offsetGen(Zidx, Zval, numJobs, name):
-    numWorkers = getNumWorkers()
-    jobsPerThread = int((numJobs - (numJobs * (0.25))) // numWorkers)
-    extraJobs = numJobs - (jobsPerThread * numWorkers)
-    maxJobSize = jobsPerThread + extraJobs
-    totVal = len(Zidx)
-
-    # find max job length
-    maxJobLen, prev, curr = 0, 0, 0
-    for i in Zidx:
-        if i == 0:
-            if maxJobLen < (curr - prev):
-                maxJobLen = curr - prev
-            prev = curr
-        else:
-            curr += 1
-
-    SpDict = {}
-    offsetDict = {}
-
-    # split arrays for worker threads (NOT THE LAST ONE)
-    listidx, listval, index, indexDict = [], [], [], {}
-    id, i, count, idxId, valId, strId = 0, 0, 0, 0, 0, 0
-    for i in range(0, numWorkers):
-        count, id = 0, 0
-        while(count < jobsPerThread):
-            listidx.append(Zidx[idxId])
-            if Zidx[idxId] == 0:
-                listval.append(0)
-                count += 1
-            else:
-                listval.append(Zval[valId])
-                valId += 1
-            idxId += 1
-            id += 1
-        index.append(id)
-        indexDict.update({"index" + str(strId): id})
-        SpDict.update({name + "idx_t" + str(strId): listidx})
-        SpDict.update({name + "val_t" + str(strId): listval})
-        strId += 1
-        listidx = []
-        listval = []
-
-    # common jobs
-    id = 0
-    offsetList = []
-    # write first job index
-    offsetList.append(0)
-    while(idxId < totVal):
-        listidx.append(Zidx[idxId])
-        if Zidx[idxId] == 0:
-            listval.append(0)
-            offsetList.append(id + 1)
-        else:
-            listval.append(Zval[valId])
-            valId += 1
-        idxId += 1
-        id += 1
-
-    commonIndex = id
-    indexDict.update({"commonindex": commonIndex})
-    SpDict.update({name + "idx_t" + "_common": listidx})
-    SpDict.update({name + "val_t" + "_common": listval})
-    offsetDict.update({"offset": offsetList})
-
-    return SpDict, maxJobSize, maxJobLen, offsetDict, indexDict, max(index + [commonIndex])

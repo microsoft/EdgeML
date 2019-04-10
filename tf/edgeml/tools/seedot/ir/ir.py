@@ -262,16 +262,6 @@ class PrintAsFloat(Cmd):
         return PrintAsFloat(self.expr.subst(from_idf, to_e), self.expnt)
 
 
-class Pragmas(Cmd):
-
-    def __init__(self, msg, vital=0):
-        self.msg = msg
-        self.vital = vital
-
-    def subst(self, from_idf: str, to_e: Expr):
-        return Pragmas(self.msg, self.vital)
-
-
 class Comment(Cmd):
 
     def __init__(self, msg):

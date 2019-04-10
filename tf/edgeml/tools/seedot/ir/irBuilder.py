@@ -52,12 +52,6 @@ class IRBuilder(ASTVisitor):
         # idf of vars that need to be init'ed
         self.globalVars = []
 
-        # Global variables
-        self.decls = {}
-        self.scales = {}
-        self.intvs = {}
-        self.cnsts = {}
-
     def readProfileFile(self):
         if self.profileLoaded == True:
             return

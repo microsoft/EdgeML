@@ -163,56 +163,7 @@ def concatPrograms(*prog_l, resource=0):
         Res = Res + x.resource
     return Prog(cmd_l, resource=Res)
 
-# multiplexer
-
-
-def add_idx_priv(var: Var, e: Expr, n: int, offset: int=0) -> Expr:
-    assert n >= 1
-    # add_idx_priv_ifelse(var, e, n, offset)
-    add_idx_priv_ops(var, e, n, offset)
-
-
-def add_idx_priv_ifelse(var: Var, e: Expr, n: int, offset: int=0) -> Expr:
-    '''
-    Using if-else:
-    --------------
-    for n=3:
-    if e & 100 == 0:
-      if e & 010 == 0:
-        if e & 001 == 0: var[000]
-        else: var[001]
-      else:
-        if e & 001 == 0: var[010]
-        else: var[011]
-    else: ...
-    '''
-    mask = 1 << (n - 1)
-    expr_cmp = eq(IntBop(e, Op.Op['&'], Int(mask)), zero)
-    if n == 1:
-        return CExpr(expr_cmp, addIndex(var, [Int(offset + 0)]), addIndex(var, [Int(offset + mask)]))
-    else:
-        return CExpr(expr_cmp, add_idx_priv_ifelse(var, e, n - 1, offset + 0), add_idx_priv_ifelse(var, e, n - 1, offset + mask))
-
-
-def add_idx_priv_ops(var: Var, e: Expr, n: int, offset: int=0) -> Expr:
-    '''
-    Using *, +:
-    -----------
-    for n = 2:
-    (1-(e&10)>>1) * ((1-(e&01)>>0)*var[00] + ((e&01)>>0)*var[01]) +
-    ( (e&10)>>1) * ((1-(e&01)>>0)*var[10] + ((e&01)>>0)*var[11])
-    '''
-    mask = 1 << (n - 1)
-    expr_1 = shrUint(IntBop(e, Op.Op['&'], Int(mask)), n - 1)
-    expr_0 = sub(one, expr_1)
-    if n == 1:
-        return add(mul(expr_0, addIndex(var, [Int(offset + 0)])), mul(expr_1, addIndex(var, [Int(offset + mask)])))
-    else:
-        return add(mul(expr_0, add_idx_priv_ops(var, e, n - 1, offset + 0)), mul(expr_1, add_idx_priv_ops(var, e, n - 1, offset + mask)))
-
 # iteration
-
-
 def loop(shape: list, iters: list, cmdl_body: CmdList, factor=0) -> CmdList:
     cmdl_for = cmdl_body
     for i in reversed(range(len(shape))):

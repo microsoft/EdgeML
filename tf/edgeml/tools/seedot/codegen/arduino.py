@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 
 '''
-Arduino backend handles the automatic sketch generation.
+Arduino backend handles the automatic Arduino sketch generation.
 It adds the appropriate header files to the sketch and makes it easy to 'compile and upload' the sketch to a device.
 Most of the routines in the base class CodegenBase are unchanged.
 '''

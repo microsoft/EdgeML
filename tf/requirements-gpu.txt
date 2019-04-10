@@ -1,3 +1,4 @@
+antlr4-python-runtime==4.7.2
 jupyter==1.0.0
 numpy==1.14.5
 pandas==0.23.4

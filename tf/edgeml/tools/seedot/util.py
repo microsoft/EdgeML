@@ -86,8 +86,7 @@ def copy_dict(dict_src: dict, diff={}):
     dict_res.update(diff)
     return dict_res
 
+
 # z = [y1,y2,..] = [[x1,..], [x2,..], ..] --> [x1,.., x2,.., ..]
-
-
 def flatten(z: list):
     return [x for y in z for x in y]

@@ -1,6 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+'''
+CodegenBase has print functions for the IR classes defined in IR.py
+'''
+
 import numpy as np
 
 import edgeml.tools.seedot.ir.ir as IR

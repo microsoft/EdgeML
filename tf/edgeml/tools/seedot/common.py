@@ -13,17 +13,12 @@ maxScaleRange = 0, -wordLength
 # tanh approximation limit
 tanh_limit = 1.0
 
-# LUT Upper bound for Artix-7
-LUTUpperBound = 0.9 * 20800
-LUTCount = 0
-
 # MSBuild location
 # Edit the path if not present at the following location
 msbuildPathOptions = [r"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe",
                       r"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe",
                       r"C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\MSBuild.exe"
                       ]
-vivadoInstallPath = r"C:\Xilinx\Vivado\2018.2\bin"
 
 
 class Algo:
