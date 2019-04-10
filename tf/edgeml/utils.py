@@ -90,6 +90,13 @@ def crossEntropyLoss(logits, label):
                                                    labels=tf.stop_gradient(label)))
 
 
+def mean_absolute_error(logits, label):
+    '''
+    Function to compute the mean absolute error.
+    '''
+    return tf.reduce_mean(tf.abs(tf.subtract(logits, label)))
+
+
 def hardThreshold(A, s):
     '''
     Hard thresholding function on Tensor A with sparsity s
@@ -282,6 +289,22 @@ def getMacroMicroFScore(cmatrix):
         denom = 1
     micro = 2 * pi * rho / denom
     return macro, micro
+
+
+def restructreMatrixBonsaiSeeDot(A, nClasses, nNodes):
+    '''
+    Restructures a matrix from [nNodes*nClasses, Proj] to 
+    [nClasses*nNodes, Proj] for SeeDot
+    '''
+    tempMatrix = np.zeros(A.shape)
+    rowIndex = 0
+
+    for i in range(0, nClasses):
+        for j in range(0, nNodes):
+            tempMatrix[rowIndex] = A[j * nClasses + i]
+            rowIndex += 1
+
+    return tempMatrix
 
 
 class GraphManager:

@@ -59,8 +59,8 @@ class FastGRNNCell(RNNCell):
 
     def __init__(self, hidden_size, gate_non_linearity="sigmoid",
                  update_non_linearity="tanh", wRank=None, uRank=None,
-                 zetaInit=1.0, nuInit=-4.0, name="FastGRNN"):
-        super(FastGRNNCell, self).__init__()
+                 zetaInit=1.0, nuInit=-4.0, name="FastGRNN", reuse=None):
+        super(FastGRNNCell, self).__init__(_reuse=reuse)
         self._hidden_size = hidden_size
         self._gate_non_linearity = gate_non_linearity
         self._update_non_linearity = update_non_linearity
@@ -74,6 +74,7 @@ class FastGRNNCell(RNNCell):
         if uRank is not None:
             self._num_weight_matrices[1] += 1
         self._name = name
+        self._reuse = reuse
 
     @property
     def state_size(self):
@@ -231,8 +232,8 @@ class FastRNNCell(RNNCell):
 
     def __init__(self, hidden_size, update_non_linearity="tanh",
                  wRank=None, uRank=None, alphaInit=-3.0, betaInit=3.0,
-                 name="FastRNN"):
-        super(FastRNNCell, self).__init__()
+                 name="FastRNN", reuse=None):
+        super(FastRNNCell, self).__init__(_reuse=reuse)
         self._hidden_size = hidden_size
         self._update_non_linearity = update_non_linearity
         self._num_weight_matrices = [1, 1]
@@ -245,6 +246,7 @@ class FastRNNCell(RNNCell):
         if uRank is not None:
             self._num_weight_matrices[1] += 1
         self._name = name
+        self._reuse = reuse
 
     @property
     def state_size(self):
