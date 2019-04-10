@@ -15,7 +15,7 @@ void BonsaiPredictor::exitWithHelp()
   LOG_INFO("-f    : [Required] Input format. Takes two values [0 and 1]. 0 is for libsvmFormat(default), 1 is for tab/space separated input.");
   LOG_INFO("-N    : [Required] Number of data points in the test data.");
   LOG_INFO("-D    : [Required] Directory of data with test.txt present in it.");
-  LOG_INFO("-M    : [Required] Directory of the Model (loadableModel and loadableMeanVar).");
+  LOG_INFO("-M    : [Required] Directory of the Model (loadableModel and loadableMeanStd).");
   exit(1);
 }
 
@@ -73,11 +73,11 @@ BonsaiPredictor::BonsaiPredictor(
   feedDataFeatureBuffer = new labelCount_t[model.hyperParams.dataDimension];
   
   mean = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
-  variance = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
+  stdDev = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
 
-  std::string meanVarFile = modelDir + "/loadableMeanVar"; 
+  std::string meanStdFile = modelDir + "/loadableMeanStd"; 
   
-  importMeanVar(meanVarFile);
+  importMeanStd(meanStdFile);
 
   testData = Data(FileIngest,
     DataFormatParams{0, 0, numTest, model.hyperParams.numClasses, model.hyperParams.dataDimension});
@@ -99,41 +99,41 @@ BonsaiPredictor::BonsaiPredictor(
   feedDataFeatureBuffer = new labelCount_t[model.hyperParams.dataDimension];
 
   mean = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
-  variance = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
+  stdDev = MatrixXuf::Zero(model.hyperParams.dataDimension, 1);
 }
 
-void BonsaiPredictor::importMeanVar(
-  std::string meanVarFile)
+void BonsaiPredictor::importMeanStd(
+  std::string meanStdFile)
 {
-  size_t meanVarSize;
-  std::ifstream infileMeanVar(meanVarFile, std::ios::in|std::ios::binary);
-  assert(infileMeanVar.is_open());
+  size_t meanStdSize;
+  std::ifstream infileMeanStd(meanStdFile, std::ios::in|std::ios::binary);
+  assert(infileMeanStd.is_open());
 
-  infileMeanVar.read((char*)&meanVarSize, sizeof(meanVarSize));
-  infileMeanVar.close();
+  infileMeanStd.read((char*)&meanStdSize, sizeof(meanStdSize));
+  infileMeanStd.close();
   
-  infileMeanVar.open(meanVarFile, std::ios::in|std::ios::binary);
+  infileMeanStd.open(meanStdFile, std::ios::in|std::ios::binary);
   
-  char* meanVarBuff = new char[meanVarSize];
-  infileMeanVar.read((char*)meanVarBuff, meanVarSize);
-  infileMeanVar.close();
+  char* meanStdBuff = new char[meanStdSize];
+  infileMeanStd.read((char*)meanStdBuff, meanStdSize);
+  infileMeanStd.close();
   
-  importMeanVar(meanVarSize, meanVarBuff);
+  importMeanStd(meanStdSize, meanStdBuff);
 }
 
-void BonsaiPredictor::importMeanVar(
+void BonsaiPredictor::importMeanStd(
   const size_t numBytes,
   const char *const fromBuffer)
 {
   size_t offset = 0;
 
-  size_t meanVarSize;
-  memcpy((void *)&meanVarSize, fromBuffer + offset, sizeof(meanVarSize));
-  offset += sizeof(meanVarSize);
+  size_t meanStdSize;
+  memcpy((void *)&meanStdSize, fromBuffer + offset, sizeof(meanStdSize));
+  offset += sizeof(meanStdSize);
   memcpy(mean.data(), fromBuffer + offset, sizeof(FP_TYPE) * mean.rows() * mean.cols());
   offset += sizeof(FP_TYPE) * mean.rows() * mean.cols();
-  memcpy(variance.data(), fromBuffer + offset, sizeof(FP_TYPE) * variance.rows() * variance.cols());
-  offset += sizeof(FP_TYPE) * variance.rows() * variance.cols();
+  memcpy(stdDev.data(), fromBuffer + offset, sizeof(FP_TYPE) * stdDev.rows() * stdDev.cols());
+  offset += sizeof(FP_TYPE) * stdDev.rows() * stdDev.cols();
 
   assert(numBytes == offset);
 }
@@ -223,9 +223,9 @@ void BonsaiPredictor::scoreSparseDataPoint(
 
   dataPoint -= mean;
 
-  //vDiv(model.hyperParams.dataDimension, dataPoint.data(), variance.data(), dataPoint.data());
+  //vDiv(model.hyperParams.dataDimension, dataPoint.data(), stdDev.data(), dataPoint.data());
   for (featureCount_t f = 0; f < model.hyperParams.dataDimension; f++) {
-    dataPoint(f, 0) /= variance(f, 0);
+    dataPoint(f, 0) /= stdDev(f, 0);
   }
 
   dataPoint(model.hyperParams.dataDimension - 1, 0) = (FP_TYPE)1.0;
@@ -245,10 +245,10 @@ void BonsaiPredictor::scoreDenseDataPoint(
 
   dataPoint = dataPoint - mean;
 
-  //vDiv(model.hyperParams.dataDimension, dataPoint.data(), variance.data(), dataPoint.data());
+  //vDiv(model.hyperParams.dataDimension, dataPoint.data(), stdDev.data(), dataPoint.data());
 
   for (featureCount_t f = 0; f < model.hyperParams.dataDimension; f++) {
-    dataPoint(f, 0) /= variance(f, 0);
+    dataPoint(f, 0) /= stdDev(f, 0);
   }
 
   dataPoint(model.hyperParams.dataDimension - 1, 0) = (FP_TYPE)1.0;

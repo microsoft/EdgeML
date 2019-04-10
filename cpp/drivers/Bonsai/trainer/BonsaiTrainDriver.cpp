@@ -27,15 +27,15 @@ int main(int argc, char **argv)
   
   auto modelBytes = trainer.getModelSize(); // This can be changed to getSparseModelSize() if you need to export sparse model
   auto model = new char[modelBytes];
-  auto meanVarBytes = trainer.getMeanVarSize();
-  auto meanVar = new char[meanVarBytes];
+  auto meanStdBytes = trainer.getMeanStdSize();
+  auto meanStd = new char[meanStdBytes];
   
   trainer.exportModel(modelBytes, model); // use exportSparseModel(...) if you need sparse model
-  trainer.exportMeanVar(meanVarBytes, meanVar);
-  trainer.getLoadableModelMeanVar(model, modelBytes, meanVar, meanVarBytes, currResultsPath);
-  trainer.dumpModelMeanVar(currResultsPath);
+  trainer.exportMeanStd(meanStdBytes, meanStd);
+  trainer.getLoadableModelMeanStd(model, modelBytes, meanStd, meanStdBytes, currResultsPath);
+  trainer.dumpModelMeanStd(currResultsPath);
   
-  delete[] model, meanVar;
+  delete[] model, meanStd;
   
   return 0;
 }

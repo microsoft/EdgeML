@@ -426,7 +426,7 @@ void EdgeML::l2Normalize(SparseMatrixuf& dataMatrix)
 void EdgeML::meanVarNormalize(
   SparseMatrixuf& dataMatrix,     //< 
   MatrixXuf& mean,                //< Initialize to vector of size numFeatures
-  MatrixXuf& variance)            //< Initialize to vector of size numFeatures
+  MatrixXuf& stdDev)            //< Initialize to vector of size numFeatures
 {
   MatrixXuf denseDataMatrix = MatrixXuf(dataMatrix);
   const Eigen::Index numDataPoints = denseDataMatrix.cols();
@@ -442,15 +442,15 @@ void EdgeML::meanVarNormalize(
   denseDataMatrix.transposeInPlace();
 
   for (Eigen::Index f = 0; f < numFeatures; f++) {
-    variance(f, 0) = (FP_TYPE)std::sqrt(dot(numDataPoints, denseDataMatrix.data() + f*numDataPoints, 1,
+    stdDev(f, 0) = (FP_TYPE)std::sqrt(dot(numDataPoints, denseDataMatrix.data() + f*numDataPoints, 1,
       denseDataMatrix.data() + f*numDataPoints, 1)
       / numDataPoints);
 
-    if (!(fabs(variance(f, 0)) < (FP_TYPE)1e-7)) {
-      scal(numDataPoints, (FP_TYPE)1.0 / variance(f, 0), denseDataMatrix.data() + f*numDataPoints, 1);
+    if (!(fabs(stdDev(f, 0)) < (FP_TYPE)1e-7)) {
+      scal(numDataPoints, (FP_TYPE)1.0 / stdDev(f, 0), denseDataMatrix.data() + f*numDataPoints, 1);
     }
     else {
-      variance(f, 0) = (FP_TYPE)1.0;
+      stdDev(f, 0) = (FP_TYPE)1.0;
     }
   }
 
@@ -521,14 +521,14 @@ void EdgeML::loadMinMax(
 // void EdgeML::meanVarNormalize(
 //   MatrixXuf& dataMatrix,     //< 
 //   MatrixXuf& mean,                //< Initialize to vector of size numFeatures
-//   MatrixXuf& variance)            //< Initialize to vector of size numFeatures
+//   MatrixXuf& stdDev)            //< Initialize to vector of size numFeatures
 // {
 
 //     const Eigen::Index numDataPoints = dataMatrix.cols();
 //     const Eigen::Index numFeatures = dataMatrix.rows();
 
 //     assert(mean.rows() == numFeatures);
-//     assert(variance.rows() == numFeatures);
+//     assert(stdDev.rows() == numFeatures);
 
 //     const MatrixXuf onesVec = MatrixXuf::Ones(numDataPoints, 1);
 
@@ -539,15 +539,15 @@ void EdgeML::loadMinMax(
 //     dataMatrix.transposeInPlace();
 
 //     for(featureCount_t f = 0; f < numFeatures; f++) {
-//       variance(f,0) = (FP_TYPE)std::sqrt(dot(numDataPoints, dataMatrix.data() + f*numDataPoints, 1, 
+//       stdDev(f,0) = (FP_TYPE)std::sqrt(dot(numDataPoints, dataMatrix.data() + f*numDataPoints, 1, 
 //                                                    dataMatrix.data() + f*numDataPoints, 1) 
 //                                 / numDataPoints);
 
-//       if(!(fabs(variance(f, 0)) < (FP_TYPE)1e-7)) {
-//           scal(numDataPoints, (FP_TYPE)1.0/variance(f,0), dataMatrix.data() + f*numDataPoints, 1);
+//       if(!(fabs(stdDev(f, 0)) < (FP_TYPE)1e-7)) {
+//           scal(numDataPoints, (FP_TYPE)1.0/stdDev(f,0), dataMatrix.data() + f*numDataPoints, 1);
 //       }
 //       else {
-//         variance(f, 0) = (FP_TYPE)1.0;
+//         stdDev(f, 0) = (FP_TYPE)1.0;
 //       }
 //     }
 

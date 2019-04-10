@@ -6,8 +6,8 @@
 
 
 test_file="-I usps10/test.txt"
-model_file="-M usps10/ProtoNNResults/ProtoNNTrainer_pd_15_protPerClass_0_prot_200_spW_1.000000_spZ_1.000000_spB_1.000000_gammaNumer_1.000000_normal_3_seed_42_bs_1024_it_2_ep_20/model"
-normalization_file="-n usps10/ProtoNNResults/ProtoNNTrainer_pd_15_protPerClass_0_prot_200_spW_1.000000_spZ_1.000000_spB_1.000000_gammaNumer_1.000000_normal_3_seed_42_bs_1024_it_2_ep_20/minMaxParams"
+model_file="-M usps10/ProtoNNResults/ProtoNNTrainer_pd_15_protPerClass_0_prot_200_spW_1.000000_spZ_1.000000_spB_1.000000_gammaNumer_1.000000_normal_3_seed_42_bs_1024_it_20_ep_20/model"
+normalization_file="-n usps10/ProtoNNResults/ProtoNNTrainer_pd_15_protPerClass_0_prot_200_spW_1.000000_spZ_1.000000_spB_1.000000_gammaNumer_1.000000_normal_3_seed_42_bs_1024_it_20_ep_20/minMaxParams"
 output_dir="-O usps10/ProtoNNResults"
 input_format="-F 0"
 ntest="-e 2007"

@@ -14,7 +14,7 @@ BONSAI_DIR=$(SOURCE_DIR)/Bonsai
 IFLAGS = -I eigen/ -I$(MKL_ROOT)/include \
 	 -I$(COMMON_DIR) -I$(PROTONN_DIR) -I$(BONSAI_DIR)
 
-all: ProtoNNTrain ProtoNNPredict BonsaiTrain BonsaiPredict #ProtoNNIngestTest BonsaiIngestTest 
+all: ProtoNNTrain ProtoNNPredict BonsaiTrain BonsaiPredict Bonsai #ProtoNNIngestTest BonsaiIngestTest 
 
 libcommon.so: $(COMMON_INCLUDES)
 	$(MAKE) -C $(SOURCE_DIR)/common
@@ -30,6 +30,9 @@ ProtoNNTrainDriver.o:
 
 ProtoNNPredictDriver.o:
 	$(MAKE) -C $(DRIVER_DIR)/ProtoNN/predictor
+
+BonsaiLocalDriver.o:
+	$(MAKE) -C $(DRIVER_DIR)/Bonsai/local
 
 BonsaiTrainDriver.o:
 	$(MAKE) -C $(DRIVER_DIR)/Bonsai/trainer
@@ -48,8 +51,8 @@ ProtoNNPredict: ProtoNNPredictDriver.o libcommon.so libProtoNN.so
 #ProtoNNIngestTest: ProtoNNIngestTest.o libcommon.so libProtoNN.so
 #	$(CC) -o $@ $^ $(CFLAGS) $(MKL_PAR_LDFLAGS) $(CILK_LDFLAGS)
 
-#Bonsai: BonsaiLocalDriver.o libcommon.so libBonsai.so
-#	$(CC) -o $@ $^ $(CFLAGS) $(MKL_SEQ_LDFLAGS) $(CILK_LDFLAGS)
+Bonsai: BonsaiLocalDriver.o libcommon.so libBonsai.so
+	$(CC) -o $@ $^ $(CFLAGS) $(MKL_SEQ_LDFLAGS) $(CILK_LDFLAGS)
 
 BonsaiTrain: BonsaiTrainDriver.o libcommon.so libBonsai.so
 	$(CC) -o $@ $^ $(CFLAGS) $(MKL_SEQ_LDFLAGS) $(CILK_LDFLAGS)
