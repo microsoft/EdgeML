@@ -1,6 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+'''
+PrintAST can be used to print the generated AST for a given SeeDot program.
+'''
+
 from edgeml.tools.seedot.antlr.seedotParser import seedotParser as SeeDotParser
 
 import edgeml.tools.seedot.ast.ast as AST

@@ -21,9 +21,8 @@ class Dataset:
     Common = ["cifar-binary", "cr-binary", "cr-multiclass", "curet-multiclass",
               "letter-multiclass", "mnist-binary", "mnist-multiclass",
               "usps-binary", "usps-multiclass", "ward-binary"]
-    Extra = ["eye-binary", "whale-binary"]
     Default = Common
-    All = Common + Extra
+    All = Common
 
 
 class MainDriver:

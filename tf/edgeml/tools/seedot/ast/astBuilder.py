@@ -1,6 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+'''
+ASTBuilder creates the AST for a given SeeDot program.
+'''
+
 from edgeml.tools.seedot.antlr.seedotParser import seedotParser as SeeDotParser
 from edgeml.tools.seedot.antlr.seedotVisitor import seedotVisitor as SeeDotVisitor
 

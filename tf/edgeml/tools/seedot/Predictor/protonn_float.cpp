@@ -32,16 +32,6 @@ int protonnFloat(float *X) {
 		updateRange(X[i]);
 #endif
 		float input = X[i];
-		/*
-		// Read each feature
-		while (!Serial.available())
-		;
-
-		Serial.readBytes(buff, 8);
-
-		float input = atof(buff);
-		*/
-		//float input = pgm_read_float_near(&X[i]);
 
 #if P_SPARSE_W
 		index = Widx[ite_idx];

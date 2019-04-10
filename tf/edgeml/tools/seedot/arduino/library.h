@@ -8,6 +8,9 @@
 #include "config.h"
 #include "predict.h"
 
+// This file contains implementations of the linear algebra operators supported by SeeDot.
+// Each function takes the scaling factors as arguments along with the pointers to the operands.
+
 // C = A + B
 inline __attribute__((always_inline)) void MatAdd(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYINT i = 0; i < I; i++) {

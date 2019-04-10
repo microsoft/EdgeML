@@ -24,16 +24,6 @@ int bonsaiFloat(float *X) {
 	// Dimensionality reduction
 	for (MYINT i = 0; i < D; i++) {
 		float input = X[i];
-		/*
-		// Read each feature
-		while (!Serial.available())
-			;
-
-		Serial.readBytes(buff, 8);
-
-		float input = atof(buff);
-		*/
-		//float input = pgm_read_float_near(&X[i]);
 
 #if B_SPARSE_Z
 		index = Zidx[ite_idx];
@@ -51,9 +41,8 @@ int bonsaiFloat(float *X) {
 #endif
 	}
 
-	for (MYINT i = 0; i < d; i++) {
+	for (MYINT i = 0; i < d; i++)
 		ZX[i] -= mean[i];
-	}
 
 	MYINT currNode = 0;
 	float WZX[c], VZX[c], score[c];
@@ -91,9 +80,8 @@ int bonsaiFloat(float *X) {
 
 		// Computing theta value for branching into a child node
 		float val = 0;
-		for (MYINT i = 0; i < d; i++) {
+		for (MYINT i = 0; i < d; i++)
 			val += T[currNode][i] * ZX[i];
-		}
 
 		if (val > 0)
 			currNode = 2 * currNode + 1;

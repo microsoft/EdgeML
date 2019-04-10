@@ -1,6 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+'''
+ASTVisitor contains the dynamic dispatcher used by printAST.py
+'''
+
 import edgeml.tools.seedot.ast.ast as AST
 
 

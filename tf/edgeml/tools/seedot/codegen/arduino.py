@@ -1,6 +1,12 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+'''
+Arduino backend handles the automatic sketch generation.
+It adds the appropriate header files to the sketch and makes it easy to 'compile and upload' the sketch to a device.
+Most of the routines in the base class CodegenBase are unchanged.
+'''
+
 import numpy as np
 
 from edgeml.tools.seedot.codegen.codegenBase import CodegenBase
@@ -44,6 +50,7 @@ class Arduino(CodegenBase):
         self.out.printf('#include "model.h"\n\n', indent=True)
         self.out.printf('using namespace model;\n\n', indent=True)
 
+    # Dumps the generated look-up table for computing exponentials.
     def printExpTables(self):
         for exp, [table, [tableVarA, tableVarB]] in self.expTables.items():
             self.printExpTable(table[0], tableVarA)
@@ -64,6 +71,11 @@ class Arduino(CodegenBase):
         self.out.printf('int predict() {\n', indent=True)
         self.out.increaseIndent()
 
+    # Generate the appropriate return experssion
+    # If integer, return the integer
+    # If tensor of size 0, convert the fixed-point integer to float and return the float value.
+    # If tensor of size >0, convert the tensor to fixed-point integer, print
+    # it to the serial port, and return void.
     def printSuffix(self, expr: IR.Expr):
         self.out.printf('\n')
 
@@ -98,6 +110,12 @@ class Arduino(CodegenBase):
         self.out.decreaseIndent()
         self.out.printf('}\n', indent=True)
 
+    '''
+    Below functions are overriding their corresponding definitions in codegenBase.py.
+    These function have arduino-specific print functions.
+    '''
+
+    # Print the variable with pragmas
     def printVar(self, ir):
         if ir.inputVar:
             if Common.wordLength == 16:
@@ -114,6 +132,9 @@ class Arduino(CodegenBase):
         if ir.inputVar:
             self.out.printf('))')
 
+    # The variable X is used to define the data point.
+    # It is either read from the serial port or from the device's memory based on the operating mode.
+    # The getIntFeature() function reads the appropriate value of X based on the mode.
     def printAssn(self, ir):
         if isinstance(ir.e, IR.Var) and ir.e.idf == "X":
             self.out.printf("", indent=True)
@@ -128,9 +149,15 @@ class Arduino(CodegenBase):
         for i in range(len(keys)):
             arg = keys[i]
 
+            # Do not print the 'X' variable as it will be read from the getIntFeature() function.
             if isinstance(arg, IR.Var) and arg.idf == 'X':
                 continue
 
+            # The value of x in the below code is the number of special characters (& and []) around the variable in the function call.
+            # This number depends on the shape of the variable.
+            # Example: A[10][10] is written as &A[0][0]. The value of x in this case is 2.
+            # x is 0 for constants
+            # x is -1 for integer variables where only & is printed and not []
             if isinstance(arg, IR.Var) and arg.idf in self.decls.keys() and not arg.idf == 'X':
                 type = self.decls[arg.idf]
                 if isinstance(type, Type.Tensor):
@@ -142,13 +169,17 @@ class Arduino(CodegenBase):
                     x = -1
             else:
                 x = 0
+            
             if x != 0:
                 self.out.printf("&")
+
             self.print(arg)
+            
             if x != 0 and x != -1:
                 self.out.printf("[0]" * x)
             if i != len(keys) - 1:
                 self.out.printf(", ")
+        
         self.out.printf(");\n\n")
 
     def printPrint(self, ir):

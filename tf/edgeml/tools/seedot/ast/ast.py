@@ -1,18 +1,17 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+'''
+This file contains the definitions of various nodes in the Abstract Syntax Tree (AST).
+For a given program, the nodes of the AST is created based on the operators present in the input program.
+'''
+
 
 class ASTNode:
 
     def __init__(self):
         self.printLevel = 0
-
         self.gamma = {}
-
-        self.decls = {}
-        self.expts = {}
-        self.intvs = {}
-        self.cnsts = {}
 
 
 class Int(ASTNode):

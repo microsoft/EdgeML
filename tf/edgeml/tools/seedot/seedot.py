@@ -270,6 +270,8 @@ class Main:
         # Generate code for target
         self.compileForTarget()
 
+        print("\nArduino sketch dumped in the folder %s\n" % (Common.outdir))
+
         return True
 
     def runForFloat(self):

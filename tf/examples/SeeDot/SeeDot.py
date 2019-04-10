@@ -89,7 +89,7 @@ class MainDriver:
         print("================================\n")
 
         obj = Main(algo, Common.Version.Fixed, Common.Target.Arduino,
-                   trainingInput, testingInput, modelDir, None, 1)
+                   trainingInput, testingInput, modelDir, None)
         obj.run()
 
 if __name__ == "__main__":
