@@ -6,7 +6,6 @@ import sys
 import os
 import numpy as np
 import tensorflow as tf
-sys.path.insert(0, '../../')
 from edgeml.trainer.protoNNTrainer import ProtoNNTrainer
 from edgeml.graph.protoNN import ProtoNN
 import edgeml.utils as utils
@@ -33,12 +32,19 @@ def main():
     OUT_DIR = config.output_dir
 
     # Load data
-    x_train = np.load(DATA_DIR + '/x_train.npy')
-    y_train = np.load(DATA_DIR + '/y_train.npy')
-    x_test = np.load(DATA_DIR + '/x_test.npy')
-    y_test = np.load(DATA_DIR + '/y_test.npy')
+    train = np.load(DATA_DIR + '/train.npy')
+    test = np.load(DATA_DIR + '/test.npy')
+    x_train, y_train = train[:, 1:], train[:, 0]
+    x_test, y_test = test[:, 1:], test[:, 0]
+    # Convert y to one-hot
+    minval = min(min(y_train), min(y_test))
+    numClasses = max(y_train) - min(y_train) + 1
+    numClasses = max(numClasses, max(y_test) - min(y_test) + 1)
+    numClasses = int(numClasses)
+    y_train = helper.to_onehot(y_train, numClasses, minlabel=minval)
+    y_test = helper.to_onehot(y_test, numClasses, minlabel=minval)
     dataDimension = x_train.shape[1]
-    numClasses = y_train.shape[1]
+
     W, B, gamma = helper.getGamma(config.gamma, PROJECTION_DIM, dataDimension,
                                   NUM_PROTOTYPES, x_train)
 

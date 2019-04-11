@@ -29,13 +29,17 @@ def processData(workingDir, downloadDir):
     assert os.path.isfile(tsf), 'File not found: %s' % tsf
     train = loadLibSVMFile(trf)
     test = loadLibSVMFile(tsf)
+    np.save(path + '/train_unnormalized.npy', train)
+    np.save(path + '/test_unnormalized.npy', test)
+    _, _, x_train, y_train, x_test, y_test = preprocessData(train, test)
+
+    y_ = np.expand_dims(np.argmax(y_train, axis=1), axis=1)
+    train = np.concatenate([y_, x_train], axis=1)
     np.save(path + '/train.npy', train)
+    y_ = np.expand_dims(np.argmax(y_test, axis=1), axis=1)
+    test = np.concatenate([y_, x_test], axis=1)
     np.save(path + '/test.npy', test)
-    _, _, x_train, y_train, x_test, y_test = preprocessData(path)
-    np.save(path + '/x_train.npy', x_train)
-    np.save(path + '/x_test.npy', x_test)
-    np.save(path + '/y_train.npy', y_train)
-    np.save(path + '/y_test.npy', y_test)
+
 
 if __name__ == '__main__':
     # Configuration
