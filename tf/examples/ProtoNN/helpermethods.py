@@ -192,4 +192,6 @@ def getProtoNNArgs():
     parser.add_argument('-vS', '--val-step', type=int, default=3,
                         help='The number of epochs between validation' +
                         'performance evaluation')
+    parser.add_argument('-o', '--output-dir', type=str, default='./',
+                        help='Output directory to dump model matrices.')
     return parser.parse_args()

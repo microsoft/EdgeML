@@ -30,7 +30,7 @@ def main():
     BATCH_SIZE = config.batch_size
     PRINT_STEP = config.print_step
     VAL_STEP = config.val_step
-    OUT_DIR = config.out_dir
+    OUT_DIR = config.output_dir
 
     # Load data
     x_train = np.load(DATA_DIR + '/x_train.npy')
@@ -60,6 +60,7 @@ def main():
     # W, B, Z are tensorflow graph nodes
     W, B, Z, gamma  = protoNN.getModelMatrices()
     matrixList = sess.run([W, B, Z])
+    gamma = sess.run(gamma)
     sparcityList = [SPAR_W, SPAR_B, SPAR_Z]
     nnz, size, sparse = helper.getModelSize(matrixList, sparcityList)
     print("Final test accuracy", acc)
@@ -70,9 +71,9 @@ def main():
     print("Actual model size: ", size)
     print("Actual non-zeros: ", nnz)
     print("Saving model matrices to: ", OUT_DIR)
-    np.save(OUT_DIR + '/W.npy', W)
-    np.save(OUT_DIR + '/B.npy', B)
-    np.save(OUT_DIR + '/Z.npy', Z)
+    np.save(OUT_DIR + '/W.npy', matrixList[0])
+    np.save(OUT_DIR + '/B.npy', matrixList[1])
+    np.save(OUT_DIR + '/Z.npy', matrixList[2])
     np.save(OUT_DIR + '/gamma.npy', gamma)
 
 
