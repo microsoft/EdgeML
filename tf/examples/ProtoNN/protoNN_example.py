@@ -30,14 +30,15 @@ def main():
     BATCH_SIZE = config.batch_size
     PRINT_STEP = config.print_step
     VAL_STEP = config.val_step
+    OUT_DIR = config.out_dir
 
     # Load data
-    out = helper.preprocessData(DATA_DIR)
-    dataDimension = out[0]
-    numClasses = out[1]
-    x_train, y_train = out[2], out[3]
-    x_test, y_test = out[4], out[5]
-
+    x_train = np.load(DATA_DIR + '/x_train.npy')
+    y_train = np.load(DATA_DIR + '/y_train.npy')
+    x_test = np.load(DATA_DIR + '/x_test.npy')
+    y_test = np.load(DATA_DIR + '/y_test.npy')
+    dataDimension = x_train.shape[1]
+    numClasses = y_train.shape[1]
     W, B, gamma = helper.getGamma(config.gamma, PROJECTION_DIM, dataDimension,
                                   NUM_PROTOTYPES, x_train)
 
@@ -57,7 +58,7 @@ def main():
     # Print some summary metrics
     acc = sess.run(protoNN.accuracy, feed_dict={X: x_test, Y: y_test})
     # W, B, Z are tensorflow graph nodes
-    W, B, Z, _ = protoNN.getModelMatrices()
+    W, B, Z, gamma  = protoNN.getModelMatrices()
     matrixList = sess.run([W, B, Z])
     sparcityList = [SPAR_W, SPAR_B, SPAR_Z]
     nnz, size, sparse = helper.getModelSize(matrixList, sparcityList)
@@ -68,6 +69,11 @@ def main():
                                             expected=False)
     print("Actual model size: ", size)
     print("Actual non-zeros: ", nnz)
+    print("Saving model matrices to: ", OUT_DIR)
+    np.save(OUT_DIR + '/W.npy', W)
+    np.save(OUT_DIR + '/B.npy', B)
+    np.save(OUT_DIR + '/Z.npy', Z)
+    np.save(OUT_DIR + '/gamma.npy', gamma)
 
 
 if __name__ == '__main__':
