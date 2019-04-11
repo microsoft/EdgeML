@@ -116,9 +116,13 @@ class ProtoNNTrainer:
         self.B_th = tf.placeholder(tf.float32, name='B_th')
         self.Z_th = tf.placeholder(tf.float32, name='Z_th')
         with tf.name_scope('hard-threshold-assignments'):
-            hard_thrsd_W = W.assign(self.W_th)
-            hard_thrsd_B = B.assign(self.B_th)
-            hard_thrsd_Z = Z.assign(self.Z_th)
+            # hard_thrsd_W = W.assign(self.W_th)
+            # hard_thrsd_B = B.assign(self.B_th)
+            # hard_thrsd_Z = Z.assign(self.Z_th)
+            # Code changes for tf 1.11
+            hard_thrsd_W = tf.assign(W, self.W_th)
+            hard_thrsd_B = tf.assign(B, self.B_th)
+            hard_thrsd_Z = tf.assign(Z, self.Z_th)
             hard_thrsd_op = tf.group(hard_thrsd_W, hard_thrsd_B, hard_thrsd_Z)
         return hard_thrsd_op
 

@@ -142,16 +142,16 @@ class ProtoNN:
             dim = [-1, WX.shape.as_list()[1], 1]
             WX = tf.reshape(WX, dim)
             dim = [1, B.shape.as_list()[0], -1]
-            B = tf.reshape(B, dim)
-            l2sim = B - WX
+            B_ = tf.reshape(B, dim)
+            l2sim = B_ - WX
             l2sim = tf.pow(l2sim, 2)
             l2sim = tf.reduce_sum(l2sim, 1, keepdims=True)
             self.l2sim = l2sim
             gammal2sim = (-1 * gamma * gamma) * l2sim
             M = tf.exp(gammal2sim)
             dim = [1] + Z.shape.as_list()
-            Z = tf.reshape(Z, dim)
-            y = tf.multiply(Z, M)
+            Z_ = tf.reshape(Z, dim)
+            y = tf.multiply(Z_, M)
             y = tf.reduce_sum(y, 2, name='protoNNScoreOut')
             self.protoNNOut = y
             self.predictions = tf.argmax(y, 1, name='protoNNPredictions')
