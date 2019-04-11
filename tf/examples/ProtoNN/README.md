@@ -44,7 +44,8 @@ python protoNN_example.py \
       --gamma 0.0015 \
       --learning-rate 0.1 \
       --epochs 200 \
-      --val-step 10
+      --val-step 10 \
+      --output-dir ./
 ```
 
 You can expect a test set accuracy of about 92.5%.

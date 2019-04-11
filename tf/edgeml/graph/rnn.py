@@ -226,8 +226,8 @@ class FastRNNCell(RNNCell):
     h_t^ = update_nl(Wx_t + Uh_{t-1} + B_h)
     h_t = sigmoid(beta)*h_{t-1} + sigmoid(alpha)*h_t^
 
-    W and U can further parameterised into low rank version by 
-    W = matmul(W_1, W_2) and U = matmul(U_1, U_2) 
+    W and U can further parameterised into low rank version by
+    W = matmul(W_1, W_2) and U = matmul(U_1, U_2)
     '''
 
     def __init__(self, hidden_size, update_non_linearity="tanh",
@@ -685,7 +685,7 @@ class EMI_BasicLSTM(EMI_RNN):
         # Internal
         self._scope = 'EMI/BasicLSTM/'
 
-    def _createBaseGraph(self, X):
+    def _createBaseGraph(self, X, **kwargs):
         assert self.graphCreated is False
         msg = 'X should be of form [-1, numSubinstance, numTimeSteps, numFeatures]'
         assert X.get_shape().ndims == 4, msg
@@ -727,7 +727,7 @@ class EMI_BasicLSTM(EMI_RNN):
         self.output = output
         return self.output
 
-    def _restoreBaseGraph(self, graph):
+    def _restoreBaseGraph(self, graph, **kwargs):
         assert self.graphCreated is False
         assert self.graph is not None
         scope = self._scope
@@ -806,7 +806,7 @@ class EMI_GRU(EMI_RNN):
         # Internal
         self._scope = 'EMI/GRU/'
 
-    def _createBaseGraph(self, X):
+    def _createBaseGraph(self, X, **kwargs):
         assert self.graphCreated is False
         msg = 'X should be of form [-1, numSubinstance, numTimeSteps, numFeatures]'
         assert X.get_shape().ndims == 4, msg
@@ -846,7 +846,7 @@ class EMI_GRU(EMI_RNN):
         self.output = output
         return self.output
 
-    def _restoreBaseGraph(self, graph):
+    def _restoreBaseGraph(self, graph, **kwargs):
         assert self.graphCreated is False
         assert self.graph is not None
         scope = self._scope
@@ -870,7 +870,7 @@ class EMI_GRU(EMI_RNN):
         assert len(self.varList) == 4
         return self.varList
 
-    def addBaseAssignOps(self, graph, initVarList):
+    def addBaseAssignOps(self, graph, initVarList, **kwargs):
         '''
         Adds Tensorflow assignment operations to all of the model tensors.
         These operations can then be used to initialize these tensors from
@@ -945,7 +945,7 @@ class EMI_FastRNN(EMI_RNN):
         # Internal
         self._scope = 'EMI/FastRNN/'
 
-    def _createBaseGraph(self, X):
+    def _createBaseGraph(self, X, **kwargs):
         assert self.graphCreated is False
         msg = 'X should be of form [-1, numSubinstance, numTimeSteps,'
         msg += ' numFeatures]'
@@ -988,7 +988,7 @@ class EMI_FastRNN(EMI_RNN):
         self.output = output
         return self.output
 
-    def _restoreBaseGraph(self, graph):
+    def _restoreBaseGraph(self, graph, **kwargs):
         assert self.graphCreated is False
         assert self.graph is not None
         scope = self._scope
@@ -1036,7 +1036,7 @@ class EMI_FastRNN(EMI_RNN):
         assert self.graphCreated is True, "Graph is not created"
         return self.varList
 
-    def addBaseAssignOps(self, graph, initVarList):
+    def addBaseAssignOps(self, graph, initVarList, **kwargs):
         '''
         Adds Tensorflow assignment operations to all of the model tensors.
         These operations can then be used to initialize these tensors from
@@ -1141,7 +1141,7 @@ class EMI_UGRNN(EMI_RNN):
         # Internal
         self._scope = 'EMI/UGRNN/'
 
-    def _createBaseGraph(self, X):
+    def _createBaseGraph(self, X, **kwargs):
         assert self.graphCreated is False
         msg = 'X should be of form [-1, numSubinstance, numTimeSteps, numFeatures]'
         assert X.get_shape().ndims == 4, msg
@@ -1182,7 +1182,7 @@ class EMI_UGRNN(EMI_RNN):
         self.output = output
         return self.output
 
-    def _restoreBaseGraph(self, graph):
+    def _restoreBaseGraph(self, graph, **kwargs):
         assert self.graphCreated is False
         assert self.graph is not None
         scope = self._scope
@@ -1203,7 +1203,7 @@ class EMI_UGRNN(EMI_RNN):
         assert len(self.varList) == 2
         return self.varList
 
-    def addBaseAssignOps(self, graph, initVarList):
+    def addBaseAssignOps(self, graph, initVarList, **kwargs):
         '''
         Adds Tensorflow assignment operations to all of the model tensors.
         These operations can then be used to initialize these tensors from
@@ -1276,7 +1276,7 @@ class EMI_FastGRNN(EMI_RNN):
         # Internal
         self._scope = 'EMI/FastGRNN/'
 
-    def _createBaseGraph(self, X):
+    def _createBaseGraph(self, X, **kwargs):
         assert self.graphCreated is False
         msg = 'X should be of form [-1, numSubinstance, numTimeSteps, numFeatures]'
         assert X.get_shape().ndims == 4, msg
@@ -1319,7 +1319,7 @@ class EMI_FastGRNN(EMI_RNN):
         self.output = output
         return self.output
 
-    def _restoreBaseGraph(self, graph):
+    def _restoreBaseGraph(self, graph, **kwargs):
         assert self.graphCreated is False
         assert self.graph is not None
         scope = self._scope
@@ -1369,7 +1369,7 @@ class EMI_FastGRNN(EMI_RNN):
         assert self.graphCreated is True, "Graph is not created"
         return self.varList
 
-    def addBaseAssignOps(self, graph, initVarList):
+    def addBaseAssignOps(self, graph, initVarList, **kwargs):
         '''
         Adds Tensorflow assignment operations to all of the model tensors.
         These operations can then be used to initialize these tensors from

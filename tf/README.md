@@ -15,19 +15,28 @@ directions and examples for these algorithms are provided in `examples`
 directory. To get started with any of the provided algorithms, please follow
 the notebooks in the the `examples` directory.
 
-## Dependencies
+## Installation
 
-Tested on >= Python3.5 with >= Tensorflow 1.6.0.
+Use pip and the provided requirements file to first install required
+dependencies before installing the `edgeml` library. Details for cpu based
+installation and gpu based installation provided below.
 
 ### CPU
+
 ``` 
 pip install -r requirements-cpu.txt
+pip install -e .
 ```
+
+Tested on Python3.5 and python 2.7 with >= Tensorflow 1.6.0.
+
 ### GPU
 
 Install appropriate CUDA and cuDNN [Tested with >= CUDA 8.1 and cuDNN >= 6.1]
+
 ```
 pip install -r requirements-gpu.txt
+pip install -e .
 ```
 
 Copyright (c) Microsoft Corporation. All rights reserved.

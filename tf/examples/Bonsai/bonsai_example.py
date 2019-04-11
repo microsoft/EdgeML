@@ -5,8 +5,6 @@ import helpermethods
 import tensorflow as tf
 import numpy as np
 import sys
-sys.path.insert(0, '../../')
-
 from edgeml.trainer.bonsaiTrainer import BonsaiTrainer
 from edgeml.graph.bonsai import Bonsai
 
