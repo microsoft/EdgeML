@@ -4,9 +4,9 @@
 import math
 import os
 
-from edgeml.tools.seedot.converter.util import *
+from converter.util import *
 
-import edgeml.tools.seedot.common as Common
+import common as Common
 
 # Class to read Bonsai model dumps and generate input files (C header file and the compiler input)
 # The two classes BonsaiFixed and BonsaiFloat are for generating fixed model and float model respectively

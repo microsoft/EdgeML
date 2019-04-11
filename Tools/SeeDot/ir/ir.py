@@ -4,8 +4,8 @@
 from enum import Enum
 import numpy as np
 
-import edgeml.tools.seedot.common as Common
-from edgeml.tools.seedot.util import *
+import common as Common
+from util import *
 
 
 class Op:

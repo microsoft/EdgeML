@@ -5,17 +5,17 @@ import numpy as np
 import operator
 import os
 
-from edgeml.tools.seedot.antlr.seedotParser import seedotParser as SeeDotParser
+from antlr.seedotParser import seedotParser as SeeDotParser
 
-import edgeml.tools.seedot.ast.ast as AST
-from edgeml.tools.seedot.ast.astVisitor import ASTVisitor
+import ast.ast as AST
+from ast.astVisitor import ASTVisitor
 
-import edgeml.tools.seedot.ir.ir as IR
-import edgeml.tools.seedot.ir.irUtil as IRUtil
+import ir.ir as IR
+import ir.irUtil as IRUtil
 
-import edgeml.tools.seedot.common as Common
-import edgeml.tools.seedot.type as Type
-from edgeml.tools.seedot.util import *
+import common as Common
+import type as Type
+from util import *
 
 
 class IRBuilder(ASTVisitor):

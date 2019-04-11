@@ -5,22 +5,22 @@ from antlr4 import *
 import argparse
 import os
 
-from edgeml.tools.seedot.antlr.seedotLexer import seedotLexer as SeeDotLexer
-from edgeml.tools.seedot.antlr.seedotParser import seedotParser as SeeDotParser
+from antlr.seedotLexer import seedotLexer as SeeDotLexer
+from antlr.seedotParser import seedotParser as SeeDotParser
 
-import edgeml.tools.seedot.ast.ast as AST
-import edgeml.tools.seedot.ast.astBuilder as ASTBuilder
-from edgeml.tools.seedot.ast.printAST import PrintAST
+import ast.ast as AST
+import ast.astBuilder as ASTBuilder
+from ast.printAST import PrintAST
 
-from edgeml.tools.seedot.codegen.arduino import Arduino as ArduinoCodegen
-from edgeml.tools.seedot.codegen.x86 import X86 as X86Codegen
+from codegen.arduino import Arduino as ArduinoCodegen
+from codegen.x86 import X86 as X86Codegen
 
-from edgeml.tools.seedot.ir.irBuilder import IRBuilder
-import edgeml.tools.seedot.ir.irUtil as IRUtil
+from ir.irBuilder import IRBuilder
+import ir.irUtil as IRUtil
 
-from edgeml.tools.seedot.type import InferType
-from edgeml.tools.seedot.util import *
-from edgeml.tools.seedot.writer import Writer
+from type import InferType
+from util import *
+from writer import Writer
 
 
 class Compiler:

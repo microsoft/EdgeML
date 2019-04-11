@@ -3,7 +3,7 @@
 
 import platform
 
-import edgeml.tools.seedot.common as Common
+import common as Common
 
 
 class Config:

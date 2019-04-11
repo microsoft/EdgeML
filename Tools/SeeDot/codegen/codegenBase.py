@@ -7,11 +7,11 @@ CodegenBase has print functions for the IR classes defined in IR.py
 
 import numpy as np
 
-import edgeml.tools.seedot.ir.ir as IR
+import ir.ir as IR
 
-import edgeml.tools.seedot.common as Common
-import edgeml.tools.seedot.type as Type
-from edgeml.tools.seedot.util import *
+import common as Common
+import type as Type
+from util import *
 
 
 class CodegenBase:

@@ -3,11 +3,11 @@
 
 import os
 
-from edgeml.tools.seedot.converter.bonsai import *
-from edgeml.tools.seedot.converter.protonn import *
-from edgeml.tools.seedot.converter.util import *
+from converter.bonsai import *
+from converter.protonn import *
+from converter.util import *
 
-import edgeml.tools.seedot.common as Common
+import common as Common
 
 # Main file which sets the configurations and creates the corresponding object
 

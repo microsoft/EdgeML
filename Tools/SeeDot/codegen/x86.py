@@ -3,13 +3,13 @@
 
 import numpy as np
 
-from edgeml.tools.seedot.codegen.codegenBase import CodegenBase
+from codegen.codegenBase import CodegenBase
 
-import edgeml.tools.seedot.ir.ir as IR
-import edgeml.tools.seedot.ir.irUtil as IRUtil
+import ir.ir as IR
+import ir.irUtil as IRUtil
 
-import edgeml.tools.seedot.type as Type
-from edgeml.tools.seedot.util import *
+import type as Type
+from util import *
 
 
 class X86(CodegenBase):

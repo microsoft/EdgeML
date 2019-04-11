@@ -5,10 +5,10 @@
 ASTBuilder creates the AST for a given SeeDot program.
 '''
 
-from edgeml.tools.seedot.antlr.seedotParser import seedotParser as SeeDotParser
-from edgeml.tools.seedot.antlr.seedotVisitor import seedotVisitor as SeeDotVisitor
+from antlr.seedotParser import seedotParser as SeeDotParser
+from antlr.seedotVisitor import seedotVisitor as SeeDotVisitor
 
-import edgeml.tools.seedot.ast.ast as AST
+import ast.ast as AST
 
 
 class ASTBuilder(SeeDotVisitor):

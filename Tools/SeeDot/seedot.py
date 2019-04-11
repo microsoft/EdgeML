@@ -10,12 +10,12 @@ import operator
 import tempfile
 import traceback
 
-from edgeml.tools.seedot.converter.converter import Converter
+from converter.converter import Converter
 
-import edgeml.tools.seedot.common as Common
-from edgeml.tools.seedot.compiler import Compiler
-from edgeml.tools.seedot.predictor import Predictor
-import edgeml.tools.seedot.util as Util
+import common as Common
+from compiler import Compiler
+from predictor import Predictor
+import util as Util
 
 
 class Main:

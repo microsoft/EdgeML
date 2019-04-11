@@ -5,10 +5,10 @@
 PrintAST can be used to print the generated AST for a given SeeDot program.
 '''
 
-from edgeml.tools.seedot.antlr.seedotParser import seedotParser as SeeDotParser
+from antlr.seedotParser import seedotParser as SeeDotParser
 
-import edgeml.tools.seedot.ast.ast as AST
-from edgeml.tools.seedot.ast.astVisitor import ASTVisitor
+import ast.ast as AST
+from ast.astVisitor import ASTVisitor
 
 indent = "  "
 

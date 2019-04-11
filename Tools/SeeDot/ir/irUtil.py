@@ -3,10 +3,10 @@
 
 import numpy as np
 
-from edgeml.tools.seedot.ir.ir import *
+from ir.ir import *
 
-import edgeml.tools.seedot.common as Common
-from edgeml.tools.seedot.util import *
+import common as Common
+from util import *
 
 
 def init():

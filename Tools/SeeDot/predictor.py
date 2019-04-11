@@ -4,8 +4,8 @@
 import os
 import subprocess
 
-import edgeml.tools.seedot.common as Common
-import edgeml.tools.seedot.util as Util
+import common as Common
+import util as Util
 
 # Program to build and run the predictor project using msbuild
 # The accuracy and other statistics are written to the output file specified
