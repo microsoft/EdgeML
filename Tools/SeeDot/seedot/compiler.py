@@ -5,22 +5,22 @@ from antlr4 import *
 import argparse
 import os
 
-from antlr.seedotLexer import seedotLexer as SeeDotLexer
-from antlr.seedotParser import seedotParser as SeeDotParser
+from seedot.antlr.seedotLexer import seedotLexer as SeeDotLexer
+from seedot.antlr.seedotParser import seedotParser as SeeDotParser
 
-import ast.ast as AST
-import ast.astBuilder as ASTBuilder
-from ast.printAST import PrintAST
+import seedot.ast.ast as AST
+import seedot.ast.astBuilder as ASTBuilder
+from seedot.ast.printAST import PrintAST
 
-from codegen.arduino import Arduino as ArduinoCodegen
-from codegen.x86 import X86 as X86Codegen
+from seedot.codegen.arduino import Arduino as ArduinoCodegen
+from seedot.codegen.x86 import X86 as X86Codegen
 
-from ir.irBuilder import IRBuilder
-import ir.irUtil as IRUtil
+from seedot.ir.irBuilder import IRBuilder
+import seedot.ir.irUtil as IRUtil
 
-from type import InferType
-from util import *
-from writer import Writer
+from seedot.type import InferType
+from seedot.util import *
+from seedot.writer import Writer
 
 
 class Compiler:

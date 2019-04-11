@@ -3,11 +3,11 @@
 
 import os
 
-from converter.bonsai import *
-from converter.protonn import *
-from converter.util import *
+from seedot.converter.bonsai import *
+from seedot.converter.protonn import *
+from seedot.converter.util import *
 
-import common as Common
+import seedot.common as Common
 
 # Main file which sets the configurations and creates the corresponding object
 

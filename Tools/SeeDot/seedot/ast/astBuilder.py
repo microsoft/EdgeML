@@ -5,10 +5,10 @@
 ASTBuilder creates the AST for a given SeeDot program.
 '''
 
-from antlr.seedotParser import seedotParser as SeeDotParser
-from antlr.seedotVisitor import seedotVisitor as SeeDotVisitor
+from seedot.antlr.seedotParser import seedotParser as SeeDotParser
+from seedot.antlr.seedotVisitor import seedotVisitor as SeeDotVisitor
 
-import ast.ast as AST
+import seedot.ast.ast as AST
 
 
 class ASTBuilder(SeeDotVisitor):

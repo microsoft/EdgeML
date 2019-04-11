@@ -5,17 +5,17 @@ import numpy as np
 import operator
 import os
 
-from antlr.seedotParser import seedotParser as SeeDotParser
+from seedot.antlr.seedotParser import seedotParser as SeeDotParser
 
-import ast.ast as AST
-from ast.astVisitor import ASTVisitor
+import seedot.ast.ast as AST
+from seedot.ast.astVisitor import ASTVisitor
 
-import ir.ir as IR
-import ir.irUtil as IRUtil
+import seedot.ir.ir as IR
+import seedot.ir.irUtil as IRUtil
 
-import common as Common
-import type as Type
-from util import *
+import seedot.common as Common
+import seedot.type as Type
+from seedot.util import *
 
 
 class IRBuilder(ASTVisitor):
@@ -51,6 +51,12 @@ class IRBuilder(ASTVisitor):
 
         # idf of vars that need to be init'ed
         self.globalVars = []
+
+        # Global variables
+        self.decls = {}
+        self.scales = {}
+        self.intvs = {}
+        self.cnsts = {}
 
     def readProfileFile(self):
         if self.profileLoaded == True:

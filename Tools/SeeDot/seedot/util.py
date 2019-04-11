@@ -3,7 +3,7 @@
 
 import platform
 
-import common as Common
+import seedot.common as Common
 
 
 class Config:

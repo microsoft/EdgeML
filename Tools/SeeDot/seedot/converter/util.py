@@ -6,7 +6,7 @@ import numpy as np
 import os
 from sklearn.datasets import load_svmlight_file
 
-import common as Common
+import seedot.common as Common
 
 # Utility functions commonly used by both Bonsai and Protonn
 

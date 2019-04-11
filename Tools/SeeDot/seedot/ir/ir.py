@@ -4,8 +4,8 @@
 from enum import Enum
 import numpy as np
 
-import common as Common
-from util import *
+import seedot.common as Common
+from seedot.util import *
 
 
 class Op:

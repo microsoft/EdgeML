@@ -9,13 +9,13 @@ Most of the routines in the base class CodegenBase are unchanged.
 
 import numpy as np
 
-from codegen.codegenBase import CodegenBase
+from seedot.codegen.codegenBase import CodegenBase
 
-import ir.ir as IR
-import ir.irUtil as IRUtil
+import seedot.ir.ir as IR
+import seedot.ir.irUtil as IRUtil
 
-import type as Type
-from util import *
+import seedot.type as Type
+from seedot.util import *
 
 
 class Arduino(CodegenBase):

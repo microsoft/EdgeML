@@ -7,11 +7,11 @@ CodegenBase has print functions for the IR classes defined in IR.py
 
 import numpy as np
 
-import ir.ir as IR
+import seedot.ir.ir as IR
 
-import common as Common
-import type as Type
-from util import *
+import seedot.common as Common
+import seedot.type as Type
+from seedot.util import *
 
 
 class CodegenBase:
@@ -251,8 +251,6 @@ class CodegenBase:
             return self.printPrint(ir)
         elif isinstance(ir, IR.PrintAsFloat):
             return self.printPrintAsFloat(ir)
-        elif isinstance(ir, IR.Pragmas):
-            return self.printPragmas(ir)
         elif isinstance(ir, IR.Comment):
             return self.printComment(ir)
         elif isinstance(ir, IR.Prog):

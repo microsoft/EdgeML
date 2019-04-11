@@ -4,10 +4,10 @@
 from functools import reduce
 import operator
 
-from antlr.seedotParser import seedotParser as SeeDotParser
+from seedot.antlr.seedotParser import seedotParser as SeeDotParser
 
-import ast.ast as AST
-from ast.astVisitor import ASTVisitor
+import seedot.ast.ast as AST
+from seedot.ast.astVisitor import ASTVisitor
 
 
 class Type:
