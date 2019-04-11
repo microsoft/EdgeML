@@ -6,7 +6,6 @@ import sys
 import os
 import numpy as np
 import tensorflow as tf
-sys.path.insert(0, '../')
 import edgeml.utils as utils
 import argparse
 
