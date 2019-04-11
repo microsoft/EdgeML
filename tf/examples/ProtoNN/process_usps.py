@@ -9,6 +9,7 @@ import os
 import numpy as np
 from sklearn.datasets import load_svmlight_file
 import sys
+from helpermethods import preprocessData
 
 def processData(workingDir, downloadDir):
     def loadLibSVMFile(file):
@@ -30,6 +31,11 @@ def processData(workingDir, downloadDir):
     test = loadLibSVMFile(tsf)
     np.save(path + '/train.npy', train)
     np.save(path + '/test.npy', test)
+    _, _, x_train, y_train, x_test, y_test = preprocessData(path)
+    np.save(path + '/x_train.npy', x_train)
+    np.save(path + '/x_test.npy', x_test)
+    np.save(path + '/y_train.npy', y_train)
+    np.save(path + '/y_test.npy', y_test)
 
 if __name__ == '__main__':
     # Configuration
