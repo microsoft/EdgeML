@@ -17,8 +17,9 @@ the notebooks in the the `examples` directory.
 
 ## Installation
 
-Use pip and the provided requirements to first install dependencies and then
-the `edgeml` library.
+Use pip and the provided requirements file to first install required
+dependencies before installing the `edgeml` library. Details for cpu based
+installation and gpu based installation provided below.
 
 ### CPU
 
