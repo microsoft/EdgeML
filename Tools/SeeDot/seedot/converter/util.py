@@ -178,16 +178,26 @@ def listRange(list):
 
 
 def readXandY(useTrainingSet=False):
-    if usingLibSVM():
-        return readXandYasLibSVM(useTrainingSet)
-    elif usingTSV():
-        return readXandYasTSV(useTrainingSet)
-    elif usingCSV():
-        return readXandYasCSV(useTrainingSet)
-    elif usingNPY():
+    train_ext = os.path.splitext(Config.trainingFile)[1]
+    test_ext = os.path.splitext(Config.testingFile)[1]
+
+    if train_ext == test_ext == ".npy":
         return readXandYasNPY(useTrainingSet)
+    elif train_ext == test_ext == ".tsv":
+        return readXandYasTSV(useTrainingSet)
+    elif train_ext == test_ext == ".csv":
+        return readXandYasCSV(useTrainingSet)
+    elif train_ext == test_ext == ".txt":
+        return readXandYasLibSVM(useTrainingSet)
     else:
         assert False
+
+
+def zeroIndexLabels(Y):
+    lab = np.array(Y)
+    lab = lab.astype('uint8')
+    lab = np.array(lab) - min(lab)
+    return lab.tolist()
 
 
 def readXandYasLibSVM(trainingDataset):
@@ -204,6 +214,8 @@ def readXandYasLibSVM(trainingDataset):
     Y = list(map(int, Y))
     Y = [[classID] for classID in Y]
 
+    Y = zeroIndexLabels(Y)
+
     return X, Y
 
 
@@ -218,6 +230,9 @@ def readXandYasTSV(trainingDataset):
     else:
         mat = readFileAsMat(Config.testingFile, "\t", float)
     X, Y = extractXandYfromMat(mat)
+
+    Y = zeroIndexLabels(Y)
+
     return X, Y
 
 
@@ -254,6 +269,9 @@ def readXandYasCSV(trainingDataset):
         X = readFileAsMat(os.path.join(
             Config.testingFile, "X.csv"), ", ", float)
         Y = readFileAsMat(os.path.join(Config.testingFile, "Y.csv"), ", ", int)
+
+    Y = zeroIndexLabels(Y)
+
     return X, Y
 
 
@@ -268,6 +286,9 @@ def readXandYasNPY(trainingDataset):
     else:
         mat = np.load(Config.testingFile).tolist()
     X, Y = extractXandYfromMat(mat)
+
+    Y = zeroIndexLabels(Y)
+
     return X, Y
 
 
