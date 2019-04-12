@@ -35,6 +35,23 @@ class Protonn:
             assert False
 
     def readModel(self):
+        if os.path.isfile(os.path.join(getModelDir(), "W")):
+            return self.readModelAsTxt()
+        elif os.path.isfile(os.path.join(getModelDir(), "W.npy")):
+            return self.readModelAsNpy()
+        else:
+            assert False
+
+    def readModelAsNpy(self):
+        self.W = np.load(os.path.join(getModelDir(), "W.npy"))
+        self.W = self.W.transpose().tolist()
+        self.B = np.load(os.path.join(getModelDir(), "B.npy")).tolist()
+        self.Z = np.load(os.path.join(getModelDir(), "Z.npy")).tolist()
+        self.gamma = np.load(os.path.join(getModelDir(), "gamma.npy")).tolist()
+        self.gamma = [[self.gamma]]
+        self.readNormFile()
+
+    def readModelAsTxt(self):
         self.W = readFileAsMat(os.path.join(getModelDir(), "W"), "\t", float)
         self.B = readFileAsMat(os.path.join(getModelDir(), "B"), "\t", float)
         self.Z = readFileAsMat(os.path.join(getModelDir(), "Z"), "\t", float)
