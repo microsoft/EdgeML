@@ -7,6 +7,10 @@
 
 using namespace model;
 
+void accuracy();
+void predictionTime();
+void syncWithMaster();
+
 void setup() {
 	Serial.begin(115200);
 	return;

@@ -52,10 +52,14 @@ An example invocation is as follows:
 To help get started with SeeDot, please follow the below instructions to generate fixed-point code for ProtoNN algorithm on the usps10 dataset.
 
 1. **Training ProtoNN on usps10:** Follow the instructions [here](https://github.com/Microsoft/EdgeML/tree/master/tf/examples/ProtoNN) to use the ProtoNN trainer. Remember the path to the dataset and the output directory.
+   Note: The hyper-parameters specified in the document generate > 32KB models and will not fit on Arduino Uno. In such a case, use the following command:
+   `python protoNN_example.py --data-dir./usps10 --projection-dim 25 --num-prototypes 60 --epochs 100`
+   This should give around 91.12% classification accuracy.
 
 2. **Quantizing with SeeDot:** Use the following command to invoke SeeDot. The model directory is the output directory specified in step 1. Create a temporary directory called `arduino` where SeeDot will place the output.
    `python SeeDot.py -a protonn --train path/to/train.npy --test path/to/test.npy --model path/to/protonn/outdir -o arduino.`
 
+   The SeeDot-generated code should give around 91.23% classification accuracy which is very close to the floating-point accuracy.
    The `arduino` folder contains the sketch. `model.h` contains the quantized model and `predict.cpp` contains the inference code.
 
 3. **Prediction on the device:** Follow the below simple steps to perform prediction on the device where the SeeDot-generated code is run on a single data-point which is stored on the devices's flash memory.
