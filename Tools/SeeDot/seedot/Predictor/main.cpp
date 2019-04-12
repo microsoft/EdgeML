@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
 		else if (algo == Protonn && version == Float)
 			res = protonnFloat(features_float);
 
-		if ((res + 1) == label) {
+		if ((res) == label) {
 			correct++;
 		}
 		else {

@@ -10,7 +10,7 @@ import operator
 import tempfile
 import traceback
 
-        
+
 from seedot.converter.converter import Converter
 
 import seedot.common as Common
@@ -26,14 +26,15 @@ class MainDriver:
         parser = argparse.ArgumentParser()
 
         parser.add_argument("-a", "--algo", choices=Common.Algo.All,
-                            metavar='', help="Algorithm to run")
+                            metavar='', help="Algorithm to run ('bonsai' or 'protonn')")
         parser.add_argument("--train", required=True,
-                            metavar='', help="Training set file")
+                            metavar='', help="Training set file as .npy")
         parser.add_argument("--test", required=True,
-                            metavar='', help="Testing set file")
+                            metavar='', help="Testing set file as .npy")
         parser.add_argument("--model", required=True, metavar='',
-                            help="Directory containing trained model")
-        parser.add_argument("--tempdir", metavar='', help="Scratch directory")
+                            help="Directory containing trained model (output from Bonsai/ProtoNN trainer)")
+        parser.add_argument("--tempdir", metavar='',
+                            help="Scratch directory for intermediate files")
         parser.add_argument("-o", "--outdir", metavar='',
                             help="Directory to output the generated Arduino sketch")
 

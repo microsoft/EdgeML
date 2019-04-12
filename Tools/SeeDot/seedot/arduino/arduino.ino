@@ -65,7 +65,7 @@ void predictionTime() {
 
 		unsigned long elapsedTime = micros() - startTime;
 		
-		if ((classID + 1) == Y)
+		if ((classID) == Y)
 			Serial.println("Correct prediction");
 		else
 			Serial.println("WARNING: Incorrect prediction");
