@@ -28,9 +28,9 @@ class MainDriver:
         parser.add_argument("-a", "--algo", choices=Common.Algo.All,
                             metavar='', help="Algorithm to run ('bonsai' or 'protonn')")
         parser.add_argument("--train", required=True,
-                            metavar='', help="Training set file as .npy")
+                            metavar='', help="Training set file")
         parser.add_argument("--test", required=True,
-                            metavar='', help="Testing set file as .npy")
+                            metavar='', help="Testing set file")
         parser.add_argument("--model", required=True, metavar='',
                             help="Directory containing trained model (output from Bonsai/ProtoNN trainer)")
         parser.add_argument("--tempdir", metavar='',
