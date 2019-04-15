@@ -12,6 +12,9 @@ from tensorflow.python.ops.rnn_cell_impl import RNNCell
 def gen_non_linearity(A, non_linearity):
     '''
     Returns required activation for a tensor based on the inputs
+
+    non_linearity is either a callable or a value in
+        ['tanh', 'sigmoid', 'relu', 'quantTanh', 'quantSigm']
     '''
     if non_linearity == "tanh":
         return math_ops.tanh(A)
@@ -25,7 +28,12 @@ def gen_non_linearity(A, non_linearity):
         A = (A + 1.0) / 2.0
         return gen_math_ops.maximum(gen_math_ops.minimum(A, 1.0), 0.0)
     else:
-        return math_ops.tanh(A)
+        # non_linearity is a user specified function
+        if not callable(non_linearity):
+            raise ValueError("non_linearity is either a callable or a value " +
+                             + "['tanh', 'sigmoid', 'relu', 'quantTanh', " +
+                             "'quantSigm'")
+        return non_linearity(A)
 
 
 class FastGRNNCell(RNNCell):
@@ -181,7 +189,6 @@ class FastGRNNCell(RNNCell):
                 "B_h", [1, self._hidden_size], initializer=bias_update_init)
             c = gen_non_linearity(
                 pre_comp + self.bias_update, self._update_non_linearity)
-
             new_h = z * state + (math_ops.sigmoid(self.zeta) * (1.0 - z) +
                                  math_ops.sigmoid(self.nu)) * c
         return new_h, new_h
