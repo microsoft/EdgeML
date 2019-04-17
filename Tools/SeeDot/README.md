@@ -72,7 +72,7 @@ To help get started with SeeDot, we provide instructions to generate fixed-point
       ```
       python protoNN_example.py --data-dir./usps10 --projection-dim 25 --num-prototypes 60 --epochs 100 -o output
       ```
-  This should give around 91.12% classification accuracy. The trained model is stored in the `output` directory.
+  This would give around 91.12% classification accuracy. The trained model is stored in the `output` directory.
 
 More information on using the ProtoNN trainer can be found [here](https://github.com/Microsoft/EdgeML/tree/master/tf/examples/ProtoNN).
 
@@ -88,7 +88,7 @@ More information on using the ProtoNN trainer can be found [here](https://github
       python SeeDot.py -a protonn --train ../../tf/examples/ProtoNN/usps10/train.npy --test ../../tf/examples/ProtoNN/usps10/test.npy --model ../../tf/examples/ProtoNN/usps10/output -o arduino
       ```
 
-   The SeeDot-generated code should give around 91.23% classification accuracy. The difference in classification accuracy is 0.11% compared to the floating-point code. The generated code is stored in the `arduino` folder which contains the sketch along with two files: model.h and predict.cpp. `model.h` contains the quantized model and `predict.cpp` contains the inference code.
+   The SeeDot-generated code would give around 91.23% classification accuracy. The difference in classification accuracy is 0.11% compared to the floating-point code. The generated code is stored in the `arduino` folder which contains the sketch along with two files: model.h and predict.cpp. `model.h` contains the quantized model and `predict.cpp` contains the inference code.
 
 #### **Step 3: Prediction on the device**
 
