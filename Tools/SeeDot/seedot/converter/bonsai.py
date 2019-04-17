@@ -33,12 +33,19 @@ class Bonsai:
         self.transformDataset()
         self.writeDataset()
 
+    def readTheta(self):
+        if os.path.isfile(os.path.join(getModelDir(), "T")):
+            return readFileAsMat(os.path.join(getModelDir(), "T"), "\t", float)
+        elif os.path.isfile(os.path.join(getModelDir(), "Theta")):
+            return readFileAsMat(os.path.join(getModelDir(), "Theta"), "\t", float)
+        else:
+            assert False
+
     def readModel(self):
         self.Z = readFileAsMat(os.path.join(getModelDir(), "Z"), "\t", float)
         self.W = readFileAsMat(os.path.join(getModelDir(), "W"), "\t", float)
         self.V = readFileAsMat(os.path.join(getModelDir(), "V"), "\t", float)
-        self.T = readFileAsMat(os.path.join(
-            getModelDir(), "T"), "\t", float)
+        self.T = self.readTheta()
         self.Sigma = readFileAsMat(os.path.join(
             getModelDir(), "Sigma"), "\t", float)
         self.Mean = readFileAsMat(os.path.join(
