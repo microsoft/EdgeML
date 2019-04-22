@@ -18,9 +18,7 @@ LUTCount = 0
 
 # MSBuild location
 # Edit the path if not present at the following location
-msbuildPathOptions = [r"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe",
-					  r"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe",
-					  r"C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\MSBuild.exe"
+msbuildPathOptions = [r"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
 					  ]
 vivadoInstallPath = r"C:\Xilinx\Vivado\2018.2\bin"
 

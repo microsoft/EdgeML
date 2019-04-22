@@ -1,8 +1,5 @@
+input/
 output/
 
-seedot_fixed/*
-seedot_float/*
-
-bonsai_float/*
-lenet_float/*
-protonn_float/*
+info.txt
+input.sd

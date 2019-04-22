@@ -199,7 +199,7 @@ class Protonn:
 			self.writeModelForHls()
 
 	def run(self):
-		self.headerFile = os.path.join(getOutputDir(), "model.h")
+		self.headerFile = os.path.join(getOutputDir(), "model_%s.h" % (getVersion()))
 		self.inputFile = os.path.join(getOutputDir(), "input.sd")
 		self.infoFile = os.path.join(getOutputDir(), "info.txt")
 		self.fpgaFile = os.path.join(getOutputDir(), "CustomTypes.sv")

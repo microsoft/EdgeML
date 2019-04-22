@@ -41,7 +41,7 @@ class X86(CodegenBase):
 		self.out.printf('#include "datatypes.h"\n', indent=True)
 		self.out.printf('#include "predictors.h"\n', indent=True)
 		self.out.printf('#include "library_%s.h"\n' % (getVersion()), indent=True)
-		self.out.printf('#include "seedot_%s\\testing\\model.h"\n\n' % (getVersion()), indent=True)
+		self.out.printf('#include "model_%s.h"\n\n' % (getVersion()), indent=True)
 		self.out.printf('using namespace std;\n', indent=True)
 		self.out.printf('using namespace %s_%s;\n\n' % (getAlgo(), getVersion()), indent=True)
 

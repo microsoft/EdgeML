@@ -1,6 +1,5 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
+# Copyright (c) Microsoft Corporation.  All rights reserved.
 # Licensed under the MIT license.
-
 import argparse
 import os
 import shutil
@@ -21,12 +20,13 @@ class Main:
 		self.accuracy = {}
 		self.useHandWrittenFloat = False
 
-	# Generate the fixed-point code using the input generated from the Converter project
+	# Generate the fixed-point code using the input generated from the Converter
+	# project
 	def compile(self, target, sf):
 		print("Generating code...", end='')
 
 		# Set input and output files
-		inputFile = os.path.join("..", "Predictor", "seedot_" + self.version, "testing", "input.sd")
+		inputFile = os.path.join("..", "Predictor", "input.sd")
 		profileLogFile = os.path.join("..", "Predictor", "output", self.algo + "-float", "profile.txt")
 
 		if target == Common.Target.Arduino:
@@ -49,7 +49,8 @@ class Main:
 		print("completed")
 		return True
 
-	# Run the converter project to generate the input files using reading the training model
+	# Run the converter project to generate the input files using reading the
+	# training model
 	def convert(self, version, datasetType, target):
 		print("Generating input files for %s %s dataset..." % (version, datasetType), end='')
 
@@ -64,15 +65,8 @@ class Main:
 			outputDir = os.path.join("..", "verilog", "input")
 			datasetOutputDir = os.path.join("..", "Streamer", "input")
 		elif target == Common.Target.X86:
-			if version == Common.Version.Fixed:
-				outputDir = os.path.join("..", "Predictor", "seedot_fixed", "testing")
-				datasetOutputDir = os.path.join("..", "Predictor", "seedot_fixed", datasetType)
-			elif version == Common.Version.Float and self.useHandWrittenFloat is False:
-				outputDir = os.path.join("..", "Predictor", "seedot_float", "testing")
-				datasetOutputDir = os.path.join("..", "Predictor", "seedot_float", datasetType)
-			elif version == Common.Version.Float and self.useHandWrittenFloat:
-				outputDir = os.path.join("..", "Predictor", self.algo + "_float", "testing")
-				datasetOutputDir = os.path.join("..", "Predictor", self.algo + "_float", datasetType)
+			outputDir = os.path.join("..", "Predictor")
+			datasetOutputDir = os.path.join("..", "Predictor", "input")
 		else:
 			assert False
 		
@@ -133,9 +127,12 @@ class Main:
 				return False
 
 			# The iterator logic is as follows:
-			# Search begins when the first valid scaling factor is found (runOnce returns True)
-			# Search ends when the execution fails on a particular scaling factor (runOnce returns False)
-			# This is the window where valid scaling factors exist and we select the one with the best accuracy
+			# Search begins when the first valid scaling factor is found (runOnce
+			# returns True)
+			# Search ends when the execution fails on a particular scaling factor
+			# (runOnce returns False)
+			# This is the window where valid scaling factors exist and we select the one
+			# with the best accuracy
 			if res == True:
 				searching = True
 			elif searching == True:
@@ -153,13 +150,15 @@ class Main:
 
 		return True
 
-	# Reverse sort the accuracies, print the top 5 accuracies and return the best scaling factor
+	# Reverse sort the accuracies, print the top 5 accuracies and return the best
+	# scaling factor
 	def getBestScale(self):
 		sorted_accuracy = dict(sorted(self.accuracy.items(), key=operator.itemgetter(1), reverse=True)[:5])
 		print(sorted_accuracy)
 		return next(iter(sorted_accuracy))
 
-	# Find the scaling factor which works best on the training dataset and predict on the testing dataset
+	# Find the scaling factor which works best on the training dataset and predict
+	# on the testing dataset
 	def findBestScalingFactor(self):
 		print("-------------------------------------------------")
 		print("Performing search to find the best scaling factor")
