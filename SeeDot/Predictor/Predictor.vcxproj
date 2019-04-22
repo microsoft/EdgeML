@@ -130,6 +130,8 @@
     <ClInclude Include="library_fixed.h" />
     <ClInclude Include="datatypes.h" />
     <ClInclude Include="library_float.h" />
+    <ClInclude Include="model_fixed.h" />
+    <ClInclude Include="model_float.h" />
     <ClInclude Include="predictors.h" />
     <ClInclude Include="profile.h" />
   </ItemGroup>

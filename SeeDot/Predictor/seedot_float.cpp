@@ -6,151 +6,70 @@
 #include "model_float.h"
 
 using namespace std;
-using namespace bonsai_float;
+using namespace protonn_float;
 
 int seedotFloat(float **X) {
+	float tmp4;
+	float tmp5[20][1];
+	MYINT i;
 	float tmp6[20][1];
-	float tmp7[20][1];
-	MYINT node0;
-	float tmp9[1][1];
-	float tmp8[20];
+	float tmp7;
+	float tmp8[1][20];
+	float tmp10[1][1];
+	float tmp9[20];
 	float tmp11[1][1];
-	float tmp10[20];
 	float tmp12[1][1];
-	float tmp14[1][1];
-	float tmp13[20];
-	MYINT node1;
-	float tmp16[1][1];
-	float tmp15[20];
-	float tmp18[1][1];
-	float tmp17[20];
-	float tmp19[1][1];
-	float tmp20[1][1];
-	float tmp22[1][1];
-	float tmp21[20];
-	MYINT node2;
-	float tmp24[1][1];
-	float tmp23[20];
-	float tmp26[1][1];
-	float tmp25[20];
-	float tmp27[1][1];
-	float tmp28[1][1];
-	float tmp30[1][1];
-	float tmp29[20];
-	MYINT node3;
-	float tmp32[1][1];
-	float tmp31[20];
-	float tmp34[1][1];
-	float tmp33[20];
-	float tmp35[1][1];
-	float tmp36[1][1];
-	MYINT tmp37;
+	float tmp14[2][1];
+	float tmp13[1];
+	float tmp15[2][1];
+	MYINT tmp16;
+
+	tmp4 = 0.000515;
 
 
+	// W |*| X
+	memset(tmp5, 0, sizeof(float) * 20);
+	SparseMatMul(&Widx[0], &Wval[0], X, &tmp5[0][0], 400, 128, 128, 512);
 
-	// Z |*| X
-	memset(tmp6, 0, sizeof(float) * 20);
-	SparseMatMul(&Zidx[0], &Zval[0], X, &tmp6[0][0], 401, 128, 128, 4);
+	memset(tmp15, 0, sizeof(float) * 2);
+	i = 0;
+	for (MYINT i0 = 0; (i0 < 40); i0++) {
 
+		// WX - B
+		MatSub(&tmp5[0][0], &B[i][0][0], &tmp6[0][0], 20, 1, 1, 128, 1);
 
-	// tmp6 - mean
-	MatSub(&tmp6[0][0], &mean[0][0], &tmp7[0][0], 20, 1, 1, 256, 1);
+		tmp7 = (-tmp4);
 
-	node0 = 0;
-
-	// W * ZX
-	MatMulCN(&W[node0][0][0], &tmp7[0][0], &tmp9[0][0], &tmp8[0], 1, 20, 1, 128, 64, 0, 5);
-
-
-	// V * ZX
-	MatMulCN(&V[node0][0][0], &tmp7[0][0], &tmp11[0][0], &tmp10[0], 1, 20, 1, 128, 64, 0, 5);
+		// del^T
+		Transpose(&tmp6[0][0], &tmp8[0][0], 1, 20);
 
 
-	// tanh(V0)
-	TanH(&tmp11[0][0], 1, 1, 1.000000f);
+		// tmp8 * del
+		MatMulNN(&tmp8[0][0], &tmp6[0][0], &tmp10[0][0], &tmp9[0], 1, 20, 1, 1, 1, 0, 5);
 
 
-	// W0 <*> V0_tanh
-	MulCir(&tmp9[0][0], &tmp11[0][0], &tmp12[0][0], 1, 1, 64, 32);
+		// tmp7 * tmp10
+		ScalarMul(&tmp7, &tmp10[0][0], &tmp11[0][0], 1, 1, 128, 128);
 
 
-	// T * ZX
-	MatMulCN(&T[node0][0][0], &tmp7[0][0], &tmp14[0][0], &tmp13[0], 1, 20, 1, 128, 64, 0, 5);
-
-	node1 = ((tmp14[0][0] > 0) ? ((2 * node0) + 1) : ((2 * node0) + 2));
-
-	// W * ZX
-	MatMulCN(&W[node1][0][0], &tmp7[0][0], &tmp16[0][0], &tmp15[0], 1, 20, 1, 128, 64, 0, 5);
+		// exp(tmp11)
+		Exp(&tmp11[0][0], 1, 1, 32767, 32767, &tmp12[0][0]);
 
 
-	// V * ZX
-	MatMulCN(&V[node1][0][0], &tmp7[0][0], &tmp18[0][0], &tmp17[0], 1, 20, 1, 128, 64, 0, 5);
+		// Z * tmp12
+		MatMulCN(&Z[i][0][0], &tmp12[0][0], &tmp14[0][0], &tmp13[0], 2, 1, 1, 128, 128, 0, 0);
+
+		for (MYINT i1 = 0; (i1 < 2); i1++) {
+			for (MYINT i2 = 0; (i2 < 1); i2++) {
+				tmp15[i1][i2] = (tmp15[i1][i2] + (tmp14[i1][i2] / 64));
+			}
+		}
+		i = (i + 1);
+	}
+
+	// argmax(res)
+	ArgMax(&tmp15[0][0], 2, 1, &tmp16);
 
 
-	// tanh(V1)
-	TanH(&tmp18[0][0], 1, 1, 1.000000f);
-
-
-	// W1 <*> V1_tanh
-	MulCir(&tmp16[0][0], &tmp18[0][0], &tmp19[0][0], 1, 1, 64, 32);
-
-
-	// score0 + tmp19
-	MatAdd(&tmp12[0][0], &tmp19[0][0], &tmp20[0][0], 1, 1, 1, 1, 1);
-
-
-	// T * ZX
-	MatMulCN(&T[node1][0][0], &tmp7[0][0], &tmp22[0][0], &tmp21[0], 1, 20, 1, 128, 64, 0, 5);
-
-	node2 = ((tmp22[0][0] > 0) ? ((2 * node1) + 1) : ((2 * node1) + 2));
-
-	// W * ZX
-	MatMulCN(&W[node2][0][0], &tmp7[0][0], &tmp24[0][0], &tmp23[0], 1, 20, 1, 128, 64, 0, 5);
-
-
-	// V * ZX
-	MatMulCN(&V[node2][0][0], &tmp7[0][0], &tmp26[0][0], &tmp25[0], 1, 20, 1, 128, 64, 0, 5);
-
-
-	// tanh(V2)
-	TanH(&tmp26[0][0], 1, 1, 1.000000f);
-
-
-	// W2 <*> V2_tanh
-	MulCir(&tmp24[0][0], &tmp26[0][0], &tmp27[0][0], 1, 1, 64, 32);
-
-
-	// score1 + tmp27
-	MatAdd(&tmp20[0][0], &tmp27[0][0], &tmp28[0][0], 1, 1, 1, 1, 1);
-
-
-	// T * ZX
-	MatMulCN(&T[node2][0][0], &tmp7[0][0], &tmp30[0][0], &tmp29[0], 1, 20, 1, 128, 64, 0, 5);
-
-	node3 = ((tmp30[0][0] > 0) ? ((2 * node2) + 1) : ((2 * node2) + 2));
-
-	// W * ZX
-	MatMulCN(&W[node3][0][0], &tmp7[0][0], &tmp32[0][0], &tmp31[0], 1, 20, 1, 128, 64, 0, 5);
-
-
-	// V * ZX
-	MatMulCN(&V[node3][0][0], &tmp7[0][0], &tmp34[0][0], &tmp33[0], 1, 20, 1, 128, 64, 0, 5);
-
-
-	// tanh(V3)
-	TanH(&tmp34[0][0], 1, 1, 1.000000f);
-
-
-	// W3 <*> V3_tanh
-	MulCir(&tmp32[0][0], &tmp34[0][0], &tmp35[0][0], 1, 1, 64, 32);
-
-
-	// score2 + tmp35
-	MatAdd(&tmp28[0][0], &tmp35[0][0], &tmp36[0][0], 1, 1, 1, 1, 1);
-
-
-	// sgn(score3)
-	tmp37 = ((tmp36[0][0] > 0) ? 1 : 0);
-
-	return tmp37;
+	return tmp16;
 }

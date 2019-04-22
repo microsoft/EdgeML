@@ -20,6 +20,9 @@ def getVersion():
 def setVersion(version:str):
 	Config.version = version
 
+def forFixed():
+	return Config.version == Common.Version.Fixed
+
 def forFloat():
 	return Config.version == Common.Version.Float
 
@@ -51,10 +54,10 @@ def getExpBitLength():
 	return Config.expBigLength
 
 def getMaxScale():
-	return Config.maxExpnt
+	return Config.maxScale
 
-def setMaxExpnt(x:int):
-	Config.maxExpnt = x
+def setMaxScale(x:int):
+	Config.maxScale = x
 
 def getShrType():
 	# "shr" "shr+" "div" "negate"

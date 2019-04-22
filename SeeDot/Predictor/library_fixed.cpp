@@ -537,3 +537,15 @@ void Maxpool(MYINT *A, MYINT *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT strid
 
 	return;
 }
+
+// B = exp(A)
+void Exp(MYINT *A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT *B) {
+
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			B[i * J + j] = ((MYINT)(exp(((float)A[i * J + j]) / shrA) * shrB));
+		}
+	}
+
+	return;
+}

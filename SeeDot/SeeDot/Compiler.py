@@ -29,7 +29,7 @@ from Writer import Writer
 
 class Compiler:
 
-	def __init__(self, algo, version, target, inputFile, outputFile, profileLogFile, maxExpnt, numWorkers):
+	def __init__(self, algo, version, target, inputFile, outputFile, profileLogFile, maxScale, numWorkers):
 		if os.path.isfile(inputFile) == False:
 			raise Exception("Input file doesn't exist")
 
@@ -40,7 +40,7 @@ class Compiler:
 		self.input = FileStream(inputFile)
 		self.outputFile = outputFile
 		setProfileLogFile(profileLogFile)
-		setMaxExpnt(maxExpnt)
+		setMaxScale(maxScale)
 	
 	def run(self):
 		# Parse and generate CST for the input
@@ -91,7 +91,7 @@ class Compiler:
 		
 		res = compiler.visit(ast)
 
-		state = compiler.decls, compiler.scales, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.globalVars, compiler.internalVars
+		state = compiler.decls, compiler.scales, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.globalVars, compiler.internalVars, compiler.floatConstants
 
 		return res, state
 

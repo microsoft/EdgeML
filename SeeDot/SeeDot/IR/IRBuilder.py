@@ -24,6 +24,9 @@ class IRBuilder(ASTVisitor):
 		self.profileLoaded = False
 
 		if getMaxScale() == None:
+			print("Setting max scale parameter to a dummy value 0. Shouldn't affect the generated code.")
+			self.MAX_SCALE = 0
+			'''
 			# data-driven parameters
 			inputFile = getProfileLogFile()
 
@@ -39,6 +42,7 @@ class IRBuilder(ASTVisitor):
 			[min_all, max_all] = data[0]
 			
 			self.MAX_SCALE = self.getScale(max(abs(min_all), abs(max_all)))
+			'''
 		else:
 			self.MAX_SCALE = getMaxScale()
 
@@ -57,6 +61,7 @@ class IRBuilder(ASTVisitor):
 		self.intvs = {}
 		self.cnsts = {}
 		self.internalVars = []
+		self.floatConstants = {}
 
 	def readProfileFile(self):
 		if self.profileLoaded == True:
@@ -107,6 +112,7 @@ class IRBuilder(ASTVisitor):
 		self.scales[expr.idf] = scale
 		self.intvs[expr.idf] = intv
 		self.cnsts[expr.idf] = val_int
+		self.floatConstants[expr.idf] = val
 
 		return (prog, expr)
 
@@ -942,11 +948,10 @@ class IRBuilder(ASTVisitor):
 	# out = exp(in)
 	def visitExp(self, node:AST.Func):
 		
-		self.readProfileFile()
-
-		if useMathExp():
+		if forFloat() or useMathExp():
 			return self.visitMathExp(node)
 		elif useTableExp():
+			self.readProfileFile()
 			return self.visitTableExp(node)
 		else:
 			assert False
@@ -975,17 +980,26 @@ class IRBuilder(ASTVisitor):
 		scale_out = self.getScale(maxExp)
 		intv_out = self.getInterval(scale_out, maxExp, maxExp)
 
-		shr1 = IR.Int(2 ** -scale_in)
-		shr2 = IR.Int(2 ** -scale_out)
+		[I, J] = type_in.shape
 
-		expr_in_idx = IRUtil.addIndex(expr_in, [IRUtil.zero] * type_in.dim)
-		expr_out_idx = IRUtil.addIndex(expr_out, [IRUtil.zero] * type_in.dim)
+		shr1 = 2 ** -scale_in
+		shr2 = 2 ** -scale_out
+
+		shr1 = self.formatShr(shr1)
+		shr2 = self.formatShr(shr2)
 
 		cmd0 = IR.Comment('exp(' + expr_in.idf + ')')
 
-		cmd_assn = IR.Assn(expr_out_idx, IRUtil.castToInt(IRUtil.mul(IR.Exp(IRUtil.div(IRUtil.castToFloat(expr_in_idx), shr1)), shr2)))
+		funcCall = IR.FuncCall("Exp", {
+								expr_in: "A",
+								IR.Int(I): "I",
+								IR.Int(J): "J",
+								shr1: "shrA",
+								shr2: "shrB",
+								expr_out: "B"
+								})
 
-		prog_exp = IR.Prog([cmd0, cmd_assn])
+		prog_exp = IR.Prog([cmd0, funcCall])
 
 		prog_out = IRUtil.concatPrograms(prog_in, prog_exp)
 
@@ -1242,6 +1256,7 @@ class IRBuilder(ASTVisitor):
 
 		var_idf = node.name
 		self.decls[var_idf] = Type.Int()
+		self.internalVars.append(var_idf)
 
 		(prog_in, expr_in) = self.visit(node.expr)
 

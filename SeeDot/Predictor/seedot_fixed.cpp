@@ -6,151 +6,87 @@
 #include "model_fixed.h"
 
 using namespace std;
-using namespace bonsai_fixed;
+using namespace protonn_fixed;
+
+const MYINT EXP8A[64] = {
+	8192, 3013, 1108, 407, 150, 55, 20, 7, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+};
+const MYINT EXP8B[64] = {
+	12962, 12761, 12563, 12368, 12177, 11988, 11802, 11619, 11439, 11261, 11087, 10915, 10746, 10579, 10415, 10254, 10095, 9938, 9784, 9632, 9483, 9336, 9191, 9049, 8908, 8770, 8634, 8500, 8369, 8239, 8111, 7985, 7862, 7740, 7620, 7502, 7385, 7271, 7158, 7047, 6938, 6830, 6724, 6620, 6517, 6416, 6317, 6219, 6123, 6028, 5934, 5842, 5752, 5662, 5575, 5488, 5403, 5319, 5237, 5156, 5076, 4997, 4919, 4843, 
+};
 
 int seedotFixed(MYINT **X) {
+	MYINT tmp4;
+	MYINT tmp5[20][1];
+	MYINT i;
 	MYINT tmp6[20][1];
-	MYINT tmp7[20][1];
-	MYINT node0;
-	MYINT tmp9[1][1];
-	MYINT tmp8[20];
+	MYINT tmp7;
+	MYINT tmp8[1][20];
+	MYINT tmp10[1][1];
+	MYINT tmp9[20];
 	MYINT tmp11[1][1];
-	MYINT tmp10[20];
-	MYINT tmp12[1][1];
-	MYINT tmp14[1][1];
-	MYINT tmp13[20];
-	MYINT node1;
-	MYINT tmp16[1][1];
-	MYINT tmp15[20];
-	MYINT tmp18[1][1];
-	MYINT tmp17[20];
-	MYINT tmp19[1][1];
-	MYINT tmp20[1][1];
-	MYINT tmp22[1][1];
-	MYINT tmp21[20];
-	MYINT node2;
-	MYINT tmp24[1][1];
-	MYINT tmp23[20];
-	MYINT tmp26[1][1];
-	MYINT tmp25[20];
-	MYINT tmp27[1][1];
-	MYINT tmp28[1][1];
-	MYINT tmp30[1][1];
-	MYINT tmp29[20];
-	MYINT node3;
-	MYINT tmp32[1][1];
-	MYINT tmp31[20];
-	MYINT tmp34[1][1];
-	MYINT tmp33[20];
-	MYINT tmp35[1][1];
-	MYINT tmp36[1][1];
-	MYINT tmp37;
+	MYINT tmp15[1][1];
+	MYINT tmp12;
+	MYINT tmp13;
+	MYINT tmp14;
+	MYINT tmp17[2][1];
+	MYINT tmp16[1];
+	MYINT tmp18[2][1];
+	MYINT tmp19;
+
+	tmp4 = 8640;
 
 
+	// W |*| X
+	memset(tmp5, 0, sizeof(MYINT) * 20);
+	SparseMatMul(&Widx[0], &Wval[0], X, &tmp5[0][0], 400, 128, 128, 128);
 
-	// Z |*| X
-	memset(tmp6, 0, sizeof(MYINT) * 20);
-	SparseMatMul(&Zidx[0], &Zval[0], X, &tmp6[0][0], 401, 128, 128, 4);
+	memset(tmp18, 0, sizeof(MYINT) * 2);
+	i = 0;
+	for (MYINT i0 = 0; (i0 < 40); i0++) {
 
+		// WX - B
+		MatSub(&tmp5[0][0], &B[i][0][0], &tmp6[0][0], 20, 1, 1, 32, 1);
 
-	// tmp6 - mean
-	MatSub(&tmp6[0][0], &mean[0][0], &tmp7[0][0], 20, 1, 1, 256, 1);
+		tmp7 = (-tmp4);
 
-	node0 = 0;
-
-	// W * ZX
-	MatMulCN(&W[node0][0][0], &tmp7[0][0], &tmp9[0][0], &tmp8[0], 1, 20, 1, 128, 64, 0, 5);
-
-
-	// V * ZX
-	MatMulCN(&V[node0][0][0], &tmp7[0][0], &tmp11[0][0], &tmp10[0], 1, 20, 1, 128, 64, 0, 5);
+		// del^T
+		Transpose(&tmp6[0][0], &tmp8[0][0], 1, 20);
 
 
-	// tanh(V0)
-	TanH(&tmp11[0][0], 1, 1, 2048);
+		// tmp8 * del
+		MatMulNN(&tmp8[0][0], &tmp6[0][0], &tmp10[0][0], &tmp9[0], 1, 20, 1, 8, 8, 0, 5);
 
 
-	// W0 <*> V0_tanh
-	MulCir(&tmp9[0][0], &tmp11[0][0], &tmp12[0][0], 1, 1, 64, 32);
+		// tmp7 * tmp10
+		ScalarMul(&tmp7, &tmp10[0][0], &tmp11[0][0], 1, 1, 128, 128);
 
 
-	// T * ZX
-	MatMulCN(&T[node0][0][0], &tmp7[0][0], &tmp14[0][0], &tmp13[0], 1, 20, 1, 128, 64, 0, 5);
+		// exp(tmp11)
+		if (((-tmp11[0][0]) < 59)) {
+			tmp13 = 0;
+			tmp14 = 0;
+		} else {
+			tmp12 = (((-tmp11[0][0]) - 59) << 2);
+			tmp13 = ((tmp12 >> 10) & 63);
+			tmp14 = ((tmp12 >> 4) & 63);
+		}
+		tmp15[0][0] = ((EXP8A[tmp13] >> 7) * (EXP8B[tmp14] >> 7));
 
-	node1 = ((tmp14[0][0] > 0) ? ((2 * node0) + 1) : ((2 * node0) + 2));
+		// Z * tmp15
+		MatMulCN(&Z[i][0][0], &tmp15[0][0], &tmp17[0][0], &tmp16[0], 2, 1, 1, 128, 128, 0, 0);
 
-	// W * ZX
-	MatMulCN(&W[node1][0][0], &tmp7[0][0], &tmp16[0][0], &tmp15[0], 1, 20, 1, 128, 64, 0, 5);
+		for (MYINT i1 = 0; (i1 < 2); i1++) {
+			for (MYINT i2 = 0; (i2 < 1); i2++) {
+				tmp18[i1][i2] = (tmp18[i1][i2] + (tmp17[i1][i2] / 64));
+			}
+		}
+		i = (i + 1);
+	}
 
-
-	// V * ZX
-	MatMulCN(&V[node1][0][0], &tmp7[0][0], &tmp18[0][0], &tmp17[0], 1, 20, 1, 128, 64, 0, 5);
-
-
-	// tanh(V1)
-	TanH(&tmp18[0][0], 1, 1, 2048);
-
-
-	// W1 <*> V1_tanh
-	MulCir(&tmp16[0][0], &tmp18[0][0], &tmp19[0][0], 1, 1, 64, 32);
-
-
-	// score0 + tmp19
-	MatAdd(&tmp12[0][0], &tmp19[0][0], &tmp20[0][0], 1, 1, 1, 1, 1);
-
-
-	// T * ZX
-	MatMulCN(&T[node1][0][0], &tmp7[0][0], &tmp22[0][0], &tmp21[0], 1, 20, 1, 128, 64, 0, 5);
-
-	node2 = ((tmp22[0][0] > 0) ? ((2 * node1) + 1) : ((2 * node1) + 2));
-
-	// W * ZX
-	MatMulCN(&W[node2][0][0], &tmp7[0][0], &tmp24[0][0], &tmp23[0], 1, 20, 1, 128, 64, 0, 5);
+	// argmax(res)
+	ArgMax(&tmp18[0][0], 2, 1, &tmp19);
 
 
-	// V * ZX
-	MatMulCN(&V[node2][0][0], &tmp7[0][0], &tmp26[0][0], &tmp25[0], 1, 20, 1, 128, 64, 0, 5);
-
-
-	// tanh(V2)
-	TanH(&tmp26[0][0], 1, 1, 2048);
-
-
-	// W2 <*> V2_tanh
-	MulCir(&tmp24[0][0], &tmp26[0][0], &tmp27[0][0], 1, 1, 64, 32);
-
-
-	// score1 + tmp27
-	MatAdd(&tmp20[0][0], &tmp27[0][0], &tmp28[0][0], 1, 1, 1, 1, 1);
-
-
-	// T * ZX
-	MatMulCN(&T[node2][0][0], &tmp7[0][0], &tmp30[0][0], &tmp29[0], 1, 20, 1, 128, 64, 0, 5);
-
-	node3 = ((tmp30[0][0] > 0) ? ((2 * node2) + 1) : ((2 * node2) + 2));
-
-	// W * ZX
-	MatMulCN(&W[node3][0][0], &tmp7[0][0], &tmp32[0][0], &tmp31[0], 1, 20, 1, 128, 64, 0, 5);
-
-
-	// V * ZX
-	MatMulCN(&V[node3][0][0], &tmp7[0][0], &tmp34[0][0], &tmp33[0], 1, 20, 1, 128, 64, 0, 5);
-
-
-	// tanh(V3)
-	TanH(&tmp34[0][0], 1, 1, 2048);
-
-
-	// W3 <*> V3_tanh
-	MulCir(&tmp32[0][0], &tmp34[0][0], &tmp35[0][0], 1, 1, 64, 32);
-
-
-	// score2 + tmp35
-	MatAdd(&tmp28[0][0], &tmp35[0][0], &tmp36[0][0], 1, 1, 1, 1, 1);
-
-
-	// sgn(score3)
-	tmp37 = ((tmp36[0][0] > 0) ? 1 : 0);
-
-	return tmp37;
+	return tmp19;
 }

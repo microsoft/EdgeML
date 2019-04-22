@@ -285,11 +285,15 @@ class CodegenBase:
 	def printConstDecls(self):
 		for cnst in self.cnsts:
 			var, num = cnst, self.cnsts[cnst]
-			if np.iinfo(np.int16).min <= num <= np.iinfo(np.int16).max:
-				self.out.printf('%s = %d;\n', var, num, indent=True)
-			elif np.iinfo(np.int32).min <= num <= np.iinfo(np.int32).max:
-				self.out.printf('%s = %dL;\n', var, num, indent=True)
-			elif np.iinfo(np.int64).min <= num <= np.iinfo(np.int64).max:
-				self.out.printf('%s = %dLL;\n', var, num, indent=True)
+
+			if forFloat() and var in self.floatConstants:
+				self.out.printf('%s = %f;\n', var, self.floatConstants[var], indent=True)
 			else:
-				assert False
+				if np.iinfo(np.int16).min <= num <= np.iinfo(np.int16).max:
+					self.out.printf('%s = %d;\n', var, num, indent=True)
+				elif np.iinfo(np.int32).min <= num <= np.iinfo(np.int32).max:
+					self.out.printf('%s = %dL;\n', var, num, indent=True)
+				elif np.iinfo(np.int64).min <= num <= np.iinfo(np.int64).max:
+					self.out.printf('%s = %dLL;\n', var, num, indent=True)
+				else:
+					assert False

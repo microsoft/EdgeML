@@ -5,6 +5,7 @@
 
 #include "datatypes.h"
 #include "library_float.h"
+#include "profile.h"
 
 // C = A + B
 void MatAdd(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
@@ -493,6 +494,22 @@ void Maxpool(float *A, float *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT strid
 					B[n * HO * WO * C + ho * WO * C + wo * C + c] = max;
 				}
 			}
+		}
+	}
+
+	return;
+}
+
+// B = exp(A)
+void Exp(float *A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, float *B) {
+
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			float x = A[i * J + j];
+
+			updateRangeOfExp(-x);
+
+			B[i * J + j] = exp(x);
 		}
 	}
 

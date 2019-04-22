@@ -50,5 +50,11 @@
     <ClInclude Include="library_float.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="model_fixed.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model_float.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

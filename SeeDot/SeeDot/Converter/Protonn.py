@@ -340,32 +340,32 @@ class ProtonnFloat(Protonn):
 
 	# Writing the model as a bunch of variables, arrays and matrices to a file
 	def writeModel(self):
-		mats = {}
-		lists = {}
-
-		if noNorm() == False:
-			lists['norm'] = self.Norm
-
-		# Sparse matrices are converted in to two arrays containing values and indices to reduce space
-		if useSparseMat():
-			W_transp = matTranspose(self.W)
-			Wval, Widx = convertToSparse(W_transp)
-			lists.update({'Wval': Wval, 'Widx': Widx})
-		else:
-			mats['W'] = self.W
-
-		mats.update({'B': self.B, 'Z': self.Z})
-
 		self.writeHeader()
 
 		if forArduino():
 			writeListAsArray(self.X[0], 'X', self.headerFile)
 			writeVars({'Y': self.Y[0][0]}, self.headerFile)
 
-		writeVars({'D': self.D, 'd': self.d, 'p': self.p,
-				   'c': self.c, 'g2': self.g2}, self.headerFile)
-		writeListsAsArray(lists, self.headerFile)
-		writeMatsAsArray(mats, self.headerFile)
+		if noNorm() == False:
+			writeListAsArray(self.Norm, 'norm', self.headerFile, shapeStr="[%d]" * 2 % (self.d, 1))
+
+		# Sparse matrices are converted in to two arrays containing values and indices to reduce space
+		if useSparseMat():
+			W_transp = matTranspose(self.W)
+			Wval, Widx = convertToSparse(W_transp)
+			writeListsAsArray({'Wval': Wval, 'Widx': Widx}, self.headerFile)
+		else:
+			writeMatAsArray(self.W, 'W', self.headerFile)
+
+		# Transpose B and Z to satisfy the declarations in the generated DSL input
+		B_transp = matTranspose(self.B)
+		Z_transp = matTranspose(self.Z)
+
+		writeMatAsArray(B_transp, 'B', self.headerFile,
+						shapeStr="[%d]" * 3 % (self.p, self.d, 1))
+		writeMatAsArray(Z_transp, 'Z', self.headerFile,
+						shapeStr="[%d]" * 3 % (self.p, self.c, 1))
+
 		self.writeFooter()
 
 	def writeModelForHls(self):

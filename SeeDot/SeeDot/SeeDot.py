@@ -18,11 +18,10 @@ class Main:
 	def __init__(self, algo, version, target, trainingFile, testingFile, modelDir, sf, workers):
 		self.algo, self.version, self.target, self.trainingFile, self.testingFile, self.modelDir, self.sf, self.numWorkers = algo, version, target, trainingFile, testingFile, modelDir, sf, workers
 		self.accuracy = {}
-		self.useHandWrittenFloat = False
 
 	# Generate the fixed-point code using the input generated from the Converter
 	# project
-	def compile(self, target, sf):
+	def compile(self, version, target, sf):
 		print("Generating code...", end='')
 
 		# Set input and output files
@@ -30,20 +29,20 @@ class Main:
 		profileLogFile = os.path.join("..", "Predictor", "output", self.algo + "-float", "profile.txt")
 
 		if target == Common.Target.Arduino:
-			outputFile = os.path.join("..", "arduino", "predict.cpp")			
+			outputFile = os.path.join("..", "arduino", "predict.cpp")
 		elif target == Common.Target.Hls:
 			outputFile = os.path.join("..", "hls", "predict.cpp")
 		elif target == Common.Target.Verilog:
 			outputFile = os.path.join("..", "verilog", "predict.cpp")
 		elif target == Common.Target.X86:
-			outputFile = os.path.join("..", "Predictor", "seedot_" + self.version + ".cpp")
+			outputFile = os.path.join("..", "Predictor", "seedot_" + version + ".cpp")
 		
 		try:
-			obj = Compiler(self.algo, self.version, target, inputFile, outputFile, profileLogFile, sf, self.numWorkers)
+			obj = Compiler(self.algo, version, target, inputFile, outputFile, profileLogFile, sf, self.numWorkers)
 			obj.run()
 		except:
 			print("failed!\n")
-			traceback.print_exc()
+			#traceback.print_exc()
 			return False
 
 		print("completed")
@@ -100,7 +99,7 @@ class Main:
 
 	# Compile and run the generated code once for a given scaling factor
 	def runOnce(self, version, datasetType, target, sf):
-		res = self.compile(target, sf)
+		res = self.compile(version, target, sf)
 		if res == False:
 			return False, False
 
@@ -207,6 +206,10 @@ class Main:
 		if res == False:
 			return False
 
+		res = self.compile(Common.Version.Float, Common.Target.X86, self.sf)
+		if res == False:
+			return False
+
 		acc = self.predict(Common.Version.Float, Common.DatasetType.Training)
 		if acc == None:
 			return False
@@ -228,7 +231,7 @@ class Main:
 		destFile = os.path.join("..", self.target, "model.h")
 		shutil.copyfile(srcFile, destFile)
 
-		res = self.compile(self.target, self.sf)
+		res = self.compile(Common.Version.Fixed, self.target, self.sf)
 		if res == False:
 			return False
 
@@ -265,7 +268,7 @@ class Main:
 		if res == False:
 			return False
 
-		res = self.compile(Common.Target.X86, self.sf)
+		res = self.compile(Common.Version.Float, Common.Target.X86, self.sf)
 		if res == False:
 			return False
 
