@@ -58,6 +58,12 @@ def forHls():
 def setNumWorkers(WorkerThreads):
 	Config.numWorkers = WorkerThreads
 
+def setInputFile(inputFile):
+	Config.inputFile = inputFile
+
+def getInputFile():
+	return Config.inputFile
+
 def getNumWorkers():
 	return Config.numWorkers
 
@@ -231,8 +237,11 @@ def readFileAsMat(fileName: str, delimiter: str, dataType):
 			mat.append(row)
 	return mat
 
-# Write the matrix as a CSV file
 def writeMatAsCSV(mat, fileName: str):
+	writeMatToFile(mat, fileName, ", ")
+
+# Write the matrix as a CSV file
+def writeMatToFile(mat, fileName: str, delimiter):
 	m, n = matShape(mat)
 	_, formatSpecifier = getDataType(mat[0][0])
 
@@ -241,7 +250,7 @@ def writeMatAsCSV(mat, fileName: str):
 			for j in range(n):
 				file.write(formatSpecifier % mat[i][j])
 				if j != (n - 1):
-					file.write(", ")
+					file.write(delimiter)
 			file.write("\n")
 
 def writeMatsAsArray(mats: dict, fileName: str, shapeStr=None):

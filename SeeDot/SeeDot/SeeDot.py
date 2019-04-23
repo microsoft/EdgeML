@@ -25,7 +25,7 @@ class Main:
 		print("Generating code...", end='')
 
 		# Set input and output files
-		inputFile = os.path.join("..", "Predictor", "input.sd")
+		inputFile = os.path.join(self.modelDir, "input.sd")
 		profileLogFile = os.path.join("..", "Predictor", "output", self.algo + "-float", "profile.txt")
 
 		if target == Common.Target.Arduino:
@@ -72,9 +72,11 @@ class Main:
 		os.makedirs(datasetOutputDir, exist_ok=True)
 		os.makedirs(outputDir, exist_ok=True)
 
+		inputFile = os.path.join(self.modelDir, "input.sd")
+
 		try:
 			obj = Converter(self.algo, version, datasetType, target, datasetOutputDir, outputDir, self.numWorkers)
-			obj.setInput(self.modelDir, self.trainingFile, self.testingFile)
+			obj.setInput(inputFile, self.modelDir, self.trainingFile, self.testingFile)
 			obj.run()
 		except Exception as e:
 			traceback.print_exc()

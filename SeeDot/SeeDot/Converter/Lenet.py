@@ -175,7 +175,7 @@ class LenetFixed(Lenet):
 	def writeModel(self):
 		self.writeHeader()
 
-		if forArduino():
+		if forArduino() and dumpDataset():
 			writeListAsArray(self.X[0], 'X', self.headerFile)
 			writeVars({'Y': self.Y[0][0]}, self.headerFile)
 
@@ -219,7 +219,7 @@ class LenetFloat(Lenet):
 	def writeModel(self):
 		self.writeHeader()
 		
-		if forArduino():
+		if forArduino() and dumpDataset():
 			writeListAsArray(self.X[0], 'X', self.headerFile)
 			writeVars({'Y': self.Y[0][0]}, self.headerFile)
 

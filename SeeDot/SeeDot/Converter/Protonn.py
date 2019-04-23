@@ -128,75 +128,12 @@ class Protonn:
 			file.write(") in\n")
 			file.write("argmax(res)\n")
 
-	def computeModelSize(self):
-		if noNorm():
-			norm_num = 0
-		else:
-			norm_num = len(self.Norm)
-
-		if useSparseMat():
-			W_transp = matTranspose(self.W)
-			Wval, Widx = convertToSparse(W_transp)
-			W_num = len(Wval)
-			Widx_num = len(Widx)
-		else:
-			W_num = len(self.W) * len(self.W[0])
-			Widx_num = 0
-
-		B_num = len(self.B) * len(self.B[0])
-		Z_num = len(self.Z) * len(self.Z[0])
-
-		total_num = norm_num + W_num + B_num + Z_num
-
-		with open(self.infoFile, 'a') as file:
-			file.write("nnz values: %d\n" % (total_num))
-			file.write("# indexes: %d\n\n" % (Widx_num))
-			file.write("---------------------\n")
-			file.write("Model size comparison\n")
-			file.write("---------------------\n")
-			file.write("32-bit floating-points (in KB): %.3f\n" % (((total_num * 4) + (Widx_num * 2)) / 1024))
-			file.write("(assuming 4 bytes for values and 2 bytes for indices)\n\n")
-			file.write("16-bit fixed-points (in KB): %.3f\n" % (((total_num * 2) + (Widx_num * 2)) / 1024))
-			file.write("(assuming 2 bytes for values and 2 bytes for indices)\n\n")
-			file.write("32-bit fixed-points (in KB): %.3f\n" % (((total_num * 4) + (Widx_num * 2)) / 1024))
-			file.write("(assuming 4 bytes for values and 2 bytes for indices)\n")
-			file.write("--------------------------------------------\n\n")
-
-	# Write macros and namespace declarations
-	def writeHeader(self):
-		with open(self.headerFile, 'a') as file:
-			file.write("#pragma once\n\n")
-			if useSparseMat():
-				file.write("#define P_SPARSE_W 1\n")
-			else:
-				file.write("#define P_SPARSE_W 0\n")
-
-			if noNorm():
-				file.write("#define P_NORM 0\n\n")
-			elif minMaxNorm():
-				file.write("#define P_NORM 1\n\n")
-			else:
-				assert False
-
-			if forArduino():
-				s = 'model'
-			else:
-				s = 'protonn_' + getVersion()
-			file.write("namespace %s {\n\n" % (s))
-
-	def writeFooter(self):
-		with open(self.headerFile, 'a') as file:
-			file.write("}\n")
-
 	def processModel(self):
 		self.readModel()
 		self.validateModel()
 		self.formatModel()
 		self.transformModel()
-		self.computeModelSize()
 		self.writeModel()
-		if forHls():
-			self.writeModelForHls()
 
 	def run(self):
 		self.headerFile = os.path.join(getOutputDir(), "model_%s.h" % (getVersion()))
@@ -215,10 +152,33 @@ class Protonn:
 
 		if dumpDataset():
 			assert len(self.X[0]) == len(self.W[0])
+	
+	# Writing the model as a bunch of variables, arrays and matrices to a file
+	def writeModel(self):
 
+		if noNorm() == False:
+			self.Norm = [self.Norm]
+			writeMatToFile(self.Norm, os.path.join(getOutputDir(), "norm"), "\t")
+			#writeListAsArray(self.Norm, 'norm', self.headerFile, shapeStr="[%d]" * 2 % (self.d, 1))
+
+		writeMatToFile(self.W, os.path.join(getOutputDir(), "W"), "\t")
+		#writeMatAsArray(self.W, 'W', self.headerFile)
+
+		# Transpose B and Z to satisfy the declarations in the generated DSL input
+		B_transp = matTranspose(self.B)
+		Z_transp = matTranspose(self.Z)
+
+		writeMatToFile(B_transp, os.path.join(getOutputDir(), "B"), "\t")
+		writeMatToFile(Z_transp, os.path.join(getOutputDir(), "Z"), "\t")
+		#writeMatAsArray(B_transp, 'B', self.headerFile, shapeStr="[%d]" * 3 % (self.p, self.d, 1))
+		#writeMatAsArray(Z_transp, 'Z', self.headerFile, shapeStr="[%d]" * 3 % (self.p, self.c, 1))
+
+	# Quantize the matrices
+	def transformModel(self):
+		if dumpDataset():
+			self.genInputForCompiler()
 
 class ProtonnFixed(Protonn):
-
 	# The X matrix is quantized using a scale factor computed from the training dataset.
 	# The range of X_train is used to compute the scale factor.
 	# Since the range of X_train depends on its distribution, the scale computed may be imprecise.
@@ -245,69 +205,8 @@ class ProtonnFixed(Protonn):
 			file.write("Range of training dataset: [%.6f, %.6f]\n" % (self.trainDatasetRange))
 			file.write("Test dataset scaled by: %d\n\n" % (scale))
 
-	# Quantize the matrices
-	def transformModel(self):
-		if dumpDataset():
-			self.genInputForCompiler()
-
-		self.W, _ = scaleMat(self.W)
-		self.B, _ = scaleMat(self.B)
-		self.Z, _ = scaleMat(self.Z)
-		self.Norm, _ = scaleList(self.Norm)
-
-	# Writing the model as a bunch of variables, arrays and matrices to a file
-	def writeModel(self):
-		self.writeHeader()
-
-		if forArduino():
-			writeListAsArray(self.X[0], 'X', self.headerFile)
-			writeVars({'Y': self.Y[0][0]}, self.headerFile)
-
-		if noNorm() == False:
-			writeListAsArray(self.Norm, 'norm', self.headerFile, shapeStr="[%d]" * 2 % (self.d, 1))
-
-		# Sparse matrices are converted in to two arrays containing values and indices to reduce space
-		if useSparseMat():
-			W_transp = matTranspose(self.W)
-			Wval, Widx = convertToSparse(W_transp)
-			writeListsAsArray({'Wval': Wval, 'Widx': Widx}, self.headerFile)
-		else:
-			writeMatAsArray(self.W, 'W', self.headerFile)
-
-		# Transpose B and Z to satisfy the declarations in the generated DSL input
-		B_transp = matTranspose(self.B)
-		Z_transp = matTranspose(self.Z)
-
-		writeMatAsArray(B_transp, 'B', self.headerFile,
-						shapeStr="[%d]" * 3 % (self.p, self.d, 1))
-		writeMatAsArray(Z_transp, 'Z', self.headerFile,
-						shapeStr="[%d]" * 3 % (self.p, self.c, 1))
-
-		self.writeFooter()
-
-	def writeModelForHls(self):
-		#Reformat Z_idx and Z_val to work with worker threads of SparseMul
-		if useSparseMat():
-			W_transp = matTranspose(self.W)
-			Wval, Widx = convertToSparse(W_transp)
-		numWorkers = getNumWorkers()
-		numJobs = self.D
-		jobsPerThread = int((numJobs - (numJobs * (0.25))) // numWorkers)
-		extraJobs = numJobs - (jobsPerThread * numWorkers)
-		maxJobSize = jobsPerThread + extraJobs
-		totVal = len(Widx)
-
-		SpDict = {}
-		SpDict, maxJobSize, maxJobLen, offsetDict, indexDict, maxIndex = transformZ_offsetGen(Widx,Wval, self.D,"W")
-		writeListsAsLUTs(SpDict, self.LUTdir)
-		writeListsAsLUTs(offsetDict, self.LUTdir)
-		varDict = {'WIDTH' : 16, 'D' : self.D, 'd' : self.d, 'NUM_THREADS' : numWorkers, 'JOBS_PER_THREAD' : jobsPerThread, 'COMMON_JOB_CNT' : extraJobs, 'TOT_VAL' : totVal, 'maxIndex': maxIndex }
-		varDict.update(indexDict)
-		writeVarsFpga(varDict, self.fpgaFile)
-
 
 class ProtonnFloat(Protonn):
-
 	# Float model is generated for for training dataset to profile the prediction
 	# Hence, X is trimmed down to remove outliers. Prediction profiling is performed on the trimmed X to generate more precise profile data
 	def transformDataset(self):
@@ -333,40 +232,3 @@ class ProtonnFloat(Protonn):
 			self.X_train, _ = trimMatrix(self.X_train)
 
 			self.trainDatasetRange = matRange(self.X_train)
-
-	def transformModel(self):
-		if dumpDataset():
-			self.genInputForCompiler()
-
-	# Writing the model as a bunch of variables, arrays and matrices to a file
-	def writeModel(self):
-		self.writeHeader()
-
-		if forArduino():
-			writeListAsArray(self.X[0], 'X', self.headerFile)
-			writeVars({'Y': self.Y[0][0]}, self.headerFile)
-
-		if noNorm() == False:
-			writeListAsArray(self.Norm, 'norm', self.headerFile, shapeStr="[%d]" * 2 % (self.d, 1))
-
-		# Sparse matrices are converted in to two arrays containing values and indices to reduce space
-		if useSparseMat():
-			W_transp = matTranspose(self.W)
-			Wval, Widx = convertToSparse(W_transp)
-			writeListsAsArray({'Wval': Wval, 'Widx': Widx}, self.headerFile)
-		else:
-			writeMatAsArray(self.W, 'W', self.headerFile)
-
-		# Transpose B and Z to satisfy the declarations in the generated DSL input
-		B_transp = matTranspose(self.B)
-		Z_transp = matTranspose(self.Z)
-
-		writeMatAsArray(B_transp, 'B', self.headerFile,
-						shapeStr="[%d]" * 3 % (self.p, self.d, 1))
-		writeMatAsArray(Z_transp, 'Z', self.headerFile,
-						shapeStr="[%d]" * 3 % (self.p, self.c, 1))
-
-		self.writeFooter()
-
-	def writeModelForHls(self):
-		pass
