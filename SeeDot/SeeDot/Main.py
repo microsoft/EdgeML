@@ -39,6 +39,7 @@ class MainDriver:
 		parser.add_argument("-t", "--target", choices = Common.Target.All, default = [Common.Target.Default], metavar = '', help = "Desktop code or Arduino code or Fpga HLS code")
 		parser.add_argument("-sf", "--max-scale-factor", type = int, metavar = '', help = "Max scaling factor for code generation")
 		parser.add_argument("--load-sf", action = "store_true", help = "Verify the accuracy of the generated code")
+		parser.add_argument("--convert", action = "store_true", help = "Pass through the converter")
 		parser.add_argument("--workers", type=int, default = 1, metavar = '', help = "number of worker threads to parallelize SparseMul on FPGAs only")
 		
 		self.args = parser.parse_args()
@@ -99,18 +100,42 @@ class MainDriver:
 			print("Executing on %s %s %s %s" % (algo, version, dataset, target))
 			print("========================================\n")
 
-			datasetDir = os.path.join("..", "datasets", "datasets", dataset)
-			modelDir = os.path.join("..", "model", dataset)
+			if self.args.convert:
+				datasetDir = os.path.join("..", "datasets", "datasets", dataset)
+				modelDir = os.path.join("..", "model", dataset)
 
-			if algo == Common.Algo.Bonsai:
-				modelDir = os.path.join(modelDir, "BonsaiResults", "Params")
-			elif algo == Common.Algo.Lenet:
-				modelDir = os.path.join(modelDir, "LenetModel")
-			else:
-				modelDir = os.path.join(modelDir, "ProtoNNResults")
+				if algo == Common.Algo.Bonsai:
+					modelDir = os.path.join(modelDir, "BonsaiResults", "Params")
+				elif algo == Common.Algo.Lenet:
+					modelDir = os.path.join(modelDir, "LenetModel")
+				else:
+					modelDir = os.path.join(modelDir, "ProtoNNResults")
 							
-			trainingInput = os.path.join(datasetDir, "training-full.tsv")
-			testingInput = os.path.join(datasetDir, "testing.tsv")
+				trainingInput = os.path.join(datasetDir, "training-full.tsv")
+				testingInput = os.path.join(datasetDir, "testing.tsv")
+				
+				datasetOutputDir = os.path.join("temp", "dataset-processed", algo, dataset)
+				modelOutputDir = os.path.join("temp", "model-processed", algo, dataset)
+
+				os.makedirs(datasetOutputDir, exist_ok=True)
+				os.makedirs(modelOutputDir, exist_ok=True)
+			
+				if algo == Common.Algo.Bonsai:
+					obj = Bonsai(trainingInput, testingInput, modelDir, datasetOutputDir, modelOutputDir)
+					obj.run()
+				elif algo == Common.Algo.Protonn:
+					obj = Protonn(trainingInput, testingInput, modelDir, datasetOutputDir, modelOutputDir)
+					obj.run()
+
+				trainingInput = os.path.join(datasetOutputDir, "train.npy")
+				testingInput = os.path.join(datasetOutputDir, "test.npy")
+				modelDir = modelOutputDir
+			else:
+				datasetDir = os.path.join("..", "dataset-processed", algo, dataset)
+							
+				trainingInput = os.path.join(datasetDir, "train.npy")
+				testingInput = os.path.join(datasetDir, "test.npy")
+				modelDir = os.path.join("..", "model-processed", algo, dataset)
 
 			try:
 				if version == Common.Version.Float:
@@ -140,24 +165,6 @@ class MainDriver:
 				sf = bestScale
 			else:
 				sf = self.args.max_scale_factor
-
-			if algo == Common.Algo.Bonsai or algo == Common.Algo.Protonn:
-				datasetOutputDir = os.path.join("temp", "dataset-processed", algo, dataset)
-				modelOutputDir = os.path.join("temp", "model-processed", algo, dataset)
-
-				os.makedirs(datasetOutputDir, exist_ok=True)
-				os.makedirs(modelOutputDir, exist_ok=True)
-			
-				if algo == Common.Algo.Bonsai:
-					obj = Bonsai(trainingInput, testingInput, modelDir, datasetOutputDir, modelOutputDir)
-					obj.run()
-				elif algo == Common.Algo.Protonn:
-					obj = Protonn(trainingInput, testingInput, modelDir, datasetOutputDir, modelOutputDir)
-					obj.run()
-
-				trainingInput = os.path.join(datasetOutputDir, "train.npy")
-				testingInput = os.path.join(datasetOutputDir, "test.npy")
-				modelDir = modelOutputDir
 
 			obj = Main(algo, version, target, trainingInput, testingInput, modelDir, sf, self.args.workers)
 			obj.run()
