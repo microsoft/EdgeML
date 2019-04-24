@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
 
 import argparse
 from itertools import product
@@ -6,6 +8,7 @@ import numpy as np
 import os
 
 from Converter.Converter import Converter
+from Converter.Bonsai import Bonsai
 from Converter.Protonn import Protonn
 
 import Common
@@ -138,15 +141,19 @@ class MainDriver:
 			else:
 				sf = self.args.max_scale_factor
 
-			if algo == Common.Algo.Protonn:
-				datasetOutputDir = os.path.join("temp", "dataset-processed")
-				modelOutputDir = os.path.join("temp", "model-processed")
+			if algo == Common.Algo.Bonsai or algo == Common.Algo.Protonn:
+				datasetOutputDir = os.path.join("temp", "dataset-processed", algo, dataset)
+				modelOutputDir = os.path.join("temp", "model-processed", algo, dataset)
 
 				os.makedirs(datasetOutputDir, exist_ok=True)
 				os.makedirs(modelOutputDir, exist_ok=True)
 			
-				obj = Protonn(trainingInput, testingInput, modelDir, datasetOutputDir, modelOutputDir)
-				obj.run()
+				if algo == Common.Algo.Bonsai:
+					obj = Bonsai(trainingInput, testingInput, modelDir, datasetOutputDir, modelOutputDir)
+					obj.run()
+				elif algo == Common.Algo.Protonn:
+					obj = Protonn(trainingInput, testingInput, modelDir, datasetOutputDir, modelOutputDir)
+					obj.run()
 
 				trainingInput = os.path.join(datasetOutputDir, "train.npy")
 				testingInput = os.path.join(datasetOutputDir, "test.npy")

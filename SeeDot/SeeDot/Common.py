@@ -45,5 +45,5 @@ class Target:
 	Hls = "hls"
 	Verilog = "verilog"
 	X86 = "x86"
-	Default = Arduino
+	Default = X86
 	All = [Arduino, Hls, Verilog, X86]

@@ -1,5 +1,6 @@
-# Copyright (c) Microsoft Corporation.  All rights reserved.
+# Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
+
 import argparse
 import os
 import shutil
@@ -7,6 +8,7 @@ import operator
 import traceback
 
 from Converter.Converter import Converter
+from Converter.Bonsai import Bonsai
 from Converter.Protonn import Protonn
 
 import Common
@@ -220,7 +222,7 @@ class Main:
 		print("Accuracy is %.3f%%\n" % (acc))
 
 	# Generate code for Arduino
-	def compileForTarget(self):
+	def compileFixedForTarget(self):
 		print("------------------------------")
 		print("Generating code for %s..." % (self.target))
 		print("------------------------------\n")
@@ -237,6 +239,8 @@ class Main:
 		res = self.compile(Common.Version.Fixed, self.target, self.sf)
 		if res == False:
 			return False
+
+		return True
 
 	def runForFixed(self):
 		# Collect runtime profile for ProtoNN
@@ -258,7 +262,29 @@ class Main:
 			self.testingAccuracy = self.accuracy[self.sf]
 
 		# Generate code for target
-		self.compileForTarget()
+		if self.target == Common.Target.Arduino:
+			return self.compileFixedForTarget()
+
+		return True
+
+	def compileFloatForTarget(self):
+		print("------------------------------")
+		print("Generating code for Arduino...")
+		print("------------------------------\n")
+
+		res = self.convert(Common.Version.Float, Common.DatasetType.Testing, Common.Target.Arduino)
+		if res == False:
+			return False
+
+		# Copy model.h
+		srcFile = os.path.join("..", "Streamer", "input", "model.h")
+		destFile = os.path.join("..", "arduino", "model.h")
+		shutil.copyfile(srcFile, destFile)
+
+		# Copy predict.cpp
+		srcFile = os.path.join("..", "arduino", "floating-point", self.algo + "_float.cpp")
+		destFile = os.path.join("..", "arduino", "predict.cpp")
+		shutil.copyfile(srcFile, destFile)
 
 		return True
 
@@ -283,23 +309,8 @@ class Main:
 
 		print("Accuracy is %.3f%%\n" % (acc))
 
-		print("------------------------------")
-		print("Generating code for Arduino...")
-		print("------------------------------\n")
-
-		res = self.convert(Common.Version.Float, Common.DatasetType.Testing, Common.Target.Arduino)
-		if res == False:
-			return False
-
-		# Copy model.h
-		srcFile = os.path.join("..", "Streamer", "input", "model.h")
-		destFile = os.path.join("..", "arduino", "model.h")
-		shutil.copyfile(srcFile, destFile)
-
-		# Copy predict.cpp
-		srcFile = os.path.join("..", "arduino", "floating-point", self.algo + "_float.cpp")
-		destFile = os.path.join("..", "arduino", "predict.cpp")
-		shutil.copyfile(srcFile, destFile)
+		if self.target == Common.Target.Arduino:
+			return self.compileFloatForTarget()
 
 		return True
 
@@ -353,15 +364,19 @@ class MainDriver:
 		print("Model directory: %s" % (modelDir))
 		print("================================\n")
 
-		if algo == Common.Algo.Protonn:
+		if algo == Common.Algo.Bonsai or algo == Common.Algo.Protonn:
 			datasetOutputDir = os.path.join("temp", "dataset-processed")
 			modelOutputDir = os.path.join("temp", "model-processed")
 
 			os.makedirs(datasetOutputDir, exist_ok=True)
 			os.makedirs(modelOutputDir, exist_ok=True)
 			
-			obj = Protonn(trainingInput, testingInput, modelDir, datasetOutputDir, modelOutputDir)
-			obj.run()
+			if algo == Common.Algo.Bonsai:
+				obj = Bonsai(trainingInput, testingInput, modelDir, datasetOutputDir, modelOutputDir)
+				obj.run()
+			elif algo == Common.Algo.Protonn:
+				obj = Protonn(trainingInput, testingInput, modelDir, datasetOutputDir, modelOutputDir)
+				obj.run()
 
 			trainingInput = os.path.join(datasetOutputDir, "train.npy")
 			testingInput = os.path.join(datasetOutputDir, "test.npy")

@@ -28,8 +28,8 @@ class Protonn:
 		if train_ext == test_ext == ".npy":
 			assert False
 		elif train_ext == test_ext == ".tsv":
-			self.train = np.loadtxt(self.trainFile, delimiter="\t")
-			self.test = np.loadtxt(self.testFile, delimiter="\t")
+			self.train = np.loadtxt(self.trainFile, delimiter="\t", ndmin=2)
+			self.test = np.loadtxt(self.testFile, delimiter="\t", ndmin=2)
 		elif train_ext == test_ext == ".csv":
 			# Check the length of X and Y
 			#assert len(self.X) == len(self.Y)
@@ -57,7 +57,7 @@ class Protonn:
 
 	def readNormFile(self):
 		if os.path.isfile(os.path.join(self.modelDir, "minMaxParams")):
-			self.MinMax = np.loadtxt(os.path.join(self.modelDir, "minMaxParams"), delimiter="\t")
+			self.MinMax = np.loadtxt(os.path.join(self.modelDir, "minMaxParams"), delimiter="\t", ndmin=2)
 			self.normType = "MinMax"
 		else:
 			self.normType = None
@@ -65,10 +65,10 @@ class Protonn:
 	def readModel(self):
 		self.readNormFile()
 
-		self.W = np.loadtxt(os.path.join(self.modelDir, "W"), delimiter="\t")
-		self.B = np.loadtxt(os.path.join(self.modelDir, "B"), delimiter="\t")
-		self.Z = np.loadtxt(os.path.join(self.modelDir, "Z"), delimiter="\t")
-		self.gamma = np.loadtxt(os.path.join(self.modelDir, "gamma"), delimiter="\t")
+		self.W = np.loadtxt(os.path.join(self.modelDir, "W"), delimiter="\t", ndmin=2)
+		self.B = np.loadtxt(os.path.join(self.modelDir, "B"), delimiter="\t", ndmin=2)
+		self.Z = np.loadtxt(os.path.join(self.modelDir, "Z"), delimiter="\t", ndmin=2)
+		self.gamma = np.loadtxt(os.path.join(self.modelDir, "gamma"), delimiter="\t", ndmin=2)
 
 	def validateNormFile(self):
 		if self.normType == "MinMax":
@@ -108,8 +108,8 @@ class Protonn:
 			Max = self.MinMax[1].reshape(-1, 1)
 			
 			# Precompute W * (X-m)/(M-m) by absorbing m, M into W
-			for i in range(self.W.shape[1]):
-				for j in range(len(self.W.shape[0])):
+			for i in range(self.W.shape[0]):
+				for j in range(self.W.shape[1]):
 					self.W[i][j] = self.W[i][j] / (Max[j][0] - Min[j][0])
 
 			self.Norm = self.W.dot(Min)
@@ -154,25 +154,16 @@ class Protonn:
 	def writeModel(self):
 
 		if self.normType != None:
-			#self.Norm = [self.Norm]
-			#writeMatToFile(self.Norm, os.path.join(getOutputDir(), "norm"), "\t")
 			np.save(os.path.join(self.modelOutputDir, "norm.npy"), self.Norm)
-			np.savetxt(os.path.join(self.modelOutputDir, "norm"), self.Norm, delimiter="\t", fmt='%.6f')
 
-		#writeMatToFile(self.W, os.path.join(getOutputDir(), "W"), "\t")
 		np.save(os.path.join(self.modelOutputDir, "W.npy"), self.W)
-		np.savetxt(os.path.join(self.modelOutputDir, "W"), self.W, delimiter="\t", fmt='%.6f')
 
 		# Transpose B and Z to satisfy the declarations in the generated DSL input
 		B_transp = np.transpose(self.B)
 		Z_transp = np.transpose(self.Z)
 
-		#writeMatToFile(B_transp, os.path.join(getOutputDir(), "B"), "\t")
-		#writeMatToFile(Z_transp, os.path.join(getOutputDir(), "Z"), "\t")
 		np.save(os.path.join(self.modelOutputDir, "B.npy"), B_transp)
 		np.save(os.path.join(self.modelOutputDir, "Z.npy"), Z_transp)
-		np.savetxt(os.path.join(self.modelOutputDir, "B"), B_transp, delimiter="\t", fmt='%.6f')
-		np.savetxt(os.path.join(self.modelOutputDir, "Z"), Z_transp, delimiter="\t", fmt='%.6f')
 
 	def processModel(self):
 		self.readModel()
