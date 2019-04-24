@@ -28,6 +28,19 @@ def processData(workingDir, downloadDir):
     assert os.path.isfile(tsf), 'File not found: %s' % tsf
     train = loadLibSVMFile(trf)
     test = loadLibSVMFile(tsf)
+
+    # Convert the labels from 0 to numClasses-1
+    y_train = train[:, 0]
+    y_test = test[:, 0]
+
+    lab = y_train.astype('uint8')
+    lab = np.array(lab) - min(lab)
+    train[:, 0] = lab
+
+    lab = y_test.astype('uint8')
+    lab = np.array(lab) - min(lab)
+    test[:, 0] = lab
+
     np.save(path + '/train.npy', train)
     np.save(path + '/test.npy', test)
 
