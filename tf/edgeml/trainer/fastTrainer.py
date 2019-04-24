@@ -24,6 +24,7 @@ class FastTrainer:
         '''
 
         self.FastObj = FastObj
+        self.history = []
 
         self.sW = sW
         self.sU = sU
@@ -291,6 +292,8 @@ class FastTrainer:
         Xtest = Xtest.reshape((-1, self.timeSteps, self.inputDims))
         Xtrain = Xtrain.reshape((-1, self.timeSteps, self.inputDims))
 
+        self.history = []
+
         for i in range(0, totalEpochs):
             print("\nEpoch Number: " + str(i), file=self.outFile)
 
@@ -345,12 +348,24 @@ class FastTrainer:
                               (header, msg, header), file=self.outFile)
                 counter += 1
 
-            print("Train Loss: " + str(trainLoss / numIters) +
-                  " Train Accuracy: " + str(trainAcc / numIters),
+            trainLoss /= numIters
+            trainAcc /= numIters
+            print("Train Loss: " + str(trainLoss) +
+                  " Train Accuracy: " + str(trainAcc),
                   file=self.outFile)
-
+            
             testAcc, testLoss = sess.run([self.accuracy, self.lossOp], feed_dict={
                                          self.X: Xtest, self.Y: Ytest})
+
+            self.history += [
+                {
+                    "epoch": i,
+                    "trainAcc": trainAcc,
+                    "trainLoss": trainLoss,
+                    "testAcc": testAcc,
+                    "testLoss": testLoss
+                }
+            ]
 
             if ihtDone == 0:
                 maxTestAcc = -10000
@@ -394,3 +409,6 @@ class FastTrainer:
         self.outFile.flush()
         if self.outFile is not sys.stdout:
             self.outFile.close()
+
+    def getAccuracyLog(self):
+        return self.history
