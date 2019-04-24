@@ -2,6 +2,7 @@
 # Licensed under the MIT license.
 
 import math
+import numpy as np
 import os
 from sklearn.datasets import load_svmlight_file
 
@@ -147,12 +148,17 @@ def listRange(list):
 	return min(list), max(list)
 
 def readXandY(useTrainingSet=False):
-	if usingLibSVM():
-		return readXandYasLibSVM(useTrainingSet)
-	elif usingTSV():
-		return readXandYasTSV(useTrainingSet)
+	return readXandYasNPY(useTrainingSet)
+
+def readXandYasNPY(trainingDataset):
+	if trainingDataset == True or usingTrainingDataset() == True:
+		mat = np.load(Config.trainingFile)
+		mat = mat.tolist()
 	else:
-		return readXandYasCSV(useTrainingSet)
+		mat = np.load(Config.testingFile)
+		mat = mat.tolist()
+	X, Y = extractXandYfromMat(mat)
+	return X, Y
 
 def readXandYasLibSVM(trainingDataset):
 	if trainingDataset == True or usingTrainingDataset() == True:

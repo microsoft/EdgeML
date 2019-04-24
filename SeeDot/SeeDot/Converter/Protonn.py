@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+import numpy as np
 import os
 
 from Converter.Util import *
@@ -11,104 +12,125 @@ from Converter.Util import *
 
 class Protonn:
 
+	def __init__(self, trainFile, testFile, modelDir, datasetOutputDir, modelOutputDir):
+		self.trainFile = trainFile
+		self.testFile = testFile
+		self.modelDir = modelDir
+		self.datasetOutputDir = datasetOutputDir
+		self.modelOutputDir = modelOutputDir
+
+		self.seeDotProgram = os.path.join(self.modelOutputDir, "input.sd")
+
 	def readDataset(self):
-		self.X, self.Y = readXandY()
+		train_ext = os.path.splitext(self.trainFile)[1]
+		test_ext = os.path.splitext(self.testFile)[1]
+		
+		if train_ext == test_ext == ".npy":
+			assert False
+		elif train_ext == test_ext == ".tsv":
+			self.train = np.loadtxt(self.trainFile, delimiter="\t")
+			self.test = np.loadtxt(self.testFile, delimiter="\t")
+		elif train_ext == test_ext == ".csv":
+			# Check the length of X and Y
+			#assert len(self.X) == len(self.Y)
+			assert False
+		elif train_ext == test_ext == ".txt":
+			assert False
+		else:
+			assert False
+
+	def computeTrainSetRange(self):
+		self.X = self.train[:, 1:]
+		X_list = self.X.tolist()
+		
+		X_trimmed, _ = trimMatrix(X_list)
+		self.trainDatasetRange = matRange(X_trimmed)
 
 	def writeDataset(self):
-		writeMatAsCSV(self.X, os.path.join(getDatasetOutputDir(), "X.csv"))
-		writeMatAsCSV(self.Y, os.path.join(getDatasetOutputDir(), "Y.csv"))
+		np.save(os.path.join(self.datasetOutputDir, "train.npy"), self.train)
+		np.save(os.path.join(self.datasetOutputDir, "test.npy"), self.test)
 
 	def processDataset(self):
 		self.readDataset()
-		assert len(self.X) == len(self.Y)
-		self.transformDataset()
+		self.computeTrainSetRange()
 		self.writeDataset()
 
 	def readNormFile(self):
-		if noNorm():
-			pass
-		elif minMaxNorm():
-			self.MinMax = readFileAsMat(os.path.join(getModelDir(), "minMaxParams"), "\t", float)
+		if os.path.isfile(os.path.join(self.modelDir, "minMaxParams")):
+			self.MinMax = np.loadtxt(os.path.join(self.modelDir, "minMaxParams"), delimiter="\t")
+			self.normType = "MinMax"
 		else:
-			assert False
+			self.normType = None
 
 	def readModel(self):
-		self.W = readFileAsMat(os.path.join(getModelDir(), "W"), "\t", float)
-		self.B = readFileAsMat(os.path.join(getModelDir(), "B"), "\t", float)
-		self.Z = readFileAsMat(os.path.join(getModelDir(), "Z"), "\t", float)
-		self.gamma = readFileAsMat(os.path.join(getModelDir(), "gamma"), "\t", float)
-		self.readNormFile() 
+		self.readNormFile()
+
+		self.W = np.loadtxt(os.path.join(self.modelDir, "W"), delimiter="\t")
+		self.B = np.loadtxt(os.path.join(self.modelDir, "B"), delimiter="\t")
+		self.Z = np.loadtxt(os.path.join(self.modelDir, "Z"), delimiter="\t")
+		self.gamma = np.loadtxt(os.path.join(self.modelDir, "gamma"), delimiter="\t")
 
 	def validateNormFile(self):
-		if noNorm():
-			pass
-		elif minMaxNorm():
-			MinMax_m, MinMax_n = matShape(self.MinMax)
-			W_m, W_n = matShape(self.W)
+		if self.normType == "MinMax":
+			MinMax_m, MinMax_n = self.MinMax.shape
+			W_m, W_n = self.W.shape
 
 			assert MinMax_m == 2
 			assert MinMax_n == W_n
-		else:
-			assert False
 
 	def validateModel(self):
-		W_m, W_n = matShape(self.W)
-		B_m, B_n = matShape(self.B)
-		Z_m, Z_n = matShape(self.Z)
-		gamma_m, gamma_n = matShape(self.gamma)
+		self.validateNormFile()
+
+		W_m, W_n = self.W.shape
+		B_m, B_n = self.B.shape
+		Z_m, Z_n = self.Z.shape
 
 		assert W_m == B_m
 		assert B_n == Z_n
-		assert gamma_m == gamma_n == 1
-
-		self.validateNormFile()
+		assert self.gamma.size == 1
 
 	def computeVars(self):
-		self.D = len(self.W[0])
-		self.d = len(self.W)
-		self.p = len(self.B[0])
-		self.c = len(self.Z)
+		self.d, self.D = self.W.shape
+		_, self.p = self.B.shape
+		self.c, _ = self.Z.shape
 
 	# Precompute some values to speedup prediction
 	def formatModel(self):
 		# Precompute g2
-		self.g2 = self.gamma[0][0] * self.gamma[0][0]
+		self.g2 = self.gamma * self.gamma
 
-		if noNorm():
-			self.Norm = [1 for _ in range(len(self.W))]
-		elif minMaxNorm():
+		if self.normType == None:
+			# Creating dummpy values
+			self.Norm = np.ones([1, self.W.shape[0]])
+		elif self.normType == "MinMax":
 			# Extract Min and Max
-			Min = []
-			Max = []
-			for i in range(len(self.MinMax[0])):
-				Min.append([self.MinMax[0][i]])
-				Max.append([self.MinMax[1][i]])
-
+			Min = self.MinMax[0].reshape(-1, 1)
+			Max = self.MinMax[1].reshape(-1, 1)
+			
 			# Precompute W * (X-m)/(M-m) by absorbing m, M into W
-			for i in range(len(self.W)):
-				for j in range(len(self.W[0])):
+			for i in range(self.W.shape[1]):
+				for j in range(len(self.W.shape[0])):
 					self.W[i][j] = self.W[i][j] / (Max[j][0] - Min[j][0])
 
-			self.Norm = matMul(self.W, Min)
+			self.Norm = self.W.dot(Min)
 
-			assert len(self.Norm[0]) == 1
-			self.Norm = [x[0] for x in self.Norm]
-		else:
-			assert False
+			assert self.Norm.shape[1] == 1
+			#self.Norm = [x[0] for x in self.Norm]
+			self.Norm = self.Norm.reshape(1, -1)
 
 		self.computeVars()
 
 	# Write the ProtoNN algorithm in terms of the compiler DSL.
 	# Compiler takes this as input and generates fixed-point code.
-	def genInputForCompiler(self):
-		with open(self.inputFile, 'w') as file:
+	def genSeeDotProgram(self):
+		with open(self.seeDotProgram, 'w') as file:
 			# Matrix declarations
-			file.write("let X   = (%d, 1)   in [%.6f, %.6f] in\n" % ((len(self.X[0]),) + self.trainDatasetRange))
-			file.write("let W  = (%d, %d)    in [%.6f, %.6f] in\n" % ((self.d, self.D) + matRange(self.W)))
-			file.write("let B  = (%d, %d, 1) in [%.6f, %.6f] in\n" % ((self.p, self.d) + matRange(self.B)))
-			file.write("let Z  = (%d, %d, 1) in [%.6f, %.6f] in\n" % ((self.p, self.c) + matRange(self.Z)))
-			if noNorm() == False:
-				file.write("let norm = (%d, 1)   in [%.6f, %.6f] in\n" % ((self.d,) + listRange(self.Norm)))
+			file.write("let X   = (%d, 1)   in [%.6f, %.6f] in\n" % ((self.X.shape[1],) + self.trainDatasetRange))
+			file.write("let W  = (%d, %d)    in [%.6f, %.6f] in\n" % (self.d, self.D, np.amin(self.W), np.amax(self.W)))
+			file.write("let B  = (%d, %d, 1) in [%.6f, %.6f] in\n" % (self.p, self.d, np.amin(self.B), np.amax(self.B)))
+			file.write("let Z  = (%d, %d, 1) in [%.6f, %.6f] in\n" % (self.p, self.c, np.amin(self.Z), np.amax(self.Z)))
+			if self.normType != None:
+				file.write("let norm = (%d, 1)   in [%.6f, %.6f] in\n" % (self.d, np.amin(self.Norm), np.amax(self.Norm)))
 			file.write("let g2 = %.6f in\n\n" % (self.g2))
 
 			# Algorithm
@@ -117,7 +139,7 @@ class Protonn:
 			else:
 				s = "W * X"
 
-			if noNorm() == False:
+			if self.normType != None:
 				s = s + " - norm"
 
 			file.write("let WX = %s in\n" % (s))
@@ -127,108 +149,41 @@ class Protonn:
 			file.write("\tZ[i] * exp(-g2 * (del^T * del))\n")
 			file.write(") in\n")
 			file.write("argmax(res)\n")
+	
+	# Writing the model as a bunch of variables, arrays and matrices to a file
+	def writeModel(self):
+
+		if self.normType != None:
+			#self.Norm = [self.Norm]
+			#writeMatToFile(self.Norm, os.path.join(getOutputDir(), "norm"), "\t")
+			np.save(os.path.join(self.modelOutputDir, "norm.npy"), self.Norm)
+			np.savetxt(os.path.join(self.modelOutputDir, "norm"), self.Norm, delimiter="\t", fmt='%.6f')
+
+		#writeMatToFile(self.W, os.path.join(getOutputDir(), "W"), "\t")
+		np.save(os.path.join(self.modelOutputDir, "W.npy"), self.W)
+		np.savetxt(os.path.join(self.modelOutputDir, "W"), self.W, delimiter="\t", fmt='%.6f')
+
+		# Transpose B and Z to satisfy the declarations in the generated DSL input
+		B_transp = np.transpose(self.B)
+		Z_transp = np.transpose(self.Z)
+
+		#writeMatToFile(B_transp, os.path.join(getOutputDir(), "B"), "\t")
+		#writeMatToFile(Z_transp, os.path.join(getOutputDir(), "Z"), "\t")
+		np.save(os.path.join(self.modelOutputDir, "B.npy"), B_transp)
+		np.save(os.path.join(self.modelOutputDir, "Z.npy"), Z_transp)
+		np.savetxt(os.path.join(self.modelOutputDir, "B"), B_transp, delimiter="\t", fmt='%.6f')
+		np.savetxt(os.path.join(self.modelOutputDir, "Z"), Z_transp, delimiter="\t", fmt='%.6f')
 
 	def processModel(self):
 		self.readModel()
 		self.validateModel()
 		self.formatModel()
-		self.transformModel()
+		self.genSeeDotProgram()
 		self.writeModel()
 
 	def run(self):
-		self.headerFile = os.path.join(getOutputDir(), "model_%s.h" % (getVersion()))
-		self.inputFile = os.path.join(getOutputDir(), "input.sd")
-		self.infoFile = os.path.join(getOutputDir(), "info.txt")
-		self.fpgaFile = os.path.join(getOutputDir(), "CustomTypes.sv")
-		self.LUTdir = os.path.join(getOutputDir(), "lut")
-
-		open(self.headerFile, 'w').close()
-		open(self.infoFile, 'w').close()
-
-		if dumpDataset():
-			self.processDataset()
+		self.processDataset()
 
 		self.processModel()
 
-		if dumpDataset():
-			assert len(self.X[0]) == len(self.W[0])
-	
-	# Writing the model as a bunch of variables, arrays and matrices to a file
-	def writeModel(self):
-
-		if noNorm() == False:
-			self.Norm = [self.Norm]
-			writeMatToFile(self.Norm, os.path.join(getOutputDir(), "norm"), "\t")
-			#writeListAsArray(self.Norm, 'norm', self.headerFile, shapeStr="[%d]" * 2 % (self.d, 1))
-
-		writeMatToFile(self.W, os.path.join(getOutputDir(), "W"), "\t")
-		#writeMatAsArray(self.W, 'W', self.headerFile)
-
-		# Transpose B and Z to satisfy the declarations in the generated DSL input
-		B_transp = matTranspose(self.B)
-		Z_transp = matTranspose(self.Z)
-
-		writeMatToFile(B_transp, os.path.join(getOutputDir(), "B"), "\t")
-		writeMatToFile(Z_transp, os.path.join(getOutputDir(), "Z"), "\t")
-		#writeMatAsArray(B_transp, 'B', self.headerFile, shapeStr="[%d]" * 3 % (self.p, self.d, 1))
-		#writeMatAsArray(Z_transp, 'Z', self.headerFile, shapeStr="[%d]" * 3 % (self.p, self.c, 1))
-
-	# Quantize the matrices
-	def transformModel(self):
-		if dumpDataset():
-			self.genInputForCompiler()
-
-class ProtonnFixed(Protonn):
-	# The X matrix is quantized using a scale factor computed from the training dataset.
-	# The range of X_train is used to compute the scale factor.
-	# Since the range of X_train depends on its distribution, the scale computed may be imprecise.
-	# To avoid this, any outliers in X_train is trimmed off using a threshold to get a more precise range and a more precise scale.
-	def transformDataset(self):
-		# If X itself is X_train, reuse it. Otherwise, read it from file
-		if usingTrainingDataset():
-			self.X_train = list(self.X)
-		else:
-			self.X_train, _ = readXandY(useTrainingSet=True)
-
-		# Trim some data points from X_train
-		self.X_train, _ = trimMatrix(self.X_train)
-
-		# Compute range and scale and quantize X
-		testDatasetRange = matRange(self.X)
-		self.trainDatasetRange = matRange(self.X_train)
-
-		scale = computeScale(*self.trainDatasetRange)
-		self.X, _ = scaleMat(self.X, scale)
-
-		with open(self.infoFile, 'a') as file:
-			file.write("Range of test dataset: [%.6f, %.6f]\n" % (testDatasetRange))
-			file.write("Range of training dataset: [%.6f, %.6f]\n" % (self.trainDatasetRange))
-			file.write("Test dataset scaled by: %d\n\n" % (scale))
-
-
-class ProtonnFloat(Protonn):
-	# Float model is generated for for training dataset to profile the prediction
-	# Hence, X is trimmed down to remove outliers. Prediction profiling is performed on the trimmed X to generate more precise profile data
-	def transformDataset(self):
-		if usingTrainingDataset():
-			beforeLen = len(self.X)
-			beforeRange = matRange(self.X)
-
-			self.X, self.Y = trimMatrix(self.X, self.Y)
-
-			afterLen = len(self.X)
-			afterRange = matRange(self.X)
-
-			with open(self.infoFile, 'a') as file:
-				file.write("Old range of X: [%.6f, %.6f]\n" % (beforeRange))
-				file.write("Trimmed the dataset from %d to %d data points; %.3f%%\n" % (beforeLen, afterLen, float(beforeLen - afterLen) / beforeLen * 100))
-				file.write("New range of X: [%.6f, %.6f]\n" % (afterRange))
-
-			self.trainDatasetRange = afterRange
-		else:
-			self.X_train, _ = readXandY(useTrainingSet=True)
-
-			# Trim some data points from X_train
-			self.X_train, _ = trimMatrix(self.X_train)
-
-			self.trainDatasetRange = matRange(self.X_train)
+		assert self.X.shape[1] == self.W.shape[1]

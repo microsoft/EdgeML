@@ -9,7 +9,3 @@ def getExpnt(max, B):
 	return int(np.ceil(np.log2(max) - np.log2((1 << (B - 2)) - 1)))
 
 e = getExpnt(0.8, 8)
-
-shape = [10,20,30]
-y = '[' + x + ']' for x in shape
-print(y)

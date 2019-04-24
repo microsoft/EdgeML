@@ -7,6 +7,7 @@ import operator
 import traceback
 
 from Converter.Converter import Converter
+from Converter.Protonn import Protonn
 
 import Common
 from Compiler import Compiler
@@ -351,6 +352,20 @@ class MainDriver:
 		print("Test file: %s" % (testingInput))
 		print("Model directory: %s" % (modelDir))
 		print("================================\n")
+
+		if algo == Common.Algo.Protonn:
+			datasetOutputDir = os.path.join("temp", "dataset-processed")
+			modelOutputDir = os.path.join("temp", "model-processed")
+
+			os.makedirs(datasetOutputDir, exist_ok=True)
+			os.makedirs(modelOutputDir, exist_ok=True)
+			
+			obj = Protonn(trainingInput, testingInput, modelDir, datasetOutputDir, modelOutputDir)
+			obj.run()
+
+			trainingInput = os.path.join(datasetOutputDir, "train.npy")
+			testingInput = os.path.join(datasetOutputDir, "test.npy")
+			modelDir = modelOutputDir
 
 		obj = Main(algo, Common.Version.Fixed, Common.Target.Arduino, trainingInput, testingInput, modelDir, None, 1)
 		obj.run()
