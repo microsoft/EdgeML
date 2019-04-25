@@ -330,6 +330,7 @@ class MainDriver:
 		parser.add_argument("--train", required=True, metavar='', help="Training set file")
 		parser.add_argument("--test", required=True, metavar='', help="Testing set file")
 		parser.add_argument("--model", required=True, metavar='', help="Directory containing trained model")
+		parser.add_argument("--convert", action = "store_true", help = "Standardize the Bonsai/ProtoNN trained models for SeeDot")
 		
 		self.args = parser.parse_args()
 
@@ -364,9 +365,22 @@ class MainDriver:
 		print("Model directory: %s" % (modelDir))
 		print("================================\n")
 
-		if algo == Common.Algo.Bonsai or algo == Common.Algo.Protonn:
-			datasetOutputDir = os.path.join("temp", "dataset-processed")
-			modelOutputDir = os.path.join("temp", "model-processed")
+		if self.args.convert:
+			datasetDir = os.path.join("..", "datasets", "datasets", dataset)
+			modelDir = os.path.join("..", "model", dataset)
+
+			if algo == Common.Algo.Bonsai:
+				modelDir = os.path.join(modelDir, "BonsaiResults", "Params")
+			elif algo == Common.Algo.Lenet:
+				modelDir = os.path.join(modelDir, "LenetModel")
+			else:
+				modelDir = os.path.join(modelDir, "ProtoNNResults")
+							
+			trainingInput = os.path.join(datasetDir, "training-full.tsv")
+			testingInput = os.path.join(datasetDir, "testing.tsv")
+				
+			datasetOutputDir = os.path.join("temp", "dataset-processed", algo, dataset)
+			modelOutputDir = os.path.join("temp", "model-processed", algo, dataset)
 
 			os.makedirs(datasetOutputDir, exist_ok=True)
 			os.makedirs(modelOutputDir, exist_ok=True)
