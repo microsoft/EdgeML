@@ -247,6 +247,8 @@ class IRBuilder(ASTVisitor):
 		
 		# Update declarations
 		self.decls.update(dict((var.idf, Type.Int()) for var in iters_out))
+		for var in iters_out:
+			self.internalVars.append(var.idf)
 
 		return (prog_out, expr_out)
 	

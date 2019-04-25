@@ -47,6 +47,10 @@ class Quantizer:
 		for param in self.params:
 			#param.data = readFileAsMat(os.path.join(getModelDir(), param.name), "\t", float)
 			param.data = np.load(os.path.join(getModelDir(), param.name + ".npy"))
+
+			if param.data.ndim == 1:
+				param.data = param.data.reshape(-1, 1)
+
 			param.data = param.data.tolist()
 
 	def computeModelSize(self):
