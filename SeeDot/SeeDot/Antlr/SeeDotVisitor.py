@@ -69,6 +69,11 @@ class SeeDotVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by SeeDotParser#loop.
+    def visitLoop(self, ctx:SeeDotParser.LoopContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by SeeDotParser#uop.
     def visitUop(self, ctx:SeeDotParser.UopContext):
         return self.visitChildren(ctx)

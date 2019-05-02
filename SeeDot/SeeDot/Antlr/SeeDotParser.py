@@ -7,49 +7,54 @@ import sys
 
 def serializedATN():
     with StringIO() as buf:
-        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3#")
-        buf.write("\u0085\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\3\2\3\2")
+        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3$")
+        buf.write("\u0090\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\3\2\3\2")
         buf.write("\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3")
         buf.write("\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2")
         buf.write("\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\7\2\64\n\2\f")
         buf.write("\2\16\2\67\13\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3")
         buf.write("\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2")
-        buf.write("\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\5\2Y\n\2\3\2\3\2")
         buf.write("\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3")
-        buf.write("\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\7\2r\n\2\f\2\16\2u\13\2")
-        buf.write("\3\3\3\3\3\4\3\4\3\5\3\5\3\6\3\6\3\6\7\6\u0080\n\6\f\6")
-        buf.write("\16\6\u0083\13\6\3\6\2\3\2\7\2\4\6\b\n\2\5\3\2\r\16\3")
-        buf.write("\2\17\24\3\2\25\31\2\u0091\2X\3\2\2\2\4v\3\2\2\2\6x\3")
-        buf.write("\2\2\2\bz\3\2\2\2\n|\3\2\2\2\f\r\b\2\1\2\rY\7 \2\2\16")
-        buf.write("Y\7!\2\2\17Y\7\37\2\2\20\21\7\3\2\2\21\22\5\n\6\2\22\23")
-        buf.write("\7\4\2\2\23\24\7\36\2\2\24\25\7\5\2\2\25\26\7!\2\2\26")
-        buf.write("\27\7\6\2\2\27\30\7!\2\2\30\31\7\7\2\2\31Y\3\2\2\2\32")
-        buf.write("\33\7\32\2\2\33\34\7\3\2\2\34\35\5\2\2\2\35\36\7\6\2\2")
-        buf.write("\36\37\7\3\2\2\37 \5\n\6\2 !\7\4\2\2!\"\7\6\2\2\"#\7\3")
-        buf.write("\2\2#$\5\n\6\2$%\7\4\2\2%&\7\4\2\2&Y\3\2\2\2\'(\7\33\2")
-        buf.write("\2()\7\3\2\2)*\5\2\2\2*+\7\6\2\2+,\7 \2\2,-\7\4\2\2-Y")
-        buf.write("\3\2\2\2./\7\37\2\2/\60\7\3\2\2\60\65\5\2\2\2\61\62\7")
-        buf.write("\6\2\2\62\64\5\2\2\2\63\61\3\2\2\2\64\67\3\2\2\2\65\63")
-        buf.write("\3\2\2\2\65\66\3\2\2\2\668\3\2\2\2\67\65\3\2\2\289\7\4")
-        buf.write("\2\29Y\3\2\2\2:;\5\4\3\2;<\5\2\2\n<Y\3\2\2\2=>\5\b\5\2")
-        buf.write(">?\7\3\2\2?@\5\2\2\2@A\7\4\2\2AY\3\2\2\2BC\7\34\2\2CD")
-        buf.write("\7\3\2\2DE\7\37\2\2EF\7\t\2\2FG\7\5\2\2GH\7 \2\2HI\7\n")
-        buf.write("\2\2IJ\7 \2\2JK\7\7\2\2KL\7\4\2\2LY\5\2\2\6MN\7\35\2\2")
-        buf.write("NO\7\37\2\2OP\7\t\2\2PQ\5\2\2\2QR\7\36\2\2RS\5\2\2\4S")
-        buf.write("Y\3\2\2\2TU\7\3\2\2UV\5\2\2\2VW\7\4\2\2WY\3\2\2\2X\f\3")
-        buf.write("\2\2\2X\16\3\2\2\2X\17\3\2\2\2X\20\3\2\2\2X\32\3\2\2\2")
-        buf.write("X\'\3\2\2\2X.\3\2\2\2X:\3\2\2\2X=\3\2\2\2XB\3\2\2\2XM")
-        buf.write("\3\2\2\2XT\3\2\2\2Ys\3\2\2\2Z[\f\t\2\2[\\\5\6\4\2\\]\5")
-        buf.write("\2\2\n]r\3\2\2\2^_\f\b\2\2_`\5\4\3\2`a\5\2\2\tar\3\2\2")
-        buf.write("\2bc\f\5\2\2cd\7\13\2\2de\7 \2\2ef\7\f\2\2fg\5\2\2\2g")
-        buf.write("h\7\n\2\2hi\5\2\2\6ir\3\2\2\2jk\f\17\2\2kr\7\b\2\2lm\f")
-        buf.write("\f\2\2mn\7\5\2\2no\5\2\2\2op\7\7\2\2pr\3\2\2\2qZ\3\2\2")
-        buf.write("\2q^\3\2\2\2qb\3\2\2\2qj\3\2\2\2ql\3\2\2\2ru\3\2\2\2s")
-        buf.write("q\3\2\2\2st\3\2\2\2t\3\3\2\2\2us\3\2\2\2vw\t\2\2\2w\5")
-        buf.write("\3\2\2\2xy\t\3\2\2y\7\3\2\2\2z{\t\4\2\2{\t\3\2\2\2|\u0081")
-        buf.write("\7 \2\2}~\7\6\2\2~\u0080\7 \2\2\177}\3\2\2\2\u0080\u0083")
-        buf.write("\3\2\2\2\u0081\177\3\2\2\2\u0081\u0082\3\2\2\2\u0082\13")
-        buf.write("\3\2\2\2\u0083\u0081\3\2\2\2\7\65Xqs\u0081")
+        buf.write("\2\3\2\3\2\3\2\3\2\3\2\3\2\5\2d\n\2\3\2\3\2\3\2\3\2\3")
+        buf.write("\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2\3\2")
+        buf.write("\3\2\3\2\3\2\3\2\3\2\7\2}\n\2\f\2\16\2\u0080\13\2\3\3")
+        buf.write("\3\3\3\4\3\4\3\5\3\5\3\6\3\6\3\6\7\6\u008b\n\6\f\6\16")
+        buf.write("\6\u008e\13\6\3\6\2\3\2\7\2\4\6\b\n\2\5\3\2\r\16\3\2\17")
+        buf.write("\24\3\2\25\31\2\u009d\2c\3\2\2\2\4\u0081\3\2\2\2\6\u0083")
+        buf.write("\3\2\2\2\b\u0085\3\2\2\2\n\u0087\3\2\2\2\f\r\b\2\1\2\r")
+        buf.write("d\7!\2\2\16d\7\"\2\2\17d\7 \2\2\20\21\7\3\2\2\21\22\5")
+        buf.write("\n\6\2\22\23\7\4\2\2\23\24\7\37\2\2\24\25\7\5\2\2\25\26")
+        buf.write("\7\"\2\2\26\27\7\6\2\2\27\30\7\"\2\2\30\31\7\7\2\2\31")
+        buf.write("d\3\2\2\2\32\33\7\32\2\2\33\34\7\3\2\2\34\35\5\2\2\2\35")
+        buf.write("\36\7\6\2\2\36\37\7\3\2\2\37 \5\n\6\2 !\7\4\2\2!\"\7\6")
+        buf.write("\2\2\"#\7\3\2\2#$\5\n\6\2$%\7\4\2\2%&\7\4\2\2&d\3\2\2")
+        buf.write("\2\'(\7\33\2\2()\7\3\2\2)*\5\2\2\2*+\7\6\2\2+,\7!\2\2")
+        buf.write(",-\7\4\2\2-d\3\2\2\2./\7 \2\2/\60\7\3\2\2\60\65\5\2\2")
+        buf.write("\2\61\62\7\6\2\2\62\64\5\2\2\2\63\61\3\2\2\2\64\67\3\2")
+        buf.write("\2\2\65\63\3\2\2\2\65\66\3\2\2\2\668\3\2\2\2\67\65\3\2")
+        buf.write("\2\289\7\4\2\29d\3\2\2\2:;\5\4\3\2;<\5\2\2\13<d\3\2\2")
+        buf.write("\2=>\5\b\5\2>?\7\3\2\2?@\5\2\2\2@A\7\4\2\2Ad\3\2\2\2B")
+        buf.write("C\7\34\2\2CD\7\3\2\2DE\7 \2\2EF\7\t\2\2FG\7\5\2\2GH\7")
+        buf.write("!\2\2HI\7\n\2\2IJ\7!\2\2JK\7\7\2\2KL\7\4\2\2Ld\5\2\2\7")
+        buf.write("MN\7\35\2\2NO\7\3\2\2OP\7 \2\2PQ\7\t\2\2QR\7\5\2\2RS\7")
+        buf.write("!\2\2ST\7\n\2\2TU\7!\2\2UV\7\7\2\2VW\7\4\2\2Wd\5\2\2\6")
+        buf.write("XY\7\36\2\2YZ\7 \2\2Z[\7\t\2\2[\\\5\2\2\2\\]\7\37\2\2")
+        buf.write("]^\5\2\2\4^d\3\2\2\2_`\7\3\2\2`a\5\2\2\2ab\7\4\2\2bd\3")
+        buf.write("\2\2\2c\f\3\2\2\2c\16\3\2\2\2c\17\3\2\2\2c\20\3\2\2\2")
+        buf.write("c\32\3\2\2\2c\'\3\2\2\2c.\3\2\2\2c:\3\2\2\2c=\3\2\2\2")
+        buf.write("cB\3\2\2\2cM\3\2\2\2cX\3\2\2\2c_\3\2\2\2d~\3\2\2\2ef\f")
+        buf.write("\n\2\2fg\5\6\4\2gh\5\2\2\13h}\3\2\2\2ij\f\t\2\2jk\5\4")
+        buf.write("\3\2kl\5\2\2\nl}\3\2\2\2mn\f\5\2\2no\7\13\2\2op\7!\2\2")
+        buf.write("pq\7\f\2\2qr\5\2\2\2rs\7\n\2\2st\5\2\2\6t}\3\2\2\2uv\f")
+        buf.write("\20\2\2v}\7\b\2\2wx\f\r\2\2xy\7\5\2\2yz\5\2\2\2z{\7\7")
+        buf.write("\2\2{}\3\2\2\2|e\3\2\2\2|i\3\2\2\2|m\3\2\2\2|u\3\2\2\2")
+        buf.write("|w\3\2\2\2}\u0080\3\2\2\2~|\3\2\2\2~\177\3\2\2\2\177\3")
+        buf.write("\3\2\2\2\u0080~\3\2\2\2\u0081\u0082\t\2\2\2\u0082\5\3")
+        buf.write("\2\2\2\u0083\u0084\t\3\2\2\u0084\7\3\2\2\2\u0085\u0086")
+        buf.write("\t\4\2\2\u0086\t\3\2\2\2\u0087\u008c\7!\2\2\u0088\u0089")
+        buf.write("\7\6\2\2\u0089\u008b\7!\2\2\u008a\u0088\3\2\2\2\u008b")
+        buf.write("\u008e\3\2\2\2\u008c\u008a\3\2\2\2\u008c\u008d\3\2\2\2")
+        buf.write("\u008d\13\3\2\2\2\u008e\u008c\3\2\2\2\7\65c|~\u008c")
         return buf.getvalue()
 
 
@@ -67,15 +72,15 @@ class SeeDotParser ( Parser ):
                      "'='", "':'", "'>='", "'?'", "'+'", "'-'", "'*'", "'|*|'", 
                      "'<*>'", "'#'", "'<+>'", "'<->'", "'relu'", "'exp'", 
                      "'argmax'", "'sgn'", "'tanh'", "'reshape'", "'maxpool'", 
-                     "'$'", "'let'", "'in'" ]
+                     "'$'", "'loop'", "'let'", "'in'" ]
 
     symbolicNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "ADD", "SUB", 
                       "MUL", "SPARSEMUL", "MULCIR", "CONV", "ADDCIR", "SUBCIR", 
                       "RELU", "EXP", "ARGMAX", "SGN", "TANH", "Reshape", 
-                      "Maxpool", "Sum", "Let", "In", "Id", "IntConst", "FloatConst", 
-                      "WS", "LineComment" ]
+                      "Maxpool", "Sum", "Loop", "Let", "In", "Id", "IntConst", 
+                      "FloatConst", "WS", "LineComment" ]
 
     RULE_expr = 0
     RULE_addOp = 1
@@ -112,13 +117,14 @@ class SeeDotParser ( Parser ):
     Reshape=24
     Maxpool=25
     Sum=26
-    Let=27
-    In=28
-    Id=29
-    IntConst=30
-    FloatConst=31
-    WS=32
-    LineComment=33
+    Loop=27
+    Let=28
+    In=29
+    Id=30
+    IntConst=31
+    FloatConst=32
+    WS=33
+    LineComment=34
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -392,6 +398,32 @@ class SeeDotParser ( Parser ):
                 return visitor.visitChildren(self)
 
 
+    class LoopContext(ExprContext):
+
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a SeeDotParser.ExprContext
+            super().__init__(parser)
+            self.copyFrom(ctx)
+
+        def Loop(self):
+            return self.getToken(SeeDotParser.Loop, 0)
+        def Id(self):
+            return self.getToken(SeeDotParser.Id, 0)
+        def IntConst(self, i:int=None):
+            if i is None:
+                return self.getTokens(SeeDotParser.IntConst)
+            else:
+                return self.getToken(SeeDotParser.IntConst, i)
+        def expr(self):
+            return self.getTypedRuleContext(SeeDotParser.ExprContext,0)
+
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitLoop" ):
+                return visitor.visitLoop(self)
+            else:
+                return visitor.visitChildren(self)
+
+
     class UopContext(ExprContext):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a SeeDotParser.ExprContext
@@ -508,7 +540,7 @@ class SeeDotParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 86
+            self.state = 97
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,1,self._ctx)
             if la_ == 1:
@@ -641,7 +673,7 @@ class SeeDotParser ( Parser ):
                 self.state = 56
                 self.addOp()
                 self.state = 57
-                self.expr(8)
+                self.expr(9)
                 pass
 
             elif la_ == 9:
@@ -683,42 +715,70 @@ class SeeDotParser ( Parser ):
                 self.state = 73
                 self.match(SeeDotParser.T__1)
                 self.state = 74
-                self.expr(4)
+                self.expr(5)
                 pass
 
             elif la_ == 11:
-                localctx = SeeDotParser.LetContext(self, localctx)
+                localctx = SeeDotParser.LoopContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 75
-                self.match(SeeDotParser.Let)
+                self.match(SeeDotParser.Loop)
                 self.state = 76
-                self.match(SeeDotParser.Id)
+                self.match(SeeDotParser.T__0)
                 self.state = 77
-                self.match(SeeDotParser.T__6)
+                self.match(SeeDotParser.Id)
                 self.state = 78
-                self.expr(0)
+                self.match(SeeDotParser.T__6)
                 self.state = 79
-                self.match(SeeDotParser.In)
+                self.match(SeeDotParser.T__2)
                 self.state = 80
-                self.expr(2)
+                self.match(SeeDotParser.IntConst)
+                self.state = 81
+                self.match(SeeDotParser.T__7)
+                self.state = 82
+                self.match(SeeDotParser.IntConst)
+                self.state = 83
+                self.match(SeeDotParser.T__4)
+                self.state = 84
+                self.match(SeeDotParser.T__1)
+                self.state = 85
+                self.expr(4)
                 pass
 
             elif la_ == 12:
+                localctx = SeeDotParser.LetContext(self, localctx)
+                self._ctx = localctx
+                _prevctx = localctx
+                self.state = 86
+                self.match(SeeDotParser.Let)
+                self.state = 87
+                self.match(SeeDotParser.Id)
+                self.state = 88
+                self.match(SeeDotParser.T__6)
+                self.state = 89
+                self.expr(0)
+                self.state = 90
+                self.match(SeeDotParser.In)
+                self.state = 91
+                self.expr(2)
+                pass
+
+            elif la_ == 13:
                 localctx = SeeDotParser.ParenContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 82
+                self.state = 93
                 self.match(SeeDotParser.T__0)
-                self.state = 83
+                self.state = 94
                 self.expr(0)
-                self.state = 84
+                self.state = 95
                 self.match(SeeDotParser.T__1)
                 pass
 
 
             self._ctx.stop = self._input.LT(-1)
-            self.state = 113
+            self.state = 124
             self._errHandler.sync(self)
             _alt = self._interp.adaptivePredict(self._input,3,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
@@ -726,84 +786,84 @@ class SeeDotParser ( Parser ):
                     if self._parseListeners is not None:
                         self.triggerExitRuleEvent()
                     _prevctx = localctx
-                    self.state = 111
+                    self.state = 122
                     self._errHandler.sync(self)
                     la_ = self._interp.adaptivePredict(self._input,2,self._ctx)
                     if la_ == 1:
                         localctx = SeeDotParser.Bop1Context(self, SeeDotParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 88
-                        if not self.precpred(self._ctx, 7):
+                        self.state = 99
+                        if not self.precpred(self._ctx, 8):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 7)")
-                        self.state = 89
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 8)")
+                        self.state = 100
                         self.binOp()
-                        self.state = 90
-                        self.expr(8)
+                        self.state = 101
+                        self.expr(9)
                         pass
 
                     elif la_ == 2:
                         localctx = SeeDotParser.Bop2Context(self, SeeDotParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 92
-                        if not self.precpred(self._ctx, 6):
+                        self.state = 103
+                        if not self.precpred(self._ctx, 7):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 6)")
-                        self.state = 93
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 7)")
+                        self.state = 104
                         self.addOp()
-                        self.state = 94
-                        self.expr(7)
+                        self.state = 105
+                        self.expr(8)
                         pass
 
                     elif la_ == 3:
                         localctx = SeeDotParser.CondContext(self, SeeDotParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 96
+                        self.state = 107
                         if not self.precpred(self._ctx, 3):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 3)")
-                        self.state = 97
+                        self.state = 108
                         self.match(SeeDotParser.T__8)
-                        self.state = 98
+                        self.state = 109
                         self.match(SeeDotParser.IntConst)
-                        self.state = 99
+                        self.state = 110
                         self.match(SeeDotParser.T__9)
-                        self.state = 100
+                        self.state = 111
                         self.expr(0)
-                        self.state = 101
+                        self.state = 112
                         self.match(SeeDotParser.T__7)
-                        self.state = 102
+                        self.state = 113
                         self.expr(4)
                         pass
 
                     elif la_ == 4:
                         localctx = SeeDotParser.TranspContext(self, SeeDotParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 104
-                        if not self.precpred(self._ctx, 13):
+                        self.state = 115
+                        if not self.precpred(self._ctx, 14):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 13)")
-                        self.state = 105
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 14)")
+                        self.state = 116
                         self.match(SeeDotParser.T__5)
                         pass
 
                     elif la_ == 5:
                         localctx = SeeDotParser.IndexContext(self, SeeDotParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 106
-                        if not self.precpred(self._ctx, 10):
+                        self.state = 117
+                        if not self.precpred(self._ctx, 11):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 10)")
-                        self.state = 107
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 11)")
+                        self.state = 118
                         self.match(SeeDotParser.T__2)
-                        self.state = 108
+                        self.state = 119
                         self.expr(0)
-                        self.state = 109
+                        self.state = 120
                         self.match(SeeDotParser.T__4)
                         pass
 
              
-                self.state = 115
+                self.state = 126
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,3,self._ctx)
 
@@ -846,7 +906,7 @@ class SeeDotParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 116
+            self.state = 127
             _la = self._input.LA(1)
             if not(_la==SeeDotParser.ADD or _la==SeeDotParser.SUB):
                 self._errHandler.recoverInline(self)
@@ -904,7 +964,7 @@ class SeeDotParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 118
+            self.state = 129
             _la = self._input.LA(1)
             if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << SeeDotParser.MUL) | (1 << SeeDotParser.SPARSEMUL) | (1 << SeeDotParser.MULCIR) | (1 << SeeDotParser.CONV) | (1 << SeeDotParser.ADDCIR) | (1 << SeeDotParser.SUBCIR))) != 0)):
                 self._errHandler.recoverInline(self)
@@ -959,7 +1019,7 @@ class SeeDotParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 120
+            self.state = 131
             _la = self._input.LA(1)
             if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << SeeDotParser.RELU) | (1 << SeeDotParser.EXP) | (1 << SeeDotParser.ARGMAX) | (1 << SeeDotParser.SGN) | (1 << SeeDotParser.TANH))) != 0)):
                 self._errHandler.recoverInline(self)
@@ -1005,17 +1065,17 @@ class SeeDotParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 122
+            self.state = 133
             self.match(SeeDotParser.IntConst)
-            self.state = 127
+            self.state = 138
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==SeeDotParser.T__3:
-                self.state = 123
+                self.state = 134
                 self.match(SeeDotParser.T__3)
-                self.state = 124
+                self.state = 135
                 self.match(SeeDotParser.IntConst)
-                self.state = 129
+                self.state = 140
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -1041,11 +1101,11 @@ class SeeDotParser ( Parser ):
 
     def expr_sempred(self, localctx:ExprContext, predIndex:int):
             if predIndex == 0:
-                return self.precpred(self._ctx, 7)
+                return self.precpred(self._ctx, 8)
          
 
             if predIndex == 1:
-                return self.precpred(self._ctx, 6)
+                return self.precpred(self._ctx, 7)
          
 
             if predIndex == 2:
@@ -1053,11 +1113,11 @@ class SeeDotParser ( Parser ):
          
 
             if predIndex == 3:
-                return self.precpred(self._ctx, 13)
+                return self.precpred(self._ctx, 14)
          
 
             if predIndex == 4:
-                return self.precpred(self._ctx, 10)
+                return self.precpred(self._ctx, 11)
          
 
 

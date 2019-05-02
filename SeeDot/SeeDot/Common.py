@@ -26,8 +26,9 @@ class Algo:
 	Bonsai = "bonsai"
 	Lenet = "lenet"
 	Protonn = "protonn"
+	Spectakom = "spectakom"
 	Default = [Bonsai, Protonn]
-	All = [Bonsai, Lenet, Protonn]
+	All = [Bonsai, Lenet, Protonn, Spectakom]
 
 class Version:
 	Fixed = "fixed"

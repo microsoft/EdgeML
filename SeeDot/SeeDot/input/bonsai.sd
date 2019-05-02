@@ -1,38 +1,25 @@
-let X   = (785, 1)   in [-1.274197, 13.490691] in
-let Z   = (10, 785)  in [-0.207110, 0.190318] in
-let W   = (15, 1, 10) in [-0.494102, 0.480328] in
-let V   = (15, 1, 10) in [-0.441295, 0.564846] in
-let T   = (7, 1, 10) in [-0.014514, 0.009987] in
-let mean = (10, 1) in [-0.000001, 0.000001] in
+let W1   = (30, 8)  in [-0.1, 0.1] in
+let W2   = (8, 64)  in [-0.1, 0.1] in
+let U1   = (64, 8)  in [-0.1, 0.1] in
+let U2   = (8, 64)  in [-0.1, 0.1] in
+let Bg   = (1, 64)  in [-0.1, 0.1] in
+let Bh   = (1, 64)  in [-0.1, 0.1] in
+let FC1   = (64, 20)  in [-0.1, 0.1] in
+let FC2   = (20, 72)  in [-0.1, 0.1] in
+let FCBias   = (1, 72)  in [-0.1, 0.1] in
 
-let ZX = Z |*| X - mean in
+let X    = (7, 1, 30)   in [-0.1, 0.1] in
 
-// depth 0
-let node0   = 0    in
-let W0      = W[node0] * ZX in
-let V0      = V[node0] * ZX in
-let V0_tanh = tanh(V0) in
-let score0  = W0 <*> V0_tanh in
+let zeta = 0.15637416 in
+let nu = 0.01094334 in
 
-// depth 1
-let node1   = (T[node0] * ZX) >= 0? 2 * node0 + 1 : 2 * node0 + 2 in
-let W1      = W[node1] * ZX in
-let V1      = V[node1] * ZX in
-let V1_tanh = tanh(V1) in
-let score1  = score0 + W1 <*> V1_tanh in
+let H    = (1, 64)   in [-0.1, 0.1] in
 
-// depth 2
-let node2   = (T[node1] * ZX) >= 0? 2 * node1 + 1 : 2 * node1 + 2 in
-let W2      = W[node2] * ZX in
-let V2      = V[node2] * ZX in
-let V2_tanh = tanh(V2) in
-let score2  = score1 + W2 <*> V2_tanh in
+let res = loop(i = [0:7])
+(
+	let a = (X[i] * W1) * W2 in
+	a
+) in
 
-// depth 3
-let node3   = (T[node2] * ZX) >= 0? 2 * node2 + 1 : 2 * node2 + 2 in
-let W3      = W[node3] * ZX in
-let V3      = V[node3] * ZX in
-let V3_tanh = tanh(V3) in
-let score3  = score2 + W3 <*> V3_tanh in
-
-sgn(score3)
+let score = ((res * FC1) * FC2) + FCBias in
+argmax(score)

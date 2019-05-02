@@ -24,6 +24,8 @@ expr:	IntConst								# int
 	|	specialFunc '(' expr ')'				# func
 	|	Sum '(' Id '='
 		'[' IntConst ':' IntConst ']' ')' expr  # sum
+	|	Loop '(' Id '='
+		'[' IntConst ':' IntConst ']' ')' expr  # loop
 
 	|	expr '>=' IntConst '?' expr ':' expr	# cond
 	|	Let Id '=' expr In expr					# let
@@ -65,6 +67,7 @@ TANH	:	'tanh'   ;
 Reshape	:	'reshape' ;
 Maxpool	:	'maxpool' ;
 Sum		:	'$'       ;
+Loop		:	'loop'    ;
 
 Let		:	'let' ;
 In		:	'in'  ; 

@@ -286,6 +286,17 @@ class InferType(ASTVisitor):
 		
 		return node.type
 
+	# loop(x=[1:5]) e
+	def visitLoop(self, node:AST.Loop):
+		node.expr.gamma = dict(node.gamma)
+		node.expr.gamma[node.name] = Int()
+		eType = self.visit(node.expr)
+		
+		assert isTensor(eType)
+		node.type = eType
+		
+		return node.type
+
 	# e >= 0?  f : g
 	def visitCond(self, node:AST.Cond):
 		node.expr.gamma = dict(node.gamma)

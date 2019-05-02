@@ -1297,6 +1297,28 @@ class IRBuilder(ASTVisitor):
 
 		return (prog_out, expr_out)
 
+	# out = loop(x[start:end]) (expr) in
+	def visitLoop(self, node:AST.Loop):
+		'''
+		for (i = 0; i < n; i++)
+		  prog_in
+		'''
+
+		(prog_in, expr_in) = self.visit(node.expr)
+
+		start, end = node.start, node.end
+
+		var = IR.Var(node.name)
+		iters = self.getTempIterators(node.type.dim)
+
+		cmd0 = IR.Comment("loop(%s = [%d, %d])" % (node.name, start, end))
+
+		loop = IR.For(var, 0, IRUtil.lt(var, IR.Int(end - start)), prog_in.cmd_l)
+
+		prog_out = IR.Prog([cmd0, loop])
+
+		return (prog_out, expr_in)
+
 	# out = in_cond > 0? in_A: in_B
 	def visitCond(self, node:AST.Cond):
 

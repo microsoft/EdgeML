@@ -78,7 +78,12 @@ class PrintAST(ASTVisitor):
 		self.visit(node.expr)
 
 	def visitSum(self, node:AST.Sum):
-		print(indent * node.printLevel, node.name, str(node.start), str(node.end))
+		print(indent * node.printLevel, "sum", node.name, str(node.start), str(node.end))
+		node.expr.printLevel = node.printLevel + 1
+		self.visit(node.expr)
+
+	def visitLoop(self, node:AST.Loop):
+		print(indent * node.printLevel, "loop", node.name, str(node.start), str(node.end))
 		node.expr.printLevel = node.printLevel + 1
 		self.visit(node.expr)
 

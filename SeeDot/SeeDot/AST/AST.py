@@ -100,6 +100,14 @@ class Sum(ASTNode):
 		self.end = end
 		self.expr = expr
 
+class Loop(ASTNode):
+	def __init__(self, name, start, end, expr):
+		super().__init__()
+		self.name = name
+		self.start = start
+		self.end = end
+		self.expr = expr
+
 class Cond(ASTNode):
 	def __init__(self, expr, num, trueBlock, falseBlock):
 		super().__init__()

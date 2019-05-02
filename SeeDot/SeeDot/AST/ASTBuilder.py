@@ -79,6 +79,13 @@ class ASTBuilder(SeeDotVisitor):
 		expr = self.visit(ctx.expr())
 		return AST.Sum(name, start, end, expr)
 
+	def visitLoop(self, ctx:SeeDotParser.LoopContext):
+		name = ctx.Id().getText()
+		start = int(ctx.IntConst(0).getText())
+		end = int(ctx.IntConst(1).getText())
+		expr = self.visit(ctx.expr())
+		return AST.Loop(name, start, end, expr)
+
 	def visitCond(self, ctx:SeeDotParser.CondContext):
 		expr = self.visit(ctx.expr(0))
 		# Currently Cond node is used only to check sign of the expression
