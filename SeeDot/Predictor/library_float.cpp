@@ -575,3 +575,17 @@ void Exp(float *A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, float *B) {
 
 	return;
 }
+
+// A = sigmoid(A)
+void Sigmoid(float* A, MYINT I, MYINT J) {
+	for (MYINT i = 0; i < I; i++) {
+		for (MYINT j = 0; j < J; j++) {
+			float x = A[i * J + j], y;
+
+			y = 1 / (1 + exp(-x));
+
+			A[i * J + j] = y;
+		}
+	}
+	return;
+}

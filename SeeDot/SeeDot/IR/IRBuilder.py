@@ -911,6 +911,7 @@ class IRBuilder(ASTVisitor):
 		elif  op == SeeDotParser.ARGMAX:  return self.visitArgMax(node)
 		elif  op == SeeDotParser.SGN:     return self.visitSgn(node)
 		elif  op == SeeDotParser.TANH:    return self.visitTanh(node)
+		elif  op == SeeDotParser.SIGMOID: return self.visitSigmoid(node)
 		else:                             assert False
 
 	# out = relu(in)
@@ -1247,6 +1248,34 @@ class IRBuilder(ASTVisitor):
 		prog_out = IRUtil.concatPrograms(prog_in, prog_tanh)
 
 		self.intvs[expr_in.idf] = intv_out
+		expr_out = expr_in
+		
+		return (prog_out, expr_out)
+
+	# out = tanh(in)
+	def visitSigmoid(self, node:AST.Func):
+		# Temporary. Remove later
+		assert forFloat()
+
+		(prog_in, expr_in) = self.visit(node.expr)
+
+		type_in = node.expr.type
+		[I, J] = type_in.shape
+
+		expr_in.inputVar = False
+
+		cmd0 = IR.Comment("Sigmoid(" + expr_in.idf + ")")
+
+		funcCall = IR.FuncCall("Sigmoid", {
+								expr_in: "A",
+								IR.Int(I): "I",
+								IR.Int(J): "J"
+								})
+
+		prog_sigmoid = IR.Prog([cmd0, funcCall])
+		
+		prog_out = IRUtil.concatPrograms(prog_in, prog_sigmoid)
+
 		expr_out = expr_in
 		
 		return (prog_out, expr_out)

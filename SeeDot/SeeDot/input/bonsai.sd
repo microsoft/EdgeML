@@ -17,8 +17,7 @@ let H    = (1, 64)   in [-0.1, 0.1] in
 
 let res = loop(i = [0:7])
 (
-	let a = U1 - 1.0 in
-	let b = Bg in 
+	let b = sigmoid(Bg) in 
 	b
 ) in
 

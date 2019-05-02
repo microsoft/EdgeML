@@ -275,6 +275,11 @@ class InferType(ASTVisitor):
 			assert isTensor(eType) and eType.dim == 2
 			node.type = eType
 
+		# sigmoid(e)
+		elif node.op == SeeDotParser.SIGMOID:
+			assert isTensor(eType) and eType.dim == 2
+			node.type = eType
+
 		else:
 			assert False
 

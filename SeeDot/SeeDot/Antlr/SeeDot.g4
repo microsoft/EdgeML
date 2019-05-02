@@ -47,6 +47,7 @@ specialFunc	:	RELU
 			|	ARGMAX
 			|	SGN
 			|	TANH
+			|	SIGMOID
 			;
 
 ADD		:	'+' ;
@@ -63,6 +64,7 @@ EXP		:	'exp'    ;
 ARGMAX	:	'argmax' ;
 SGN		:	'sgn'    ;
 TANH	:	'tanh'   ;
+SIGMOID	:	'sigmoid';
 
 Reshape	:	'reshape' ;
 Maxpool	:	'maxpool' ;
