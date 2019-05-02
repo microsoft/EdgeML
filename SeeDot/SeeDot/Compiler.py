@@ -4,6 +4,7 @@
 from antlr4 import *
 import argparse
 import os
+import pickle
 
 from Antlr.SeeDotLexer import SeeDotLexer
 from Antlr.SeeDotParser import SeeDotParser
@@ -23,6 +24,8 @@ import IR.IRUtil as IRUtil
 from IR.IRGen.Arduino import Arduino as ArduinoIRGen
 from IR.IRGen.Hls import Hls as HlsIRGen
 
+from TF.ProcessTFGraph import main as TFMain
+
 from Type import InferType
 from Util import *
 from Writer import Writer
@@ -37,20 +40,35 @@ class Compiler:
 		setVersion(version)
 		setTarget(target)
 		setNumWorkers(numWorkers)
-		self.input = FileStream(inputFile)
+		self.input = inputFile
 		self.outputFile = outputFile
 		setProfileLogFile(profileLogFile)
 		setMaxScale(maxScale)
 	
-	def run(self):
+	def genASTFromFile(self, inputFile):
 		# Parse and generate CST for the input
-		lexer = SeeDotLexer(self.input)
+		lexer = SeeDotLexer(FileStream(inputFile))
 		tokens = CommonTokenStream(lexer)
 		parser = SeeDotParser(tokens)
 		tree = parser.expr()
 
 		# Generate AST
 		ast = ASTBuilder.ASTBuilder().visit(tree)
+		return ast
+
+	def genAST(self, inputFile):
+		ext = os.path.splitext(inputFile)[1]
+
+		if ext == ".sd":
+			return self.genASTFromFile(inputFile)
+		elif ext == ".pkl":
+			ast = TFMain()
+			#with open(inputFile, 'rb') as file:
+			#	ast = pickle.load(file)
+			return ast
+
+	def run(self):
+		ast = self.genAST(self.input)
 
 		# Pretty printing AST
 		# PrintAST().visit(ast)

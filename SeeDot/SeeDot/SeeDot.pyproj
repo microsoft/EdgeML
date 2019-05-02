@@ -30,6 +30,7 @@
     <Folder Include="Converter\" />
     <Folder Include="IR\" />
     <Folder Include="IR\IRGen\" />
+    <Folder Include="TF\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Antlr\SeeDotLexer.py" />
@@ -41,6 +42,7 @@
     <Compile Include="AST\AST.py" />
     <Compile Include="AST\ASTBuilder.py" />
     <Compile Include="AST\ASTVisitor.py" />
+    <Compile Include="AST\MtdAST.py" />
     <Compile Include="AST\PrintAST.py" />
     <Compile Include="AST\__init__.py">
       <SubType>Code</SubType>
@@ -59,7 +61,6 @@
     <Compile Include="Compiler.py" />
     <Compile Include="Converter\Bonsai.py" />
     <Compile Include="Converter\Converter.py" />
-    <Compile Include="Converter\Lenet.py" />
     <Compile Include="Converter\Protonn.py" />
     <Compile Include="Converter\Quantizer.py">
       <SubType>Code</SubType>
@@ -86,6 +87,12 @@
     <Compile Include="Predictor.py" />
     <Compile Include="SeeDot.py" />
     <Compile Include="Converter\ParamsBuilder.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TF\Graph.py" />
+    <Compile Include="TF\ProcessTFGraph.py" />
+    <Compile Include="TF\TFNodesAST.py" />
+    <Compile Include="TF\__init__.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Type.py" />

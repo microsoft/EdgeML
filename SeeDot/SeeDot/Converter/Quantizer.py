@@ -14,15 +14,29 @@ from Converter.Util import *
 
 class Quantizer:
 
-	def buildParams(self):
+	def genASTFromFile(self, inputFile):
 		# Parse and generate CST for the input
-		lexer = SeeDotLexer(FileStream(getInputFile()))
+		lexer = SeeDotLexer(FileStream(inputFile))
 		tokens = CommonTokenStream(lexer)
 		parser = SeeDotParser(tokens)
 		tree = parser.expr()
 
 		# Generate AST
 		ast = ASTBuilder.ASTBuilder().visit(tree)
+		return ast
+
+	def genAST(self, inputFile):
+		ext = os.path.splitext(inputFile)[1]
+
+		if ext == ".sd":
+			return self.genASTFromFile(inputFile)
+		elif ext == ".pkl":
+			with open(inputFile, 'rb') as file:
+				ast = pickle.load(file)
+			return ast
+
+	def buildParams(self):
+		ast = self.genAST(getInputFile())
 		
 		# Generate params
 		paramsBuilder = ParamsBuilder.ParamsBuilder()

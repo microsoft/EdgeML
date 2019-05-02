@@ -2,6 +2,9 @@
 # Licensed under the MIT license.
 
 class ASTNode:
+	mtdKeyTFOpName = "TFOpName"
+	mtdKeyTFNodeName = "TFNodeName"
+
 	def __init__(self):
 		self.printLevel = 0
 		
