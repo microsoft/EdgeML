@@ -17,8 +17,9 @@ let H    = (1, 64)   in [-0.1, 0.1] in
 
 let res = loop(i = [0:7])
 (
-	let a = (X[i] * W1) * W2 in
-	a
+	let a = U1 - 1.0 in
+	let b = Bg in 
+	b
 ) in
 
 let score = ((res * FC1) * FC2) + FCBias in

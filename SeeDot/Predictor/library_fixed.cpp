@@ -7,7 +7,7 @@
 #include "library_fixed.h"
 
 // C = A + B
-void MatAdd(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+void MatAdd(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
@@ -25,13 +25,91 @@ void MatAdd(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT sh
 	return;
 }
 
+// C = a + B
+void MatAddBroadCastA(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			MYINT a = *A;
+			MYINT b = B[i * J + j];
+
+			a = a / shrA;
+			b = b / shrB;
+
+			MYINT c = a + b;
+			c = c / shrC;
+
+			C[i * J + j] = c;
+		}
+	}
+	return;
+}
+
+// C = A + b
+void MatAddBroadCastB(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			MYINT a = A[i * J + j];
+			MYINT b = *B;
+
+			a = a / shrA;
+			b = b / shrB;
+
+			MYINT c = a + b;
+			c = c / shrC;
+
+			C[i * J + j] = c;
+		}
+	}
+	return;
+}
+
 // C = A - B
 // TODO: shrB is int32_t because in 8-bit/16-bit code, shrB is usually very high and int8_t/int16_t will overflow.
-void MatSub(MYINT *A, const MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC) {
+void MatSub(MYINT* A, const MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
 			MYINT b = B[i * J + j];
+
+			a = a / shrA;
+			b = b / shrB;
+
+			MYINT c = a - b;
+			c = c / shrC;
+
+			C[i * J + j] = c;
+		}
+	}
+	return;
+}
+
+// C = a - B
+// TODO: shrB is int32_t because in 8-bit/16-bit code, shrB is usually very high and int8_t/int16_t will overflow.
+void MatSubBroadCastA(MYINT* A, const MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			MYINT a = *A;
+			MYINT b = B[i * J + j];
+
+			a = a / shrA;
+			b = b / shrB;
+
+			MYINT c = a - b;
+			c = c / shrC;
+
+			C[i * J + j] = c;
+		}
+	}
+	return;
+}
+
+// C = A - b
+// TODO: shrB is int32_t because in 8-bit/16-bit code, shrB is usually very high and int8_t/int16_t will overflow.
+void MatSubBroadCastB(MYINT* A, const MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			MYINT a = A[i * J + j];
+			MYINT b = *B;
 
 			a = a / shrA;
 			b = b / shrB;

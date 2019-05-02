@@ -8,7 +8,7 @@
 #include "profile.h"
 
 // C = A + B
-void MatAdd(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+void MatAdd(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -22,12 +22,72 @@ void MatAdd(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT sh
 	return;
 }
 
+// C = a + B
+void MatAddBroadCastA(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+	for (MYINT i = 0; i < I; i++) {
+		for (MYINT j = 0; j < J; j++) {
+			float a = *A;
+			float b = B[i * J + j];
+
+			float c = a + b;
+
+			C[i * J + j] = c;
+		}
+	}
+	return;
+}
+
+// C = A + b
+void MatAddBroadCastB(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+	for (MYINT i = 0; i < I; i++) {
+		for (MYINT j = 0; j < J; j++) {
+			float a = A[i * J + j];
+			float b = *B;
+
+			float c = a + b;
+
+			C[i * J + j] = c;
+		}
+	}
+	return;
+}
+
 // C = A - B
-void MatSub(float *A, const float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+void MatSub(float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
 			float a = A[i * J + j];
 			float b = B[i * J + j];
+
+			float c = a - b;
+
+			C[i * J + j] = c;
+		}
+	}
+	return;
+}
+
+// C = a - B
+void MatSubBroadCastA(float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+	for (MYINT i = 0; i < I; i++) {
+		for (MYINT j = 0; j < J; j++) {
+			float a = *A;
+			float b = B[i * J + j];
+
+			float c = a - b;
+
+			C[i * J + j] = c;
+		}
+	}
+	return;
+}
+
+// C = A - b
+void MatSubBroadCastB(float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+	for (MYINT i = 0; i < I; i++) {
+		for (MYINT j = 0; j < J; j++) {
+			float a = A[i * J + j];
+			float b = *B;
 
 			float c = a - b;
 

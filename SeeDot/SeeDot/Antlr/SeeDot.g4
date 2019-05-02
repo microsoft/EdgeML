@@ -67,7 +67,7 @@ TANH	:	'tanh'   ;
 Reshape	:	'reshape' ;
 Maxpool	:	'maxpool' ;
 Sum		:	'$'       ;
-Loop		:	'loop'    ;
+Loop	:	'loop'    ;
 
 Let		:	'let' ;
 In		:	'in'  ; 

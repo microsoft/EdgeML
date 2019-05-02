@@ -851,6 +851,15 @@ class IRBuilder(ASTVisitor):
 
 		# e : Tensor(), or Tensor(..)
 		else:
+
+			type_A = node.expr1.type
+			type_B = node.expr2.type
+
+			if type_A.dim == 0:
+				funcName += 'BroadCastA'
+			elif type_B.dim == 0:
+				funcName += 'BroadCastB'
+
 			expr_out = self.getTempVar()
 			
 			scale_in_A, scale_in_B = self.scales[expr_in_A.idf], self.scales[expr_in_B.idf]

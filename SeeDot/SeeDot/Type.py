@@ -231,13 +231,18 @@ class InferType(ASTVisitor):
 		fType = self.visit(node.expr2)
 
 		if isInt(eType) and isInt(fType):
-			pass
+			node.type = eType
 		elif isTensor(eType) and isTensor(fType):
-			assert eType.shape == fType.shape
+			if eType.dim == 0:
+				node.type = fType
+			elif fType.dim == 0:
+				node.type = eType
+			else:
+				assert eType.shape == fType.shape
+				node.type = eType
 		else:
 			assert False
-		
-		node.type = eType
+
 		return node.type
 
 	def visitFunc(self, node:AST.Func):
