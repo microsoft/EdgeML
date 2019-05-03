@@ -71,6 +71,9 @@ class ParamsBuilder(ASTVisitor):
 	def visitSum(self, node:AST.Sum):
 		self.visit(node.expr)
 
+	def visitLoop(self, node:AST.Loop):
+		self.visit(node.expr)
+
 	def visitCond(self, node:AST.Cond):
 		self.visit(node.expr)
 		self.visit(node.trueBlock)

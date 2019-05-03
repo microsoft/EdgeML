@@ -12,11 +12,8 @@ void MatSubBroadCastA(float* A, const float* B, float* C, MYINT I, MYINT J, MYIN
 void MatSubBroadCastB(float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
 
 void MatMulNN(float *A, float *B, float *C, float *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2);
-
 void MatMulCN(const float *A, float *B, float *C, float *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2);
-
 void MatMulNC(float *A, const float *B, float *C, float *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2);
-
 void MatMulCC(const float *A, const float *B, float *C, float *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2);
 
 void SparseMatMul(const MYINT *Aidx, const float *Aval, float **B, float *C, MYINT K, MYINT shrA, MYINT shrB, MYINT shrC);

@@ -98,7 +98,7 @@ void MatSubBroadCastB(float* A, const float* B, float* C, MYINT I, MYINT J, MYIN
 }
 
 // C = A * B
-void MatMulNN(float *A, float *B, float *C, float *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+void MatMulNN(float* A, float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
@@ -142,7 +142,7 @@ void MatMulNN(float *A, float *B, float *C, float *tmp, MYINT I, MYINT K, MYINT 
 }
 
 // C = A * B
-void MatMulCN(const float *A, float *B, float *C, float *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+void MatMulCN(const float* A, float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
@@ -186,7 +186,7 @@ void MatMulCN(const float *A, float *B, float *C, float *tmp, MYINT I, MYINT K, 
 }
 
 // C = A * B
-void MatMulNC(float *A, const float *B, float *C, float *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+void MatMulNC(float* A, const float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
@@ -230,13 +230,15 @@ void MatMulNC(float *A, const float *B, float *C, float *tmp, MYINT I, MYINT K, 
 }
 
 // C = A * B
-void MatMulCC(const float *A, const float *B, float *C, float *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+void MatMulCC(const float* A, const float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
 			for (MYINT k = 0; k < K; k++) {
 				float a = A[i * K + k];
 				float b = B[k * J + j];
+
+
 
 				tmp[k] = a * b;
 			}
@@ -274,7 +276,7 @@ void MatMulCC(const float *A, const float *B, float *C, float *tmp, MYINT I, MYI
 }
 
 // C = A |*| B
-void SparseMatMul(const MYINT *Aidx, const float *Aval, float **B, float *C, MYINT K, MYINT shrA, MYINT shrB, MYINT shrC) {
+void SparseMatMul(const MYINT * Aidx, const float* Aval, float** B, float* C, MYINT K, MYINT shrA, MYINT shrB, MYINT shrC) {
 
 	MYINT ite_idx = 0, ite_val = 0;
 	for (MYINT k = 0; k < K; k++) {
@@ -301,7 +303,7 @@ void SparseMatMul(const MYINT *Aidx, const float *Aval, float **B, float *C, MYI
 }
 
 // C = A <*> B
-void MulCir(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
+void MulCir(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -314,17 +316,12 @@ void MulCir(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT sh
 }
 
 // A = tanh(A)
-void TanH(float *A, MYINT I, MYINT J, float tanh_limit) {
+void TanH(float* A, MYINT I, MYINT J, float tanh_limit) {
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
 			float x = A[i * J + j], y;
 
-			if (x >= tanh_limit)
-				y = tanh_limit;
-			else if (x <= -tanh_limit)
-				y = -tanh_limit;
-			else
-				y = x;
+			y = tanh(x);
 
 			A[i * J + j] = y;
 		}
@@ -333,7 +330,7 @@ void TanH(float *A, MYINT I, MYINT J, float tanh_limit) {
 }
 
 // index = argmax(A)
-void ArgMax(float *A, MYINT I, MYINT J, MYINT *index) {
+void ArgMax(float* A, MYINT I, MYINT J, MYINT * index) {
 
 	float max = A[0];
 	MYINT maxIndex = 0;
@@ -357,7 +354,7 @@ void ArgMax(float *A, MYINT I, MYINT J, MYINT *index) {
 }
 
 // A = A^T
-void Transpose(float *A, float *B, MYINT I, MYINT J) {
+void Transpose(float* A, float* B, MYINT I, MYINT J) {
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
 			B[i * J + j] = A[j * I + i];
@@ -367,7 +364,7 @@ void Transpose(float *A, float *B, MYINT I, MYINT J) {
 }
 
 // C = a * B
-void ScalarMul(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
+void ScalarMul(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
 
 	float a = *A;
 
@@ -384,7 +381,7 @@ void ScalarMul(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT
 
 // C = A # B
 // A[N][H][W][CI], B[HF][WF][CI][CO], C[N][H][W][CO]
-void Conv(float *A, const float *B, float *C, float *tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+void Conv(float* A, const float* B, float* C, float* tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 	MYINT padH = (HF - 1) / 2;
 	MYINT padW = (WF - 1) / 2;
 
@@ -445,7 +442,7 @@ void Conv(float *A, const float *B, float *C, float *tmp, MYINT N, MYINT H, MYIN
 
 // A = A <+> B
 // A[N][H][W][C], B[C]
-void AddOrSubCir4D(float *A, const float *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
+void AddOrSubCir4D(float* A, const float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
 
 	for (MYINT n = 0; n < N; n++) {
 		for (MYINT h = 0; h < H; h++) {
@@ -472,7 +469,7 @@ void AddOrSubCir4D(float *A, const float *B, MYINT N, MYINT H, MYINT W, MYINT C,
 
 // A = A <+> B
 // A[N][H][W][C], B[C]
-void AddOrSubCir2D(float *A, const float *B, MYINT H, MYINT W, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
+void AddOrSubCir2D(float* A, const float* B, MYINT H, MYINT W, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
 
 	for (MYINT h = 0; h < H; h++) {
 		for (MYINT w = 0; w < W; w++) {
@@ -495,7 +492,7 @@ void AddOrSubCir2D(float *A, const float *B, MYINT H, MYINT W, MYINT shrA, MYINT
 
 // A = relu(A)
 // A[N][H][W][C]
-void Relu4D(float *A, MYINT N, MYINT H, MYINT W, MYINT C) {
+void Relu4D(float* A, MYINT N, MYINT H, MYINT W, MYINT C) {
 
 	for (MYINT n = 0; n < N; n++) {
 		for (MYINT h = 0; h < H; h++) {
@@ -516,7 +513,7 @@ void Relu4D(float *A, MYINT N, MYINT H, MYINT W, MYINT C) {
 
 // A = relu(A)
 // A[N][H][W][C]
-void Relu2D(float *A, MYINT H, MYINT W) {
+void Relu2D(float* A, MYINT H, MYINT W) {
 
 	for (MYINT h = 0; h < H; h++) {
 		for (MYINT w = 0; w < W; w++) {
@@ -533,7 +530,7 @@ void Relu2D(float *A, MYINT H, MYINT W) {
 
 // B = maxpool(A)
 // A[N][H][W][C], B[N][H][W][C]
-void Maxpool(float *A, float *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT stride) {
+void Maxpool(float* A, float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT stride) {
 	MYINT HO = H / stride;
 	MYINT WO = W / stride;
 
@@ -561,7 +558,7 @@ void Maxpool(float *A, float *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT strid
 }
 
 // B = exp(A)
-void Exp(float *A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, float *B) {
+void Exp(float* A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, float* B) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {

@@ -17,8 +17,13 @@ let H    = (1, 64)   in [-0.1, 0.1] in
 
 let res = loop(i = [0:7])
 (
-	let b = sigmoid(Bg) in 
-	b
+	let a = (X[i] * W1) * W2 in
+	let b = (H * U1) * U2 in
+	let c = a + b in
+	let g = sigmoid(c + Bg) in
+	let h = tanh(c + Bh) in
+	let H = (g <*> H) + (zeta * (1.0 - g) + nu) <*> h in 
+	H
 ) in
 
 let score = ((res * FC1) * FC2) + FCBias in
