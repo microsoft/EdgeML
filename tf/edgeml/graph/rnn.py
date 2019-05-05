@@ -783,7 +783,6 @@ class GRULRCell(RNNCell):
                     initializer=U3_matrix_init)
                 uComp1 = math_ops.matmul(state, self.U1)
                 uComp2 = math_ops.matmul(state, self.U2)
-                uComp3 = math_ops.matmul(state, self.U3)
             else:
                 U_matrix_r_init = init_ops.random_normal_initializer(
                     mean=0.0, stddev=0.1, dtype=tf.float32)
@@ -809,8 +808,6 @@ class GRULRCell(RNNCell):
                     math_ops.matmul(state, self.U), self.U1)
                 uComp2 = math_ops.matmul(
                     math_ops.matmul(state, self.U), self.U2)
-                uComp3 = math_ops.matmul(
-                    math_ops.matmul(state, self.U), self.U3)
 
             pre_comp1 = wComp1 + uComp1
             pre_comp2 = wComp2 + uComp2
@@ -829,7 +826,12 @@ class GRULRCell(RNNCell):
             z = gen_non_linearity(pre_comp2 + self.bias_gate,
                                   self._gate_non_linearity)
 
-            pre_comp3 = wComp3 + r * uComp3
+            if self._uRank is None:
+                pre_comp3 = wComp3 + math_ops.matmul(r * state, self.U3)
+            else:
+                pre_comp3 = wComp3 + \
+                    math_ops.matmul(math_ops.matmul(
+                        r * state, self.U), self.U3)
 
             bias_update_init = init_ops.constant_initializer(
                 1.0, dtype=tf.float32)
