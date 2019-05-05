@@ -6,6 +6,7 @@ from tensorflow.python.ops import init_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import variable_scope as vs
 from tensorflow.python.ops import gen_math_ops
+from tensorflow.python.ops import array_ops
 from tensorflow.python.ops.rnn_cell_impl import RNNCell
 
 
@@ -368,6 +369,683 @@ class FastRNNCell(RNNCell):
 
         Vars.extend([self.bias_update])
         Vars.extend([self.alpha, self.beta])
+
+        return Vars
+
+
+class LSTMLRCell(RNNCell):
+    '''
+    LR - Low Rank
+    LSTM LR Cell with Both Full Rank and Low Rank Formulations
+    Has multiple activation functions for the gates
+    hidden_size = # hidden units
+
+    gate_non_linearity = nonlinearity for the gate can be chosen from
+    [tanh, sigmoid, relu, quantTanh, quantSigm]
+    update_non_linearity = nonlinearity for final rnn update
+    can be chosen from [tanh, sigmoid, relu, quantTanh, quantSigm]
+
+    wRank = rank of all W matrices
+    (creates 5 matrices if not None else creates 4 matrices)
+    uRank = rank of all U matrices
+    (creates 5 matrices if not None else creates 4 matrices)
+
+    LSTM architecture and compression techniques are found in
+    LSTM paper
+
+    Basic architecture is like:
+
+    f_t = gate_nl(W1x_t + U1h_{t-1} + B_f)
+    i_t = gate_nl(W2x_t + U2h_{t-1} + B_i)
+    C_t^ = update_nl(W3x_t + U3h_{t-1} + B_c)
+    o_t = gate_nl(W4x_t + U4h_{t-1} + B_o)
+    C_t = f_t*C_{t-1} + i_t*C_t^
+    h_t = o_t*update_nl(C_t)
+
+    Wi and Ui can further parameterised into low rank version by
+    Wi = matmul(W, W_i) and Ui = matmul(U, U_i)
+    '''
+
+    def __init__(self, hidden_size, gate_non_linearity="sigmoid",
+                 update_non_linearity="tanh", wRank=None, uRank=None,
+                 name="LSTMLR", reuse=None):
+        super(LSTMLRCell, self).__init__(_reuse=reuse)
+        self._hidden_size = hidden_size
+        self._gate_non_linearity = gate_non_linearity
+        self._update_non_linearity = update_non_linearity
+        self._num_weight_matrices = [1, 1]
+        self._wRank = wRank
+        self._uRank = uRank
+        if wRank is not None:
+            self._num_weight_matrices[0] += 4
+        if uRank is not None:
+            self._num_weight_matrices[1] += 4
+        self._name = name
+        self._reuse = reuse
+
+    @property
+    def state_size(self):
+        return 2 * self._hidden_size
+
+    @property
+    def output_size(self):
+        return self._hidden_size
+
+    @property
+    def gate_non_linearity(self):
+        return self._gate_non_linearity
+
+    @property
+    def update_non_linearity(self):
+        return self._update_non_linearity
+
+    @property
+    def wRank(self):
+        return self._wRank
+
+    @property
+    def uRank(self):
+        return self._uRank
+
+    @property
+    def num_weight_matrices(self):
+        return self._num_weight_matrices
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def cellType(self):
+        return "LSTMLR"
+
+    def call(self, inputs, state):
+        c, h = array_ops.split(value=state, num_or_size_splits=2, axis=1)
+        with vs.variable_scope(self._name + "/LSTMLRCell"):
+
+            if self._wRank is None:
+                W1_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W1 = vs.get_variable(
+                    "W1", [inputs.get_shape()[-1], self._hidden_size],
+                    initializer=W1_matrix_init)
+                W2_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W2 = vs.get_variable(
+                    "W2", [inputs.get_shape()[-1], self._hidden_size],
+                    initializer=W2_matrix_init)
+                W3_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W3 = vs.get_variable(
+                    "W3", [inputs.get_shape()[-1], self._hidden_size],
+                    initializer=W3_matrix_init)
+                W4_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W4 = vs.get_variable(
+                    "W4", [inputs.get_shape()[-1], self._hidden_size],
+                    initializer=W4_matrix_init)
+                wComp1 = math_ops.matmul(inputs, self.W1)
+                wComp2 = math_ops.matmul(inputs, self.W2)
+                wComp3 = math_ops.matmul(inputs, self.W3)
+                wComp4 = math_ops.matmul(inputs, self.W4)
+            else:
+                W_matrix_r_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W = vs.get_variable(
+                    "W", [inputs.get_shape()[-1], self._wRank],
+                    initializer=W_matrix_r_init)
+                W1_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W1 = vs.get_variable(
+                    "W1", [self._wRank, self._hidden_size],
+                    initializer=W1_matrix_init)
+                W2_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W2 = vs.get_variable(
+                    "W2", [self._wRank, self._hidden_size],
+                    initializer=W2_matrix_init)
+                W3_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W3 = vs.get_variable(
+                    "W3", [self._wRank, self._hidden_size],
+                    initializer=W3_matrix_init)
+                W4_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W4 = vs.get_variable(
+                    "W4", [self._wRank, self._hidden_size],
+                    initializer=W4_matrix_init)
+                wComp1 = math_ops.matmul(
+                    math_ops.matmul(inputs, self.W), self.W1)
+                wComp2 = math_ops.matmul(
+                    math_ops.matmul(inputs, self.W), self.W2)
+                wComp3 = math_ops.matmul(
+                    math_ops.matmul(inputs, self.W), self.W3)
+                wComp4 = math_ops.matmul(
+                    math_ops.matmul(inputs, self.W), self.W4)
+            if self._uRank is None:
+                U1_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U1 = vs.get_variable(
+                    "U1", [self._hidden_size, self._hidden_size],
+                    initializer=U1_matrix_init)
+                U2_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U2 = vs.get_variable(
+                    "U2", [self._hidden_size, self._hidden_size],
+                    initializer=U2_matrix_init)
+                U3_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U3 = vs.get_variable(
+                    "U3", [self._hidden_size, self._hidden_size],
+                    initializer=U3_matrix_init)
+                U4_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U4 = vs.get_variable(
+                    "U4", [self._hidden_size, self._hidden_size],
+                    initializer=U4_matrix_init)
+                uComp1 = math_ops.matmul(h, self.U1)
+                uComp2 = math_ops.matmul(h, self.U2)
+                uComp3 = math_ops.matmul(h, self.U3)
+                uComp4 = math_ops.matmul(h, self.U4)
+            else:
+                U_matrix_r_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U = vs.get_variable(
+                    "U", [self._hidden_size, self._uRank],
+                    initializer=U_matrix_r_init)
+                U1_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U1 = vs.get_variable(
+                    "U1", [self._uRank, self._hidden_size],
+                    initializer=U1_matrix_init)
+                U2_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U2 = vs.get_variable(
+                    "U2", [self._uRank, self._hidden_size],
+                    initializer=U2_matrix_init)
+                U3_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U3 = vs.get_variable(
+                    "U3", [self._uRank, self._hidden_size],
+                    initializer=U3_matrix_init)
+                U4_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U4 = vs.get_variable(
+                    "U4", [self._uRank, self._hidden_size],
+                    initializer=U4_matrix_init)
+
+                uComp1 = math_ops.matmul(
+                    math_ops.matmul(h, self.U), self.U1)
+                uComp2 = math_ops.matmul(
+                    math_ops.matmul(h, self.U), self.U2)
+                uComp3 = math_ops.matmul(
+                    math_ops.matmul(h, self.U), self.U3)
+                uComp4 = math_ops.matmul(
+                    math_ops.matmul(h, self.U), self.U4)
+
+            pre_comp1 = wComp1 + uComp1
+            pre_comp2 = wComp2 + uComp2
+            pre_comp3 = wComp3 + uComp3
+            pre_comp4 = wComp4 + uComp4
+
+            bias_gate_init = init_ops.constant_initializer(
+                1.0, dtype=tf.float32)
+            self.bias_f = vs.get_variable(
+                "B_f", [1, self._hidden_size], initializer=bias_gate_init)
+            self.bias_i = vs.get_variable(
+                "B_i", [1, self._hidden_size], initializer=bias_gate_init)
+            self.bias_c = vs.get_variable(
+                "B_c", [1, self._hidden_size], initializer=bias_gate_init)
+            self.bias_o = vs.get_variable(
+                "B_o", [1, self._hidden_size], initializer=bias_gate_init)
+
+            f = gen_non_linearity(pre_comp1 + self.bias_f,
+                                  self._gate_non_linearity)
+            i = gen_non_linearity(pre_comp2 + self.bias_i,
+                                  self._gate_non_linearity)
+            o = gen_non_linearity(pre_comp4 + self.bias_o,
+                                  self._gate_non_linearity)
+
+            c_ = gen_non_linearity(
+                pre_comp3 + self.bias_c, self._update_non_linearity)
+
+            new_c = f * c + i * c_
+            new_h = o * gen_non_linearity(new_c, self._update_non_linearity)
+            new_state = array_ops.concat([new_c, new_h], 1)
+
+        return new_h, new_state
+
+    def getVars(self):
+        Vars = []
+        if self._num_weight_matrices[0] == 1:
+            Vars.extend([self.W1, self.W2, self.W3, self.W4])
+        else:
+            Vars.extend([self.W, self.W1, self.W2, self.W3, self.W4])
+
+        if self._num_weight_matrices[1] == 1:
+            Vars.extend([self.U1, self.U2, self.U3, self.U4])
+        else:
+            Vars.extend([self.U, self.U1, self.U2, self.U3, self.U4])
+
+        Vars.extend([self.bias_f, self.bias_i, self.bias_c, self.bias_o])
+
+        return Vars
+
+
+class GRULRCell(RNNCell):
+    '''
+    GRU LR Cell with Both Full Rank and Low Rank Formulations
+    Has multiple activation functions for the gates
+    hidden_size = # hidden units
+
+    gate_non_linearity = nonlinearity for the gate can be chosen from
+    [tanh, sigmoid, relu, quantTanh, quantSigm]
+    update_non_linearity = nonlinearity for final rnn update
+    can be chosen from [tanh, sigmoid, relu, quantTanh, quantSigm]
+
+    wRank = rank of W matrix
+    (creates 4 matrices if not None else creates 3 matrices)
+    uRank = rank of U matrix
+    (creates 4 matrices if not None else creates 3 matrices)
+
+    GRU architecture and compression techniques are found in
+    GRU(LINK) paper
+
+    Basic architecture is like:
+
+    r_t = gate_nl(W1x_t + U1h_{t-1} + B_r)
+    z_t = gate_nl(W2x_t + U2h_{t-1} + B_g)
+    h_t^ = update_nl(W3x_t + r_t*U3(h_{t-1}) + B_h)
+    h_t = z_t*h_{t-1} + (1-z_t)*h_t^
+
+    Wi and Ui can further parameterised into low rank version by
+    Wi = matmul(W, W_i) and Ui = matmul(U, U_i)
+    '''
+
+    def __init__(self, hidden_size, gate_non_linearity="sigmoid",
+                 update_non_linearity="tanh", wRank=None, uRank=None,
+                 name="GRULR", reuse=None):
+        super(GRULRCell, self).__init__(_reuse=reuse)
+        self._hidden_size = hidden_size
+        self._gate_non_linearity = gate_non_linearity
+        self._update_non_linearity = update_non_linearity
+        self._num_weight_matrices = [1, 1]
+        self._wRank = wRank
+        self._uRank = uRank
+        if wRank is not None:
+            self._num_weight_matrices[0] += 3
+        if uRank is not None:
+            self._num_weight_matrices[1] += 3
+        self._name = name
+        self._reuse = reuse
+
+    @property
+    def state_size(self):
+        return self._hidden_size
+
+    @property
+    def output_size(self):
+        return self._hidden_size
+
+    @property
+    def gate_non_linearity(self):
+        return self._gate_non_linearity
+
+    @property
+    def update_non_linearity(self):
+        return self._update_non_linearity
+
+    @property
+    def wRank(self):
+        return self._wRank
+
+    @property
+    def uRank(self):
+        return self._uRank
+
+    @property
+    def num_weight_matrices(self):
+        return self._num_weight_matrices
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def cellType(self):
+        return "GRULR"
+
+    def call(self, inputs, state):
+        with vs.variable_scope(self._name + "/GRULRCell"):
+
+            if self._wRank is None:
+                W1_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W1 = vs.get_variable(
+                    "W1", [inputs.get_shape()[-1], self._hidden_size],
+                    initializer=W1_matrix_init)
+                W2_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W2 = vs.get_variable(
+                    "W2", [inputs.get_shape()[-1], self._hidden_size],
+                    initializer=W2_matrix_init)
+                W3_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W3 = vs.get_variable(
+                    "W3", [inputs.get_shape()[-1], self._hidden_size],
+                    initializer=W3_matrix_init)
+                wComp1 = math_ops.matmul(inputs, self.W1)
+                wComp2 = math_ops.matmul(inputs, self.W2)
+                wComp3 = math_ops.matmul(inputs, self.W3)
+            else:
+                W_matrix_r_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W = vs.get_variable(
+                    "W", [inputs.get_shape()[-1], self._wRank],
+                    initializer=W_matrix_r_init)
+                W1_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W1 = vs.get_variable(
+                    "W1", [self._wRank, self._hidden_size],
+                    initializer=W1_matrix_init)
+                W2_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W2 = vs.get_variable(
+                    "W2", [self._wRank, self._hidden_size],
+                    initializer=W2_matrix_init)
+                W3_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W3 = vs.get_variable(
+                    "W3", [self._wRank, self._hidden_size],
+                    initializer=W3_matrix_init)
+                wComp1 = math_ops.matmul(
+                    math_ops.matmul(inputs, self.W), self.W1)
+                wComp2 = math_ops.matmul(
+                    math_ops.matmul(inputs, self.W), self.W2)
+                wComp3 = math_ops.matmul(
+                    math_ops.matmul(inputs, self.W), self.W3)
+
+            if self._uRank is None:
+                U1_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U1 = vs.get_variable(
+                    "U1", [self._hidden_size, self._hidden_size],
+                    initializer=U1_matrix_init)
+                U2_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U2 = vs.get_variable(
+                    "U2", [self._hidden_size, self._hidden_size],
+                    initializer=U2_matrix_init)
+                U3_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U3 = vs.get_variable(
+                    "U3", [self._hidden_size, self._hidden_size],
+                    initializer=U3_matrix_init)
+                uComp1 = math_ops.matmul(state, self.U1)
+                uComp2 = math_ops.matmul(state, self.U2)
+                uComp3 = math_ops.matmul(state, self.U3)
+            else:
+                U_matrix_r_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U = vs.get_variable(
+                    "U", [self._hidden_size, self._uRank],
+                    initializer=U_matrix_r_init)
+                U1_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U1 = vs.get_variable(
+                    "U1", [self._uRank, self._hidden_size],
+                    initializer=U1_matrix_init)
+                U2_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U2 = vs.get_variable(
+                    "U2", [self._uRank, self._hidden_size],
+                    initializer=U2_matrix_init)
+                U3_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U3 = vs.get_variable(
+                    "U3", [self._uRank, self._hidden_size],
+                    initializer=U3_matrix_init)
+                uComp1 = math_ops.matmul(
+                    math_ops.matmul(state, self.U), self.U1)
+                uComp2 = math_ops.matmul(
+                    math_ops.matmul(state, self.U), self.U2)
+                uComp3 = math_ops.matmul(
+                    math_ops.matmul(state, self.U), self.U3)
+
+            pre_comp1 = wComp1 + uComp1
+            pre_comp2 = wComp2 + uComp2
+
+            bias_r_init = init_ops.constant_initializer(
+                1.0, dtype=tf.float32)
+            self.bias_r = vs.get_variable(
+                "B_r", [1, self._hidden_size], initializer=bias_r_init)
+            r = gen_non_linearity(pre_comp1 + self.bias_r,
+                                  self._gate_non_linearity)
+
+            bias_gate_init = init_ops.constant_initializer(
+                1.0, dtype=tf.float32)
+            self.bias_gate = vs.get_variable(
+                "B_g", [1, self._hidden_size], initializer=bias_gate_init)
+            z = gen_non_linearity(pre_comp2 + self.bias_gate,
+                                  self._gate_non_linearity)
+
+            pre_comp3 = wComp3 + r * uComp3
+
+            bias_update_init = init_ops.constant_initializer(
+                1.0, dtype=tf.float32)
+            self.bias_update = vs.get_variable(
+                "B_h", [1, self._hidden_size], initializer=bias_update_init)
+            c = gen_non_linearity(
+                pre_comp3 + self.bias_update, self._update_non_linearity)
+
+            new_h = z * state + (1.0 - z) * c
+
+        return new_h, new_h
+
+    def getVars(self):
+        Vars = []
+        if self._num_weight_matrices[0] == 1:
+            Vars.extend([self.W1, self.W2, self.W3])
+        else:
+            Vars.extend([self.W, self.W1, self.W2, self.W3])
+
+        if self._num_weight_matrices[1] == 1:
+            Vars.extend([self.U1, self.U2, self.U3])
+        else:
+            Vars.extend([self.U, self.U1, self.U2, self.U3])
+
+        Vars.extend([self.bias_r, self.bias_gate, self.bias_update])
+
+        return Vars
+
+
+class UGRNNLRCell(RNNCell):
+    '''
+    UGRNN LR Cell with Both Full Rank and Low Rank Formulations
+    Has multiple activation functions for the gates
+    hidden_size = # hidden units
+
+    gate_non_linearity = nonlinearity for the gate can be chosen from
+    [tanh, sigmoid, relu, quantTanh, quantSigm]
+    update_non_linearity = nonlinearity for final rnn update
+    can be chosen from [tanh, sigmoid, relu, quantTanh, quantSigm]
+
+    wRank = rank of W matrix
+    (creates 3 matrices if not None else creates 2 matrices)
+    uRank = rank of U matrix
+    (creates 3 matrices if not None else creates 2 matrices)
+
+    UGRNN architecture and compression techniques are found in
+    UGRNN(LINK) paper
+
+    Basic architecture is like:
+
+    z_t = gate_nl(W1x_t + U1h_{t-1} + B_g)
+    h_t^ = update_nl(W1x_t + U1h_{t-1} + B_h)
+    h_t = z_t*h_{t-1} + (1-z_t)*h_t^
+
+    Wi and Ui can further parameterised into low rank version by
+    Wi = matmul(W, W_i) and Ui = matmul(U, U_i)
+    '''
+
+    def __init__(self, hidden_size, gate_non_linearity="sigmoid",
+                 update_non_linearity="tanh", wRank=None, uRank=None,
+                 name="UGRNNLR", reuse=None):
+        super(UGRNNLRCell, self).__init__(_reuse=reuse)
+        self._hidden_size = hidden_size
+        self._gate_non_linearity = gate_non_linearity
+        self._update_non_linearity = update_non_linearity
+        self._num_weight_matrices = [1, 1]
+        self._wRank = wRank
+        self._uRank = uRank
+        if wRank is not None:
+            self._num_weight_matrices[0] += 2
+        if uRank is not None:
+            self._num_weight_matrices[1] += 2
+        self._name = name
+        self._reuse = reuse
+
+    @property
+    def state_size(self):
+        return self._hidden_size
+
+    @property
+    def output_size(self):
+        return self._hidden_size
+
+    @property
+    def gate_non_linearity(self):
+        return self._gate_non_linearity
+
+    @property
+    def update_non_linearity(self):
+        return self._update_non_linearity
+
+    @property
+    def wRank(self):
+        return self._wRank
+
+    @property
+    def uRank(self):
+        return self._uRank
+
+    @property
+    def num_weight_matrices(self):
+        return self._num_weight_matrices
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def cellType(self):
+        return "UGRNNLR"
+
+    def call(self, inputs, state):
+        with vs.variable_scope(self._name + "/UGRNNLRCell"):
+
+            if self._wRank is None:
+                W1_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W1 = vs.get_variable(
+                    "W1", [inputs.get_shape()[-1], self._hidden_size],
+                    initializer=W1_matrix_init)
+                W2_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W2 = vs.get_variable(
+                    "W2", [inputs.get_shape()[-1], self._hidden_size],
+                    initializer=W2_matrix_init)
+                wComp1 = math_ops.matmul(inputs, self.W1)
+                wComp2 = math_ops.matmul(inputs, self.W2)
+            else:
+                W_matrix_r_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W = vs.get_variable(
+                    "W", [inputs.get_shape()[-1], self._wRank],
+                    initializer=W_matrix_r_init)
+                W1_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W1 = vs.get_variable(
+                    "W1", [self._wRank, self._hidden_size],
+                    initializer=W1_matrix_init)
+                W2_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.W2 = vs.get_variable(
+                    "W2", [self._wRank, self._hidden_size],
+                    initializer=W2_matrix_init)
+                wComp1 = math_ops.matmul(
+                    math_ops.matmul(inputs, self.W), self.W1)
+                wComp2 = math_ops.matmul(
+                    math_ops.matmul(inputs, self.W), self.W2)
+
+            if self._uRank is None:
+                U1_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U1 = vs.get_variable(
+                    "U1", [self._hidden_size, self._hidden_size],
+                    initializer=U1_matrix_init)
+                U2_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U2 = vs.get_variable(
+                    "U2", [self._hidden_size, self._hidden_size],
+                    initializer=U2_matrix_init)
+                uComp1 = math_ops.matmul(state, self.U1)
+                uComp2 = math_ops.matmul(state, self.U2)
+            else:
+                U_matrix_r_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U = vs.get_variable(
+                    "U", [self._hidden_size, self._uRank],
+                    initializer=U_matrix_r_init)
+                U1_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U1 = vs.get_variable(
+                    "U1", [self._uRank, self._hidden_size],
+                    initializer=U1_matrix_init)
+                U2_matrix_init = init_ops.random_normal_initializer(
+                    mean=0.0, stddev=0.1, dtype=tf.float32)
+                self.U2 = vs.get_variable(
+                    "U2", [self._uRank, self._hidden_size],
+                    initializer=U2_matrix_init)
+                uComp1 = math_ops.matmul(
+                    math_ops.matmul(state, self.U), self.U1)
+                uComp2 = math_ops.matmul(
+                    math_ops.matmul(state, self.U), self.U2)
+
+            pre_comp1 = wComp1 + uComp1
+            pre_comp2 = wComp2 + uComp2
+
+            bias_gate_init = init_ops.constant_initializer(
+                1.0, dtype=tf.float32)
+            self.bias_gate = vs.get_variable(
+                "B_g", [1, self._hidden_size], initializer=bias_gate_init)
+            z = gen_non_linearity(pre_comp1 + self.bias_gate,
+                                  self._gate_non_linearity)
+
+            bias_update_init = init_ops.constant_initializer(
+                1.0, dtype=tf.float32)
+            self.bias_update = vs.get_variable(
+                "B_h", [1, self._hidden_size], initializer=bias_update_init)
+            c = gen_non_linearity(
+                pre_comp2 + self.bias_update, self._update_non_linearity)
+
+            new_h = z * state + (1.0 - z) * c
+
+        return new_h, new_h
+
+    def getVars(self):
+        Vars = []
+        if self._num_weight_matrices[0] == 1:
+            Vars.extend([self.W1, self.W2])
+        else:
+            Vars.extend([self.W, self.W1, self.W2])
+
+        if self._num_weight_matrices[1] == 1:
+            Vars.extend([self.U1, self.U2])
+        else:
+            Vars.extend([self.U, self.U1, self.U2])
+
+        Vars.extend([self.bias_gate, self.bias_update])
 
         return Vars
 
