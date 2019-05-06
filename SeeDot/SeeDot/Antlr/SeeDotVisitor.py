@@ -14,6 +14,11 @@ class SeeDotVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by SeeDotParser#init.
+    def visitInit(self, ctx:SeeDotParser.InitContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by SeeDotParser#bop2.
     def visitBop2(self, ctx:SeeDotParser.Bop2Context):
         return self.visitChildren(ctx)

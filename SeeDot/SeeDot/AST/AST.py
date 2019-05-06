@@ -36,6 +36,12 @@ class Decl(ASTNode):
 		self.shape = shape
 		self.range = range
 
+class Init(ASTNode):
+	def __init__(self, shape:list, value:Float):
+		super().__init__()
+		self.shape = shape
+		self.value = value
+
 class Transp(ASTNode):
 	def __init__(self, expr):
 		super().__init__()

@@ -14,6 +14,8 @@ class ASTVisitor:
 			return self.visitId(node)
 		elif isinstance(node, AST.Decl):
 			return self.visitDecl(node)
+		elif isinstance(node, AST.Init):
+			return self.visitInit(node)
 		elif isinstance(node, AST.Transp):
 			return self.visitTransp(node)
 		elif isinstance(node, AST.Reshape):

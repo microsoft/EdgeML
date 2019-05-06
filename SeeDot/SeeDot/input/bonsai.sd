@@ -13,7 +13,7 @@ let X    = (7, 1, 30)   in [-0.1, 0.1] in
 let zeta = 0.15637416 in
 let nu = 0.01094334 in
 
-let H    = (1, 64)   in [-0.1, 0.1] in
+let H    = init([1, 64], 0.0) in
 
 let res = loop(i = [0:7])
 (
@@ -22,7 +22,7 @@ let res = loop(i = [0:7])
 	let c = a + b in
 	let g = sigmoid(c + Bg) in
 	let h = tanh(c + Bh) in
-	let H = (g <*> H) + (zeta * (1.0 - g) + nu) <*> h in 
+	let H1 = (g <*> H) + (zeta * (1.0 - g) + nu) <*> h in 
 	H
 ) in
 

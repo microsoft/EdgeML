@@ -140,6 +140,33 @@ class IRBuilder(ASTVisitor):
 
 		return (prog, expr)
 
+	def visitInit(self, node:AST.Init):
+		if node.value == 0:
+			# Otherwise, getScale() will fail
+			minVal, maxVal = -0.000001, 0.000001
+		else:
+			minVal, maxVal = node.value, node.value
+		
+		scale = self.getScale(max(abs(minVal), abs(maxVal)))
+		intv = self.getInterval(scale, minVal, maxVal)
+
+		expr = self.getTempVar()
+
+		# Have to use loops to initialize non-zero values instead of memset
+		assert node.value == 0
+
+		cmd0 = IR.Comment('init([%s], %d)' % (', '.join(map(str, node.shape)), node.value))
+
+		memset = IR.Memset(expr, node.type.size())
+
+		prog = IR.Prog([cmd0, memset])
+		
+		self.decls[expr.idf] = node.type
+		self.scales[expr.idf] = scale
+		self.intvs[expr.idf] = intv
+
+		return (prog, expr)
+
 	# out = in ^ T
 	def visitTransp(self, node:AST.Transp):
 

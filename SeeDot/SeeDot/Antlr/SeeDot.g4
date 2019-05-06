@@ -8,6 +8,8 @@ expr:	IntConst								# int
 	|	Id										# id
 	|	'(' intConstList ')'
 		In '[' FloatConst ',' FloatConst ']'	# decl
+	|	'init' '('
+		'[' intConstList ']' ',' FloatConst ')'	# init
 
 	|	expr '^T'								# transp
 	|	Reshape '(' expr ','

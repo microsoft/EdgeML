@@ -62,6 +62,10 @@ class InferType(ASTVisitor):
 		node.type = Tensor(node.shape)
 		return node.type
 
+	def visitInit(self, node:AST.Init):
+		node.type = Tensor(node.shape)
+		return node.type
+
 	# Matrix transpose
 	def visitTransp(self, node:AST.Transp):
 		node.expr.gamma = dict(node.gamma)
@@ -287,6 +291,8 @@ class InferType(ASTVisitor):
 
 	# $(x=[1:5]) e
 	def visitSum(self, node:AST.Sum):
+		assert node.name not in node.gamma, "%s defined more than once" % (node.name)
+
 		node.expr.gamma = dict(node.gamma)
 		node.expr.gamma[node.name] = Int()
 		eType = self.visit(node.expr)
@@ -298,6 +304,8 @@ class InferType(ASTVisitor):
 
 	# loop(x=[1:5]) e
 	def visitLoop(self, node:AST.Loop):
+		assert node.name not in node.gamma, "%s defined more than once" % (node.name)
+
 		node.expr.gamma = dict(node.gamma)
 		node.expr.gamma[node.name] = Int()
 		eType = self.visit(node.expr)
@@ -328,6 +336,8 @@ class InferType(ASTVisitor):
 	def visitLet(self, node:AST.Let):
 		node.decl.gamma = dict(node.gamma)
 		eType = self.visit(node.decl)
+
+		assert node.name not in node.gamma, "%s defined more than once" % (node.name)
 
 		node.expr.gamma = dict(node.gamma)
 		node.expr.gamma[node.name] = eType

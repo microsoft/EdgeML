@@ -25,6 +25,11 @@ class ASTBuilder(SeeDotVisitor):
 		range = float(ctx.FloatConst(0).getText()), float(ctx.FloatConst(1).getText())
 		return AST.Decl(shape, range)
 
+	def visitInit(self, ctx:SeeDotParser.InitContext):
+		shape = [int(IntConst.getText()) for IntConst in ctx.intConstList().IntConst()]
+		value = float(ctx.FloatConst().getText())
+		return AST.Init(shape, value)
+
 	def visitTransp(self, ctx:SeeDotParser.TranspContext):
 		expr = self.visit(ctx.expr())
 		return AST.Transp(expr)

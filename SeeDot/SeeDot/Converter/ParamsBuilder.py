@@ -32,6 +32,9 @@ class ParamsBuilder(ASTVisitor):
 	def visitDecl(self, node:AST.Decl):
 		return node.shape, node.range
 
+	def visitInit(self, node:AST.Init):
+		pass
+
 	def visitTransp(self, node:AST.Transp):
 		self.visit(node.expr)
 

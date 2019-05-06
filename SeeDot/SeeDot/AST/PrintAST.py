@@ -22,6 +22,9 @@ class PrintAST(ASTVisitor):
 	def visitDecl(self, node:AST.Decl):
 		print(indent * node.printLevel, node.shape, "in", node.range)
 
+	def visitInit(self, node:AST.Init):
+		print(indent * node.printLevel, "init", node.shape, "with", node.value)
+
 	def visitTransp(self, node:AST.Transp):
 		node.expr.printLevel = node.printLevel + 1
 		self.visit(node.expr)
