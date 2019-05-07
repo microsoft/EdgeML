@@ -44,3 +44,5 @@ void Relu2D(MYINT *A, MYINT H, MYINT W);
 void Maxpool(MYINT *A, MYINT *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT stride);
 
 void Exp(MYINT *A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT *B);
+
+void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT scale);

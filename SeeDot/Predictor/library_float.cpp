@@ -8,7 +8,52 @@
 #include "profile.h"
 
 // C = A + B
-void MatAdd(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+void MatAddNN(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+	for (MYINT i = 0; i < I; i++) {
+		for (MYINT j = 0; j < J; j++) {
+			float a = A[i * J + j];
+			float b = B[i * J + j];
+
+			float c = a + b;
+
+			C[i * J + j] = c;
+		}
+	}
+	return;
+}
+
+// C = A + B
+void MatAddCN(const float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+	for (MYINT i = 0; i < I; i++) {
+		for (MYINT j = 0; j < J; j++) {
+			float a = A[i * J + j];
+			float b = B[i * J + j];
+
+			float c = a + b;
+
+			C[i * J + j] = c;
+		}
+	}
+	return;
+}
+
+// C = A + B
+void MatAddNC(float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+	for (MYINT i = 0; i < I; i++) {
+		for (MYINT j = 0; j < J; j++) {
+			float a = A[i * J + j];
+			float b = B[i * J + j];
+
+			float c = a + b;
+
+			C[i * J + j] = c;
+		}
+	}
+	return;
+}
+
+// C = A + B
+void MatAddCC(const float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -574,7 +619,7 @@ void Exp(float* A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, float* B) {
 }
 
 // A = sigmoid(A)
-void Sigmoid(float* A, MYINT I, MYINT J) {
+void Sigmoid(float* A, MYINT I, MYINT J, MYINT scale) {
 	for (MYINT i = 0; i < I; i++) {
 		for (MYINT j = 0; j < J; j++) {
 			float x = A[i * J + j], y;

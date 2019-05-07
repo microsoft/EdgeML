@@ -12,7 +12,6 @@
 
 using namespace std;
 
-enum Algo { Bonsai, Lenet, Protonn };
 enum Version { Fixed, Float };
 enum DatasetType { Training, Testing };
 
@@ -63,41 +62,27 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	// Parsing the arguments
-	Algo algo;
-	if (strcmp(argv[1], "bonsai") == 0)
-		algo = Bonsai;
-	else if (strcmp(argv[1], "lenet") == 0)
-		algo = Lenet;
-	else if (strcmp(argv[1], "protonn") == 0)
-		algo = Protonn;
-	else {
-		cout << "Argument mismatch for algo\n";
-		return 1;
-	}
-	string algoStr = argv[1];
-
 	Version version;
-	if (strcmp(argv[2], "fixed") == 0)
+	if (strcmp(argv[1], "fixed") == 0)
 		version = Fixed;
-	else if (strcmp(argv[2], "float") == 0)
+	else if (strcmp(argv[1], "float") == 0)
 		version = Float;
 	else {
 		cout << "Argument mismatch for version\n";
 		return 1;
 	}
-	string versionStr = argv[2];
+	string versionStr = argv[1];
 
 	DatasetType datasetType;
-	if (strcmp(argv[3], "training") == 0)
+	if (strcmp(argv[2], "training") == 0)
 		datasetType = Training;
-	else if (strcmp(argv[3], "testing") == 0)
+	else if (strcmp(argv[2], "testing") == 0)
 		datasetType = Testing;
 	else {
 		cout << "Argument mismatch for dataset type\n";
 		return 1;
 	}
-	string datasetTypeStr = argv[3];
+	string datasetTypeStr = argv[2];
 
 	// Reading the dataset
 	string inputDir = "input\\";
@@ -109,7 +94,7 @@ int main(int argc, char *argv[]) {
 		throw "Input files doesn't exist";
 
 	// Create output directory and files
-	string outputDir = "output\\" + algoStr + "-" + versionStr;
+	string outputDir = "output\\" + versionStr;
 
 	string outputFile = outputDir + "\\prediction-info-" + datasetTypeStr + ".txt";
 	string statsFile = outputDir + "\\stats-" + datasetTypeStr + ".txt";
@@ -170,20 +155,9 @@ int main(int argc, char *argv[]) {
 
 		// Invoke the predictor function
 		int res;
-		if (algo == Bonsai && version == Fixed)
+		if (version == Fixed)
 			res = seedotFixed(features_int);
-		else if (algo == Bonsai && version == Float)
-			//res = bonsaiFloat(features_float);
-			res = seedotFloat(features_float);
-		else if (algo == Lenet && version == Fixed)
-			res = seedotFixed(features_int);
-		else if (algo == Lenet && version == Float)
-			//res = lenetFloat(features_float);
-			res = seedotFloat(features_float);
-		else if (algo == Protonn && version == Fixed)
-			res = seedotFixed(features_int);
-		else if (algo == Protonn && version == Float)
-			//res = protonnFloat(features_float);
+		else if (version == Float)
 			res = seedotFloat(features_float);
 
 		if ((res + 1) == label) {

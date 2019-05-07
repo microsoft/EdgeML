@@ -627,3 +627,21 @@ void Exp(MYINT *A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT *B) {
 
 	return;
 }
+
+// A = Sigmoid(A)
+void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT scale) {
+
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			float x = float(A[i * J + j]) / scale;
+
+			float y = 1 / (1 + exp(-x));
+
+			MYINT z = MYINT(y * scale);
+
+			A[i * J + j] = z;
+		}
+	}
+
+	return;
+}

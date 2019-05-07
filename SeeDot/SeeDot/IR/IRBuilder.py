@@ -871,6 +871,17 @@ class IRBuilder(ASTVisitor):
 			(op_ir, op_fn) = (IR.Op.Op['-'], operator.sub)
 			funcName = "MatSub"
 
+		c = ''
+		if funcName == "MatAdd":
+			if expr_in_A.idf in self.globalVars:
+				c += 'C'
+			else:
+				c += 'N'
+			if expr_in_B.idf in self.globalVars:
+				c += 'C'
+			else:
+				c += 'N'
+
 		type_out = node.type
 
 		# e : Int
@@ -886,8 +897,10 @@ class IRBuilder(ASTVisitor):
 
 			if type_A.dim == 0:
 				funcName += 'BroadCastA'
+				c = ''
 			elif type_B.dim == 0:
 				funcName += 'BroadCastB'
+				c = ''
 
 			expr_out = self.getTempVar()
 			
@@ -910,7 +923,7 @@ class IRBuilder(ASTVisitor):
 
 			cmd0 = IR.Comment(expr_in_A.idf + ' ' + op_ir.name + ' ' + expr_in_B.idf)
 
-			funcCall = IR.FuncCall(funcName, {
+			funcCall = IR.FuncCall(funcName + c, {
 									expr_in_A: "A",
 									expr_in_B: "B",
 									expr_out: "C",
@@ -1283,8 +1296,6 @@ class IRBuilder(ASTVisitor):
 
 	# out = tanh(in)
 	def visitSigmoid(self, node:AST.Func):
-		# Temporary. Remove later
-		assert forFloat()
 
 		(prog_in, expr_in) = self.visit(node.expr)
 
@@ -1293,12 +1304,16 @@ class IRBuilder(ASTVisitor):
 
 		expr_in.inputVar = False
 
+		scale = self.scales[expr_in.idf]
+		scale_num = 2 ** -scale
+
 		cmd0 = IR.Comment("Sigmoid(" + expr_in.idf + ")")
 
 		funcCall = IR.FuncCall("Sigmoid", {
 								expr_in: "A",
 								IR.Int(I): "I",
-								IR.Int(J): "J"
+								IR.Int(J): "J",
+								IR.Int(scale_num): "scale"
 								})
 
 		prog_sigmoid = IR.Prog([cmd0, funcCall])

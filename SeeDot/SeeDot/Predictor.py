@@ -46,7 +46,7 @@ class Predictor:
 		print("Execution...", end='')
 
 		exeFile = os.path.join("x64", "Release", "Predictor.exe")
-		args = [exeFile, self.algo, self.version, self.datasetType]
+		args = [exeFile, self.version, self.datasetType]
 
 		logFile = os.path.join(self.outputDir, "exec.txt")
 		with open(logFile, 'w') as file:
@@ -62,7 +62,7 @@ class Predictor:
 
 	# Read statistics of execution (currently only accuracy)
 	def readStatsFile(self):
-		statsFile = os.path.join("output", self.algo + "-" + self.version, "stats-" + self.datasetType + ".txt")
+		statsFile = os.path.join("output", self.version, "stats-" + self.datasetType + ".txt")
 
 		with open(statsFile, 'r') as file:
 			content = file.readlines()

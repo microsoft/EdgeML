@@ -3,7 +3,11 @@
 
 #pragma once
 
-void MatAdd(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
+void MatAddNN(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
+void MatAddCN(const float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
+void MatAddNC(float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
+void MatAddCC(const float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
+
 void MatAddBroadCastA(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
 void MatAddBroadCastB(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
 
@@ -42,4 +46,4 @@ void Maxpool(float *A, float *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT strid
 
 void Exp(float *A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, float *B);
 
-void Sigmoid(float* A, MYINT I, MYINT J);
+void Sigmoid(float* A, MYINT I, MYINT J, MYINT scale);

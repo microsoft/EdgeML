@@ -90,7 +90,7 @@ class Main:
 
 	# Build and run the Predictor project
 	def predict(self, version, datasetType):
-		outputDir = os.path.join("..", "Predictor", "output", self.algo + "-" + version)
+		outputDir = os.path.join("..", "Predictor", "output", version)
 
 		curDir = os.getcwd()
 		os.chdir(os.path.join("..", "Predictor"))

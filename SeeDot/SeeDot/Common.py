@@ -12,6 +12,10 @@ maxScaleRange = 0, -wordLength
 # tanh approximation limit
 tanh_limit = 1.0
 
+# sigmoid approximation values
+sigmoid_add = 2.0
+sigmoid_div = 4.0
+
 # LUT Upper bound for Artix-7
 LUTUpperBound = 0.9 * 20800
 LUTCount = 0
