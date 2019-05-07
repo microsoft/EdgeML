@@ -63,6 +63,8 @@ class IRBuilder(ASTVisitor):
 		self.internalVars = []
 		self.floatConstants = {}
 
+		self.mutableVars = []
+
 	def readProfileFile(self):
 		if self.profileLoaded == True:
 			return
@@ -1369,6 +1371,8 @@ class IRBuilder(ASTVisitor):
 		  prog_in
 		'''
 
+		self.mutableVars.append(node.mutableVar.name)
+
 		(prog_in, expr_in) = self.visit(node.expr)
 
 		start, end = node.start, node.end
@@ -1380,7 +1384,17 @@ class IRBuilder(ASTVisitor):
 
 		loop = IR.For(var, 0, IRUtil.lt(var, IR.Int(end - start)), prog_in.cmd_l)
 
-		prog_out = IR.Prog([cmd0, loop])
+		# Generate code for profiling
+		mVar = IR.Var(node.mutableVar.name)
+		mVar_type = node.mutableVar.type
+		profile_iters = self.getTempIterators(mVar_type.dim)
+		mVar_idx = IRUtil.addIndex(mVar, profile_iters)
+		funcCall = IR.FuncCall("updateRange", {
+								mVar_idx: "A"
+								})
+		profile = IRUtil.loop(mVar_type.shape, profile_iters, [funcCall])
+
+		prog_out = IR.Prog([cmd0, loop] + profile)
 
 		return (prog_out, expr_in)
 
@@ -1476,6 +1490,9 @@ class IRBuilder(ASTVisitor):
 				self.decls[idf] = node.decl.type
 				expr_decl.idf = idf
 				expr_decl.inputVar = True
+
+			if idf in self.mutableVars:
+				expr_decl.idf = idf
 
 			(prog_in, expr_in) = self.visit(node.expr)
 

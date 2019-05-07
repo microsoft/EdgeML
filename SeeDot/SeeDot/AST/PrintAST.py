@@ -87,7 +87,8 @@ class PrintAST(ASTVisitor):
 
 	def visitLoop(self, node:AST.Loop):
 		print(indent * node.printLevel, "loop", node.name, str(node.start), str(node.end))
-		node.expr.printLevel = node.printLevel + 1
+		node.expr.printLevel = node.mutableVar.printLevel = node.printLevel + 1
+		self.visit(node.mutableVar)
 		self.visit(node.expr)
 
 	def visitCond(self, node:AST.Cond):

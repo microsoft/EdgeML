@@ -27,7 +27,8 @@ expr:	IntConst								# int
 	|	Sum '(' Id '='
 		'[' IntConst ':' IntConst ']' ')' expr  # sum
 	|	Loop '(' Id '='
-		'[' IntConst ':' IntConst ']' ')' expr  # loop
+		'[' IntConst ':' IntConst ']'
+		',' expr ')' expr						# loop
 
 	|	expr '>=' IntConst '?' expr ':' expr	# cond
 	|	Let Id '=' expr In expr					# let

@@ -45,6 +45,9 @@ def isEqual(type1:Type, type2:Type):
 
 class InferType(ASTVisitor):
 
+	def __init__(self):
+		self.mutableVars = []
+
 	def visitInt(self, node:AST.Int):
 		node.type = Int()
 		return node.type
@@ -306,6 +309,12 @@ class InferType(ASTVisitor):
 	def visitLoop(self, node:AST.Loop):
 		assert node.name not in node.gamma, "%s defined more than once" % (node.name)
 
+		node.mutableVar.gamma = dict(node.gamma)
+		self.visit(node.mutableVar)
+
+		self.mutableVars.append(node.mutableVar.name)
+		assert isinstance(node.mutableVar, AST.ID)
+
 		node.expr.gamma = dict(node.gamma)
 		node.expr.gamma[node.name] = Int()
 		eType = self.visit(node.expr)
@@ -337,7 +346,8 @@ class InferType(ASTVisitor):
 		node.decl.gamma = dict(node.gamma)
 		eType = self.visit(node.decl)
 
-		assert node.name not in node.gamma, "%s defined more than once" % (node.name)
+		if node.name not in self.mutableVars:
+			assert node.name not in node.gamma, "%s defined more than once" % (node.name)
 
 		node.expr.gamma = dict(node.gamma)
 		node.expr.gamma[node.name] = eType

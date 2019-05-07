@@ -88,8 +88,9 @@ class ASTBuilder(SeeDotVisitor):
 		name = ctx.Id().getText()
 		start = int(ctx.IntConst(0).getText())
 		end = int(ctx.IntConst(1).getText())
-		expr = self.visit(ctx.expr())
-		return AST.Loop(name, start, end, expr)
+		mutableVar = self.visit(ctx.expr(0))
+		expr = self.visit(ctx.expr(1))
+		return AST.Loop(name, start, end, mutableVar, expr)
 
 	def visitCond(self, ctx:SeeDotParser.CondContext):
 		expr = self.visit(ctx.expr(0))
