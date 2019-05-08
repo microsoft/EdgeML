@@ -64,6 +64,7 @@ class IRBuilder(ASTVisitor):
 		self.floatConstants = {}
 
 		self.mutableVars = []
+		self.mutableVarsProfile = []
 
 	def readProfileFile(self):
 		if self.profileLoaded == True:
@@ -148,7 +149,7 @@ class IRBuilder(ASTVisitor):
 			minVal, maxVal = -0.000001, 0.000001
 		else:
 			minVal, maxVal = node.value, node.value
-		
+
 		scale = self.getScale(max(abs(minVal), abs(maxVal)))
 		intv = self.getInterval(scale, minVal, maxVal)
 
@@ -163,6 +164,8 @@ class IRBuilder(ASTVisitor):
 
 		prog = IR.Prog([cmd0, memset])
 		
+		print("scale at init is %d" % (scale))
+
 		self.decls[expr.idf] = node.type
 		self.scales[expr.idf] = scale
 		self.intvs[expr.idf] = intv
@@ -528,6 +531,9 @@ class IRBuilder(ASTVisitor):
 		scale_in_A, scale_in_B = self.scales[expr_in_A.idf], self.scales[expr_in_B.idf]
 		intv_in_A, intv_in_B = self.intvs[expr_in_A.idf], self.intvs[expr_in_B.idf]
 
+		if isinstance(node.expr1, AST.ID) and expr_in_A.idf == 'H':
+			print(scale_in_A)
+
 		[shr_A, shr_B] = self.getShrForMul(scale_in_A, scale_in_B)
 
 		type_in_A, type_in_B = node.expr1.type, node.expr2.type
@@ -871,17 +877,6 @@ class IRBuilder(ASTVisitor):
 			(op_ir, op_fn) = (IR.Op.Op['-'], operator.sub)
 			funcName = "MatSub"
 
-		c = ''
-		if funcName == "MatAdd":
-			if expr_in_A.idf in self.globalVars:
-				c += 'C'
-			else:
-				c += 'N'
-			if expr_in_B.idf in self.globalVars:
-				c += 'C'
-			else:
-				c += 'N'
-
 		type_out = node.type
 
 		# e : Int
@@ -891,6 +886,17 @@ class IRBuilder(ASTVisitor):
 
 		# e : Tensor(), or Tensor(..)
 		else:
+
+			c = ''
+			if funcName == "MatAdd":
+				if expr_in_A.idf in self.globalVars:
+					c += 'C'
+				else:
+					c += 'N'
+				if expr_in_B.idf in self.globalVars:
+					c += 'C'
+				else:
+					c += 'N'
 
 			type_A = node.expr1.type
 			type_B = node.expr2.type
@@ -1388,6 +1394,12 @@ class IRBuilder(ASTVisitor):
 
 		self.mutableVars.append(node.mutableVar.name)
 
+		idf = node.mutableVar.name
+
+		print("Scale of %s before reading profile is %d" % (idf, self.scales[idf]))
+		self.readProfileForMutableVars(idf)
+		print("Scale of %s after reading profile is %d" % (idf, self.scales[idf]))
+
 		(prog_in, expr_in) = self.visit(node.expr)
 
 		start, end = node.start, node.end
@@ -1509,14 +1521,82 @@ class IRBuilder(ASTVisitor):
 			if idf in self.mutableVars:
 				expr_decl.idf = idf
 
+				# add a loop to adjust the scale back to the original one
+				curr_scale = self.scales[idf]
+				[minVal, maxVal] = self.mutableVarsProfile[0]
+				new_scale = self.getScale(max(abs(minVal), abs(maxVal)))
+				new_intv = self.getInterval(new_scale, minVal, maxVal)
+
+				print("Scale of %s before using 'let' is %d" % (idf, curr_scale))
+				print("Scale of %s after using 'let' is %d" % (idf, new_scale))
+
+				diff_scale = curr_scale - new_scale
+				
+				[I, J] = type_decl.shape
+
+				if diff_scale > 0:
+					diff_scale = self.formatShr(abs(diff_scale))
+
+					funcCall_for_mutable = IR.FuncCall("AdjustScaleShl", {
+											expr_decl: "A",
+											IR.Int(I): "I",
+											IR.Int(J): "J",
+											diff_scale: "scale"
+											})
+					prog_for_mutable = IR.Prog([funcCall_for_mutable])
+				elif diff_scale < 0:
+					diff_scale = self.formatShr(abs(diff_scale))
+
+					funcCall_for_mutable = IR.FuncCall("AdjustScaleShr", {
+											expr_decl: "A",
+											IR.Int(I): "I",
+											IR.Int(J): "J",
+											diff_scale: "scale"
+											})
+
+					prog_for_mutable = IR.Prog([funcCall_for_mutable])
+				else:
+					prog_for_mutable = IR.Prog([])
+
+				# reset the self.scale value to the profile generated one
+				self.scales[idf] = new_scale
+				self.intvs[idf] = new_intv
+			else:
+				prog_for_mutable = IR.Prog([])
+
+			print("scale of %s is %d" % (idf, self.scales[idf]))
+
 			(prog_in, expr_in) = self.visit(node.expr)
 
 			prog_in = prog_in.subst(idf, expr_decl)
 			expr_in = expr_in.subst(idf, expr_decl)
 			
+			prog_decl = IRUtil.concatPrograms(prog_decl, IR.Prog([prog_for_mutable]))
+
 			prog_out = IRUtil.concatPrograms(prog_decl, prog_in)
 
 			return (prog_out, expr_in)
+
+	def readProfileForMutableVars(self, idf):
+
+		# data-driven parameters
+		inputFile = getProfileLogFile()
+
+		data = []
+		with open(inputFile, 'r') as f:
+			for line in f:
+				entries = line.strip().split(", ")
+				row = list(map(float, entries))
+				self.mutableVarsProfile.append(row)
+
+		[minVal, maxVal] = self.mutableVarsProfile[0]
+		#print(minVal, maxVal)
+		
+		scale = self.getScale(max(abs(minVal), abs(maxVal)))
+		intv = self.getInterval(scale, minVal, maxVal)
+		
+		self.scales[idf] = scale
+		self.intvs[idf] = intv
 
 	# Computing exponent and intervals
 	def getScale(self, maxabs:float): # -> int

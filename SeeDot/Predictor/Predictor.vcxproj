@@ -119,6 +119,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="debug.cpp" />
     <ClCompile Include="library_fixed.cpp" />
     <ClCompile Include="library_float.cpp" />
     <ClCompile Include="main.cpp" />

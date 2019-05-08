@@ -2,6 +2,7 @@
 # Licensed under the MIT license.
 
 import numpy as np
+import os
 
 from Codegen.CodegenBase import CodegenBase
 
@@ -10,11 +11,15 @@ import IR.IRUtil as IRUtil
 
 import Type
 from Util import *
+from Writer import Writer
 
 class X86(CodegenBase):
 
-	def __init__(self, writer, decls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants):
-		self.out = writer
+	def __init__(self, outputDir, decls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants):
+		self.outputDir = outputDir
+		cppFile = os.path.join(self.outputDir, "seedot_" + getVersion() + ".cpp")
+		self.out = Writer(cppFile)
+
 		self.decls = decls
 		self.scales = scales
 		self.intvs = intvs
@@ -104,3 +109,5 @@ class X86(CodegenBase):
 
 		self.out.decreaseIndent()
 		self.out.printf('}\n', indent=True)
+
+		self.out.close()

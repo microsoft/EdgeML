@@ -4,8 +4,15 @@
 import math
 import numpy as np
 
-def getExpnt(max, B):
-	# 16 is B
-	return int(np.ceil(np.log2(max) - np.log2((1 << (B - 2)) - 1)))
+def getScale(maxabs:float):
+	return int(np.ceil(np.log2(maxabs) - np.log2((1 << (16 - 2)) - 1)))
 
-e = getExpnt(0.8, 8)
+e = getScale(0.000001)
+
+print(e)
+
+x = None
+
+y = [x]
+
+print(y)

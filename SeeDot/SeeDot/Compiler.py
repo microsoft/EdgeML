@@ -32,7 +32,7 @@ from Writer import Writer
 
 class Compiler:
 
-	def __init__(self, algo, version, target, inputFile, outputFile, profileLogFile, maxScale, numWorkers):
+	def __init__(self, algo, version, target, inputFile, outputDir, profileLogFile, maxScale, numWorkers):
 		if os.path.isfile(inputFile) == False:
 			raise Exception("Input file doesn't exist")
 
@@ -41,7 +41,7 @@ class Compiler:
 		setTarget(target)
 		setNumWorkers(numWorkers)
 		self.input = inputFile
-		self.outputFile = outputFile
+		self.outputDir = outputDir
 		setProfileLogFile(profileLogFile)
 		setMaxScale(maxScale)
 	
@@ -80,22 +80,18 @@ class Compiler:
 
 		res, state = self.compile(ast)
 
-		writer = Writer(self.outputFile)
-
 		if forArduino():
-			codegen = ArduinoCodegen(writer, *state)
+			codegen = ArduinoCodegen(self.outputDir, *state)
 		elif forHls():
-			codegen = HlsCodegen(writer, *state)
+			codegen = HlsCodegen(self.outputDir, *state)
 		elif forVerilog():
-			codegen = VerilogCodegen(writer, *state)
+			codegen = VerilogCodegen(self.outputDir, *state)
 		elif forX86():
-			codegen = X86Codegen(writer, *state)
+			codegen = X86Codegen(self.outputDir, *state)
 		else:
 			assert False
 
 		codegen.printAll(*res)
-
-		writer.close()
 
 	def compile(self, ast):
 		if genFuncCalls():

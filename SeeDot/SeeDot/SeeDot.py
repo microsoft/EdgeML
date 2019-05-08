@@ -29,19 +29,19 @@ class Main:
 
 		# Set input and output files
 		inputFile = os.path.join(self.modelDir, "input.sd")
-		profileLogFile = os.path.join("..", "Predictor", "output", self.algo + "-float", "profile.txt")
+		profileLogFile = os.path.join("..", "Predictor", "output", "float", "profile.txt")
 
 		if target == Common.Target.Arduino:
-			outputFile = os.path.join("..", "arduino", "predict.cpp")
+			outputDir = os.path.join("..", "arduino")
 		elif target == Common.Target.Hls:
-			outputFile = os.path.join("..", "hls", "predict.cpp")
+			outputDir = os.path.join("..", "hls")
 		elif target == Common.Target.Verilog:
-			outputFile = os.path.join("..", "verilog", "predict.cpp")
+			outputDir = os.path.join("..", "verilog")
 		elif target == Common.Target.X86:
-			outputFile = os.path.join("..", "Predictor", "seedot_" + version + ".cpp")
+			outputDir = os.path.join("..", "Predictor")
 		
 		try:
-			obj = Compiler(self.algo, version, target, inputFile, outputFile, profileLogFile, sf, self.numWorkers)
+			obj = Compiler(self.algo, version, target, inputFile, outputDir, profileLogFile, sf, self.numWorkers)
 			obj.run()
 		except:
 			print("failed!\n")
@@ -243,11 +243,10 @@ class Main:
 		return True
 
 	def runForFixed(self):
-		# Collect runtime profile for ProtoNN
-		if self.algo == Common.Algo.Protonn:
-			res = self.collectProfileData()
-			if res == False:
-				return False
+		# Collect runtime profile
+		res = self.collectProfileData()
+		if res == False:
+			return False
 
 		# Obtain best scaling factor
 		if self.sf == None:

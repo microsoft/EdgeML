@@ -631,3 +631,13 @@ void Sigmoid(float* A, MYINT I, MYINT J, MYINT scale) {
 	}
 	return;
 }
+
+// A = AdjustScaleShr(A)
+void AdjustScaleShr(float* A, MYINT I, MYINT J, MYINT scale) {
+	return;
+}
+
+// A = AdjustScaleShl(A)
+void AdjustScaleShl(float* A, MYINT I, MYINT J, MYINT scale) {
+	return;
+}

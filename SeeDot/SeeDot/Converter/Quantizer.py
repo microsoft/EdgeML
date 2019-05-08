@@ -132,6 +132,11 @@ class Quantizer:
 		self.computeModelSize()
 		self.writeModel()
 
+	def printDataRange(self):
+		for param in self.params:
+			print("%s = %.6f, %.6f" % (param.name, np.amin(param.data), np.amax(param.data)))
+		print("X = %.6f, %.6f" % self.trainDatasetRange)
+
 	def run(self):
 		self.buildParams()
 
@@ -145,6 +150,8 @@ class Quantizer:
 			self.processDataset()
 
 		self.processModel()
+
+		#self.printDataRange()
 
 class QuantizerFixed(Quantizer):
 

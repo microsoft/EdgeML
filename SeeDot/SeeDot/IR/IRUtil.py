@@ -100,7 +100,7 @@ def relu(e:Expr): return cond_zero(e, e, zero)
 def loop_shr(lhs:Expr, rhs:Expr, shape:list, iters:list, n:int) -> CmdList:
 	lhs_elt = addIndex(lhs, iters)
 	rhs_elt = addIndex(rhs, iters)
-	return loop(shape, iters, [Assn(lhs_elt, shr(rhs_elt,n))])
+	return loop(shape, iters, [Assn(lhs_elt, shr(rhs_elt, n))])
 
 def initVarToZero(e:Expr) -> Cmd: return Assn(e, Int(0))
 

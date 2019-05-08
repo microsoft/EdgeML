@@ -7,7 +7,64 @@
 #include "library_fixed.h"
 
 // C = A + B
-void MatAdd(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+void MatAddNN(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			MYINT a = A[i * J + j];
+			MYINT b = B[i * J + j];
+
+			a = a / shrA;
+			b = b / shrB;
+
+			MYINT c = a + b;
+			c = c / shrC;
+
+			C[i * J + j] = c;
+		}
+	}
+	return;
+}
+
+// C = A + B
+void MatAddCN(const MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			MYINT a = A[i * J + j];
+			MYINT b = B[i * J + j];
+
+			a = a / shrA;
+			b = b / shrB;
+
+			MYINT c = a + b;
+			c = c / shrC;
+
+			C[i * J + j] = c;
+		}
+	}
+	return;
+}
+
+// C = A + B
+void MatAddNC(MYINT* A, const  MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			MYINT a = A[i * J + j];
+			MYINT b = B[i * J + j];
+
+			a = a / shrA;
+			b = b / shrB;
+
+			MYINT c = a + b;
+			c = c / shrC;
+
+			C[i * J + j] = c;
+		}
+	}
+	return;
+}
+
+// C = A + B
+void MatAddCC(const MYINT* A, const  MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
@@ -640,6 +697,32 @@ void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT scale) {
 			MYINT z = MYINT(y * scale);
 
 			A[i * J + j] = z;
+		}
+	}
+
+	return;
+}
+
+// A = AdjustScaleShr(A)
+void AdjustScaleShr(MYINT* A, MYINT I, MYINT J, MYINT scale) {
+
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			MYINT a = A[i * J + j];
+			A[i * J + j] = a / scale;
+		}
+	}
+
+	return;
+}
+
+// A = AdjustScaleShl(A)
+void AdjustScaleShl(MYINT* A, MYINT I, MYINT J, MYINT scale) {
+
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			MYINT a = A[i * J + j];
+			A[i * J + j] = a * scale;
 		}
 	}
 

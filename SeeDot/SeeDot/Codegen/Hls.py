@@ -2,6 +2,7 @@
 # Licensed under the MIT license.
 
 import numpy as np
+import os
 
 from Codegen.CodegenBase import CodegenBase
 
@@ -10,11 +11,14 @@ import IR.IRUtil as IRUtil
 
 import Type
 from Util import *
+from Writer import Writer
 
 class Hls(CodegenBase):
 
-	def __init__(self, writer, decls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants):
-		self.out = writer
+	def __init__(self, outputDir, decls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants):
+		outputFile = os.path.join(outputDir, "predict.cpp")
+		self.out = Writer(outputFile)
+
 		self.decls = decls
 		self.scales = scales
 		self.intvs = intvs
@@ -126,6 +130,8 @@ class Hls(CodegenBase):
 
 		#self.out.decreaseIndent()
 		self.out.printf('}\n', indent=True)
+
+		self.out.close()
 
 	def printMemset(self, ir):
 		self.out.printf('//memset cant be used in HLS code; using for-loop instead\n', indent = True)
