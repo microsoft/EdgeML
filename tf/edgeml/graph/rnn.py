@@ -15,7 +15,7 @@ def gen_non_linearity(A, non_linearity):
     Returns required activation for a tensor based on the inputs
 
     non_linearity is either a callable or a value in
-        ['tanh', 'sigmoid', 'relu', 'quantTanh', 'quantSigm']
+        ['tanh', 'sigmoid', 'relu', 'quantTanh', 'quantSigm', 'quantSigm4']
     '''
     if non_linearity == "tanh":
         return math_ops.tanh(A)
@@ -27,6 +27,9 @@ def gen_non_linearity(A, non_linearity):
         return gen_math_ops.maximum(gen_math_ops.minimum(A, 1.0), -1.0)
     elif non_linearity == "quantSigm":
         A = (A + 1.0) / 2.0
+        return gen_math_ops.maximum(gen_math_ops.minimum(A, 1.0), 0.0)
+    elif non_linearity == "quantSigm4":
+        A = (A + 2.0) / 4.0
         return gen_math_ops.maximum(gen_math_ops.minimum(A, 1.0), 0.0)
     else:
         # non_linearity is a user specified function
