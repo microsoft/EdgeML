@@ -92,7 +92,7 @@ This process consists of four steps: 1) installing EdgeML TensorFlow libaray, 2)
 
 3. Invoke ProtoNN trainer using the following command.
       ```
-      python protoNN_example.py --data-dir ./usps10 --projection-dim 25 --num-prototypes 60 --epochs 100 -sW 0.3 -o usps10/output
+      python protoNN_example.py --data-dir ./usps10 --projection-dim 25 --num-prototypes 55 --epochs 100 -sW 0.3 -o usps10/output
       ```
   This would give around 90.38% classification accuracy. The trained model is stored in the `output` directory.
 
