@@ -5,16 +5,16 @@ import numpy as np
 import operator
 import os
 
-from seedot.antlr.seedotParser import seedotParser as SeeDotParser
+from seedot.compiler.antlr.seedotParser import seedotParser as SeeDotParser
 
-import seedot.ast.ast as AST
-from seedot.ast.astVisitor import ASTVisitor
+import seedot.compiler.ast.ast as AST
+from seedot.compiler.ast.astVisitor import ASTVisitor
 
-import seedot.ir.ir as IR
-import seedot.ir.irUtil as IRUtil
+import seedot.compiler.ir.ir as IR
+import seedot.compiler.ir.irUtil as IRUtil
 
 import seedot.common as Common
-import seedot.type as Type
+import seedot.compiler.type as Type
 from seedot.util import *
 
 

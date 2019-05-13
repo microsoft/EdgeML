@@ -7,10 +7,10 @@ CodegenBase has print functions for the IR classes defined in IR.py
 
 import numpy as np
 
-import seedot.ir.ir as IR
+import seedot.compiler.ir.ir as IR
 
 import seedot.common as Common
-import seedot.type as Type
+import seedot.compiler.type as Type
 from seedot.util import *
 
 

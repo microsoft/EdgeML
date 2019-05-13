@@ -10,13 +10,8 @@ import operator
 import tempfile
 import traceback
 
-
-from seedot.converter.converter import Converter
-
 import seedot.common as Common
-from seedot.compiler import Compiler
-from seedot.predictor import Predictor
-from seedot.seedot import Main
+from seedot.main import Main
 import seedot.util as Util
 
 

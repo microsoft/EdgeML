@@ -4,7 +4,7 @@
 import math
 import os
 
-from seedot.converter.util import *
+from seedot.compiler.converter.util import *
 
 import seedot.common as Common
 

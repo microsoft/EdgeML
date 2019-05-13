@@ -5,7 +5,7 @@
 ASTVisitor contains the dynamic dispatcher used by printAST.py
 '''
 
-import seedot.ast.ast as AST
+import seedot.compiler.ast.ast as AST
 
 
 class ASTVisitor:

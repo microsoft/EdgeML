@@ -10,10 +10,10 @@ import operator
 import tempfile
 import traceback
 
-from seedot.converter.converter import Converter
+from seedot.compiler.converter.converter import Converter
 
 import seedot.common as Common
-from seedot.compiler import Compiler
+from seedot.compiler.compiler import Compiler
 from seedot.predictor import Predictor
 import seedot.util as Util
 

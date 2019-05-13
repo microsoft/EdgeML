@@ -5,20 +5,20 @@ from antlr4 import *
 import argparse
 import os
 
-from seedot.antlr.seedotLexer import seedotLexer as SeeDotLexer
-from seedot.antlr.seedotParser import seedotParser as SeeDotParser
+from seedot.compiler.antlr.seedotLexer import seedotLexer as SeeDotLexer
+from seedot.compiler.antlr.seedotParser import seedotParser as SeeDotParser
 
-import seedot.ast.ast as AST
-import seedot.ast.astBuilder as ASTBuilder
-from seedot.ast.printAST import PrintAST
+import seedot.compiler.ast.ast as AST
+import seedot.compiler.ast.astBuilder as ASTBuilder
+from seedot.compiler.ast.printAST import PrintAST
 
-from seedot.codegen.arduino import Arduino as ArduinoCodegen
-from seedot.codegen.x86 import X86 as X86Codegen
+from seedot.compiler.codegen.arduino import Arduino as ArduinoCodegen
+from seedot.compiler.codegen.x86 import X86 as X86Codegen
 
-from seedot.ir.irBuilder import IRBuilder
-import seedot.ir.irUtil as IRUtil
+from seedot.compiler.ir.irBuilder import IRBuilder
+import seedot.compiler.ir.irUtil as IRUtil
 
-from seedot.type import InferType
+from seedot.compiler.type import InferType
 from seedot.util import *
 from seedot.writer import Writer
 

@@ -3,9 +3,9 @@
 
 import os
 
-from seedot.converter.bonsai import *
-from seedot.converter.protonn import *
-from seedot.converter.util import *
+from seedot.compiler.converter.bonsai import *
+from seedot.compiler.converter.protonn import *
+from seedot.compiler.converter.util import *
 
 import seedot.common as Common
 

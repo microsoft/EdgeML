@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from seedot.ir.ir import *
+from seedot.compiler.ir.ir import *
 
 import seedot.common as Common
 from seedot.util import *

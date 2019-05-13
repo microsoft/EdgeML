@@ -9,12 +9,12 @@ Most of the routines in the base class CodegenBase are unchanged.
 
 import numpy as np
 
-from seedot.codegen.codegenBase import CodegenBase
+from seedot.compiler.codegen.codegenBase import CodegenBase
 
-import seedot.ir.ir as IR
-import seedot.ir.irUtil as IRUtil
+import seedot.compiler.ir.ir as IR
+import seedot.compiler.ir.irUtil as IRUtil
 
-import seedot.type as Type
+import seedot.compiler.type as Type
 from seedot.util import *
 
 
