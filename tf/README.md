@@ -21,6 +21,10 @@ Use pip and the provided requirements file to first install required
 dependencies before installing the `edgeml` library. Details for cpu based
 installation and gpu based installation provided below.
 
+It is highly recommended that EdgeML be installed in a virtual environment. Please create
+a new virtual environment using your environment manager ([virtualenv](https://virtualenv.pypa.io/en/stable/userguide/#usage) or [Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands)).
+Make sure the new environment is active before running the below mentioned commands.
+
 ### CPU
 
 ``` 
