@@ -24,8 +24,8 @@ installation and gpu based installation provided below.
 ### CPU
 
 ``` 
-pip install --user -r requirements-cpu.txt
-pip install --user -e .
+pip install -r requirements-cpu.txt
+pip install -e .
 ```
 
 Tested on Python3.5 and python 2.7 with >= Tensorflow 1.6.0.
@@ -35,8 +35,8 @@ Tested on Python3.5 and python 2.7 with >= Tensorflow 1.6.0.
 Install appropriate CUDA and cuDNN [Tested with >= CUDA 8.1 and cuDNN >= 6.1]
 
 ```
-pip install --user -r requirements-gpu.txt
-pip install --user -e .
+pip install -r requirements-gpu.txt
+pip install -e .
 ```
 
 Copyright (c) Microsoft Corporation. All rights reserved.
