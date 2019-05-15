@@ -107,6 +107,8 @@ class Compiler:
 
 		state = compiler.decls, compiler.scales, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.globalVars, compiler.internalVars, compiler.floatConstants
 
+		self.scaleForX = compiler.scales['X']
+
 		return res, state
 
 	def genCodeWithoutFuncCalls(self, ast):
@@ -122,5 +124,7 @@ class Compiler:
 
 		res = prog, expr
 		state = decls, scales, intvs, cnsts, compiler.expTables, compiler.VAR_IDF_INIT
+
+		self.scaleForX = scales['X']
 
 		return res, state

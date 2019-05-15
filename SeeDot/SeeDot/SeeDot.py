@@ -4,6 +4,7 @@
 import argparse
 import os
 import shutil
+import sys
 import operator
 import traceback
 
@@ -47,6 +48,8 @@ class Main:
 			print("failed!\n")
 			#traceback.print_exc()
 			return False
+
+		self.scaleForX = obj.scaleForX
 
 		print("completed")
 		return True
@@ -95,7 +98,7 @@ class Main:
 		curDir = os.getcwd()
 		os.chdir(os.path.join("..", "Predictor"))
 
-		obj = Predictor(self.algo, version, datasetType, outputDir)
+		obj = Predictor(self.algo, version, datasetType, outputDir, self.scaleForX)
 		acc = obj.run()
 
 		os.chdir(curDir)
@@ -140,7 +143,8 @@ class Main:
 			if res == True:
 				searching = True
 			elif searching == True:
-				break
+				#break
+				pass
 
 		# If search didn't begin at all, something went wrong
 		if searching == False:
@@ -314,6 +318,9 @@ class Main:
 		return True
 
 	def run(self):
+
+		sys.setrecursionlimit(10000)
+
 		if self.version == Common.Version.Fixed:
 			return self.runForFixed()
 		else:

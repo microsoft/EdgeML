@@ -7,6 +7,8 @@ class Config:
 	expBigLength = 6
 	exp = "table" # "table" "math"
 	codegen = "funcCall" # "funcCall" "inline"
+	debug = False
+	debugCompiler = True
 
 def getAlgo():
 	return Config.algo
@@ -71,6 +73,12 @@ def useTableExp():
 
 def genFuncCalls():
 	return Config.codegen == "funcCall"
+
+def debugMode():
+	return Config.debug
+
+def debugCompiler():
+	return Config.debugCompiler
 
 def copy_dict(dict_src:dict, diff={}):
 	dict_res = dict(dict_src)

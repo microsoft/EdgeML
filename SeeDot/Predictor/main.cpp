@@ -56,6 +56,25 @@ int getLabel(string line) {
 	return (int)atoi(labels.front().c_str());
 }
 
+void populateFixedVector(MYINT** features_int, vector<string> features, int scale) {
+	int features_size = (int)features.size();
+
+	for (int i = 0; i < features_size; i++) {
+		double f = (double)(atof(features.at(i).c_str()));
+		double f_int = ldexp(f, -scale);
+		features_int[i][0] = (MYINT)(f_int);
+	}
+
+	return;
+}
+
+void populateFloatVector(float **features_float, vector<string> features) {
+	int features_size = (int)features.size();
+	for (int i = 0; i < features_size; i++)
+		features_float[i][0] = (float)(atof(features.at(i).c_str()));
+	return;
+}
+
 int main(int argc, char *argv[]) {
 	if (argc == 1) {
 		cout << "No arguments supplied" << endl;
@@ -122,43 +141,42 @@ int main(int argc, char *argv[]) {
 		if (alloc == false) {
 			features_size = (int)features.size();
 
-			if (version == Fixed) {
-				features_int = new MYINT*[features_size];
-				for (int i = 0; i < features_size; i++)
-					features_int[i] = new MYINT[1];
-			}
-			else {
-				features_float = new float*[features_size];
-				for (int i = 0; i < features_size; i++)
-					features_float[i] = new float[1];
-			}
+			features_int = new MYINT*[features_size];
+			for (int i = 0; i < features_size; i++)
+				features_int[i] = new MYINT[1];
+
+			features_float = new float*[features_size];
+			for (int i = 0; i < features_size; i++)
+				features_float[i] = new float[1];
 
 			alloc = true;
 		}
 
 		// Populate the array using the feature vector
-		if (version == Fixed)
-			for (int i = 0; i < features_size; i++) {
-#ifdef INT8
-				features_int[i][0] = (MYINT)(atoi(features.at(i).c_str()));
-#endif
-#ifdef INT16
-				features_int[i][0] = (MYINT)(atol(features.at(i).c_str()));
-#endif
-#ifdef INT32
-				features_int[i][0] = (MYINT)(atoll(features.at(i).c_str()));
-#endif
-			}
+		if (debugMode) {
+			populateFixedVector(features_int, features, scaleForX);
+			populateFloatVector(features_float, features);
+		}
+		else if (version == Fixed)
+			populateFixedVector(features_int, features, scaleForX);
 		else
-			for (int i = 0; i < features_size; i++)
-				features_float[i][0] = (float)(atof(features.at(i).c_str()));
+			populateFloatVector(features_float, features);
 
 		// Invoke the predictor function
 		int res;
-		if (version == Fixed)
-			res = seedotFixed(features_int);
-		else if (version == Float)
-			res = seedotFloat(features_float);
+		
+		if (debugMode) {
+			int res_float = seedotFloat(features_float);
+			int res_fixed = seedotFixed(features_int);
+			//debug();
+			res = res_fixed;
+		}
+		else {
+			if (version == Fixed)
+				res = seedotFixed(features_int);
+			else if (version == Float)
+				res = seedotFloat(features_float);
+		}
 
 		if ((res + 1) == label) {
 			correct++;
@@ -171,16 +189,13 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Deallocate memory
-	if (version == Fixed) {
-		for (int i = 0; i < features_size; i++)
-			delete features_int[i];
-		delete features_int;
-	}
-	else {
-		for (int i = 0; i < features_size; i++)
-			delete features_float[i];
-		delete features_float;
-	}
+	for (int i = 0; i < features_size; i++)
+		delete features_int[i];
+	delete[] features_int;
+	
+	for (int i = 0; i < features_size; i++)
+		delete features_float[i];
+	delete[] features_float;
 
 	float accuracy = (float)correct / total * 100.0f;
 

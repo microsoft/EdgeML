@@ -164,7 +164,7 @@ class IRBuilder(ASTVisitor):
 
 		prog = IR.Prog([cmd0, memset])
 		
-		print("scale at init is %d" % (scale))
+		#print("scale at init is %d" % (scale))
 
 		self.decls[expr.idf] = node.type
 		self.scales[expr.idf] = scale
@@ -530,9 +530,6 @@ class IRBuilder(ASTVisitor):
 		# Compute scales
 		scale_in_A, scale_in_B = self.scales[expr_in_A.idf], self.scales[expr_in_B.idf]
 		intv_in_A, intv_in_B = self.intvs[expr_in_A.idf], self.intvs[expr_in_B.idf]
-
-		if isinstance(node.expr1, AST.ID) and expr_in_A.idf == 'H':
-			print(scale_in_A)
 
 		[shr_A, shr_B] = self.getShrForMul(scale_in_A, scale_in_B)
 
@@ -1328,6 +1325,11 @@ class IRBuilder(ASTVisitor):
 
 		expr_out = expr_in
 		
+		if debugCompiler():
+			print("Sigmoid(" + expr_in.idf + ")")
+			print("\tinterval: %d, %d" % (self.intvs[expr_in.idf]))
+			print("\tscale: %d" % (self.scales[expr_in.idf]))
+
 		return (prog_out, expr_out)
 
 	# out = $x[start:end] in
@@ -1396,9 +1398,9 @@ class IRBuilder(ASTVisitor):
 
 		idf = node.mutableVar.name
 
-		print("Scale of %s before reading profile is %d" % (idf, self.scales[idf]))
+		#print("Scale of %s before reading profile is %d" % (idf, self.scales[idf]))
 		self.readProfileForMutableVars(idf)
-		print("Scale of %s after reading profile is %d" % (idf, self.scales[idf]))
+		#print("Scale of %s after reading profile is %d" % (idf, self.scales[idf]))
 
 		(prog_in, expr_in) = self.visit(node.expr)
 
@@ -1412,14 +1414,17 @@ class IRBuilder(ASTVisitor):
 		loop = IR.For(var, 0, IRUtil.lt(var, IR.Int(end - start)), prog_in.cmd_l)
 
 		# Generate code for profiling
-		mVar = IR.Var(node.mutableVar.name)
-		mVar_type = node.mutableVar.type
-		profile_iters = self.getTempIterators(mVar_type.dim)
-		mVar_idx = IRUtil.addIndex(mVar, profile_iters)
-		funcCall = IR.FuncCall("updateRange", {
-								mVar_idx: "A"
-								})
-		profile = IRUtil.loop(mVar_type.shape, profile_iters, [funcCall])
+		if forFloat():
+			mVar = IR.Var(node.mutableVar.name)
+			mVar_type = node.mutableVar.type
+			profile_iters = self.getTempIterators(mVar_type.dim)
+			mVar_idx = IRUtil.addIndex(mVar, profile_iters)
+			funcCall = IR.FuncCall("updateRange", {
+									mVar_idx: "A"
+									})
+			profile = IRUtil.loop(mVar_type.shape, profile_iters, [funcCall])
+		else:
+			profile = []
 
 		prog_out = IR.Prog([cmd0, loop] + profile)
 
@@ -1527,8 +1532,8 @@ class IRBuilder(ASTVisitor):
 				new_scale = self.getScale(max(abs(minVal), abs(maxVal)))
 				new_intv = self.getInterval(new_scale, minVal, maxVal)
 
-				print("Scale of %s before using 'let' is %d" % (idf, curr_scale))
-				print("Scale of %s after using 'let' is %d" % (idf, new_scale))
+				#print("Scale of %s before using 'let' is %d" % (idf, curr_scale))
+				#print("Scale of %s after using 'let' is %d" % (idf, new_scale))
 
 				diff_scale = curr_scale - new_scale
 				
@@ -1564,9 +1569,18 @@ class IRBuilder(ASTVisitor):
 			else:
 				prog_for_mutable = IR.Prog([])
 
-			print("scale of %s is %d" % (idf, self.scales[idf]))
+			#print("scale of %s is %d" % (idf, self.scales[idf]))
 
 			(prog_in, expr_in) = self.visit(node.expr)
+
+			# TODO: When is this triggered and why is this required?
+			if idf in self.mutableVars:
+				#expr_decl.idf = idf
+				[minVal, maxVal] = self.mutableVarsProfile[0]
+				new_scale = self.getScale(max(abs(minVal), abs(maxVal)))
+				new_intv = self.getInterval(new_scale, minVal, maxVal)
+				self.scales[expr_decl.idf] = new_scale
+				self.intvs[expr_decl.idf] = new_intv
 
 			prog_in = prog_in.subst(idf, expr_decl)
 			expr_in = expr_in.subst(idf, expr_decl)

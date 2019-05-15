@@ -135,6 +135,8 @@
     <ClInclude Include="model_float.h" />
     <ClInclude Include="predictors.h" />
     <ClInclude Include="profile.h" />
+    <ClInclude Include="vars_fixed.h" />
+    <ClInclude Include="vars_float.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

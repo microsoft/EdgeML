@@ -34,9 +34,9 @@ class X86(CodegenBase):
 
 		self.printExpTables()
 		
-		self.printCHeader()
-
 		self.printVarDecls()
+
+		self.printCHeader()
 
 		self.printConstDecls()
 		
@@ -48,9 +48,11 @@ class X86(CodegenBase):
 		self.out.printf('#include "predictors.h"\n', indent=True)
 		self.out.printf('#include "profile.h"\n', indent=True)
 		self.out.printf('#include "library_%s.h"\n' % (getVersion()), indent=True)
-		self.out.printf('#include "model_%s.h"\n\n' % (getVersion()), indent=True)
+		self.out.printf('#include "model_%s.h"\n' % (getVersion()), indent=True)
+		self.out.printf('#include "vars_%s.h"\n\n' % (getVersion()), indent=True)
 		self.out.printf('using namespace std;\n', indent=True)
-		self.out.printf('using namespace seedot_%s;\n\n' % (getVersion()), indent=True)
+		self.out.printf('using namespace seedot_%s;\n' % (getVersion()), indent=True)
+		self.out.printf('using namespace vars_%s;\n\n' % (getVersion()), indent=True)
 
 	def printExpTables(self):
 		for exp, [table, [tableVarA, tableVarB]] in self.expTables.items():
@@ -76,6 +78,80 @@ class X86(CodegenBase):
 			type = "MYINT"
 		self.out.printf('int seedot%s(%s **X) {\n' % (func, type), indent=True)
 		self.out.increaseIndent()
+
+	def printVarDecls(self):
+
+		varsFilePath = os.path.join(self.outputDir, "vars_" + getVersion() + ".h")
+		varsFile = Writer(varsFilePath)
+
+		varsFile.printf("#pragma once\n\n")
+		varsFile.printf("#include \"datatypes.h\"\n\n")
+		varsFile.printf("namespace vars_%s {\n" % (getVersion()))
+		varsFile.increaseIndent()
+
+		for decl in self.decls:
+			if decl in self.globalVars:
+				continue
+			
+			if forFloat() and decl not in self.internalVars:
+				typ_str = IR.DataType.getFloatStr()
+			else:
+				typ_str = IR.DataType.getIntStr()
+			
+			idf_str = decl
+			type = self.decls[decl]
+			if Type.isInt(type):
+				shape_str = ''
+			elif Type.isTensor(type):
+				shape_str = ''.join(['[' + str(n) + ']' for n in type.shape])
+
+			self.out.printf('%s vars_%s::%s%s;\n', typ_str, getVersion(), idf_str, shape_str, indent=True)
+			varsFile.printf('extern %s %s%s;\n', typ_str, idf_str, shape_str, indent=True)
+
+		self.out.printf('\n')
+		
+		varsFile.decreaseIndent()
+		varsFile.printf("}\n")
+		varsFile.close()
+
+		self.generateDebugProgram()
+
+	def generateDebugProgram(self):
+		debugFilePath = os.path.join(self.outputDir, "debug.cpp")
+		debugFile = Writer(debugFilePath)
+
+		debugFile.printf("#include <iostream>\n\n")
+		debugFile.printf("#include \"datatypes.h\"\n")
+		debugFile.printf("#include \"profile.h\"\n")
+		debugFile.printf("#include \"vars_fixed.h\"\n")
+		debugFile.printf("#include \"vars_float.h\"\n\n")
+		debugFile.printf("using namespace std;\n\n")
+		debugFile.printf("void debug() {\n\n")
+
+		if debugMode() and forFixed():
+			debugFile.increaseIndent()
+
+			for decl in self.decls:
+				if decl in self.globalVars:
+					continue
+
+				type = self.decls[decl]
+				if decl not in self.scales or not isinstance(type, Type.Tensor) or type.isShapeOne():
+					continue
+
+				scale = self.scales[decl]
+
+				s = decl + "[0]" * type.dim
+				shape_str = ''.join([str(n) + ', ' for n in type.shape])
+				shape_str = shape_str.rstrip(', ')
+
+				debugFile.printf("diff(&vars_float::%s, &vars_fixed::%s, %d, %s);\n\n" % (s, s, scale, shape_str), indent = True)
+
+			debugFile.decreaseIndent()
+		
+		debugFile.printf("}\n")
+
+		debugFile.close()
 
 	def printSuffix(self, expr:IR.Expr):
 		self.out.printf('\n')

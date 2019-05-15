@@ -137,6 +137,33 @@ class Quantizer:
 			print("%s = %.6f, %.6f" % (param.name, np.amin(param.data), np.amax(param.data)))
 		print("X = %.6f, %.6f" % self.trainDatasetRange)
 
+	# Float model is generated for for training dataset to profile the prediction
+	# Hence, X is trimmed down to remove outliers. Prediction profiling is performed on the trimmed X to generate more precise profile data
+	def transformDataset(self):
+		if getVersion() == Common.Version.Fixed:
+			# If X itself is X_train, reuse it. Otherwise, read it from file
+			if usingTrainingDataset():
+				self.X_train = list(self.X)
+			else:
+				self.X_train, _ = readXandY(useTrainingSet=True)
+
+			# Trim some data points from X_train
+			self.X_train, _ = trimMatrix(self.X_train)
+
+			self.trainDatasetRange = matRange(self.X_train)
+		elif getVersion() == Common.Version.Float:
+			if usingTrainingDataset():
+				self.X, self.Y = trimMatrix(self.X, self.Y)
+
+				self.trainDatasetRange = matRange(self.X)
+			else:
+				self.X_train, _ = readXandY(useTrainingSet=True)
+
+				# Trim some data points from X_train
+				self.X_train, _ = trimMatrix(self.X_train)
+
+				self.trainDatasetRange = matRange(self.X_train)
+
 	def run(self):
 		self.buildParams()
 
@@ -159,7 +186,7 @@ class QuantizerFixed(Quantizer):
 	# The range of X_train is used to compute the scale factor.
 	# Since the range of X_train depends on its distribution, the scale computed may be imprecise.
 	# To avoid this, any outliers in X_train is trimmed off using a threshold to get a more precise range and a more precise scale.
-	def transformDataset(self):
+	def transformDatasetOld(self):
 		# If X itself is X_train, reuse it. Otherwise, read it from file
 		if usingTrainingDataset():
 			self.X_train = list(self.X)
@@ -190,7 +217,7 @@ class QuantizerFloat(Quantizer):
 	
 	# Float model is generated for for training dataset to profile the prediction
 	# Hence, X is trimmed down to remove outliers. Prediction profiling is performed on the trimmed X to generate more precise profile data
-	def transformDataset(self):
+	def transformDatasetOld(self):
 		if usingTrainingDataset():
 			beforeLen = len(self.X)
 			beforeRange = matRange(self.X)

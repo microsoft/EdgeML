@@ -59,5 +59,11 @@
     <ClInclude Include="model_float.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="vars_fixed.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vars_float.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

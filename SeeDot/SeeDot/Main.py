@@ -19,7 +19,7 @@ class Dataset:
 	Common = ["cifar-binary", "cr-binary", "cr-multiclass", "curet-multiclass",
 		   "letter-multiclass", "mnist-binary", "mnist-multiclass",
 		   "usps-binary", "usps-multiclass", "ward-binary"]
-	Extra = ["cifar-10", "eye-binary", "farm-beats", "interactive-cane", "whale-binary", "spectakom"]
+	Extra = ["cifar-10", "eye-binary", "farm-beats", "interactive-cane", "whale-binary", "spectakoms", "dsa", "usps10"]
 	Default = Common
 	All = Common + Extra
 

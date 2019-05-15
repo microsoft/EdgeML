@@ -5,17 +5,46 @@ import os
 import subprocess
 
 import Common
+import Util
 
 # Program to build and run the predictor project using msbuild
 # The accuracy and other statistics are written to the output file specified
 
 class Predictor:
 
-	def __init__(self, algo, version, datasetType, outputDir):
+	def __init__(self, algo, version, datasetType, outputDir, scaleForX):
 		self.algo, self.version, self.datasetType = algo, version, datasetType
 
 		self.outputDir = outputDir
 		os.makedirs(self.outputDir, exist_ok=True)
+
+		self.scaleForX = scaleForX
+
+		self.genHeaderFile()
+
+	def genHeaderFile(self):
+		with open("datatypes.h", 'w') as file:
+			file.write("#pragma once\n\n")
+
+			if Common.wordLength == 8:
+				file.write("#define INT8\n")
+				file.write("typedef int8_t MYINT;\n\n")
+			elif Common.wordLength == 16:
+				file.write("#define INT16\n")
+				file.write("typedef int16_t MYINT;\n\n")
+			elif Common.wordLength == 32:
+				file.write("#define INT32\n")
+				file.write("typedef int32_t MYINT;\n\n")
+
+			file.write("typedef int16_t MYITE;\n")
+			file.write("typedef uint16_t MYUINT;\n\n")
+
+			file.write("const int scaleForX = %d;\n\n" % (self.scaleForX))
+
+			if Util.debugMode():
+				file.write("const bool debugMode = true;\n")
+			else:
+				file.write("const bool debugMode = false;\n")
 
 	def build(self):
 		'''
