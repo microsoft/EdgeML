@@ -1,0 +1,11 @@
+
+1.	inputVar in IR.Var is redundant. You can do that check using self.globalVars as well. Remove it.
+2.	internalVar in IR.Var is never used. Remove it.
+3.	The current code generation process involves creating temp memory only when it is required. If the operation can be performed in-place, no memory is created. Make this clear somewhere.
+4.	Add debug statements everywhere to show more information about the compilation like how the scale and the interval values change at each operator.
+5.	Use tree sum in sparse matrix multiplication as well. Currently not being used.
+6.	Check all the 'TODO's.
+7.	Re-check visitExp().
+8.	Add another version of tree sum where precision is not lost
+9.	Re-write getScale() function.
+

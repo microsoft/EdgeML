@@ -71,4 +71,11 @@ def printSpectakomRNN():
 
 #printDsaRNN()
 
-printSpectakomRNN()
+#printSpectakomRNN()
+
+m = np.iinfo(np.int16).min
+M = np.iinfo(np.int16).max
+
+print(m, M)
+
+sigmoid(x, 10, 10, 4, 0.5, 1)

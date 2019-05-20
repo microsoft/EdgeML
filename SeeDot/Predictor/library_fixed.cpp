@@ -686,17 +686,23 @@ void Exp(MYINT *A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT *B) {
 }
 
 // A = Sigmoid(A)
-void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT scale) {
+void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			float x = float(A[i * J + j]) / scale;
+			MYINT x = A[i * J + j];
 
-			float y = 1 / (1 + exp(-x));
+			x = (x / div) + add;
 
-			MYINT z = MYINT(y * scale);
-
-			A[i * J + j] = z;
+			MYINT y;
+			if (x >= sigmoid_limit)
+				y = sigmoid_limit;
+			else if (x <= 0)
+				y = 0;
+			else
+				y = x;
+			
+			A[i * J + j] = y;
 		}
 	}
 

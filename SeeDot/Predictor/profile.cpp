@@ -62,7 +62,7 @@ void diff(float* A, MYINT* B, MYINT scale, MYINT I, MYINT J) {
 
 			MYINT b = B[i * J + j];
 			//float b_float = float(b) / scale;
-			float b_float = ldexp(double(b), scale);
+			float b_float = float(ldexp(double(b), scale));
 
 			float diff = abs(a - b_float);
 			float diff_relative = diff / abs(a);
@@ -105,7 +105,7 @@ void diff(float* A, MYINT* B, MYINT scale, MYINT I, MYINT J, MYINT K) {
 
 				MYINT b = B[i * J * K + j * K + k];
 				//float b_float = float(b) / scale;
-				float b_float = ldexp(double(b), scale);
+				float b_float = float(ldexp(double(b), scale));
 
 				float diff = abs(a - b_float);
 				float diff_relative = diff / abs(a);
