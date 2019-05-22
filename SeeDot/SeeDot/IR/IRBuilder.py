@@ -165,11 +165,18 @@ class IRBuilder(ASTVisitor):
 
 		prog_init = IR.Prog([comment, memset])
 
-		self.varDeclarations[expr.idf] = node.type
-		self.varScales[expr.idf] = scale
-		self.varIntervals[expr.idf] = intv
+		prog_out = prog_init
+		expr_out = expr
 
-		return (prog_init, expr)
+		self.varDeclarations[expr_out.idf] = node.type
+		self.varScales[expr_out.idf] = scale
+		self.varIntervals[expr_out.idf] = intv
+
+		if debugCompiler():
+			print(comment.msg)
+			print("\tOutput: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_out.idf],) + self.varIntervals[expr_out.idf]))
+
+		return (prog_out, expr)
 
 	# out = in ^ T
 	def visitTransp(self, node:AST.Transp):
@@ -524,6 +531,12 @@ class IRBuilder(ASTVisitor):
 		self.varScales[expr_out.idf] = scale_out
 		self.varIntervals[expr_out.idf] = intv_out
 
+		if debugCompiler():
+			print(expr_in_A.idf + ' * ' + expr_in_B.idf)
+			print("\tInput1: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_in_A.idf],) + self.varIntervals[expr_in_A.idf]))
+			print("\tInput2: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_in_B.idf],) + self.varIntervals[expr_in_B.idf]))
+			print("\tOutput: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_out.idf],) + self.varIntervals[expr_out.idf]))
+
 		return (prog_out, expr_out)
 
 	# out = in_A * in_B
@@ -599,6 +612,12 @@ class IRBuilder(ASTVisitor):
 		
 		self.varDeclarations[expr_treeSum.idf] = type_treeSum
 
+		if debugCompiler():
+			print(expr_in_A.idf + ' * ' + expr_in_B.idf)
+			print("\tInput1: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_in_A.idf],) + self.varIntervals[expr_in_A.idf]))
+			print("\tInput2: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_in_B.idf],) + self.varIntervals[expr_in_B.idf]))
+			print("\tOutput: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_out.idf],) + self.varIntervals[expr_out.idf]))
+
 		return (prog_out, expr_out)
 
 	# out = in_A |*| in_B
@@ -670,6 +689,12 @@ class IRBuilder(ASTVisitor):
 		self.globalVars.append(in_A_idx.idf)
 		self.globalVars.append(in_A_val.idf)
 
+		if debugCompiler():
+			print(expr_in_A.idf + ' |*| ' + expr_in_B.idf)
+			print("\tInput1: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_in_A.idf],) + self.varIntervals[expr_in_A.idf]))
+			print("\tInput2: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_in_B.idf],) + self.varIntervals[expr_in_B.idf]))
+			print("\tOutput: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_out.idf],) + self.varIntervals[expr_out.idf]))
+
 		return (prog_out, expr_out)
 
 	# out = in_A <*> in_B
@@ -722,6 +747,12 @@ class IRBuilder(ASTVisitor):
 		self.varDeclarations[expr_out.idf] = type_out
 		self.varScales[expr_out.idf] = scale_out
 		self.varIntervals[expr_out.idf] = intv_out
+
+		if debugCompiler():
+			print(expr_in_A.idf + ' <*> ' + expr_in_B.idf)
+			print("\tInput1: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_in_A.idf],) + self.varIntervals[expr_in_A.idf]))
+			print("\tInput2: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_in_B.idf],) + self.varIntervals[expr_in_B.idf]))
+			print("\tOutput: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_out.idf],) + self.varIntervals[expr_out.idf]))
 
 		return (prog_out, expr_out)
 
@@ -792,6 +823,12 @@ class IRBuilder(ASTVisitor):
 		# Update declarations
 		self.varDeclarations[expr_treeSum.idf] = type_treeSum
 
+		if debugCompiler():
+			print(expr_in_A.idf + '#* ' + expr_in_B.idf)
+			print("\tInput1: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_in_A.idf],) + self.varIntervals[expr_in_A.idf]))
+			print("\tInput2: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_in_B.idf],) + self.varIntervals[expr_in_B.idf]))
+			print("\tOutput: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_out.idf],) + self.varIntervals[expr_out.idf]))
+
 		return (prog_out, expr_out)
 
 	# out = in_A <+-> in_B
@@ -815,7 +852,7 @@ class IRBuilder(ASTVisitor):
 		scale_in_A, scale_in_B = self.varScales[expr_in_A.idf], self.varScales[expr_in_B.idf]
 		intv_in_A, intv_in_B = self.varIntervals[expr_in_A.idf], self.varIntervals[expr_in_B.idf]
 
-		(scale_out, intv_out, [shr_A, shr_B, shr_out]) = self.getScaleAndIntervalForAdd(scale_in_A, scale_in_B, intv_in_A, intv_in_B, op_fn)
+		(scale_out, intv_out, [shr_A, shr_B, shr_out]) = self.getScaleAndIntervalForAddAndSub(scale_in_A, scale_in_B, intv_in_A, intv_in_B, op_fn)
 
 		shr_A = self.formatShr(shr_A)
 		shr_B = self.formatShr(shr_B)
@@ -861,6 +898,12 @@ class IRBuilder(ASTVisitor):
 		
 		self.varScales[expr_in_A.idf] = scale_out
 		self.varIntervals[expr_in_A.idf] = intv_out
+
+		if debugCompiler():
+			print(expr_in_A.idf + ' <' + op_ir.name + '> ' + expr_in_B.idf)
+			print("\tInput1: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_in_A.idf],) + self.varIntervals[expr_in_A.idf]))
+			print("\tInput2: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_in_B.idf],) + self.varIntervals[expr_in_B.idf]))
+			print("\tOutput: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_out.idf],) + self.varIntervals[expr_out.idf]))
 
 		return (prog_out, expr_in_A)
 
@@ -921,9 +964,7 @@ class IRBuilder(ASTVisitor):
 			scale_in_A, scale_in_B = self.varScales[expr_in_A.idf], self.varScales[expr_in_B.idf]
 			intv_in_A, intv_in_B = self.varIntervals[expr_in_A.idf], self.varIntervals[expr_in_B.idf]
 
-			assert op_fn == operator.add, "getScaleAndIntervalForSub is currently not yet defined."
-
-			(scale_out, intv_out, [shr_A, shr_B, shr_out]) = self.getScaleAndIntervalForAdd(scale_in_A, scale_in_B, intv_in_A, intv_in_B, op_fn)
+			(scale_out, intv_out, [shr_A, shr_B, shr_out]) = self.getScaleAndIntervalForAddAndSub(scale_in_A, scale_in_B, intv_in_A, intv_in_B, op_fn)
 
 			[I, J] = type_out.shape
 
@@ -955,6 +996,12 @@ class IRBuilder(ASTVisitor):
 			self.varDeclarations[expr_out.idf] = type_out
 			self.varScales[expr_out.idf] = scale_out
 			self.varIntervals[expr_out.idf] = intv_out
+
+			if debugCompiler():
+				print(expr_in_A.idf + ' ' + op_ir.name + ' ' + expr_in_B.idf)
+				print("\tInput1: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_in_A.idf],) + self.varIntervals[expr_in_A.idf]))
+				print("\tInput2: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_in_B.idf],) + self.varIntervals[expr_in_B.idf]))
+				print("\tOutput: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_out.idf],) + self.varIntervals[expr_out.idf]))
 
 		return (prog_out, expr_out)
 
@@ -1361,7 +1408,7 @@ class IRBuilder(ASTVisitor):
 		if m_new > M_new:
 			m_new, M_new = M_new, m_new
 		
-		intv_out = [m_new, M_new]
+		intv_out = (m_new, M_new)
 
 		# Compute new scale
 		# Temp computation for POC. Remove later.
@@ -1399,8 +1446,8 @@ class IRBuilder(ASTVisitor):
 
 		if debugCompiler():
 			print("Sigmoid(" + expr_in.idf + ")")
-			print("\tinterval: %d, %d" % (self.varIntervals[expr_in.idf]))
-			print("\tscale: %d" % (self.varScales[expr_in.idf]))
+			print("\tInput:  scale = %d, interval = [%d, %d]" % ((self.varScales[expr_in.idf],) + self.varIntervals[expr_in.idf]))
+			print("\tOutput: scale = %d, interval = [%d, %d]" % ((self.varScales[expr_out.idf],) + self.varIntervals[expr_out.idf]))
 
 		return (prog_out, expr_out)
 
@@ -1474,17 +1521,16 @@ class IRBuilder(ASTVisitor):
 		idf = node.mutableVar.name
 		self.mutableVars.append(idf)
 
-		#print("Scale of %s before reading profile is %d" % (idf, self.varScales[idf]))
-		scale, intv = self.readProfileForMutableVars(idf)
-
-		self.varScales[idf] = scale
-		self.varIntervals[idf] = intv
-		#print("Scale of %s after reading profile is %d" % (idf, self.varScales[idf]))
+		# Update the scale and interval of the mutable variable only during fixed-point code generation
+		if forFixed():
+			scale, intv = self.readProfileForMutableVars(idf)
+			self.varScales[idf] = scale
+			self.varIntervals[idf] = intv
 
 		(prog_in, expr_in) = self.visit(node.expr)
 
 		start, end = node.start, node.end
-		assert start == 1, "'loop' operator currently supports only iterations starting from 0."
+		assert start == 0, "'loop' operator currently supports only iterations starting from 0."
 
 		var = IR.Var(node.name)
 
@@ -1607,7 +1653,7 @@ class IRBuilder(ASTVisitor):
 				expr_decl.idf = idf
 				expr_decl.inputVar = True
 
-			if idf in self.mutableVars:
+			if forFixed() and idf in self.mutableVars:
 				expr_decl.idf = idf
 
 				# add a loop to adjust the scale back to the original one
@@ -1658,7 +1704,7 @@ class IRBuilder(ASTVisitor):
 			(prog_in, expr_in) = self.visit(node.expr)
 
 			# TODO: When is this triggered and why is this required?
-			if idf in self.mutableVars:
+			if forFixed() and idf in self.mutableVars:
 				print("TODO: Fix this if condition")
 				#expr_decl.idf = idf
 				[minVal, maxVal] = self.mutableVarsProfile[0]
@@ -1772,7 +1818,7 @@ class IRBuilder(ASTVisitor):
 
 				# Perform scale down based on the mode
 				if shr:
-					arr[p] = sum / 2
+					arr[p] = sum // 2
 				else:
 					arr[p] = sum
 
@@ -1781,7 +1827,7 @@ class IRBuilder(ASTVisitor):
 				# Copy the last element adjacent to the new array
 				index = count // 2 + 1
 				if shr:
-					arr[index - 1] = arr[count - 1] / 2
+					arr[index - 1] = arr[count - 1] // 2
 				else:
 					arr[index - 1] = arr[count - 1]
 
@@ -1797,7 +1843,15 @@ class IRBuilder(ASTVisitor):
 
 		return arr[0]
 
-	def getScaleAndIntervalForAdd(self, scale_A:int, scale_B:int, intv_A, intv_B, op_fn):
+	def getScaleAndIntervalForAddAndSub(self, scale_A:int, scale_B:int, intv_A, intv_B, op_fn):
+		if op_fn == operator.add:
+			return self.getScaleAndIntervalForAdd(scale_A, scale_B, intv_A, intv_B)
+		elif op_fn == operator.sub:
+			return self.getScaleAndIntervalForSub(scale_A, scale_B, intv_A, intv_B)
+		else:
+			assert False, "Operator other than add and sub not supported"
+
+	def getScaleAndIntervalForAdd(self, scale_A:int, scale_B:int, intv_A, intv_B):
 		(minVal_A, maxVal_A) = intv_A
 		(minVal_B, maxVal_B) = intv_B
 
@@ -1808,8 +1862,33 @@ class IRBuilder(ASTVisitor):
 			shr_all = [scale_B - scale_A, 0, 0]
 			scale_common = scale_B
 		
-		minVal_out = op_fn(minVal_A >> shr_all[0], minVal_B >> shr_all[1])
-		maxVal_out = op_fn(maxVal_A >> shr_all[0], maxVal_B >> shr_all[1])
+		minVal_out = (minVal_A >> shr_all[0]) + (minVal_B >> shr_all[1])
+		maxVal_out = (maxVal_A >> shr_all[0]) + (maxVal_B >> shr_all[1])
+		
+		if max(abs(minVal_out), abs(maxVal_out)) >= (1 << (Common.wordLength - 2)) and scale_common < self.MAX_SCALE:
+		#if scale_common < self.MAX_SCALE and max(abs(minVal_out), abs(maxVal_out)) >= IR.Int.max() and :
+			shr_all[2] = 1
+			scale_common += 1
+		max_abs = (1 << Common.wordLength - 2) - 1
+		
+		minVal_out = max(minVal_out >> shr_all[2], -max_abs)
+		maxVal_out = min(maxVal_out >> shr_all[2],  max_abs)
+			
+		return (scale_common, (minVal_out, maxVal_out), shr_all)
+
+	def getScaleAndIntervalForSub(self, scale_A:int, scale_B:int, intv_A, intv_B):
+		(minVal_A, maxVal_A) = intv_A
+		(minVal_B, maxVal_B) = intv_B
+
+		if scale_A >= scale_B:
+			shr_all = [0, scale_A - scale_B, 0]
+			scale_common = scale_A
+		else:
+			shr_all = [scale_B - scale_A, 0, 0]
+			scale_common = scale_B
+		
+		minVal_out = (minVal_A >> shr_all[0]) - (minVal_B >> shr_all[1])
+		maxVal_out = (maxVal_A >> shr_all[0]) - (maxVal_B >> shr_all[1])
 		
 		if max(abs(minVal_out), abs(maxVal_out)) >= (1 << (Common.wordLength - 2)) and scale_common < self.MAX_SCALE:
 		#if scale_common < self.MAX_SCALE and max(abs(minVal_out), abs(maxVal_out)) >= IR.Int.max() and :

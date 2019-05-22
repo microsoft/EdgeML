@@ -105,9 +105,9 @@ class Compiler:
 		
 		res = compiler.visit(ast)
 
-		state = compiler.decls, compiler.scales, compiler.intvs, compiler.cnsts, compiler.expTables, compiler.globalVars, compiler.internalVars, compiler.floatConstants
+		state = compiler.varDeclarations, compiler.varScales, compiler.varIntervals, compiler.intConstants, compiler.expTables, compiler.globalVars, compiler.internalVars, compiler.floatConstants
 
-		self.scaleForX = compiler.scales['X']
+		self.scaleForX = compiler.varScales['X']
 
 		return res, state
 
