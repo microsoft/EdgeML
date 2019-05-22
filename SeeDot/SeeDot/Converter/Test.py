@@ -66,6 +66,70 @@ def printSpectakomRNN():
 	print("let score = ((H%d * FC1) * FC2) + FCBias in" % (ite-1))
 	print("argmax(score)")
 
+def treeSum(tmp, length, height_shr, height_noshr):
+
+	count = length
+	depth = 0
+	shr = True
+
+	while depth < (height_shr + height_noshr):
+		if depth >= height_shr:
+			shr = False
+
+		for p in range(int(length / 2) + 1):
+			if p < (count >> 1):
+				sum = tmp[2 * p] + tmp[(2 * p) + 1]
+			elif (p == (count >> 1)) and ((count & 1) == 1):
+				sum = tmp[2 * p]
+			else:
+				sum = 0
+
+			if shr:
+				tmp[p] = sum / 2
+			else:
+				tmp[p] = sum
+		count = (count + 1) >> 1
+
+		depth += 1
+
+		print(tmp)
+
+	return tmp[0]
+
+def treeSumNew(tmp, count, height_shr, height_noshr):
+	if count == 1:
+		return tmp[0]
+
+	shr = True
+
+	for depth in range(height_shr + height_noshr):
+		if depth >= height_shr:
+			shr = False
+
+		for p in range(count // 2):
+			sum = tmp[2 * p] + tmp[(2 * p) + 1]
+
+			if shr:
+				tmp[p] = sum / 2
+			else:
+				tmp[p] = sum
+
+		if count % 2 == 1:
+			index = count // 2 + 1
+			if shr:
+				tmp[index - 1] = tmp[count - 1] / 2
+			else:
+				tmp[index - 1] = tmp[count - 1]
+
+			tmp[index - 1 + 1] = 0
+		else:
+			tmp[count // 2] = 0
+		
+		count = (count + 1) >> 1
+
+		print(tmp)
+
+	return tmp[0]
 
 #printUspsRNN()
 
@@ -73,9 +137,14 @@ def printSpectakomRNN():
 
 #printSpectakomRNN()
 
-m = np.iinfo(np.int16).min
-M = np.iinfo(np.int16).max
+#tmp = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+tmp = [0.1]
+tmpNew = list(tmp)
 
-print(m, M)
+sum = treeSum(tmp, 1, 1, 0)
+print(sum)
 
-sigmoid(x, 10, 10, 4, 0.5, 1)
+print('\n\n')
+
+sum = treeSumNew(tmpNew, 1, 0, 1)
+print(sum)

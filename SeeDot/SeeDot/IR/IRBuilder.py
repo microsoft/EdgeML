@@ -553,7 +553,7 @@ class IRBuilder(ASTVisitor):
 		intv_treeSum = self.getIntvervalForMul(intv_in_A, shr_A, intv_in_B, shr_B)
 
 		(scale_out, height_shr, height_noshr) = self.getScaleForTreeSum(scale_treeSum, J)
-		intv_out = self.getIntervalForTreeSum(intv_treeSum, J)
+		intv_out = self.getIntervalForTreeSum(intv_treeSum, J, height_shr, height_noshr)
 
 		shr_A = self.formatShr(shr_A)
 		shr_B = self.formatShr(shr_B)
@@ -625,7 +625,7 @@ class IRBuilder(ASTVisitor):
 		intv_treeSum = self.getIntvervalForMul(intv_in_A, shr_A, intv_in_B, shr_B)
 
 		(scale_out, height_shr, height_noshr) = self.getScaleForTreeSum(scale_treeSum, Q)
-		intv_out = self.getIntervalForTreeSum(intv_treeSum, Q)
+		intv_out = self.getIntervalForTreeSum(intv_treeSum, Q, height_shr, height_noshr)
 
 		in_A_idx = IR.Var(expr_in_A.idf[0] + 'idx', expr_in_A.idx, inputVar = True)
 		in_A_val = IR.Var(expr_in_A.idf[0] + 'val', expr_in_A.idx, inputVar = True)
@@ -751,7 +751,7 @@ class IRBuilder(ASTVisitor):
 		intv_treeSum = self.getIntvervalForMul(intv_in_A, shr_A, intv_in_B, shr_B)
 
 		(scale_out, height_shr, height_noshr) = self.getScaleForTreeSum(scale_treeSum, HF * WF * CI)
-		intv_out = self.getIntervalForTreeSum(intv_treeSum, HF * WF * CI)
+		intv_out = self.getIntervalForTreeSum(intv_treeSum, HF * WF * CI, height_shr, height_noshr)
 
 		shr_A = self.formatShr(shr_A)
 		shr_B = self.formatShr(shr_B)
@@ -920,6 +920,8 @@ class IRBuilder(ASTVisitor):
 			
 			scale_in_A, scale_in_B = self.varScales[expr_in_A.idf], self.varScales[expr_in_B.idf]
 			intv_in_A, intv_in_B = self.varIntervals[expr_in_A.idf], self.varIntervals[expr_in_B.idf]
+
+			assert op_fn == operator.add, "getScaleAndIntervalForSub is currently not yet defined."
 
 			(scale_out, intv_out, [shr_A, shr_B, shr_out]) = self.getScaleAndIntervalForAdd(scale_in_A, scale_in_B, intv_in_A, intv_in_B, op_fn)
 
@@ -1435,7 +1437,7 @@ class IRBuilder(ASTVisitor):
 		intv_in = self.varIntervals[expr_in.idf]
 
 		(scale_out, height_shr, height_noshr) = self.getScaleForTreeSum(scale_in, end - start)
-		intv_out = self.getIntervalForTreeSum(intv_in, end - start)
+		intv_out = self.getIntervalForTreeSum(intv_in, end - start, height_shr, height_noshr)
 
 		# Tree sum to sum output of each iteration
 		expr_in_idx = IRUtil.addIndex(expr_in, iters)
@@ -1711,70 +1713,127 @@ class IRBuilder(ASTVisitor):
 		return (scale_A + shr_A) + (scale_B + shr_B)
 
 	def getIntvervalForMul(self, intv_A, shr_A:int, intv_B, shr_B:int): # int^2 * int^2 -> int^2
-		(m_A, M_A) = intv_A
-		(m_A, M_A) = (m_A >> shr_A, M_A >> shr_A)
+		(minVal_A, maxVal_A) = intv_A
+		(minVal_A, maxVal_A) = (minVal_A >> shr_A, maxVal_A >> shr_A)
 
-		(m_B, M_B) = intv_B
-		(m_B, M_B) = (m_B >> shr_B, M_B >> shr_B)
+		(minVal_B, maxVal_B) = intv_B
+		(minVal_B, maxVal_B) = (minVal_B >> shr_B, maxVal_B >> shr_B)
 
-		m_out = min([m_A * m_B, m_A * M_B, M_A * m_B, M_A * M_B])
-		M_out = max([m_A * m_B, m_A * M_B, M_A * m_B, M_A * M_B])
+		values = [minVal_A * minVal_B, minVal_A * maxVal_B, maxVal_A * minVal_B, maxVal_A * maxVal_B]
 
-		return (m_out, M_out)
+		minVal_out, maxVal_out = min(values), max(values)
+
+		return (minVal_out, maxVal_out)
 
 	def getScaleForTreeSum(self, scale:int, length:int):
-		H_tot = int(np.ceil(np.log2(length)))
+		height = int(np.ceil(np.log2(length)))
+		
 		if scale >= self.MAX_SCALE:
-			p_res = scale
+			scale_out = scale
 		else:
-			p_res = min(scale + H_tot, self.MAX_SCALE)
-		H_1 = p_res - scale
-		assert H_1 >= 0
-		H_2 = H_tot - H_1
-		assert H_2 >= 0
-		return (p_res, H_1, H_2)
+			scale_out = min(scale + height, self.MAX_SCALE)
+		
+		height_shr = scale_out - scale
+		assert height_shr >= 0
+		
+		height_noshr = height - height_shr
+		assert height_noshr >= 0
+		
+		return (scale_out, height_shr, height_noshr)
 
-	def getIntervalForTreeSum(self, intv, length:int):
-		max_abs = (1 << Common.wordLength - 2) - 1
-		(m, M) = intv
-		m = max(length * m, -max_abs)
-		M = min(length * M,  max_abs)
-		return (m, M)
+	def getIntervalForTreeSum(self, intv, count, height_shr, height_noshr):
+		(minVal, maxVal) = intv
+
+		arr_min = [minVal for i in range(count)]
+		arr_max = [maxVal for i in range(count)]
+
+		minVal_out = self.treeSum(arr_min, count, height_shr, height_noshr)
+		maxVal_out = self.treeSum(arr_max, count, height_shr, height_noshr)
+
+		return (minVal_out, maxVal_out)
+
+	def treeSum(self, arr, count, height_shr, height_noshr):
+		# Return if only one element
+		if count == 1:
+			return arr[0]
+
+		# Start in the scale down mode by performing shift rights
+		shr = True
+
+		for depth in range(height_shr + height_noshr):
+			# Switch off scale down mode after reaching the desired height
+			if depth >= height_shr:
+				shr = False
+
+			# Pair-wise sum the array elements
+			# If odd number of elements, the last element is handled after the loop
+			for p in range(count // 2):
+				sum = arr[2 * p] + arr[(2 * p) + 1]
+
+				# Perform scale down based on the mode
+				if shr:
+					arr[p] = sum / 2
+				else:
+					arr[p] = sum
+
+			# Handling the last element if odd number of elements
+			if count % 2 == 1:
+				# Copy the last element adjacent to the new array
+				index = count // 2 + 1
+				if shr:
+					arr[index - 1] = arr[count - 1] / 2
+				else:
+					arr[index - 1] = arr[count - 1]
+
+			# Debugging statement
+			# Adding a 0 after the end of the new array to seperate the old array
+			if count % 2 == 1:
+				index = count // 2 + 1
+				arr[index - 1 + 1] = 0
+			else:
+				arr[count // 2] = 0
+		
+			count = (count + 1) >> 1
+
+		return arr[0]
 
 	def getScaleAndIntervalForAdd(self, scale_A:int, scale_B:int, intv_A, intv_B, op_fn):
-		(m_1, M_1) = intv_A
-		(m_2, M_2) = intv_B
+		(minVal_A, maxVal_A) = intv_A
+		(minVal_B, maxVal_B) = intv_B
 
 		if scale_A >= scale_B:
-			shr_n = [0, scale_A - scale_B, 0]
-			p = scale_A
-		else         :
-			shr_n = [scale_B - scale_A, 0, 0]
-			p = scale_B
-		m = op_fn(m_1 >> shr_n[0], m_2 >> shr_n[1])
-		M = op_fn(M_1 >> shr_n[0], M_2 >> shr_n[1])
+			shr_all = [0, scale_A - scale_B, 0]
+			scale_common = scale_A
+		else:
+			shr_all = [scale_B - scale_A, 0, 0]
+			scale_common = scale_B
 		
-		if max(abs(m),abs(M)) >= (1 << (Common.wordLength - 2)) and p < self.MAX_SCALE:
-			shr_n[2] = 1
-			p += 1
+		minVal_out = op_fn(minVal_A >> shr_all[0], minVal_B >> shr_all[1])
+		maxVal_out = op_fn(maxVal_A >> shr_all[0], maxVal_B >> shr_all[1])
+		
+		if max(abs(minVal_out), abs(maxVal_out)) >= (1 << (Common.wordLength - 2)) and scale_common < self.MAX_SCALE:
+		#if scale_common < self.MAX_SCALE and max(abs(minVal_out), abs(maxVal_out)) >= IR.Int.max() and :
+			shr_all[2] = 1
+			scale_common += 1
 		max_abs = (1 << Common.wordLength - 2) - 1
-		m = max(m >> shr_n[2], -max_abs)
-		M = min(M >> shr_n[2],  max_abs)
+		
+		minVal_out = max(minVal_out >> shr_all[2], -max_abs)
+		maxVal_out = min(maxVal_out >> shr_all[2],  max_abs)
 			
-		return (p, (m, M), shr_n)
+		return (scale_common, (minVal_out, maxVal_out), shr_all)
 
-	def getScaleForExp(self, p1:int, shr1:int, p2:int, shr2:int):
-		return (p1 + shr1) + (p2 + shr2)
+	def getScaleForExp(self, scale_A:int, shr_A:int, scale_B:int, shr_B:int):
+		return (scale_A + shr_A) + (scale_B + shr_B)
 
-	def getIntervalForExp(self, p:int, intv): # int^2 -> int^2
+	def getIntervalForExp(self, scale:int, intv): # int^2 -> int^2
 		(m, M) = intv
-		assert m < np.ldexp(self.MAX_VAL_EXP, -p)
-		M = min(M, np.ldexp(self.MAX_VAL_EXP, -p))
-		return self.getInterval(p, np.exp(np.ldexp(m, p)), np.exp(np.ldexp(M, p)))
+		assert m < np.ldexp(self.MAX_VAL_EXP, -scale)
+		M = min(M, np.ldexp(self.MAX_VAL_EXP, -scale))
+		return self.getInterval(scale, np.exp(np.ldexp(m, scale)), np.exp(np.ldexp(M, scale)))
 
-	def getShrForMul(self, p1, p2):
+	def getShrForMul(self, scale_A, scale_B):
 		shr = (Common.wordLength - 2) // 2
-		pRes = (p1 + shr) + (p2 + shr)
+		pRes = (scale_A + shr) + (scale_B + shr)
 		if pRes < self.MAX_SCALE:
 			return [shr, shr]
 		else:
@@ -1795,40 +1854,40 @@ class IRBuilder(ASTVisitor):
 		num_ir = IR.Int(num_np)
 		return num_ir
 
-	def updateTanhIntv(self, intv_1, intv_tanh):
-		m_e, M_e = intv_1
-		m_t, M_t = intv_tanh
-		return min(m_e, m_t), min(M_e, M_t)
+	def updateTanhIntv(self, intv_A, intv_tanh):
+		minVal_A, maxVal_A = intv_A
+		minVal_tanh, maxVal_tanh = intv_tanh
+		return min(minVal_A, minVal_tanh), min(maxVal_A, maxVal_tanh)
 
 	# Variable and iterators creation
-	def getTempVars(self, n:int):
-		return [self.getTempVar() for i in range(n)]
+	def getTempVars(self, num:int):
+		return [self.getTempVar() for i in range(num)]
 
 	def getTempVar(self):
 		var = IR.Var('tmp' + str(self.counter_var))
 		self.counter_var += 1
 		return var
 
-	def getTempIterators(self, n:int):
-		return [self.getTempIterator() for i in range(n)]
+	def getTempIterators(self, num:int):
+		return [self.getTempIterator() for i in range(num)]
 
 	def getTempIterator(self):
 		var = IR.Var('i' + str(self.counter_iter))
 		self.counter_iter += 1
 		return var
 
-	def formatShr(self, n):
-		assert n >= 0
+	def formatShr(self, num):
+		assert num >= 0
 	
 		shrType = getShrType()
 
 		if shrType == "shr" or shrType == "shr+":
-			return IR.Int(n)
+			return IR.Int(num)
 		elif shrType == "div":
-			if n >= Common.wordLength:
+			if num >= Common.wordLength:
 				return IR.Int(IR.Int.max())
 			else:
-				intVar = IR.Int(2 ** n)
+				intVar = IR.Int(2 ** num)
 				if intVar.n == 0:
 					assert False
 				return intVar

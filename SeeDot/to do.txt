@@ -7,5 +7,5 @@
 6.	Check all the 'TODO's.
 7.	Re-check visitExp().
 8.	Add another version of tree sum where precision is not lost
-9.	Re-write getScale() function.
+9.	Re-write getScale(), getScaleForExp(), getScaleAndIntervalForAdd(), getIntervalForExp() function.
 
