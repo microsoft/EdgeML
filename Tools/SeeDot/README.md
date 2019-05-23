@@ -4,7 +4,7 @@ SeeDot is an automatic quantization tool that generates efficient machine learni
 
 ### **Overview**
 
-ML models are usually expressed in floating-point, and IoT devices typically lack hardware support for floating-point arithmetic. Hence, running such ML models on IoT devices involves simulating floating-point arithmetic in software, which is very inefficient. SeeDot addresses this issue by generating fixed-point code with only integer operations. To enable this, SeeDot takes as input trained floating-point models (like Bonsai or ProtoNN) and generates efficient fixed-point code that can run on microcontrollers. The SeeDot compiler uses novel compilation techniques like automatically inferring certain parameters used in the fixed-point code, optimized exponentiation computation, etc. With these techniques, the generated fixed-point code has comparable classification accuracy and performs significantly faster than the floating-point code.
+ML models are usually expressed in floating-point, and IoT devices typically lack hardware support for floating-point arithmetic. Hence, running such ML models on IoT devices involves simulating floating-point arithmetic in software, which is very inefficient. SeeDot addresses this issue by generating fixed-point code with only integer operations. To enable this, SeeDot takes as input trained floating-point models (like [Bonsai](https://github.com/microsoft/EdgeML/blob/master/docs/publications/Bonsai.pdf) or [ProtoNN](https://github.com/microsoft/EdgeML/blob/master/docs/publications/ProtoNN.pdf)) and generates efficient fixed-point code that can run on microcontrollers. The SeeDot compiler uses novel compilation techniques like automatically inferring certain parameters used in the fixed-point code, optimized exponentiation computation, etc. With these techniques, the generated fixed-point code has comparable classification accuracy and performs significantly faster than the floating-point code.
 
 To know more about SeeDot, please refer to our publication [here](https://www.microsoft.com/en-us/research/publication/compiling-kb-sized-machine-learning-models-to-constrained-hardware/).
 
@@ -60,7 +60,7 @@ To make it easy to test the SeeDot-generated code, we provide a ready-to-upload 
 
 ### Generating fixed-point code
 
-This process consists of four steps: 1) installing EdgeML TensorFlow libaray, 2) training ProtoNN on usps10, 3) quantizing the trained model with SeeDot, and 4) performing prediction on the device.
+This process consists of four steps: 1) installing EdgeML TensorFlow library, 2) training ProtoNN on usps10, 3) quantizing the trained model with SeeDot, and 4) performing prediction on the device.
 
 #### **Step 1: Installing EdgeML TensorFlow library**
 
@@ -94,7 +94,7 @@ This process consists of four steps: 1) installing EdgeML TensorFlow libaray, 2)
       ```
       python protoNN_example.py --data-dir ./usps10 --projection-dim 25 --num-prototypes 55 --epochs 100 -sW 0.3 -o usps10/output
       ```
-  This would give around 90.38% classification accuracy. The trained model is stored in the `output` directory.
+  This would give around 90.035% classification accuracy. The trained model is stored in the `output` directory.
 
 More information on using the ProtoNN trainer can be found [here](https://github.com/Microsoft/EdgeML/tree/master/tf/examples/ProtoNN).
 
@@ -111,17 +111,17 @@ More information on using the ProtoNN trainer can be found [here](https://github
       python SeeDot.py -a protonn --train ../../tf/examples/ProtoNN/usps10/train.npy --test ../../tf/examples/ProtoNN/usps10/test.npy --model ../../tf/examples/ProtoNN/usps10/output -o arduino
       ```
 
-   The SeeDot-generated code would give around 90.43% classification accuracy. The difference in classification accuracy is 0.05% compared to the floating-point code. The generated code is stored in the `arduino` folder which contains the sketch along with two files: model.h and predict.cpp. `model.h` contains the quantized model and `predict.cpp` contains the inference code.
+   The SeeDot-generated code would give around 89.985% classification accuracy. The difference in classification accuracy is 0.05% compared to the floating-point code. The generated code is stored in the `arduino` folder which contains the sketch along with two files: model.h and predict.cpp. `model.h` contains the quantized model and `predict.cpp` contains the inference code.
 
 #### **Step 4: Prediction on the device**
 
-Follow the below steps to perform prediction on the device where the SeeDot-generated code is run on a single data-point which is stored on the devices's flash memory.
+Follow the below steps to perform prediction on the device where the SeeDot-generated code is run on a single data-point which is stored on the device's flash memory.
 
 1. Open the sketch in the [Arduino IDE](https://www.arduino.cc/en/main/software).
 2. Connect the Arduino device to the computer and choose the correct board configuration.
 3. Upload the sketch to the device.
 4. Open the Serial Monitor and select baud rate specified in the sketch (default is 115200) to monitor the output.
-5. The average prediction time is computed every 100 iterations.
+5. The average prediction time is computed every 100 iterations. On an Arduino Uno, the average prediction time is 35991 milli seconds.
 
 
 
