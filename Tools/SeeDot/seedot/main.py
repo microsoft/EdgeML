@@ -301,13 +301,13 @@ class Main:
         if res == False:
             return False
 
-        curr_dir = os.path.dirname(os.path.realpath(__file__))
-
         # Copy model.h
-        srcFile = os.path.join(curr_dir, Common.outdir, "input",
+        srcFile = os.path.join(Common.outdir, "input",
                                self.algo + "_" + "float_model.h")
         destFile = os.path.join(Common.outdir, "model.h")
         shutil.copyfile(srcFile, destFile)
+
+        curr_dir = os.path.dirname(os.path.realpath(__file__))
 
         # Copy predict.cpp
         srcFile = os.path.join(

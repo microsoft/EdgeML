@@ -28,6 +28,8 @@ class MainDriver:
                             metavar='', help="Testing set file")
         parser.add_argument("--model", required=True, metavar='',
                             help="Directory containing trained model (output from Bonsai/ProtoNN trainer)")
+        #parser.add_argument("-v", "--version", default=Common.Version.Fixed, choices=Common.Version.All, metavar='',
+        #                    help="Datatype of the generated code (fixed-point or floating-point)")
         parser.add_argument("--tempdir", metavar='',
                             help="Scratch directory for intermediate files")
         parser.add_argument("-o", "--outdir", metavar='',
@@ -72,7 +74,7 @@ class MainDriver:
         if Util.windows():
             self.checkMSBuildPath()
 
-        algo, trainingInput, testingInput, modelDir = self.args.algo, self.args.train, self.args.test, self.args.model
+        algo, version, trainingInput, testingInput, modelDir = self.args.algo, Common.Version.Fixed, self.args.train, self.args.test, self.args.model
 
         print("\n================================")
         print("Executing on %s for Arduino" % (algo))
@@ -82,7 +84,7 @@ class MainDriver:
         print("Model directory: %s" % (modelDir))
         print("================================\n")
 
-        obj = Main(algo, Common.Version.Fixed, Common.Target.Arduino,
+        obj = Main(algo, version, Common.Target.Arduino,
                    trainingInput, testingInput, modelDir, None)
         obj.run()
 
