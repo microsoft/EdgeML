@@ -324,7 +324,7 @@ inline __attribute__((always_inline)) void SparseMatMul(const MYINT * Aidx, cons
 
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
-		float b = getIntFeature(k);
+		float b = getFloatFeature(k);
 		//float b = B[k * 1][0];
 
 		#ifdef INT16

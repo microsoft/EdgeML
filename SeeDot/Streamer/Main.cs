@@ -10,7 +10,7 @@ namespace Streamer
 
 	class Program
 	{
-		DataType datatype = DataType.Int16;
+		DataType datatype = DataType.Float;
 
 		static int Main(string[] args)
 		{

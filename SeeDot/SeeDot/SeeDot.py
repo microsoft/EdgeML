@@ -287,23 +287,22 @@ class Main:
 		print("Generating code for %s..." % (self.target))
 		print("------------------------------\n")
 
-		res = self.convert(Common.Version.Float, Common.DatasetType.Testing, Common.Target.Arduino)
+		res = self.convert(Common.Version.Float, Common.DatasetType.Testing, self.target)
+		if res == False:
+			return False
+
+		res = self.compile(Common.Version.Float, self.target, self.sf)
 		if res == False:
 			return False
 
 		# Copy model.h
-		srcFile = os.path.join("..", "Streamer", "input", "model_fixed.h")
+		srcFile = os.path.join("..", "Streamer", "input", "model_float.h")
 		destFile = os.path.join("..", self.target, "model.h")
 		shutil.copyfile(srcFile, destFile)
 
 		# Copy library.h file
 		srcFile = os.path.join("..", self.target, "library", "library_float.h")
 		destFile = os.path.join("..", self.target, "library.h")
-		shutil.copyfile(srcFile, destFile)
-
-		# Copy predict.cpp
-		srcFile = os.path.join("..", self.target, "floating-point", self.algo + "_float.cpp")
-		destFile = os.path.join("..", self.target, "predict.cpp")
 		shutil.copyfile(srcFile, destFile)
 
 		return True

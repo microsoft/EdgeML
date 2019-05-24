@@ -123,7 +123,10 @@ class Arduino(CodegenBase):
 		if isinstance(ir.e, IR.Var) and ir.e.idf == "X":
 			self.out.printf("", indent=True)
 			self.print(ir.var)
-			self.out.printf(" = getIntFeature(i0);\n")
+			if forFixed():
+				self.out.printf(" = getIntFeature(i0);\n")
+			else:
+				self.out.printf(" = getFloatFeature(i0);\n")
 		else:
 			super().printAssn(ir)
 
