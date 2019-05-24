@@ -12,8 +12,8 @@ void MatAddBroadCastA(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA
 void MatAddBroadCastB(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
 
 void MatSub(float *A, const float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
-void MatSubBroadCastA(float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
-void MatSubBroadCastB(float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
+void MatSubBroadCastA(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
+void MatSubBroadCastB(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
 
 void MatMulNN(float *A, float *B, float *C, float *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2);
 void MatMulCN(const float *A, float *B, float *C, float *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2);
@@ -46,7 +46,7 @@ void Maxpool(float *A, float *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT strid
 
 void Exp(float *A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, float *B);
 
-void Sigmoid(float* A, MYINT I, MYINT J, float div, float add, float sigmoid_limit);
+void Sigmoid(float* A, MYINT I, MYINT J, float div, float add, float sigmoid_limit, MYINT scale);
 
 void AdjustScaleShr(float* A, MYINT I, MYINT J, MYINT scale);
 void AdjustScaleShl(float* A, MYINT I, MYINT J, MYINT scale);

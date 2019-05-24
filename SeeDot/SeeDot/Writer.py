@@ -12,6 +12,10 @@ class Writer:
 			self.file.write('\t' * self.indentLevel)
 		self.file.write(str % args)
 
+	def print(self, str, *args):
+		self.file.write(str % args)
+		self.file.write('\n')
+
 	def increaseIndent(self):
 		self.indentLevel += 1
 

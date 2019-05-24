@@ -31,6 +31,13 @@ class Main:
 		# Set input and output files
 		inputFile = os.path.join(self.modelDir, "input.sd")
 		profileLogFile = os.path.join("..", "Predictor", "output", "float", "profile.txt")
+		
+		logDir = os.path.join("output")
+		os.makedirs(logDir, exist_ok=True)
+		if version == Common.Version.Float:
+			outputLogFile = os.path.join(logDir, "log-float.txt")
+		else:
+			outputLogFile = os.path.join(logDir, "log-fixed-" + str(abs(sf)) + ".txt")
 
 		if target == Common.Target.Arduino:
 			outputDir = os.path.join("..", "arduino")
@@ -42,11 +49,11 @@ class Main:
 			outputDir = os.path.join("..", "Predictor")
 		
 		try:
-			obj = Compiler(self.algo, version, target, inputFile, outputDir, profileLogFile, sf, self.numWorkers)
+			obj = Compiler(self.algo, version, target, inputFile, outputDir, profileLogFile, sf, outputLogFile, self.numWorkers)
 			obj.run()
 		except:
 			print("failed!\n")
-			#traceback.print_exc()
+			traceback.print_exc()
 			return False
 
 		self.scaleForX = obj.scaleForX
@@ -235,9 +242,14 @@ class Main:
 		if res == False:
 			return False
 
-		# Copy file
-		srcFile = os.path.join("..", "Streamer", "input", "model.h")
+		# Copy model.h file
+		srcFile = os.path.join("..", "Streamer", "input", "model_fixed.h")
 		destFile = os.path.join("..", self.target, "model.h")
+		shutil.copyfile(srcFile, destFile)
+
+		# Copy library.h file
+		srcFile = os.path.join("..", self.target, "library", "library_fixed.h")
+		destFile = os.path.join("..", self.target, "library.h")
 		shutil.copyfile(srcFile, destFile)
 
 		res = self.compile(Common.Version.Fixed, self.target, self.sf)
@@ -272,7 +284,7 @@ class Main:
 
 	def compileFloatForTarget(self):
 		print("------------------------------")
-		print("Generating code for Arduino...")
+		print("Generating code for %s..." % (self.target))
 		print("------------------------------\n")
 
 		res = self.convert(Common.Version.Float, Common.DatasetType.Testing, Common.Target.Arduino)
@@ -280,13 +292,18 @@ class Main:
 			return False
 
 		# Copy model.h
-		srcFile = os.path.join("..", "Streamer", "input", "model.h")
-		destFile = os.path.join("..", "arduino", "model.h")
+		srcFile = os.path.join("..", "Streamer", "input", "model_fixed.h")
+		destFile = os.path.join("..", self.target, "model.h")
+		shutil.copyfile(srcFile, destFile)
+
+		# Copy library.h file
+		srcFile = os.path.join("..", self.target, "library", "library_float.h")
+		destFile = os.path.join("..", self.target, "library.h")
 		shutil.copyfile(srcFile, destFile)
 
 		# Copy predict.cpp
-		srcFile = os.path.join("..", "arduino", "floating-point", self.algo + "_float.cpp")
-		destFile = os.path.join("..", "arduino", "predict.cpp")
+		srcFile = os.path.join("..", self.target, "floating-point", self.algo + "_float.cpp")
+		destFile = os.path.join("..", self.target, "predict.cpp")
 		shutil.copyfile(srcFile, destFile)
 
 		return True

@@ -32,7 +32,7 @@ from Writer import Writer
 
 class Compiler:
 
-	def __init__(self, algo, version, target, inputFile, outputDir, profileLogFile, maxScale, numWorkers):
+	def __init__(self, algo, version, target, inputFile, outputDir, profileLogFile, maxScale, outputLogFile, numWorkers):
 		if os.path.isfile(inputFile) == False:
 			raise Exception("Input file doesn't exist")
 
@@ -43,6 +43,7 @@ class Compiler:
 		self.input = inputFile
 		self.outputDir = outputDir
 		setProfileLogFile(profileLogFile)
+		self.outputLogFile = outputLogFile
 		setMaxScale(maxScale)
 	
 	def genASTFromFile(self, inputFile):
@@ -101,9 +102,12 @@ class Compiler:
 
 	def genCodeWithFuncCalls(self, ast):
 
-		compiler = IRBuilder()
-		
+		outputLog = Writer(self.outputLogFile)
+
+		compiler = IRBuilder(outputLog)
 		res = compiler.visit(ast)
+
+		outputLog.close()
 
 		state = compiler.varDeclarations, compiler.varScales, compiler.varIntervals, compiler.intConstants, compiler.expTables, compiler.globalVars, compiler.internalVars, compiler.floatConstants
 

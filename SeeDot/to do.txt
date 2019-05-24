@@ -1,4 +1,6 @@
 
+11.	Check EXP() in library_fixed.h and arduino/library.h
+
 1.	inputVar in IR.Var is redundant. You can do that check using self.globalVars as well. Remove it.
 2.	internalVar in IR.Var is never used. Remove it.
 3.	The current code generation process involves creating temp memory only when it is required. If the operation can be performed in-place, no memory is created. Make this clear somewhere.

@@ -78,6 +78,23 @@ void predictionTime() {
 
 MYINT getIntFeature(MYINT i) {
 #ifdef ACCURACY
+	char buff[13];
+	while (!Serial.available())
+		;
+	Serial.readBytes(buff, 13);
+	double f = (float)(atof(buff));
+#endif
+
+#ifdef PREDICTIONTIME
+	double f = ((float) pgm_read_float_near(&X[i]));
+#endif
+
+	double f_int = ldexp(f, -scaleOfX);
+	return (MYINT)(f_int);
+}
+
+MYINT getIntFeatureOld(MYINT i) {
+#ifdef ACCURACY
 #ifdef INT16
 	char buff[10];
 	while (!Serial.available())

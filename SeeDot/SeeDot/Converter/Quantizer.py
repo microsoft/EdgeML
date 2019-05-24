@@ -99,7 +99,10 @@ class Quantizer:
 		self.writeHeader()
 
 		if forArduino() and dumpDataset():
+			scaleOfX = computeScale(*self.trainDatasetRange)
+
 			writeListAsArray(self.X[0], 'X', self.headerFile)
+			writeVars({'scaleOfX': scaleOfX}, self.headerFile)
 			writeVars({'Y': self.Y[0][0]}, self.headerFile)
 
 		for param in self.params:
