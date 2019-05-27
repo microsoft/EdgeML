@@ -43,7 +43,7 @@ An example invocation is as follows:
 python SeeDot.py -a bonsai --train path/to/train.npy --test path/to/test.npy --model path/to/Bonsai/model
 ```
 
-SeeDot expects the `train` and the `test` data files in a specific format. Each data file should be of the shape `[numberOfDataPoints, numberOfFeatures + 1]`, where the class label is in the first column. We currently support the following file formats for the data files: numpy arrays (.npy), tab-separated values (.tsv), comma-separated values (.csv), and libsvm (.txt).
+SeeDot expects the `train` and the `test` data files in a specific format. Each data file should be of the shape `[numberOfDataPoints, numberOfFeatures + 1]`, where the class label is in the first column. The tool currently support the following file formats for the data files: numpy arrays (.npy), tab-separated values (.tsv), comma-separated values (.csv), and libsvm (.txt).
 
 The path to the trained Bonsai/ProtoNN model is specified in the `--model` argument. After training, the learned parameters are stored in this directory in a specific format. For Bonsai, the learned parameters are `Z`, `W`, `V`, `T`, `Sigma`, `Mean`, and `Std`. For ProtoNN, the learned parameters are `W`, `B`, and `Z`. These parameters can be either numpy arrays (.npy) or plaintext files.
 
@@ -56,7 +56,7 @@ To help get started with SeeDot, we provide 1) a pre-loaded fixed-point model, a
 
 ### Pre-loaded model
 
-To make it easy to test the SeeDot-generated code, we provide a ready-to-upload Arduino sketch that can be run on an Arduino device without any changes. The sketch is located at `Tools/SeeDot/seedot/arduino` and contains pre-loaded ProtoNN model on the usps10 dataset. Follow the steps [here](https://github.com/microsoft/EdgeML/tree/Feature/SeeDot/Tools/SeeDot#step-4-prediction-on-the-device) to upload the sketch to the device.
+To make it easy to test the SeeDot-generated code, a ready-to-upload Arduino sketch is provided that can be run on an Arduino device without any changes. The sketch is located at `Tools/SeeDot/seedot/arduino` and contains pre-loaded ProtoNN model on the usps10 dataset. To upload the sketch to the device, skip steps 1-3 in the below guide and follow the [step 4: Prediction on the device](https://github.com/microsoft/EdgeML/tree/Feature/SeeDot/Tools/SeeDot#step-4-prediction-on-the-device).
 
 ### Generating fixed-point code
 
@@ -117,11 +117,11 @@ More information on using the ProtoNN trainer can be found [here](https://github
 
 Follow the below steps to perform prediction on the device where the SeeDot-generated code is run on a single data-point which is stored on the device's flash memory.
 
-1. Open the sketch in the [Arduino IDE](https://www.arduino.cc/en/main/software).
-2. Connect the Arduino device to the computer and choose the correct board configuration.
+1. Open the Arduino sketch file located at `arduino/arduino.ino` in the [Arduino IDE](https://www.arduino.cc/en/main/software).
+2. Connect the Arduino microcontroller to the computer and choose the correct board configuration.
 3. Upload the sketch to the device.
 4. Open the Serial Monitor and select baud rate specified in the sketch (default is 115200) to monitor the output.
-5. The average prediction time is computed every 100 iterations. On an Arduino Uno, the average prediction time is 35991 milli seconds.
+5. The average prediction time is computed every 100 iterations. On an Arduino Uno, the average prediction time is 35991 micro seconds.
 
 
 
