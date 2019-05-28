@@ -56,7 +56,7 @@ To help get started with SeeDot, we provide 1) a pre-loaded fixed-point model, a
 
 ### Pre-loaded model
 
-To make it easy to test the SeeDot-generated code, a ready-to-upload Arduino sketch is provided that can be run on an Arduino device without any changes. The sketch is located at `Tools/SeeDot/seedot/arduino` and contains pre-loaded ProtoNN model on the usps10 dataset. To upload the sketch to the device, skip steps 1-3 in the below guide and follow the [step 4: Prediction on the device](https://github.com/microsoft/EdgeML/tree/Feature/SeeDot/Tools/SeeDot#step-4-prediction-on-the-device).
+To make it easy to test the SeeDot-generated code, a ready-to-upload Arduino sketch is provided that can be run on an Arduino device without any changes. The sketch is located at `Tools/SeeDot/seedot/arduino/arduino.ino` and contains pre-loaded ProtoNN model on the usps10 dataset. To upload the sketch to the device, skip steps 1-3 in the below guide and follow the [step 4: Prediction on the device](https://github.com/microsoft/EdgeML/tree/Feature/SeeDot/Tools/SeeDot#step-4-prediction-on-the-device).
 
 ### Generating fixed-point code
 
