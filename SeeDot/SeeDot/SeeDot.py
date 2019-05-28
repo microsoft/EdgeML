@@ -260,9 +260,9 @@ class Main:
 
 	def runForFixed(self):
 		# Collect runtime profile
-		res = self.collectProfileData()
-		if res == False:
-			return False
+		#res = self.collectProfileData()
+		#if res == False:
+		#	return False
 
 		# Obtain best scaling factor
 		if self.sf == None:

@@ -214,6 +214,28 @@ class QuantizerFixed(Quantizer):
 	# Quantize the matrices
 	def transformModel(self):
 		for param in self.params:
+			#data = list(param.data)
+
+			#print(param.name)
+			
+			#if data[0] is list:
+			#	beforeRange = matRange(data)
+			#else:
+			#	beforeRange = listRange(data)
+			
+			#scale_old = computeScale(*beforeRange)
+			#data, _ = trimMatrix(data)
+			#if data[0] is list:
+			#	afterRange = matRange(data)
+			#else:
+			#	afterRange = listRange(data)
+			#scale_new = computeScale(*afterRange)
+
+			#print("Old range = ", beforeRange, "Old scale = ", scale_old)
+			#print("New range = ", afterRange, "New scale = ", scale_new)
+			#print()
+
+
 			param.data, _ = scaleMat(param.data)
 
 class QuantizerFloat(Quantizer):

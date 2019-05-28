@@ -137,14 +137,25 @@ def treeSumNew(tmp, count, height_shr, height_noshr):
 
 #printSpectakomRNN()
 
-#tmp = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
-tmp = [0.1]
-tmpNew = list(tmp)
+def treeSumTest():
+	#tmp = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+	tmp = [0.1]
+	tmpNew = list(tmp)
+	
+	sum = treeSum(tmp, 1, 1, 0)
+	print(sum)
+	
+	print('\n\n')
+	
+	sum = treeSumNew(tmpNew, 1, 0, 1)
+	print(sum)
+	
 
-sum = treeSum(tmp, 1, 1, 0)
-print(sum)
+e = getScale(0.15637416)
+e_int = np.ldexp(0.15637416, 16)
 
-print('\n\n')
+print(e)
+print(e_int)
 
-sum = treeSumNew(tmpNew, 1, 0, 1)
-print(sum)
+x = np.int16(10248)
+print(x)

@@ -11,3 +11,6 @@
 8.	Add another version of tree sum where precision is not lost
 9.	Re-write getScale(), getScaleForExp(), getScaleAndIntervalForAdd(), getIntervalForExp() function.
 10.	Write getScaleAndIntervalForSub()
+11.	Rewrite reading mutableVarsProfile similar to expProfile. Read once, store and reuse instead of reading at each mutable var.
+12.	Add self.log.print() statements at every operation.
+13.	Try trimming the model parameters as well and see if there are any significant scale changes

@@ -237,6 +237,12 @@ class DataType:
 	
 	@staticmethod
 	def getInt(x:int):
+		'''
+		Function returns the numpy int object for x
+		The datattype of x is determined by Common.wordLength
+		The function tries to handle overflows, by using a higher bitwidth when needed
+		But reports a warning if the higher bitwidth also overflows
+		'''
 		target = getTarget()
 		wordLen = Common.wordLength
 		x_np = DataType.intType[target][wordLen](x)
