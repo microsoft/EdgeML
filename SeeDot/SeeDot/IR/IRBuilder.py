@@ -432,8 +432,10 @@ class IRBuilder(ASTVisitor):
 		expr_out = IRUtil.mul(expr_in_A, expr_in_B)
 
 		# Just to be safe, check that the scaling factor of the integer variables is never tracked
-		assert expr_in_A.idf not in self.varScales and expr_in_A.idf not in self.varIntervals
-		assert expr_in_B.idf not in self.varScales and expr_in_B.idf not in self.varIntervals
+		if isinstance(expr_in_A, IR.Var):
+			assert expr_in_A.idf not in self.varScales and expr_in_A.idf not in self.varIntervals
+		if isinstance(expr_in_B, IR.Var):
+			assert expr_in_B.idf not in self.varScales and expr_in_B.idf not in self.varIntervals
 
 		return (prog_out, expr_out)
 
@@ -886,8 +888,10 @@ class IRBuilder(ASTVisitor):
 			expr_out = IR.IntBop(expr_in_A, op_ir, expr_in_B)
 
 			# Just to be safe that the scaling factor of the integer variable is never tracked
-			assert expr_in_A.idf not in self.varScales and expr_in_A.idf not in self.varIntervals
-			assert expr_in_B.idf not in self.varScales and expr_in_B.idf not in self.varIntervals
+			if isinstance(expr_in_A, IR.Var):
+				assert expr_in_A.idf not in self.varScales and expr_in_A.idf not in self.varIntervals
+			if isinstance(expr_in_B, IR.Var):
+				assert expr_in_B.idf not in self.varScales and expr_in_B.idf not in self.varIntervals
 
 		# e : Tensor(), or Tensor(..)
 		else:
@@ -1553,8 +1557,10 @@ class IRBuilder(ASTVisitor):
 			prog_out = IRUtil.concatPrograms(prog_in_cond, prog_in_A, prog_in_B)
 			expr_out = IRUtil.cond_zero(expr_in_cond_idx, expr_in_A, expr_in_B)
 
-			assert expr_in_A.idf not in self.varScales and expr_in_A.idf not in self.varIntervals
-			assert expr_in_B.idf not in self.varScales and expr_in_B.idf not in self.varIntervals
+			if isinstance(expr_in_A, IR.Var):
+				assert expr_in_A.idf not in self.varScales and expr_in_A.idf not in self.varIntervals
+			if isinstance(expr_in_B, IR.Var):
+				assert expr_in_B.idf not in self.varScales and expr_in_B.idf not in self.varIntervals
 
 		# e2, e3 : Tensor(), or Tensor(..)
 		else:
