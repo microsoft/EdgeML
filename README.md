@@ -43,11 +43,11 @@ on [Bonsai](docs/publications/Bonsai.pdf) and
 Core Contributors:
   - [Aditya Kusupati](https://adityakusupati.github.io/)
   - [Ashish Kumar](https://ashishkumar1993.github.io/)
-  - [Sridhar Gopinath](http://www.sridhargopinath.in/)
   - [Chirag Gupta](https://aigen.github.io/)
   - [Don Dennis](https://dkdennis.xyz)
   - [Harsha Vardhan Simhadri](http://harsha-simhadri.org)
   - [Shishir Patil](https://shishirpatil.github.io/)
+  - [Sridhar Gopinath](http://www.sridhargopinath.in/)
 
 We welcome contributions, comments, and criticism. For questions, please [email
 Harsha](mailto:harshasi@microsoft.com).
