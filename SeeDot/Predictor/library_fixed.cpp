@@ -416,7 +416,7 @@ void MulCir(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT sh
 }
 
 // A = tanh(A)
-void TanH(MYINT *A, MYINT I, MYINT J, MYINT tanh_limit) {
+void TanH(MYINT* A, MYINT I, MYINT J, MYINT tanh_limit) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			MYINT x = A[i * J + j], y;
@@ -429,6 +429,21 @@ void TanH(MYINT *A, MYINT I, MYINT J, MYINT tanh_limit) {
 				y = x;
 
 			A[i * J + j] = y;
+		}
+	}
+	return;
+}
+
+void TanHNew(MYINT* A, MYINT I, MYINT J, MYINT tanh_limit) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {
+			float x = float(A[i * J + j]) / tanh_limit;
+
+			float y = tanh(x);
+
+			MYINT z = MYINT(y * tanh_limit);
+
+			A[i * J + j] = z;
 		}
 	}
 	return;
