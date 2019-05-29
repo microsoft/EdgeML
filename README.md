@@ -16,6 +16,7 @@ This repository contains algorithms that shine in this setting in terms of both 
  - **ProtoNN**: **Proto**type based k-nearest neighbors (k**NN**) classifier. 
  - **EMI-RNN**: Training routine to recover the critical signature from time series data for faster and accurate RNN predictions.
  - **FastRNN & FastGRNN - FastCells**: **F**ast, **A**ccurate, **S**table and **T**iny (**G**ated) RNN cells.
+ - **SeeDot**: Floating-point to fixed-point quantization tool.
  
 These algorithms can train models for classical supervised learning problems
 with memory requirements that are orders of magnitude lower than other modern
@@ -27,14 +28,16 @@ The `tf` directory contains code, examples and scripts for all these algorithms
 in TensorFlow. The `cpp` directory has training and inference code for Bonsai and
 ProtoNN algorithms in C++. Please see install/run instruction in the Readme
 pages within these directories. The `applications` directory has code/demonstrations
-of applications of the EdgeML algorithms.
+of applications of the EdgeML algorithms. The `Tools/SeeDot` directory has the
+quantization tool to generate fixed-point inference code.  
 
 For details, please see our [wiki
 page](https://github.com/Microsoft/EdgeML/wiki/) and our ICML'17 publications
 on [Bonsai](docs/publications/Bonsai.pdf) and
-[ProtoNN](docs/publications/ProtoNN.pdf) algorithms, NIPS'18 publications on
+[ProtoNN](docs/publications/ProtoNN.pdf) algorithms, NeurIPS'18 publications on
 [EMI-RNN](docs/publications/emi-rnn-nips18.pdf) and
-[FastGRNN](docs/publications/FastGRNN.pdf).  
+[FastGRNN](docs/publications/FastGRNN.pdf), PLDI'19 publication on 
+[SeeDot](docs/publications/SeeDot.pdf).
 
 
 Core Contributors:
@@ -44,6 +47,7 @@ Core Contributors:
   - [Don Dennis](https://dkdennis.xyz)
   - [Harsha Vardhan Simhadri](http://harsha-simhadri.org)
   - [Shishir Patil](https://shishirpatil.github.io/)
+  - [Sridhar Gopinath](http://www.sridhargopinath.in/)
 
 We welcome contributions, comments, and criticism. For questions, please [email
 Harsha](mailto:harshasi@microsoft.com).
