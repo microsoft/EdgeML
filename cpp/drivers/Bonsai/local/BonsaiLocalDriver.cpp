@@ -27,20 +27,20 @@ int main(int argc, char **argv)
   
   auto modelBytes = trainer.getModelSize(); // This can be changed to getSparseModelSize() if you need to export sparse model
   auto model = new char[modelBytes];
-  auto meanVarBytes = trainer.getMeanVarSize();
-  auto meanVar = new char[meanVarBytes];
+  auto meanStdBytes = trainer.getMeanStdSize();
+  auto meanStd = new char[meanStdBytes];
   
   trainer.exportModel(modelBytes, model, currResultsPath); // use exportSparseModel(...) if you need sparse model
-  trainer.exportMeanVar(meanVarBytes, meanVar, currResultsPath);
+  trainer.exportMeanStd(meanStdBytes, meanStd, currResultsPath);
   
-  trainer.dumpModelMeanVar(currResultsPath);
+  trainer.dumpModelMeanStd(currResultsPath);
   
   BonsaiPredictor predictor(modelBytes, model); // use the constructor predictor(modelBytes, model, false) for loading a sparse model.
-  predictor.importMeanVar(meanVarBytes, meanVar);
+  predictor.importMeanStd(meanStdBytes, meanStd);
   
   predictor.batchEvaluate(trainer.data.Xvalidation, trainer.data.Yvalidation, dataDir, currResultsPath);
   
-  delete[] model, meanVar;
+  delete[] model, meanStd;
   
   return 0;
 }

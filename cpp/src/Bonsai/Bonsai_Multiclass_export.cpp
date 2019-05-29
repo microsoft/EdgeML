@@ -165,26 +165,26 @@ namespace EdgeML
 
     //
     // Size of the mean-var normalization values to be exported.
-    // Call before exportMeanVar
+    // Call before exportMeanStd
     //
-    EXPORT_API(int) GetMeanVarSize(
+    EXPORT_API(int) GetMeanStdSize(
       BonsaiTrainer* trainer)
     {
-      size_t meanVarSize = trainer->getMeanVarSize();
-      assert(meanVarSize < (size_t)(1 << 31)); // Because this is expected in TLC
-      return (int)meanVarSize;
+      size_t meanStdSize = trainer->getMeanStdSize();
+      assert(meanStdSize < (size_t)(1 << 31)); // Because this is expected in TLC
+      return (int)meanStdSize;
     }
 
     //
     // Preallocate to size mean-var normalization
     //
-    EXPORT_API(void) ExportMeanVar(
+    EXPORT_API(void) ExportMeanStd(
       BonsaiTrainer* trainer,
-      const int meanVarSize,
+      const int meanStdSize,
       char *const buffer)
     {
-      assert(meanVarSize == trainer->getMeanVarSize());
-      trainer->exportMeanVar(meanVarSize, buffer);
+      assert(meanStdSize == trainer->getMeanStdSize());
+      trainer->exportMeanStd(meanStdSize, buffer);
     }
 
 
@@ -277,11 +277,11 @@ namespace EdgeML
     EXPORT_API(BonsaiPredictor*) CreatePredictor(
       const int numBytes,
       const char *const trainedModel,
-      const int meanVarSize = 0,
+      const int meanStdSize = 0,
       const char *const buffer = NULL)
     {
       BonsaiPredictor* predictor = new BonsaiPredictor(numBytes, trainedModel);
-      predictor->importMeanVar(meanVarSize, buffer);
+      predictor->importMeanStd(meanStdSize, buffer);
       return predictor;
     }
 

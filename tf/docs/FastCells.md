@@ -17,7 +17,7 @@ of weight matrices.
 
 # Plug and Play Cells
 
-`FastGRNNCell` and `FastRNNCell` present in `edgeml.graph.rnn` are very similar to 
+`FastRNNCell` and `FastGRNNCell` present in `edgeml.graph.rnn` are very similar to 
 Tensorflow's inbuilt `RNNCell`, `GRUCell`, `BasicLSTMCell`, and `UGRNNCell` allowing us to 
 replace any of the standard RNN Cell in our architecture with FastCells. 
 One can see the plug and play nature at the endpoint script for FastCells, where the graph 
@@ -27,7 +27,7 @@ Script: [Endpoint Script](../examples/FastCells/fastcell_example.py)
 
 Example Notebook: [iPython Notebook](../examples/FastCells/fastcell_example.ipynb)
 
-Cells: [FastRNNCell](../edgeml/graph/rnn.py#L198) and [FastGRNNCell](../edgeml/graph/rnn.py#L31).
+Cells: [FastRNNCell](../edgeml/graph/rnn.py#L206) and [FastGRNNCell](../edgeml/graph/rnn.py#L31).
 
 # 3 phase Fast Training
 

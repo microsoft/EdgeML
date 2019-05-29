@@ -82,7 +82,7 @@ namespace EdgeML
     SparseMatrixuf Xvalidation, Yvalidation;
     SparseMatrixuf Xtest, Ytest;
 
-    MatrixXuf mean, variance;
+    MatrixXuf mean, stdDev;
     MatrixXuf min, max;
 
     void loadDataFromFile(
@@ -108,7 +108,7 @@ namespace EdgeML
   void computeMinMax(const SparseMatrixuf& dataMatrix, MatrixXuf& min, MatrixXuf& max);
   void minMaxNormalize(SparseMatrixuf& dataMatrix, const MatrixXuf& min, const MatrixXuf& max);
   void l2Normalize(SparseMatrixuf& dataMatrix);
-  void meanVarNormalize(SparseMatrixuf& dataMatrix, MatrixXuf& mean, MatrixXuf& variance);
+  void meanVarNormalize(SparseMatrixuf& dataMatrix, MatrixXuf& mean, MatrixXuf& stdDev);
   void saveMinMax(const MatrixXuf& min, const MatrixXuf& max, std::string fileName);
   void loadMinMax(MatrixXuf& min, MatrixXuf& max, int dim, std::string fileName);
 }

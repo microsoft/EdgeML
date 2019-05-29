@@ -12,7 +12,7 @@ import sys
 class BonsaiTrainer:
 
     def __init__(self, bonsaiObj, lW, lT, lV, lZ, sW, sT, sV, sZ,
-                 learningRate, X, Y, useMCHLoss=False, outFile=None):
+                 learningRate, X, Y, useMCHLoss=False, outFile=None, regLoss='huber'):
         '''
         bonsaiObj - Initialised Bonsai Object and Graph
         lW, lT, lV and lZ are regularisers to Bonsai Params
@@ -26,6 +26,7 @@ class BonsaiTrainer:
         '''
 
         self.bonsaiObj = bonsaiObj
+        self.regressionLoss = regLoss
 
         self.lW = lW
         self.lV = lV
@@ -43,6 +44,7 @@ class BonsaiTrainer:
         self.useMCHLoss = useMCHLoss
 
         if outFile is not None:
+            print("Outfile : ", outFile)
             self.outFile = open(outFile, 'w')
         else:
             self.outFile = sys.stdout
@@ -58,6 +60,10 @@ class BonsaiTrainer:
         self.loss, self.marginLoss, self.regLoss = self.lossGraph()
 
         self.trainStep = self.trainGraph()
+        '''
+        self.accuracy -> 'MAE' for Regression.
+        self.accuracy -> 'Accuracy' for Classification.
+        '''
         self.accuracy = self.accuracyGraph()
         self.prediction = self.bonsaiObj.getPrediction()
 
@@ -78,20 +84,35 @@ class BonsaiTrainer:
                               self.lV * tf.square(tf.norm(self.bonsaiObj.V)) +
                               self.lT * tf.square(tf.norm(self.bonsaiObj.T)))
 
-        if (self.bonsaiObj.numClasses > 2):
-            if self.useMCHLoss is True:
-                self.batch_th = tf.placeholder(tf.int64, name='batch_th')
-                self.marginLoss = utils.multiClassHingeLoss(
-                    tf.transpose(self.score), self.Y,
-                    self.batch_th)
+        # Loss functions for classification.
+        if (self.bonsaiObj.isRegression is False):
+            if (self.bonsaiObj.numClasses > 2):
+                if self.useMCHLoss is True:
+                    self.batch_th = tf.placeholder(tf.int64, name='batch_th')
+                    self.marginLoss = utils.multiClassHingeLoss(
+                        tf.transpose(self.score), self.Y,
+                        self.batch_th)
+                else:
+                    self.marginLoss = utils.crossEntropyLoss(
+                        tf.transpose(self.score), self.Y)
+                self.loss = self.marginLoss + self.regLoss
             else:
-                self.marginLoss = utils.crossEntropyLoss(
-                    tf.transpose(self.score), self.Y)
-            self.loss = self.marginLoss + self.regLoss
-        else:
-            self.marginLoss = tf.reduce_mean(tf.nn.relu(
-                1.0 - (2 * self.Y - 1) * tf.transpose(self.score)))
-            self.loss = self.marginLoss + self.regLoss
+                self.marginLoss = tf.reduce_mean(tf.nn.relu(
+                    1.0 - (2 * self.Y - 1) * tf.transpose(self.score)))
+                self.loss = self.marginLoss + self.regLoss
+
+        # Loss functions for regression.
+        elif (self.bonsaiObj.isRegression is True):
+            if(self.regressionLoss == 'huber'):
+                # Use of Huber Loss , because it is more robust to outliers.
+                self.marginLoss = tf.losses.huber_loss(
+                    self.Y, tf.transpose(self.score))
+                self.loss = self.marginLoss + self.regLoss
+            elif (self.regressionLoss == 'l2'):
+                # L2 loss function.
+                self.marginLoss = tf.nn.l2_loss(
+                    self.Y - tf.transpose(self.score))
+                self.loss = self.marginLoss + self.regLoss
 
         return self.loss, self.marginLoss, self.regLoss
 
@@ -108,19 +129,24 @@ class BonsaiTrainer:
         '''
         Accuracy Graph to evaluate accuracy when needed
         '''
-        if (self.bonsaiObj.numClasses > 2):
-            correctPrediction = tf.equal(
-                tf.argmax(tf.transpose(self.score), 1), tf.argmax(self.Y, 1))
-            self.accuracy = tf.reduce_mean(
-                tf.cast(correctPrediction, tf.float32))
-        else:
-            y_ = self.Y * 2 - 1
-            correctPrediction = tf.multiply(tf.transpose(self.score), y_)
-            correctPrediction = tf.nn.relu(correctPrediction)
-            correctPrediction = tf.ceil(tf.tanh(correctPrediction))
-            self.accuracy = tf.reduce_mean(
-                tf.cast(correctPrediction, tf.float32))
+        if(self.bonsaiObj.isRegression is False):
+            if (self.bonsaiObj.numClasses > 2):
+                correctPrediction = tf.equal(
+                    tf.argmax(tf.transpose(self.score), 1), tf.argmax(self.Y, 1))
+                self.accuracy = tf.reduce_mean(
+                    tf.cast(correctPrediction, tf.float32))
+            else:
+                y_ = self.Y * 2 - 1
+                correctPrediction = tf.multiply(tf.transpose(self.score), y_)
+                correctPrediction = tf.nn.relu(correctPrediction)
+                correctPrediction = tf.ceil(tf.tanh(correctPrediction))
+                self.accuracy = tf.reduce_mean(
+                    tf.cast(correctPrediction, tf.float32))
 
+        elif (self.bonsaiObj.isRegression is True):
+            # Accuracy for regression , in terms of mean absolute error.
+            self.accuracy = utils.mean_absolute_error(tf.reshape(
+                self.score, [-1, 1]), tf.reshape(self.Y, [-1, 1]))
         return self.accuracy
 
     def hardThrsd(self):
@@ -217,6 +243,34 @@ class BonsaiTrainer:
         hyperParamFile = paramDir + 'hyperParam.npy'
         np.save(hyperParamFile, hyperParamDict)
 
+    def saveParamsForSeeDot(self, currDir):
+        '''
+        Function to save Parameter matrices into a given folder for SeeDot compiler
+        '''
+        seeDotDir = currDir + '/SeeDot/'
+
+        if os.path.isdir(seeDotDir) is False:
+            try:
+                os.mkdir(seeDotDir)
+            except OSError:
+                print("Creation of the directory %s failed" %
+                      seeDotDir)
+
+        np.savetxt(seeDotDir + "W",
+                   utils.restructreMatrixBonsaiSeeDot(self.bonsaiObj.W.eval(),
+                                                      self.bonsaiObj.numClasses,
+                                                      self.bonsaiObj.totalNodes),
+                   delimiter="\t")
+        np.savetxt(seeDotDir + "V",
+                   utils.restructreMatrixBonsaiSeeDot(self.bonsaiObj.V.eval(),
+                                                      self.bonsaiObj.numClasses,
+                                                      self.bonsaiObj.totalNodes),
+                   delimiter="\t")
+        np.savetxt(seeDotDir + "T", self.bonsaiObj.T.eval(), delimiter="\t")
+        np.savetxt(seeDotDir + "Z", self.bonsaiObj.Z.eval(), delimiter="\t")
+        np.savetxt(seeDotDir + "Sigma",
+                   np.array([self.bonsaiObj.sigma]), delimiter="\t")
+
     def loadModel(self, currDir):
         '''
         Load the Saved model and load it to the model using constructor
@@ -229,9 +283,9 @@ class BonsaiTrainer:
         paramDict['T'] = np.load(paramDir + "T.npy")
         paramDict['Z'] = np.load(paramDir + "Z.npy")
         hyperParamDict = np.load(paramDir + "hyperParam.npy").item()
-
         return paramDict, hyperParamDict
 
+    # Function to get aimed model size
     def getModelSize(self):
         '''
         Function to get aimed model size
@@ -264,8 +318,10 @@ class BonsaiTrainer:
         else:
             trimlevel = 5
         ihtDone = 0
-        maxTestAcc = -10000
-
+        if (self.bonsaiObj.isRegression is True):
+            maxTestAcc = 100000007
+        else:
+            maxTestAcc = -10000
         if self.isDenseTraining is True:
             ihtDone = 1
             bonsaiObjSigmaI = 1
@@ -275,6 +331,10 @@ class BonsaiTrainer:
         for i in range(totalEpochs):
             print("\nEpoch Number: " + str(i), file=self.outFile)
 
+            '''
+            trainAcc -> For Regression, it is 'Mean Absolute Error'.
+            trainAcc -> For Classification, it is 'Accuracy'.
+            '''
             trainAcc = 0.0
             trainLoss = 0.0
 
@@ -341,8 +401,14 @@ class BonsaiTrainer:
                     [self.trainStep, self.loss, self.accuracy],
                     feed_dict=_feed_dict)
 
-                trainAcc += batchAcc
-                trainLoss += batchLoss
+                # Classification.
+                if (self.bonsaiObj.isRegression is False):
+                    trainAcc += batchAcc
+                    trainLoss += batchLoss
+                # Regression.
+                else:
+                    trainAcc += np.mean(batchAcc)
+                    trainLoss += np.mean(batchLoss)
 
                 # Training routine involving IHT and sparse retraining
                 if (counter >= int(totalBatches / 3.0) and
@@ -363,14 +429,23 @@ class BonsaiTrainer:
                             self.isDenseTraining is False)):
                     self.runSparseTraining(sess)
                     if counter == int(2 * totalBatches / 3.0):
-                        msg = " Sprase Retraining Phase Started "
+                        msg = " Sparse Retraining Phase Started "
                         print("\n%s%s%s\n" %
                               (header, msg, header), file=self.outFile)
                 counter += 1
-
-            print("Train Loss: " + str(trainLoss / numIters) +
-                  " Train accuracy: " + str(trainAcc / numIters),
-                  file=self.outFile)
+            try:
+                if (self.bonsaiObj.isRegression is True):
+                    print("\nRegression Train Loss: " + str(trainLoss / numIters) +
+                          "\nTraining MAE (Regression): " +
+                          str(trainAcc / numIters),
+                          file=self.outFile)
+                else:
+                    print("\nClassification Train Loss: " + str(trainLoss / numIters) +
+                          "\nTraining accuracy (Classification): " +
+                          str(trainAcc / numIters),
+                          file=self.outFile)
+            except:
+                continue
 
             oldSigmaI = bonsaiObjSigmaI
             bonsaiObjSigmaI = 1e9
@@ -389,18 +464,45 @@ class BonsaiTrainer:
 
             # This helps in direct testing instead of extracting the model out
 
-            testAcc, testLoss, regTestLoss = sess.run(
-                [self.accuracy, self.loss, self.regLoss], feed_dict=_feed_dict)
-            if ihtDone == 0:
-                maxTestAcc = -10000
-                maxTestAccEpoch = i
-            else:
-                if maxTestAcc <= testAcc:
-                    maxTestAccEpoch = i
-                    maxTestAcc = testAcc
-                    self.saveParams(currDir)
+            testAcc, testLoss, regTestLoss, pred = sess.run(
+                [self.accuracy, self.loss, self.regLoss, self.prediction], feed_dict=_feed_dict)
 
-            print("Test accuracy %g" % testAcc, file=self.outFile)
+            if ihtDone == 0:
+                if (self.bonsaiObj.isRegression is False):
+                    maxTestAcc = -10000
+                    maxTestAccEpoch = i
+                elif (self.bonsaiObj.isRegression is True):
+                    maxTestAcc = testAcc
+                    maxTestAccEpoch = i
+
+            else:
+                if (self.bonsaiObj.isRegression is False):
+                    if maxTestAcc <= testAcc:
+                        maxTestAccEpoch = i
+                        maxTestAcc = testAcc
+                        self.saveParams(currDir)
+                        self.saveParamsForSeeDot(currDir)
+                elif (self.bonsaiObj.isRegression is True):
+                    print("Minimum Training MAE : ", np.mean(maxTestAcc))
+                    if maxTestAcc >= testAcc:
+                        # For regression , we're more interested in the minimum
+                        # MAE.
+                        maxTestAccEpoch = i
+                        maxTestAcc = testAcc
+                        self.saveParams(currDir)
+                        self.saveParamsForSeeDot(currDir)
+
+            if (self.bonsaiObj.isRegression is True):
+                print("Testing MAE %g" % np.mean(testAcc), file=self.outFile)
+            else:
+                print("Test accuracy %g" % np.mean(testAcc), file=self.outFile)
+
+            if (self.bonsaiObj.isRegression is True):
+                testAcc = np.mean(testAcc)
+            else:
+                testAcc = testAcc
+                maxTestAcc = maxTestAcc
+
             print("MarginLoss + RegLoss: " + str(testLoss - regTestLoss) +
                   " + " + str(regTestLoss) + " = " + str(testLoss) + "\n",
                   file=self.outFile)
@@ -411,26 +513,48 @@ class BonsaiTrainer:
         # sigmaI has to be set to infinity to ensure
         # only a single path is used in inference
         bonsaiObjSigmaI = 1e9
-        print("\nMaximum Test accuracy at compressed" +
-              " model size(including early stopping): " +
-              str(maxTestAcc) + " at Epoch: " +
-              str(maxTestAccEpoch + 1) + "\nFinal Test" +
-              " Accuracy: " + str(testAcc), file=self.outFile)
-        print("\nNon-Zeros: " + str(self.getModelSize()[0]) + " Model Size: " +
+        print("\nNon-Zero : " + str(self.getModelSize()[0]) + " Model Size: " +
               str(float(self.getModelSize()[1]) / 1024.0) + " KB hasSparse: " +
               str(self.getModelSize()[2]) + "\n", file=self.outFile)
 
-        resultFile.write("MaxTestAcc: " + str(maxTestAcc) +
-                         " at Epoch(totalEpochs): " +
-                         str(maxTestAccEpoch + 1) +
-                         "(" + str(totalEpochs) + ")" + " ModelSize: " +
-                         str(float(self.getModelSize()[1]) / 1024.0) +
-                         " KB hasSparse: " + str(self.getModelSize()[2]) +
-                         " Param Directory: " +
-                         str(os.path.abspath(currDir)) + "\n")
+        if (self.bonsaiObj.isRegression is True):
+            maxTestAcc = np.mean(maxTestAcc)
+
+        if (self.bonsaiObj.isRegression is True):
+            print("For Regression, Minimum MAE at compressed" +
+                  " model size(including early stopping): " +
+                  str(maxTestAcc) + " at Epoch: " +
+                  str(maxTestAccEpoch + 1) + "\nFinal Test" +
+                  " MAE: " + str(testAcc), file=self.outFile)
+
+            resultFile.write("MinTestMAE: " + str(maxTestAcc) +
+                             " at Epoch(totalEpochs): " +
+                             str(maxTestAccEpoch + 1) +
+                             "(" + str(totalEpochs) + ")" + " ModelSize: " +
+                             str(float(self.getModelSize()[1]) / 1024.0) +
+                             " KB hasSparse: " + str(self.getModelSize()[2]) +
+                             " Param Directory: " +
+                             str(os.path.abspath(currDir)) + "\n")
+
+        elif (self.bonsaiObj.isRegression is False):
+            print("For Classification, Maximum Test accuracy at compressed" +
+                  " model size(including early stopping): " +
+                  str(maxTestAcc) + " at Epoch: " +
+                  str(maxTestAccEpoch + 1) + "\nFinal Test" +
+                  " Accuracy: " + str(testAcc), file=self.outFile)
+
+            resultFile.write("MaxTestAcc: " + str(maxTestAcc) +
+                             " at Epoch(totalEpochs): " +
+                             str(maxTestAccEpoch + 1) +
+                             "(" + str(totalEpochs) + ")" + " ModelSize: " +
+                             str(float(self.getModelSize()[1]) / 1024.0) +
+                             " KB hasSparse: " + str(self.getModelSize()[2]) +
+                             " Param Directory: " +
+                             str(os.path.abspath(currDir)) + "\n")
         print("The Model Directory: " + currDir + "\n")
 
         resultFile.close()
         self.outFile.flush()
+
         if self.outFile is not sys.stdout:
             self.outFile.close()

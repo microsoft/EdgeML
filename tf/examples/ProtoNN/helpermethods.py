@@ -6,7 +6,6 @@ import sys
 import os
 import numpy as np
 import tensorflow as tf
-sys.path.insert(0, '../')
 import edgeml.utils as utils
 import argparse
 
@@ -57,8 +56,21 @@ def getGamma(gammaInit, projectionDim, dataDim, numPrototypes, x_train):
         return W, B, gamma
     return None, None, gammaInit
 
+def to_onehot(y, numClasses, minlabel = None):
+    '''
+    If the y labelling does not contain the minimum label info, use min-label to
+    provide this value.
+    '''
+    lab = y.astype('uint8')
+    if minlabel is None:
+        minlabel = np.min(lab)
+    minlabel = int(minlabel)
+    lab = np.array(lab) - minlabel
+    lab_ = np.zeros((y.shape[0], numClasses))
+    lab_[np.arange(y.shape[0]), lab] = 1
+    return lab_
 
-def preprocessData(dataDir):
+def preprocessData(train, test):
     '''
     Loads data from the dataDir and does some initial preprocessing
     steps. Data is assumed to be contained in two files,
@@ -69,9 +81,6 @@ def preprocessData(dataDir):
     For an N-Class problem, we assume the labels are integers from 0 through
     N-1.
     '''
-    train = np.load(dataDir + '/train.npy')
-    test = np.load(dataDir + '/test.npy')
-
     dataDimension = int(train.shape[1]) - 1
     x_train = train[:, 1:dataDimension + 1]
     y_train_ = train[:, 0]
@@ -192,4 +201,6 @@ def getProtoNNArgs():
     parser.add_argument('-vS', '--val-step', type=int, default=3,
                         help='The number of epochs between validation' +
                         'performance evaluation')
+    parser.add_argument('-o', '--output-dir', type=str, default='./',
+                        help='Output directory to dump model matrices.')
     return parser.parse_args()

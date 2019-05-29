@@ -490,9 +490,19 @@ class EMI_Driver:
                                              numBatches=numBatches,
                                              feedDict=feedDict,
                                              redirFile=redirFile)
-                acc = self.runOps([self._emiTrainer.accTilda],
-                                  x_val, y_val, batchSize, inference=True)
-                acc = np.mean(np.reshape(np.array(acc), -1))
+                if self._emiGraph.useDropout is True:
+                    ret = self.getInstancePredictions(x_val, y_val,
+                                                      self.__nonEarlyInstancePrediction,
+                                                      keep_prob=1.0)
+                else:
+                    ret = self.getInstancePredictions(x_val, y_val,
+                                                      self.__nonEarlyInstancePrediction)
+                predictions = ret[0]
+                numSubinstance = x_val.shape[1]
+                numOutput = self._emiTrainer.numOutput
+                df = self.analyseModel(predictions, bag_val, numSubinstance,
+                                       numOutput, silent=True)
+                acc = np.max(df['acc'].values)
                 print(" Val acc %2.5f | " % acc, end='', file=redirFile)
                 self.__graphManager.checkpointModel(self.__saver, sess,
                                                     modelPrefix,
@@ -695,6 +705,16 @@ class EMI_Driver:
             print('Recall %f at subsequencelength %d' %
                   (df['rec_01'].values[idx], idx + 1), file=redirFile)
         return df
+
+    def __nonEarlyInstancePrediction(self, instanceOut, **kwargs):
+        '''
+        A prediction policy used internally. No early prediction is performed
+        and the class with max prob at the last step of the RNN is returned.
+        '''
+        assert instanceOut.ndim == 2
+        retclass = np.argmax(instanceOut[-1])
+        step = len(instanceOut) - 1
+        return retclass, step
 
     def getInstancePredictions(self, x, y, earlyPolicy, batchSize=1024,
                                feedDict=None, **kwargs):

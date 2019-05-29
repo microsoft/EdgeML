@@ -6,9 +6,43 @@
  for the example script.
 '''
 import argparse
+import bz2
 import datetime
+import json
 import os
+
 import numpy as np
+import requests
+
+
+def decompress(filepath):
+    print("extracting: ", filepath)
+    zipfile = bz2.BZ2File(filepath)  # open the file
+    data = zipfile.read()  # get the decompressed data
+    newfilepath = os.path.splitext(filepath)[0]  # assuming the filepath ends with .bz2
+    with open(newfilepath, 'wb') as f:
+        f.write(data)  # write a uncompressed file
+    return newfilepath
+
+
+def download_file(url, local_folder=None):
+    """Downloads file pointed to by `url`.
+    If `local_folder` is not supplied, downloads to the current folder.
+    """
+    filename = os.path.basename(url)
+    if local_folder:
+        filename = os.path.join(local_folder, filename)
+
+    # Download the file
+    print("Downloading: " + url)
+    response = requests.get(url, stream=True)
+    if response.status_code != 200:
+        raise Exception("download file failed with status code: %d, fetching url '%s'" % (response.status_code, url))
+
+    # Write the file to disk
+    with open(filename, "wb") as handle:
+        handle.write(response.content)
+    return filename
 
 
 def checkIntPos(value):
@@ -54,8 +88,8 @@ def getArgs():
                         'train.npy and test.npy')
 
     parser.add_argument('-c', '--cell', type=str, default="FastGRNN",
-                        help='Choose between [FastGRNN, FastRNN], ' +
-                        'default: FastGRNN')
+                        help='Choose between [FastGRNN, FastRNN, UGRNN' +
+                        ', GRU, LSTM], default: FastGRNN')
 
     parser.add_argument('-id', '--input-dim', type=checkIntNneg, required=True,
                         help='Input Dimension of RNN, each timestep will ' +
@@ -141,23 +175,23 @@ def createTimeStampDir(dataDir, cell):
     '''
     Creates a Directory with timestamp as it's name
     '''
-    if os.path.isdir(dataDir + '/' + str(cell) + 'Results') is False:
+    if os.path.isdir(os.path.join(dataDir, str(cell) + 'Results')) is False:
         try:
-            os.mkdir(dataDir + '/' + str(cell) + 'Results')
+            os.mkdir(os.path.join(dataDir, str(cell) + 'Results'))
         except OSError:
             print("Creation of the directory %s failed" %
-                  dataDir + '/' + str(cell) + 'Results')
+                  os.path.join(dataDir, str(cell) + 'Results'))
 
-    currDir = str(cell) + 'Results/' + \
-        datetime.datetime.now().strftime("%H_%M_%S_%d_%m_%y")
-    if os.path.isdir(dataDir + '/' + currDir) is False:
+    currDir = os.path.join(str(cell) + 'Results',
+        datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S"))
+    if os.path.isdir(os.path.join(dataDir, currDir)) is False:
         try:
-            os.mkdir(dataDir + '/' + currDir)
+            os.mkdir(os.path.join(dataDir, currDir))
         except OSError:
             print("Creation of the directory %s failed" %
-                  dataDir + '/' + currDir)
+                  os.path.join(dataDir, currDir))
         else:
-            return (dataDir + '/' + currDir)
+            return (os.path.join(dataDir, currDir))
     return None
 
 
@@ -172,8 +206,8 @@ def preProcessData(dataDir):
     Outputs train and test set datapoints
     dataDimension, numClasses are inferred directly
     '''
-    train = np.load(dataDir + '/train.npy')
-    test = np.load(dataDir + '/test.npy')
+    train = np.load(os.path.join(dataDir, 'train.npy'))
+    test = np.load(os.path.join(dataDir, 'test.npy'))
 
     dataDimension = int(train.shape[1]) - 1
 
@@ -209,14 +243,14 @@ def preProcessData(dataDir):
     lab_[np.arange(Xtest.shape[0]), lab] = 1
     Ytest = lab_
 
-    return dataDimension, numClasses, Xtrain, Ytrain, Xtest, Ytest
+    return dataDimension, numClasses, Xtrain, Ytrain, Xtest, Ytest, mean, std
 
 
 def dumpCommand(list, currDir):
     '''
     Dumps the current command to a file for further use
     '''
-    commandFile = open(currDir + '/command.txt', 'w')
+    commandFile = open(os.path.join(currDir, 'command.txt'), 'w')
     command = "python"
 
     command = command + " " + ' '.join(list)
@@ -224,3 +258,16 @@ def dumpCommand(list, currDir):
 
     commandFile.flush()
     commandFile.close()
+
+
+def saveMeanStd(mean, std, currDir):
+    '''
+    Function to save Mean and Std vectors
+    '''
+    np.save(os.path.join(currDir, 'mean.npy'), mean)
+    np.save(os.path.join(currDir, 'std.npy'), std)
+
+
+def saveJSon(data, filename):
+    with open(filename, "w") as outfile:
+        json.dump(data, outfile, indent=2)

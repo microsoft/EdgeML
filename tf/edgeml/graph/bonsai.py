@@ -3,13 +3,13 @@
 
 import tensorflow as tf
 import numpy as np
+import warnings
 
 
 class Bonsai:
-
     def __init__(self, numClasses, dataDimension, projectionDimension,
                  treeDepth, sigma,
-                 W=None, T=None, V=None, Z=None):
+                 isRegression=False, W=None, T=None, V=None, Z=None):
         '''
         Expected Dimensions:
 
@@ -28,9 +28,13 @@ class Bonsai:
         while doing testing/inference
         numClasses will be reset to 1 in binary case
         '''
-
         self.dataDimension = dataDimension
         self.projectionDimension = projectionDimension
+        self.isRegression = isRegression
+
+        if ((self.isRegression == True) & (numClasses != 1)):
+            warnings.warn("Number of classes cannot be greater than 1 for regression")
+            self.numClasses = 1
 
         if numClasses == 2:
             self.numClasses = 1
@@ -130,19 +134,28 @@ class Bonsai:
         Takes in a score tensor and outputs a integer class for each data point
         '''
 
-        if self.prediction is not None:
-            return self.prediction
+        # Classification.
+        if (self.isRegression == False):
+            if self.prediction is not None:
+                return self.prediction
 
-        if self.numClasses > 2:
-            self.prediction = tf.argmax(tf.transpose(self.score), 1)
-        else:
-            self.prediction = tf.argmax(
-                tf.concat([tf.transpose(self.score),
-                           0 * tf.transpose(self.score)], 1), 1)
+            if self.numClasses > 2:
+                self.prediction = tf.argmax(tf.transpose(self.score), 1)
+            else:
+                self.prediction = tf.argmax(
+                    tf.concat([tf.transpose(self.score),
+                               0 * tf.transpose(self.score)], 1), 1)
+        # Regression.
+        elif (self.isRegression == True):
+            # For regression , scores are the actual predictions, just return them.
+            self.prediction = self.score
 
         return self.prediction
 
     def assertInit(self):
+        errmsg = "Number of Classes for regression can only be 1."
+        if (self.isRegression == True):
+            assert (self.numClasses == 1), errmsg
         errRank = "All Parameters must has only two dimensions shape = [a, b]"
         assert len(self.W.shape) == len(self.Z.shape), errRank
         assert len(self.W.shape) == len(self.T.shape), errRank

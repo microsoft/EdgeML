@@ -2,11 +2,12 @@
 # Licensed under the MIT license.
 
 from __future__ import print_function
+import os
+import sys
 import tensorflow as tf
 import edgeml.utils as utils
 import numpy as np
-import os
-import sys
+from tensorflow.python.framework import graph_util
 
 
 class FastTrainer:
@@ -23,6 +24,7 @@ class FastTrainer:
         '''
 
         self.FastObj = FastObj
+        self.history = []
 
         self.sW = sW
         self.sU = sU
@@ -41,7 +43,7 @@ class FastTrainer:
         else:
             self.outFile = sys.stdout
 
-        self.lr = tf.placeholder("float")
+        self.lr = tf.placeholder("float", name="lr")
 
         self.logits, self.finalHiddenState, self.predictions = self.computeGraph()
 
@@ -79,7 +81,7 @@ class FastTrainer:
         finalHiddenState = self.RNN(self.X, self.timeSteps, self.FastObj)
 
         logits = self.classifier(finalHiddenState)
-        predictions = tf.nn.softmax(logits)
+        predictions = tf.nn.softmax(logits, name='predictions')
 
         return logits, finalHiddenState, predictions
 
@@ -234,38 +236,151 @@ class FastTrainer:
         Function to save Parameter matrices
         '''
         if self.numMatrices[0] == 1:
-            np.save(currDir + '/W.npy', self.FastParams[0].eval())
-        else:
-            np.save(currDir + '/W1.npy', self.FastParams[0].eval())
-            np.save(currDir + '/W2.npy', self.FastParams[1].eval())
+            np.save(os.path.join(currDir, "W.npy"), self.FastParams[0].eval())
+        elif self.FastObj.wRank is None:
+            if self.numMatrices[0] == 2:
+                np.save(os.path.join(currDir, "W1.npy"),
+                        self.FastParams[0].eval())
+                np.save(os.path.join(currDir, "W2.npy"),
+                        self.FastParams[1].eval())
+            if self.numMatrices[0] == 3:
+                np.save(os.path.join(currDir, "W1.npy"),
+                        self.FastParams[0].eval())
+                np.save(os.path.join(currDir, "W2.npy"),
+                        self.FastParams[1].eval())
+                np.save(os.path.join(currDir, "W3.npy"),
+                        self.FastParams[2].eval())
+            if self.numMatrices[0] == 4:
+                np.save(os.path.join(currDir, "W1.npy"),
+                        self.FastParams[0].eval())
+                np.save(os.path.join(currDir, "W2.npy"),
+                        self.FastParams[1].eval())
+                np.save(os.path.join(currDir, "W3.npy"),
+                        self.FastParams[2].eval())
+                np.save(os.path.join(currDir, "W4.npy"),
+                        self.FastParams[3].eval())
+        elif self.FastObj.wRank is not None:
+            if self.numMatrices[0] == 3:
+                np.save(os.path.join(currDir, "W.npy"),
+                        self.FastParams[0].eval())
+                np.save(os.path.join(currDir, "W1.npy"),
+                        self.FastParams[1].eval())
+                np.save(os.path.join(currDir, "W2.npy"),
+                        self.FastParams[2].eval())
+            if self.numMatrices[0] == 4:
+                np.save(os.path.join(currDir, "W.npy"),
+                        self.FastParams[0].eval())
+                np.save(os.path.join(currDir, "W1.npy"),
+                        self.FastParams[1].eval())
+                np.save(os.path.join(currDir, "W2.npy"),
+                        self.FastParams[2].eval())
+                np.save(os.path.join(currDir, "W3.npy"),
+                        self.FastParams[3].eval())
+            if self.numMatrices[0] == 5:
+                np.save(os.path.join(currDir, "W.npy"),
+                        self.FastParams[0].eval())
+                np.save(os.path.join(currDir, "W1.npy"),
+                        self.FastParams[1].eval())
+                np.save(os.path.join(currDir, "W2.npy"),
+                        self.FastParams[2].eval())
+                np.save(os.path.join(currDir, "W3.npy"),
+                        self.FastParams[3].eval())
+                np.save(os.path.join(currDir, "W4.npy"),
+                        self.FastParams[4].eval())
 
         if self.numMatrices[1] == 1:
-            np.save(currDir + '/U.npy',
-                    self.FastParams[self.numMatrices[0]].eval())
-        else:
-            np.save(currDir + '/U1.npy',
-                    self.FastParams[self.numMatrices[0]].eval())
-            np.save(currDir + '/U2.npy',
-                    self.FastParams[self.numMatrices[0] + 1].eval())
+            np.save(os.path.join(currDir, "U.npy"), self.FastParams[0].eval())
+        elif self.FastObj.uRank is None:
+            if self.numMatrices[1] == 2:
+                np.save(os.path.join(currDir, "U1.npy"),
+                        self.FastParams[0].eval())
+                np.save(os.path.join(currDir, "U2.npy"),
+                        self.FastParams[1].eval())
+            if self.numMatrices[1] == 3:
+                np.save(os.path.join(currDir, "U1.npy"),
+                        self.FastParams[0].eval())
+                np.save(os.path.join(currDir, "U2.npy"),
+                        self.FastParams[1].eval())
+                np.save(os.path.join(currDir, "U3.npy"),
+                        self.FastParams[2].eval())
+            if self.numMatrices[1] == 4:
+                np.save(os.path.join(currDir, "U1.npy"),
+                        self.FastParams[0].eval())
+                np.save(os.path.join(currDir, "U2.npy"),
+                        self.FastParams[1].eval())
+                np.save(os.path.join(currDir, "U3.npy"),
+                        self.FastParams[2].eval())
+                np.save(os.path.join(currDir, "U4.npy"),
+                        self.FastParams[3].eval())
+        elif self.FastObj.uRank is not None:
+            if self.numMatrices[1] == 3:
+                np.save(os.path.join(currDir, "U.npy"),
+                        self.FastParams[0].eval())
+                np.save(os.path.join(currDir, "U1.npy"),
+                        self.FastParams[1].eval())
+                np.save(os.path.join(currDir, "U2.npy"),
+                        self.FastParams[2].eval())
+            if self.numMatrices[1] == 4:
+                np.save(os.path.join(currDir, "U.npy"),
+                        self.FastParams[0].eval())
+                np.save(os.path.join(currDir, "U1.npy"),
+                        self.FastParams[1].eval())
+                np.save(os.path.join(currDir, "U2.npy"),
+                        self.FastParams[2].eval())
+                np.save(os.path.join(currDir, "U3.npy"),
+                        self.FastParams[3].eval())
+            if self.numMatrices[1] == 5:
+                np.save(os.path.join(currDir, "U.npy"),
+                        self.FastParams[0].eval())
+                np.save(os.path.join(currDir, "U1.npy"),
+                        self.FastParams[1].eval())
+                np.save(os.path.join(currDir, "U2.npy"),
+                        self.FastParams[2].eval())
+                np.save(os.path.join(currDir, "U3.npy"),
+                        self.FastParams[3].eval())
+                np.save(os.path.join(currDir, "U4.npy"),
+                        self.FastParams[4].eval())
 
         if self.FastObj.cellType == "FastGRNN":
-            np.save(currDir + '/Bg.npy',
+            np.save(os.path.join(currDir, "Bg.npy"),
                     self.FastParams[self.totalMatrices].eval())
-            np.save(currDir + '/Bh.npy',
+            np.save(os.path.join(currDir, "Bh.npy"),
                     self.FastParams[self.totalMatrices + 1].eval())
-            np.save(currDir + '/zeta.npy',
+            np.save(os.path.join(currDir, "zeta.npy"),
                     self.FastParams[self.totalMatrices + 2].eval())
-            np.save(currDir + '/nu.npy',
+            np.save(os.path.join(currDir, "nu.npy"),
                     self.FastParams[self.totalMatrices + 3].eval())
         elif self.FastObj.cellType == "FastRNN":
-            np.save(currDir + '/B.npy',
+            np.save(os.path.join(currDir, "B.npy"),
                     self.FastParams[self.totalMatrices].eval())
-            np.save(currDir + '/alpha.npy', self.FastParams[
+            np.save(os.path.join(currDir, "alpha.npy"), self.FastParams[
                     self.totalMatrices + 1].eval())
-            np.save(currDir + '/beta.npy',
+            np.save(os.path.join(currDir, "beta.npy"),
                     self.FastParams[self.totalMatrices + 2].eval())
-        np.save(currDir + '/FC.npy', self.FC.eval())
-        np.save(currDir + '/FCbias.npy', self.FCbias.eval())
+        elif self.FastObj.cellType == "UGRNNLR":
+            np.save(os.path.join(currDir, "Bg.npy"),
+                    self.FastParams[self.totalMatrices].eval())
+            np.save(os.path.join(currDir, "Bh.npy"),
+                    self.FastParams[self.totalMatrices + 1].eval())
+        elif self.FastObj.cellType == "GRULR":
+            np.save(os.path.join(currDir, "Br.npy"),
+                    self.FastParams[self.totalMatrices].eval())
+            np.save(os.path.join(currDir, "Bg.npy"),
+                    self.FastParams[self.totalMatrices + 1].eval())
+            np.save(os.path.join(currDir, "Bh.npy"),
+                    self.FastParams[self.totalMatrices + 2].eval())
+        elif self.FastObj.cellType == "LSTMLR":
+            np.save(os.path.join(currDir, "Bf.npy"),
+                    self.FastParams[self.totalMatrices].eval())
+            np.save(os.path.join(currDir, "Bi.npy"),
+                    self.FastParams[self.totalMatrices + 1].eval())
+            np.save(os.path.join(currDir, "Bc.npy"),
+                    self.FastParams[self.totalMatrices + 2].eval())
+            np.save(os.path.join(currDir, "Bo.npy"),
+                    self.FastParams[self.totalMatrices + 3].eval())
+
+        np.save(os.path.join(currDir, "FC.npy"), self.FC.eval())
+        np.save(os.path.join(currDir, "FCbias.npy"), self.FCbias.eval())
 
     def train(self, batchSize, totalEpochs, sess,
               Xtrain, Xtest, Ytrain, Ytest,
@@ -273,8 +388,8 @@ class FastTrainer:
         '''
         The Dense - IHT - Sparse Retrain Routine for FastCell Training
         '''
-        resultFile = open(
-            dataDir + '/' + str(self.FastObj.cellType) + 'Results.txt', 'a+')
+        fileName = str(self.FastObj.cellType) + 'Results.txt'
+        resultFile = open(os.path.join(dataDir, fileName), 'a+')
         numIters = int(np.ceil(float(Xtrain.shape[0]) / float(batchSize)))
         totalBatches = numIters * totalEpochs
 
@@ -290,12 +405,16 @@ class FastTrainer:
         Xtest = Xtest.reshape((-1, self.timeSteps, self.inputDims))
         Xtrain = Xtrain.reshape((-1, self.timeSteps, self.inputDims))
 
+        self.history = []
+
         for i in range(0, totalEpochs):
             print("\nEpoch Number: " + str(i), file=self.outFile)
 
             if i % decayStep == 0 and i != 0:
                 self.learningRate = self.learningRate * decayRate
 
+            shuffled = list(range(Xtrain.shape[0]))
+            np.random.shuffle(shuffled)
             trainAcc = 0.0
             trainLoss = 0.0
 
@@ -307,12 +426,9 @@ class FastTrainer:
                     print("\n%s%s%s\n" %
                           (header, msg, header), file=self.outFile)
 
-                if j == numIters - 1:
-                    batchX = Xtrain[j * batchSize:]
-                    batchY = Ytrain[j * batchSize:]
-                else:
-                    batchX = Xtrain[j * batchSize:(j + 1) * batchSize]
-                    batchY = Ytrain[j * batchSize:(j + 1) * batchSize]
+                k = shuffled[j * batchSize:(j + 1) * batchSize]
+                batchX = Xtrain[k]
+                batchY = Ytrain[k]
 
                 # Mini-batch training
                 _, batchLoss, batchAcc = sess.run([self.trainOp, self.lossOp, self.accuracy], feed_dict={
@@ -345,12 +461,24 @@ class FastTrainer:
                               (header, msg, header), file=self.outFile)
                 counter += 1
 
-            print("Train Loss: " + str(trainLoss / numIters) +
-                  " Train Accuracy: " + str(trainAcc / numIters),
+            trainLoss /= numIters
+            trainAcc /= numIters
+            print("Train Loss: " + str(trainLoss) +
+                  " Train Accuracy: " + str(trainAcc),
                   file=self.outFile)
 
             testAcc, testLoss = sess.run([self.accuracy, self.lossOp], feed_dict={
                                          self.X: Xtest, self.Y: Ytest})
+
+            self.history += [
+                {
+                    "epoch": i,
+                    "trainAcc": trainAcc,
+                    "trainLoss": trainLoss,
+                    "testAcc": testAcc,
+                    "testLoss": testLoss
+                }
+            ]
 
             if ihtDone == 0:
                 maxTestAcc = -10000
@@ -386,7 +514,14 @@ class FastTrainer:
 
         print("The Model Directory: " + currDir + "\n")
 
+        # output the tensorflow model
+        model_dir = os.path.join(currDir, "model")
+        os.makedirs(model_dir, exist_ok=True)
+
         resultFile.close()
         self.outFile.flush()
         if self.outFile is not sys.stdout:
             self.outFile.close()
+
+    def getAccuracyLog(self):
+        return self.history

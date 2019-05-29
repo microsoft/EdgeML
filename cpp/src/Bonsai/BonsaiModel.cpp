@@ -25,6 +25,7 @@ BonsaiModel::BonsaiModel(
   infile.close();  
 
   (isDense) ? importModel(modelSize, modelBuff) : importSparseModel(modelSize, modelBuff);
+  delete[] modelBuff;
 }
 
 BonsaiModel::BonsaiModel(

@@ -5,11 +5,13 @@ import helpermethods
 import tensorflow as tf
 import numpy as np
 import sys
-sys.path.insert(0, '../../')
 
 from edgeml.trainer.fastTrainer import FastTrainer
 from edgeml.graph.rnn import FastGRNNCell
 from edgeml.graph.rnn import FastRNNCell
+from edgeml.graph.rnn import UGRNNLRCell
+from edgeml.graph.rnn import GRULRCell
+from edgeml.graph.rnn import LSTMLRCell
 
 
 def main():
@@ -41,8 +43,8 @@ def main():
     update_non_linearity = args.update_nl
     gate_non_linearity = args.gate_nl
 
-    (dataDimension, numClasses,
-        Xtrain, Ytrain, Xtest, Ytest) = helpermethods.preProcessData(dataDir)
+    (dataDimension, numClasses, Xtrain, Ytrain, Xtest, Ytest,
+     mean, std) = helpermethods.preProcessData(dataDir)
 
     assert dataDimension % inputDims == 0, "Infeasible per step input, " + \
         "Timesteps have to be integer"
@@ -54,6 +56,7 @@ def main():
     currDir = helpermethods.createTimeStampDir(dataDir, cell)
 
     helpermethods.dumpCommand(sys.argv, currDir)
+    helpermethods.saveMeanStd(mean, std, currDir)
 
     if cell == "FastGRNN":
         FastCell = FastGRNNCell(hiddenDims,
@@ -64,6 +67,18 @@ def main():
         FastCell = FastRNNCell(hiddenDims,
                                update_non_linearity=update_non_linearity,
                                wRank=wRank, uRank=uRank)
+    elif cell == "UGRNN":
+        FastCell = UGRNNLRCell(hiddenDims,
+                               update_non_linearity=update_non_linearity,
+                               wRank=wRank, uRank=uRank)
+    elif cell == "GRU":
+        FastCell = GRULRCell(hiddenDims,
+                             update_non_linearity=update_non_linearity,
+                             wRank=wRank, uRank=uRank)
+    elif cell == "LSTM":
+        FastCell = LSTMLRCell(hiddenDims,
+                              update_non_linearity=update_non_linearity,
+                              wRank=wRank, uRank=uRank)
     else:
         sys.exit('Exiting: No Such Cell as ' + cell)
 

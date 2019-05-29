@@ -5,8 +5,6 @@ import helpermethods
 import tensorflow as tf
 import numpy as np
 import sys
-sys.path.insert(0, '../../')
-
 from edgeml.trainer.bonsaiTrainer import BonsaiTrainer
 from edgeml.graph.bonsai import Bonsai
 
@@ -18,6 +16,9 @@ def main():
 
     # Hyper Param pre-processing
     args = helpermethods.getArgs()
+
+    # Set 'isRegression' to be True, for regression. Default is 'False'.
+    isRegression = args.regression
 
     sigma = args.sigma
     depth = args.depth
@@ -36,8 +37,8 @@ def main():
 
     outFile = args.output_file
 
-    (dataDimension, numClasses,
-        Xtrain, Ytrain, Xtest, Ytest) = helpermethods.preProcessData(dataDir)
+    (dataDimension, numClasses, Xtrain, Ytrain, Xtest, Ytest,
+     mean, std) = helpermethods.preProcessData(dataDir, isRegression)
 
     sparZ = args.sZ
 
@@ -73,10 +74,11 @@ def main():
     currDir = helpermethods.createTimeStampDir(dataDir)
 
     helpermethods.dumpCommand(sys.argv, currDir)
+    helpermethods.saveMeanStd(mean, std, currDir)
 
     # numClasses = 1 for binary case
     bonsaiObj = Bonsai(numClasses, dataDimension,
-                       projectionDimension, depth, sigma)
+                       projectionDimension, depth, sigma, isRegression)
 
     bonsaiTrainer = BonsaiTrainer(bonsaiObj,
                                   regW, regT, regV, regZ,
@@ -84,10 +86,14 @@ def main():
                                   learningRate, X, Y, useMCHLoss, outFile)
 
     sess = tf.InteractiveSession()
+
     sess.run(tf.global_variables_initializer())
 
     bonsaiTrainer.train(batchSize, totalEpochs, sess,
                         Xtrain, Xtest, Ytrain, Ytest, dataDir, currDir)
+
+    sess.close()
+    sys.stdout.close()
 
 
 if __name__ == '__main__':
@@ -99,12 +105,10 @@ if __name__ == '__main__':
 # Final Output - useMCHLoss = True
 # Maximum Test accuracy at compressed model size(including early stopping): 0.93727726 at Epoch: 297
 # Final Test Accuracy: 0.9337135
-
 # Non-Zeros: 24231.0 Model Size: 115.65625 KB hasSparse: True
 
 # Data - usps2
 # python2 bonsai_example.py -dir /mnt/c/Users/t-vekusu/Downloads/datasets/usps-binary/ -d 2 -p 22 -rW 0.00001 -rZ 0.0000001 -rV 0.00001 -rT 0.000001 -sZ 0.4 -sW 0.5 -sV 0.5 -sT 1 -e 300 -s 0.1 -b 20
 # Maximum Test accuracy at compressed model size(including early stopping): 0.9521674 at Epoch: 246
 # Final Test Accuracy: 0.94170403
-
 # Non-Zeros: 2636.0 Model Size: 19.1328125 KB hasSparse: True
