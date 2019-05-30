@@ -1,6 +1,8 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+import numpy as np
+
 import Common
 
 class Config:
@@ -95,3 +97,20 @@ def getNumWorkers():
 # z = [y1,y2,..] = [[x1,..], [x2,..], ..] --> [x1,.., x2,.., ..]
 def flatten(z:list): 
 	return [x for y in z for x in y]
+
+def computeScalingFactor(val):
+	'''
+	The scale computation algorithm is different while generating function calls and while generating inline code.
+	The inline code generation uses an extra padding bit for each parameter and is less precise.
+	The scales computed while generating fucntion calls uses all bits.
+	'''
+	if genFuncCalls():
+		return computeScalingFactorForFuncCalls(val)
+	else:
+		return computeScalingFactorForInlineCodegen(val)
+
+def computeScalingFactorForFuncCalls(val):
+	return int(np.ceil(np.log2(val) - np.log2((1 << (Common.wordLength - 2)) - 1)))
+
+def computeScalingFactorForInlineCodegen(val):
+	return int(np.ceil(np.log2(val) - np.log2((1 << (Common.wordLength - 2)) - 1)))

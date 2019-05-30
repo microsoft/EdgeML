@@ -7,6 +7,7 @@ import os
 from sklearn.datasets import load_svmlight_file
 
 import Common
+import Util
 
 # Utility functions commonly used by both Bonsai and Protonn
 
@@ -411,7 +412,7 @@ def convertToSparse(mat):
 # Custom function to compute the maximum scaling factor which can fit M into an integer of Common.wordLength length
 def computeScale(m, M):
 	maxAbs = max(abs(m), abs(M))
-	return int(math.ceil(math.log2(maxAbs) - math.log2((1 << (Common.wordLength - 2)) - 1)))
+	return Util.computeScalingFactor(maxAbs)
 
 # Scaling the matrix using the scaling factor computed
 def scaleMat(mat, scale=None):

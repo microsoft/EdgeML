@@ -1723,7 +1723,7 @@ class IRBuilder(ASTVisitor):
 		# -15 = 48.933
 		#self.mutableVarsProfile[0] = [-0.000001, 0.3]
 		# -16 = 50.277
-		self.mutableVarsProfile[0] = [-0.000001, 0.2]
+		#self.mutableVarsProfile[0] = [-0.000001, 0.2]
 		# -17 = 50.198
 		#self.mutableVarsProfile[0] = [-0.000001, 0.12]
 		# -18 = 15.6
@@ -1740,7 +1740,7 @@ class IRBuilder(ASTVisitor):
 
 	# Computing exponent and intervals
 	def getScale(self, val_max:float): # -> int
-		return int(np.ceil(np.log2(val_max) - np.log2((1 << (Common.wordLength - 2)) - 1)))
+		return computeScalingFactor(val_max)
 
 	# Takes range [val_min, val_max] and returns the interval in fixed-point
 	def getInterval(self, scale:int, val_min:float, val_max:float):

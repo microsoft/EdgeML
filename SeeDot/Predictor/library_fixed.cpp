@@ -767,3 +767,42 @@ void AdjustScaleShl(MYINT* A, MYINT I, MYINT J, MYINT scale) {
 
 	return;
 }
+
+MYINT treeSum(MYINT* arr, MYINT count, MYINT height_shr, MYINT height_noshr) {
+	if (count == 1)
+		return arr[0];
+
+	bool shr = true;
+
+	for (MYITE depth = 0; depth < (height_shr + height_noshr); depth++) {
+		if (depth >= height_shr)
+			shr = false;
+
+		for (MYITE index = 0; index < (count / 2); index++) {
+			MYINT sum = arr[2 * index] + arr[(2 * index) + 1];
+
+			if (shr)
+				arr[index] = sum / 2;
+			else
+				arr[index] = sum;
+		}
+
+		if (count % 2 == 1) {
+			MYITE index = (count / 2) + 1;
+			if (shr)
+				arr[index - 1] = arr[count - 1] / 2;
+			else
+				arr[index - 1] = arr[count - 1];
+		}
+
+		// Debugging
+		if (count % 2 == 1)
+			arr[count / 2 + 1] = 0;
+		else
+			arr[count / 2] = 0;
+
+		count = (count + 1) >> 1;
+	}
+
+	return arr[0];
+}
