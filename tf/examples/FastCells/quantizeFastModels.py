@@ -97,7 +97,7 @@ def quantizeFastModels(modelDir, maxValue=127, scalarScaleFactor=1000):
         quantScalarWeights.append(
             np.round(scalarScaleFactor * sigmoid(scalar)).astype('int32'))
 
-    quantModelDir = os.path.join(modelDir, 'QuantizedFastModel')
+    quantModelDir = os.path.join(modelDir, 'QuantizedModel')
     if not os.path.isdir(quantModelDir):
         try:
             os.makedirs(quantModelDir, exist_ok=True)

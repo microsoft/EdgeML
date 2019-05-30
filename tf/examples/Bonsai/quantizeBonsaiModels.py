@@ -11,7 +11,7 @@ def min_max(A, name):
     return np.max([np.abs(np.max(A)), np.abs(np.min(A))])
 
 
-def quantizeFastModels(modelDir, maxValue=127, scalarScaleFactor=1000):
+def quantizeBonsaiModels(modelDir, maxValue=127, scalarScaleFactor=1000):
     ls = os.listdir(modelDir)
     paramNameList = []
     paramWeightList = []
@@ -52,7 +52,7 @@ def quantizeFastModels(modelDir, maxValue=127, scalarScaleFactor=1000):
             quantModelDir = modelDir + '/QuantizedTFBonsaiModel'
         except OSError:
             print("Creation of the directory %s failed" %
-                  modelDir + '/QuantizedFastModel')
+                  modelDir + '/QuantizedTFBonsaiModel')
 
     np.save(quantModelDir + "/paramScaleFactor.npy",
             paramScaleFactor.astype('int32'))
@@ -65,7 +65,7 @@ def quantizeFastModels(modelDir, maxValue=127, scalarScaleFactor=1000):
 
 def main():
     args = helpermethods.getQuantArgs()
-    quantizeFastModels(args.model_dir, int(args.max_val))
+    quantizeBonsaiModels(args.model_dir, int(args.max_val))
 
 
 if __name__ == '__main__':
