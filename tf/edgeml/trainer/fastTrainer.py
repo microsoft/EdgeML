@@ -7,7 +7,6 @@ import sys
 import tensorflow as tf
 import edgeml.utils as utils
 import numpy as np
-from tensorflow.python.framework import graph_util
 
 
 class FastTrainer:
