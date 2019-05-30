@@ -21,13 +21,13 @@ used as a basis for porting GesturePod to other  platforms.
 ## Quick Start
 
 1. Installation requires 
-	- [git](https://git-scm.com/), 
+	- [git](https://git-scm.com/) 
 	- [make](https://www.gnu.org/software/make/)
-	- [g++](https://gcc.gnu.org/).
+	- [g++](https://gcc.gnu.org/)
 
 2. Clone the repo and navigate to this directory
 	```
-	git clone https://github.com/Microsoft/EdgeML
+	git clone https://github.com/microsoft/EdgeML.git
 	cd EdgeML/Applications/GesturePod/onComputer
 	```
 3. Compile and build the code
