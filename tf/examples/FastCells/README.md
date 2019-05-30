@@ -60,7 +60,9 @@ Final Test Accuracy: 0.93721974
 Non-Zeros: 1932 Model Size: 7.546875 KB hasSparse: False
 ```
 `usps10/` directory will now have a consolidated results file called `FastRNNResults.txt` or `FastGRNNResults.txt` depending on the choice of the RNN cell.
-A directory `FastRNNResults` or `FastGRNNResults` with the corresponding models with each run of the code on the `usps10` dataset
+A directory `FastRNNResults` or `FastGRNNResults` with the corresponding models with each run of the code on the `usps10` dataset.
+
+Note that the scalars like `alpha`, `beta`, `zeta` and `nu` are all before the application of the sigmoid function over them.
 
 ## Byte Quantization(Q) for model compression
 If you wish to quantize the generated model to use byte quantized integers use `quantizeFastModels.py`. Usage Instructions:
@@ -70,7 +72,9 @@ python quantizeFastModels.py -h
 ```
 
 This will generate quantized models with a suffix of `q` before every param stored in a new directory `QuantizedFastModel` inside the model directory.
-One can use this model further on edge devices.
+One can use this model further on edge devices. 
+
+Note that the scalars like `qalpha`, `qbeta`, `qzeta` and `qnu` are all after the application of the sigmoid function over them and quantization, they can be directly plugged into the inference pipleines.
 
 Copyright (c) Microsoft Corporation. All rights reserved. 
 

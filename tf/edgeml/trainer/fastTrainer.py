@@ -236,12 +236,12 @@ class FastTrainer:
         '''
         if self.numMatrices[0] == 1:
             np.save(os.path.join(currDir, "W.npy"), self.FastParams[0].eval())
+        elif self.numMatrices[0] == 2:
+            np.save(os.path.join(currDir, "W1.npy"),
+                    self.FastParams[0].eval())
+            np.save(os.path.join(currDir, "W2.npy"),
+                    self.FastParams[1].eval())
         elif self.FastObj.wRank is None:
-            if self.numMatrices[0] == 2:
-                np.save(os.path.join(currDir, "W1.npy"),
-                        self.FastParams[0].eval())
-                np.save(os.path.join(currDir, "W2.npy"),
-                        self.FastParams[1].eval())
             if self.numMatrices[0] == 3:
                 np.save(os.path.join(currDir, "W1.npy"),
                         self.FastParams[0].eval())
@@ -287,58 +287,59 @@ class FastTrainer:
                 np.save(os.path.join(currDir, "W4.npy"),
                         self.FastParams[4].eval())
 
+        idx = self.numMatrices[0]
         if self.numMatrices[1] == 1:
-            np.save(os.path.join(currDir, "U.npy"), self.FastParams[0].eval())
+            np.save(os.path.join(currDir, "U.npy"), self.FastParams[idx + 0].eval())
+        elif self.numMatrices[1] == 2:
+            np.save(os.path.join(currDir, "U1.npy"),
+                    self.FastParams[idx + 0].eval())
+            np.save(os.path.join(currDir, "U2.npy"),
+                    self.FastParams[idx + 1].eval())
         elif self.FastObj.uRank is None:
-            if self.numMatrices[1] == 2:
-                np.save(os.path.join(currDir, "U1.npy"),
-                        self.FastParams[0].eval())
-                np.save(os.path.join(currDir, "U2.npy"),
-                        self.FastParams[1].eval())
             if self.numMatrices[1] == 3:
                 np.save(os.path.join(currDir, "U1.npy"),
-                        self.FastParams[0].eval())
+                        self.FastParams[idx + 0].eval())
                 np.save(os.path.join(currDir, "U2.npy"),
-                        self.FastParams[1].eval())
+                        self.FastParams[idx + 1].eval())
                 np.save(os.path.join(currDir, "U3.npy"),
-                        self.FastParams[2].eval())
+                        self.FastParams[idx + 2].eval())
             if self.numMatrices[1] == 4:
                 np.save(os.path.join(currDir, "U1.npy"),
-                        self.FastParams[0].eval())
+                        self.FastParams[idx + 0].eval())
                 np.save(os.path.join(currDir, "U2.npy"),
-                        self.FastParams[1].eval())
+                        self.FastParams[idx + 1].eval())
                 np.save(os.path.join(currDir, "U3.npy"),
-                        self.FastParams[2].eval())
+                        self.FastParams[idx + 2].eval())
                 np.save(os.path.join(currDir, "U4.npy"),
-                        self.FastParams[3].eval())
+                        self.FastParams[idx + 3].eval())
         elif self.FastObj.uRank is not None:
             if self.numMatrices[1] == 3:
                 np.save(os.path.join(currDir, "U.npy"),
-                        self.FastParams[0].eval())
+                        self.FastParams[idx + 0].eval())
                 np.save(os.path.join(currDir, "U1.npy"),
-                        self.FastParams[1].eval())
+                        self.FastParams[idx + 1].eval())
                 np.save(os.path.join(currDir, "U2.npy"),
-                        self.FastParams[2].eval())
+                        self.FastParams[idx + 2].eval())
             if self.numMatrices[1] == 4:
                 np.save(os.path.join(currDir, "U.npy"),
-                        self.FastParams[0].eval())
+                        self.FastParams[idx + 0].eval())
                 np.save(os.path.join(currDir, "U1.npy"),
-                        self.FastParams[1].eval())
+                        self.FastParams[idx + 1].eval())
                 np.save(os.path.join(currDir, "U2.npy"),
-                        self.FastParams[2].eval())
+                        self.FastParams[idx + 2].eval())
                 np.save(os.path.join(currDir, "U3.npy"),
-                        self.FastParams[3].eval())
+                        self.FastParams[idx + 3].eval())
             if self.numMatrices[1] == 5:
                 np.save(os.path.join(currDir, "U.npy"),
-                        self.FastParams[0].eval())
+                        self.FastParams[idx + 0].eval())
                 np.save(os.path.join(currDir, "U1.npy"),
-                        self.FastParams[1].eval())
+                        self.FastParams[idx + 1].eval())
                 np.save(os.path.join(currDir, "U2.npy"),
-                        self.FastParams[2].eval())
+                        self.FastParams[idx + 2].eval())
                 np.save(os.path.join(currDir, "U3.npy"),
-                        self.FastParams[3].eval())
+                        self.FastParams[idx + 3].eval())
                 np.save(os.path.join(currDir, "U4.npy"),
-                        self.FastParams[4].eval())
+                        self.FastParams[idx + 4].eval())
 
         if self.FastObj.cellType == "FastGRNN":
             np.save(os.path.join(currDir, "Bg.npy"),
@@ -514,8 +515,8 @@ class FastTrainer:
         print("The Model Directory: " + currDir + "\n")
 
         # output the tensorflow model
-        model_dir = os.path.join(currDir, "model")
-        os.makedirs(model_dir, exist_ok=True)
+        # model_dir = os.path.join(currDir, "model")
+        # os.makedirs(model_dir, exist_ok=True)
 
         resultFile.close()
         self.outFile.flush()
