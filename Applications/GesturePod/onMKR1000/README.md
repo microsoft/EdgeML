@@ -18,7 +18,7 @@ GesturePod *(for MKR1000)*
 
 1. Clone the repo and navigate to this folder
 	```
-	git clone ...
+	git clone https://github.com/microsoft/EdgeML.git
 	cd Applications/GesturePod/onMKR1000
 	```
 2. Refer to this tutorial _(Coming Soon ..!)_ to build the Hardware and setup external dependencies - [Cortex M0+ Board support](https://www.hackster.io/charifmahmoudi/arduino-mkr1000-getting-started-08bb4a).
