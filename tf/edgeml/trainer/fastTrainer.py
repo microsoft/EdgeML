@@ -236,12 +236,12 @@ class FastTrainer:
         '''
         if self.numMatrices[0] == 1:
             np.save(os.path.join(currDir, "W.npy"), self.FastParams[0].eval())
-        elif self.numMatrices[0] == 2:
-            np.save(os.path.join(currDir, "W1.npy"),
-                    self.FastParams[0].eval())
-            np.save(os.path.join(currDir, "W2.npy"),
-                    self.FastParams[1].eval())
         elif self.FastObj.wRank is None:
+            if self.numMatrices[0] == 2:
+                np.save(os.path.join(currDir, "W1.npy"),
+                        self.FastParams[0].eval())
+                np.save(os.path.join(currDir, "W2.npy"),
+                        self.FastParams[1].eval())
             if self.numMatrices[0] == 3:
                 np.save(os.path.join(currDir, "W1.npy"),
                         self.FastParams[0].eval())
@@ -259,6 +259,11 @@ class FastTrainer:
                 np.save(os.path.join(currDir, "W4.npy"),
                         self.FastParams[3].eval())
         elif self.FastObj.wRank is not None:
+            if self.numMatrices[0] == 2:
+                np.save(os.path.join(currDir, "W1.npy"),
+                        self.FastParams[0].eval())
+                np.save(os.path.join(currDir, "W2.npy"),
+                        self.FastParams[1].eval())
             if self.numMatrices[0] == 3:
                 np.save(os.path.join(currDir, "W.npy"),
                         self.FastParams[0].eval())
@@ -290,12 +295,12 @@ class FastTrainer:
         idx = self.numMatrices[0]
         if self.numMatrices[1] == 1:
             np.save(os.path.join(currDir, "U.npy"), self.FastParams[idx + 0].eval())
-        elif self.numMatrices[1] == 2:
-            np.save(os.path.join(currDir, "U1.npy"),
-                    self.FastParams[idx + 0].eval())
-            np.save(os.path.join(currDir, "U2.npy"),
-                    self.FastParams[idx + 1].eval())
         elif self.FastObj.uRank is None:
+            if self.numMatrices[1] == 2:
+                np.save(os.path.join(currDir, "U1.npy"),
+                        self.FastParams[idx + 0].eval())
+                np.save(os.path.join(currDir, "U2.npy"),
+                        self.FastParams[idx + 1].eval())
             if self.numMatrices[1] == 3:
                 np.save(os.path.join(currDir, "U1.npy"),
                         self.FastParams[idx + 0].eval())
@@ -313,6 +318,11 @@ class FastTrainer:
                 np.save(os.path.join(currDir, "U4.npy"),
                         self.FastParams[idx + 3].eval())
         elif self.FastObj.uRank is not None:
+            if self.numMatrices[1] == 2:
+                np.save(os.path.join(currDir, "U1.npy"),
+                        self.FastParams[idx + 0].eval())
+                np.save(os.path.join(currDir, "U2.npy"),
+                        self.FastParams[idx + 1].eval())
             if self.numMatrices[1] == 3:
                 np.save(os.path.join(currDir, "U.npy"),
                         self.FastParams[idx + 0].eval())
