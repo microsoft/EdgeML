@@ -1387,6 +1387,8 @@ class IRBuilder(ASTVisitor):
 		
 		intv_out = (m_new, M_new)
 
+		scale_out = self.getScale(1.5)
+
 		# Compute new scale
 		# Temp computation for POC. Remove later.
 		max_val = max(abs(m_new), abs(M_new))
@@ -1401,7 +1403,8 @@ class IRBuilder(ASTVisitor):
 			addition_ir = addition_int
 			sigmoid_limit_ir = sigmoid_limit_int
 
-		scale_num = 2 ** -scale_in
+		scale_in_num = 2 ** -scale_in
+		scale_out_num = 2 ** -scale_out
 
 		expr_in.inputVar = False
 
@@ -1414,7 +1417,8 @@ class IRBuilder(ASTVisitor):
 								IR.Int(denominator): "div",
 								addition_ir: "add",
 								sigmoid_limit_ir: "sigmoid_limit",
-								IR.Int(scale_num): "scale"
+								IR.Int(scale_in_num): "scale_in",
+								IR.Int(scale_out_num): "scale_out"
 								})
 
 		prog_sigmoid = IR.Prog([comment, funcCall])
@@ -1423,6 +1427,7 @@ class IRBuilder(ASTVisitor):
 
 		expr_out = expr_in
 		
+		self.varScales[expr_in.idf] = scale_out
 		self.varIntervals[expr_in.idf] = intv_out
 
 		self.log.print(comment.msg)
@@ -1857,8 +1862,8 @@ class IRBuilder(ASTVisitor):
 		minVal_out = (minVal_A >> shr_all[0]) + (minVal_B >> shr_all[1])
 		maxVal_out = (maxVal_A >> shr_all[0]) + (maxVal_B >> shr_all[1])
 		
-		if max(abs(minVal_out), abs(maxVal_out)) >= (1 << (Common.wordLength - 2)) and scale_common < self.MAX_SCALE:
-		#if scale_common < self.MAX_SCALE and max(abs(minVal_out), abs(maxVal_out)) >= IR.Int.max() and :
+		#if max(abs(minVal_out), abs(maxVal_out)) >= (1 << (Common.wordLength - 2)) and scale_common < self.MAX_SCALE:
+		if scale_common < self.MAX_SCALE:
 			shr_all[2] = 1
 			scale_common += 1
 		max_abs = (1 << Common.wordLength - 2) - 1
@@ -1882,8 +1887,8 @@ class IRBuilder(ASTVisitor):
 		minVal_out = (minVal_A >> shr_all[0]) - (minVal_B >> shr_all[1])
 		maxVal_out = (maxVal_A >> shr_all[0]) - (maxVal_B >> shr_all[1])
 		
-		if max(abs(minVal_out), abs(maxVal_out)) >= (1 << (Common.wordLength - 2)) and scale_common < self.MAX_SCALE:
-		#if scale_common < self.MAX_SCALE and max(abs(minVal_out), abs(maxVal_out)) >= IR.Int.max() and :
+		#if max(abs(minVal_out), abs(maxVal_out)) >= (1 << (Common.wordLength - 2)) and scale_common < self.MAX_SCALE:
+		if scale_common < self.MAX_SCALE:
 			shr_all[2] = 1
 			scale_common += 1
 		max_abs = (1 << Common.wordLength - 2) - 1
@@ -1902,8 +1907,8 @@ class IRBuilder(ASTVisitor):
 		M = min(M, np.ldexp(self.MAX_VAL_EXP, -scale))
 		return self.getInterval(scale, np.exp(np.ldexp(m, scale)), np.exp(np.ldexp(M, scale)))
 
-	def getShrForMul(self, scale_A, scale_B):
-		shr = (Common.wordLength - 2) // 2
+	def getShrForMulOld(self, scale_A, scale_B):
+		shr = (Common.wordLength - 1) // 2
 		pRes = (scale_A + shr) + (scale_B + shr)
 		if pRes < self.MAX_SCALE:
 			return [shr, shr]
@@ -1914,6 +1919,31 @@ class IRBuilder(ASTVisitor):
 			shr1 = max(shr - save1, 0)
 			shr2 = max(shr - save2, 0)
 			return [shr1, shr2]
+
+	def getShrForMul(self, scale_A, scale_B):
+		shr1, shr2 = Common.wordLength // 2, (Common.wordLength // 2) - 1
+		pRes = (scale_A + shr1) + (scale_B + shr2)
+
+		if pRes <= self.MAX_SCALE:
+			if scale_A <= scale_B:
+				shrA, shrB = shr1, shr2
+			else:
+				shrA, shrB = shr2, shr1
+			return [shrA, shrB]
+		else:
+			save = abs(abs(pRes) - abs(self.MAX_SCALE))
+			if save % 2 == 1:
+				shr1 -= 1
+				save -= 1
+			save = save // 2
+			if scale_A <= scale_B:
+				shrA = max(shr1 - save, 0)
+				shrB = max(shr2 - save, 0)
+			else:
+				shrA = max(shr2 - save, 0)
+				shrB = max(shr1 - save, 0)
+		
+			return [shrA, shrB]
 
 	def getNumInFixedPoint(self, num_float, scale):
 		# num_float as python int

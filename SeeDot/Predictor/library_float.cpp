@@ -616,7 +616,7 @@ void Exp(float* A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, float* B) {
 }
 
 // A = sigmoid(A)
-void Sigmoid(float* A, MYINT I, MYINT J, float div, float add, float sigmoid_limit, MYINT scale) {
+void Sigmoid(float* A, MYINT I, MYINT J, float div, float add, float sigmoid_limit, MYINT scale_in, MYINT scale_out) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float x = A[i * J + j], y;

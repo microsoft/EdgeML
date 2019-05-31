@@ -16,8 +16,7 @@ void MatAddNN(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT 
 			a = a / shrA;
 			b = b / shrB;
 
-			MYINT c = a + b;
-			c = c / shrC;
+			MYINT c = a / shrC + b / shrC;
 
 			C[i * J + j] = c;
 		}
@@ -35,8 +34,7 @@ void MatAddCN(const MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, 
 			a = a / shrA;
 			b = b / shrB;
 
-			MYINT c = a + b;
-			c = c / shrC;
+			MYINT c = a / shrC + b / shrC;
 
 			C[i * J + j] = c;
 		}
@@ -54,8 +52,7 @@ void MatAddNC(MYINT* A, const MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, 
 			a = a / shrA;
 			b = b / shrB;
 
-			MYINT c = a + b;
-			c = c / shrC;
+			MYINT c = a / shrC + b / shrC;
 
 			C[i * J + j] = c;
 		}
@@ -73,8 +70,7 @@ void MatAddCC(const MYINT* A, const MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT 
 			a = a / shrA;
 			b = b / shrB;
 
-			MYINT c = a + b;
-			c = c / shrC;
+			MYINT c = a / shrC + b / shrC;
 
 			C[i * J + j] = c;
 		}
@@ -92,8 +88,7 @@ void MatAddBroadCastA(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA
 			a = a / shrA;
 			b = b / shrB;
 
-			MYINT c = a + b;
-			c = c / shrC;
+			MYINT c = a / shrC + b / shrC;
 
 			C[i * J + j] = c;
 		}
@@ -111,8 +106,7 @@ void MatAddBroadCastB(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA
 			a = a / shrA;
 			b = b / shrB;
 
-			MYINT c = a + b;
-			c = c / shrC;
+			MYINT c = a / shrC + b / shrC;
 
 			C[i * J + j] = c;
 		}
@@ -131,8 +125,7 @@ void MatSub(MYINT* A, const MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, in
 			a = a / shrA;
 			b = b / shrB;
 
-			MYINT c = a - b;
-			c = c / shrC;
+			MYINT c = a / shrC - b / shrC;
 
 			C[i * J + j] = c;
 		}
@@ -151,8 +144,7 @@ void MatSubBroadCastA(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA
 			a = a / shrA;
 			b = b / shrB;
 
-			MYINT c = a - b;
-			c = c / shrC;
+			MYINT c = a / shrC - b / shrC;
 
 			C[i * J + j] = c;
 		}
@@ -171,8 +163,7 @@ void MatSubBroadCastB(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA
 			a = a / shrA;
 			b = b / shrB;
 
-			MYINT c = a - b;
-			c = c / shrC;
+			MYINT c = a / shrC - b / shrC;
 
 			C[i * J + j] = c;
 		}
@@ -204,17 +195,22 @@ void MatMulNN(MYINT *A, MYINT *B, MYINT *C, MYINT *tmp, MYINT I, MYINT K, MYINT 
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					MYINT sum;
-					if (p < (count >> 1))
-						sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					else if ((p == (count >> 1)) && ((count & 1) == 1))
-						sum = tmp[2 * p];
+					if (p < (count >> 1)) {
+						if (shr)
+							sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
+						else
+							sum = tmp[2 * p] + tmp[(2 * p) + 1];
+					}
+					else if ((p == (count >> 1)) && ((count & 1) == 1)) {
+						if (shr)
+							sum = tmp[2 * p] / 2;
+						else
+							sum = tmp[2 * p];
+					}
 					else
 						sum = 0;
 
-					if (shr)
-						tmp[p] = sum / 2;
-					else
-						tmp[p] = sum;
+					tmp[p] = sum;
 				}
 				count = (count + 1) >> 1;
 
@@ -251,17 +247,22 @@ void MatMulCN(const MYINT *A, MYINT *B, MYINT *C, MYINT *tmp, MYINT I, MYINT K, 
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					MYINT sum;
-					if (p < (count >> 1))
-						sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					else if ((p == (count >> 1)) && ((count & 1) == 1))
-						sum = tmp[2 * p];
+					if (p < (count >> 1)) {
+						if (shr)
+							sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
+						else
+							sum = tmp[2 * p] + tmp[(2 * p) + 1];
+					}
+					else if ((p == (count >> 1)) && ((count & 1) == 1)) {
+						if (shr)
+							sum = tmp[2 * p] / 2;
+						else
+							sum = tmp[2 * p];
+					}
 					else
 						sum = 0;
 
-					if (shr)
-						tmp[p] = sum / 2;
-					else
-						tmp[p] = sum;
+					tmp[p] = sum;
 				}
 				count = (count + 1) >> 1;
 
@@ -298,17 +299,22 @@ void MatMulNC(MYINT *A, const MYINT *B, MYINT *C, MYINT *tmp, MYINT I, MYINT K, 
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					MYINT sum;
-					if (p < (count >> 1))
-						sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					else if ((p == (count >> 1)) && ((count & 1) == 1))
-						sum = tmp[2 * p];
+					if (p < (count >> 1)) {
+						if (shr)
+							sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
+						else
+							sum = tmp[2 * p] + tmp[(2 * p) + 1];
+					}
+					else if ((p == (count >> 1)) && ((count & 1) == 1)) {
+						if (shr)
+							sum = tmp[2 * p] / 2;
+						else
+							sum = tmp[2 * p];
+					}
 					else
 						sum = 0;
 
-					if (shr)
-						tmp[p] = sum / 2;
-					else
-						tmp[p] = sum;
+					tmp[p] = sum;
 				}
 				count = (count + 1) >> 1;
 
@@ -345,17 +351,22 @@ void MatMulCC(const MYINT *A, const MYINT *B, MYINT *C, MYINT *tmp, MYINT I, MYI
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					MYINT sum;
-					if (p < (count >> 1))
-						sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					else if ((p == (count >> 1)) && ((count & 1) == 1))
-						sum = tmp[2 * p];
+					if (p < (count >> 1)) {
+						if (shr)
+							sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
+						else
+							sum = tmp[2 * p] + tmp[(2 * p) + 1];
+					}
+					else if ((p == (count >> 1)) && ((count & 1) == 1)) {
+						if (shr)
+							sum = tmp[2 * p] / 2;
+						else
+							sum = tmp[2 * p];
+					}
 					else
 						sum = 0;
 
-					if (shr)
-						tmp[p] = sum / 2;
-					else
-						tmp[p] = sum;
+					tmp[p] = sum;
 				}
 				count = (count + 1) >> 1;
 
@@ -537,17 +548,22 @@ void Conv(MYINT *A, const MYINT *B, MYINT *C, MYINT *tmp, MYINT N, MYINT H, MYIN
 
 						for (MYITE p = 0; p < (totalEle / 2 + 1); p++) {
 							MYINT sum;
-							if (p < (count >> 1))
-								sum = tmp[2 * p] + tmp[(2 * p) + 1];
-							else if ((p == (count >> 1)) && ((count & 1) == 1))
-								sum = tmp[2 * p];
+							if (p < (count >> 1)) {
+								if (shr)
+									sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
+								else
+									sum = tmp[2 * p] + tmp[(2 * p) + 1];
+							}
+							else if ((p == (count >> 1)) && ((count & 1) == 1)) {
+								if (shr)
+									sum = tmp[2 * p] / 2;
+								else
+									sum = tmp[2 * p];
+							}
 							else
 								sum = 0;
 
-							if (shr)
-								tmp[p] = sum / 2;
-							else
-								tmp[p] = sum;
+							tmp[p] = sum;
 						}
 						count = (count + 1) >> 1;
 
@@ -579,11 +595,9 @@ void AddOrSubCir4D(MYINT *A, const MYINT *B, MYINT N, MYINT H, MYINT W, MYINT C,
 
 					MYINT res;
 					if (add)
-						res = a + b;
+						res = a / shrC + b / shrC;
 					else
-						res = a - b;
-
-					res = res / shrC;
+						res = a / shrC - b / shrC;
 
 					A[n * H * W * C + h * W * C + w * C + c] = res;
 				}
@@ -608,11 +622,9 @@ void AddOrSubCir2D(MYINT *A, const MYINT *B, MYINT H, MYINT W, MYINT shrA, MYINT
 
 			MYINT res;
 			if (add)
-				res = a + b;
+				res = a / shrC + b / shrC;
 			else
-				res = a - b;
-
-			res = res / shrC;
+				res = a / shrC - b / shrC;
 
 			A[h * W + w] = res;
 		}
@@ -725,15 +737,15 @@ void SigmoidNew(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_
 }
 
 // A = Sigmoid(A)
-void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit, MYINT scale) {
+void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit, MYINT scale_in, MYINT scale_out) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			float x = float(A[i * J + j]) / scale;
+			float x = float(A[i * J + j]) / scale_in;
 
 			float y = 1 / (1 + exp(-x));
 
-			MYINT z = MYINT(y * scale);
+			MYINT z = MYINT(y * scale_out);
 
 			A[i * J + j] = z;
 		}

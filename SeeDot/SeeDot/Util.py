@@ -110,7 +110,12 @@ def computeScalingFactor(val):
 		return computeScalingFactorForInlineCodegen(val)
 
 def computeScalingFactorForFuncCalls(val):
-	return int(np.ceil(np.log2(val) - np.log2((1 << (Common.wordLength - 2)) - 1)))
+	l = np.log2(val)
+	if int(l) == l:
+		c = l + 1
+	else:
+		c = np.ceil(l)
+	return -int((Common.wordLength - 1) - c)
 
 def computeScalingFactorForInlineCodegen(val):
 	return int(np.ceil(np.log2(val) - np.log2((1 << (Common.wordLength - 2)) - 1)))

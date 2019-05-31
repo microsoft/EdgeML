@@ -49,7 +49,7 @@ void Maxpool(MYINT *A, MYINT *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT strid
 
 void Exp(MYINT *A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT *B);
 
-void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit, MYINT scale);
+void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit, MYINT scale_in, MYINT scale_out);
 
 void AdjustScaleShr(MYINT* A, MYINT I, MYINT J, MYINT scale);
 void AdjustScaleShl(MYINT* A, MYINT I, MYINT J, MYINT scale);

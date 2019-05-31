@@ -4,10 +4,8 @@
 import math
 import numpy as np
 
-def getScale(maxabs:float):
-	return int(np.ceil(np.log2(maxabs) - np.log2((1 << (16 - 2)) - 1)))
-
-e = getScale(0.000001)
+def getScale(maxabs:float, bits):
+	return int(np.ceil(np.log2(maxabs) - np.log2((1 << (bits - 2)) - 1)))
 
 def printUspsRNN():
 	ite = 16
@@ -149,13 +147,51 @@ def treeSumTest():
 	
 	sum = treeSumNew(tmpNew, 1, 0, 1)
 	print(sum)
+
+def computeScale(val, bits):
+	l = np.log2(val)
+	if int(l) == l:
+		c = l + 1
+	else:
+		c = np.ceil(l)
+	return -int((bits - 1) - c)
+
+def test(n, bits):
+	print(np.log2(n))
+	s1 = computeScale(n, bits)
+	s2 = getScale(n, bits)
+	v1 = int(np.ldexp(n, -s1))
+	v2 = int(np.ldexp(n, -s2))
+	print("%f scale = %d int = %d" % (n, s1, v1))
+	print("%f scale = %d int = %d" % (n, s2, v2))
+
+def getShrForMul(scale_A, scale_B):
+	bits = 16
+	MAX_SCALE = -9
 	
+	shr1, shr2 = bits // 2, (bits // 2) - 1
+	pRes = (scale_A + shr1) + (scale_B + shr2)
 
-e = getScale(0.15637416)
-e_int = np.ldexp(0.15637416, 16)
+	if pRes <= MAX_SCALE:
+		if scale_A <= scale_B:
+			shrA, shrB = shr1, shr2
+		else:
+			shrA, shrB = shr2, shr1
+		return [shrA, shrB]
+	else:
+		save = abs(abs(pRes) - abs(MAX_SCALE))
+		if save % 2 == 1:
+			shr1 -= 1
+			save -= 1
+		save = save // 2
+		if scale_A <= scale_B:
+			shrA = max(shr1 - save, 0)
+			shrB = max(shr2 - save, 0)
+		else:
+			shrA = max(shr2 - save, 0)
+			shrB = max(shr1 - save, 0)
+		
+		return [shrA, shrB]
 
-print(e)
-print(e_int)
-
-x = np.int16(10248)
+x = getShrForMul(-12, -12)
 print(x)
