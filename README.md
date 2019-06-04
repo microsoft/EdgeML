@@ -50,7 +50,7 @@ Core Contributors:
   - [Sridhar Gopinath](http://www.sridhargopinath.in/)
 
 We welcome contributions, comments, and criticism. For questions, please [email
-Harsha](mailto:harshasi@microsoft.com).
+us](mailto:edgeml@microsoft.com).
 
 [People](https://github.com/Microsoft/EdgeML/wiki/People/) who have contributed
 to this
