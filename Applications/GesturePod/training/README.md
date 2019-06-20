@@ -13,7 +13,7 @@ Data Collection *(for MKR1000)*
 
 ## Introduction
 
-Training a model to recognize gesture on the GesturePod consists of 3 parts:
+Training a model to recognize gesture on the GesturePod consists of 5 parts:
 
 1. Data collection
 2. Data labelling
