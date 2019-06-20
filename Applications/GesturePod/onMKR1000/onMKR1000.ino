@@ -147,7 +147,6 @@ void setup() {
     fifoPacketSize = mpu1.dmpGetFIFOPacketSize();
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, HIGH);
-    digitalWrite(LED_BUILTIN, HIGH);
     // Setup() for BLE
     if(!BLE_module.init())
         Serial.println("BLE Setup Complete. Please connect");
