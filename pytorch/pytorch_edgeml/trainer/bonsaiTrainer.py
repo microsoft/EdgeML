@@ -69,7 +69,7 @@ class BonsaiTrainer:
 
         if (self.bonsaiObj.numClasses > 2):
             if self.useMCHLoss is True:
-                marginLoss = utils.multiClassHingeLoss(logits, labels)
+                marginLoss = utils.multiClassHingeLoss(logits, labels, self.device)
             else:
                 marginLoss = utils.crossEntropyLoss(logits, labels)
             loss = marginLoss + regLoss

@@ -61,7 +61,7 @@ def main():
     else:
         batchSize = args.batch_size
 
-    useMCHLoss = False
+    useMCHLoss = True
 
     if numClasses == 2:
         numClasses = 1
