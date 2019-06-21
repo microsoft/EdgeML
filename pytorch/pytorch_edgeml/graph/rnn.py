@@ -39,6 +39,8 @@ class BaseRNN(nn.Module):
     '''
     Generic equivalent of static_rnn in tf
     Used to unroll all the cell written in this file
+    We assume data to be batch_first ie., 
+    [batchSize, timeSteps, inputDims]
     '''
 
     def __init__(self, RNNCell):
