@@ -14,10 +14,8 @@ assumed that train and test data is contained in two files, `train.npy` and
 `test.npy`. Each containing a 2D numpy array of dimension `[numberOfExamples,
 numberOfFeatures + 1]`. The first column of each matrix is assumed to contain
 label information.  For an N-Class problem, we assume the labels are integers
-from 0 through N-1. `bonsai_example.py` also supports univariate regression 
-and can be accessed using the help options of the script. Multivariate regression 
-requires restructuring of the input data format and can further help in extending 
-bonsai to multi-label classification and multi-variate regression. Lastly, 
+from 0 through N-1. `bonsai_example.py` doesn't support regression 
+yet unlike the tf counterpart Lastly, 
 the training data, `train.npy`, is assumed to well shuffled 
 as the training routine doesn't shuffle internally.
 

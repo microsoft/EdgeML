@@ -46,13 +46,13 @@ def quantizeBonsaiModels(modelDir, maxValue=127, scalarScaleFactor=1000):
 
         quantParamWeights.append(temp)
 
-    if os.path.isdir(modelDir + '/QuantizedTFBonsaiModel') is False:
+    if os.path.isdir(modelDir + '/QuantizedPyTorchBonsaiModel') is False:
         try:
-            os.mkdir(modelDir + '/QuantizedTFBonsaiModel')
-            quantModelDir = modelDir + '/QuantizedTFBonsaiModel'
+            os.mkdir(modelDir + '/QuantizedPyTorchBonsaiModel')
+            quantModelDir = modelDir + '/QuantizedPyTorchBonsaiModel'
         except OSError:
             print("Creation of the directory %s failed" %
-                  modelDir + '/QuantizedTFBonsaiModel')
+                  modelDir + '/QuantizedPyTorchBonsaiModel')
 
     np.save(quantModelDir + "/paramScaleFactor.npy",
             paramScaleFactor.astype('int32'))

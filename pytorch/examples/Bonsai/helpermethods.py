@@ -139,14 +139,14 @@ def createTimeStampDir(dataDir):
     '''
     Creates a Directory with timestamp as it's name
     '''
-    if os.path.isdir(dataDir + '/pytorchBonsaiResults') is False:
+    if os.path.isdir(dataDir + '/PyTorchBonsaiResults') is False:
         try:
-            os.mkdir(dataDir + '/pytorchBonsaiResults')
+            os.mkdir(dataDir + '/PyTorchBonsaiResults')
         except OSError:
             print("Creation of the directory %s failed" %
-                  dataDir + '/pytorchBonsaiResults')
+                  dataDir + '/PyTorchBonsaiResults')
 
-    currDir = 'pytorchBonsaiResults/' + \
+    currDir = 'PyTorchBonsaiResults/' + \
         datetime.datetime.now().strftime("%H_%M_%S_%d_%m_%y")
     if os.path.isdir(dataDir + '/' + currDir) is False:
         try:

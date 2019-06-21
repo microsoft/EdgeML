@@ -221,7 +221,7 @@ class BonsaiTrainer:
         '''
         The Dense - IHT - Sparse Retrain Routine for Bonsai Training
         '''
-        resultFile = open(dataDir + '/pytorchBonsaiResults.txt', 'a+')
+        resultFile = open(dataDir + '/PyTorchBonsaiResults.txt', 'a+')
         numIters = Xtrain.shape[0] / batchSize
 
         totalBatches = numIters * totalEpochs
