@@ -4,7 +4,7 @@ This directory includes, example notebook and general execution script of
 Bonsai developed as part of EdgeML. Also, we include a sample cleanup and
 use-case on the USPS10 public dataset.
 
-`edgeml.graph.bonsai` implements the Bonsai prediction graph in tensorflow.
+`pytorch_edgeml.graph.bonsai` implements the Bonsai prediction graph in tensorflow.
 The three-phase training routine for Bonsai is decoupled from the forward graph
 to facilitate a plug and play behaviour wherein Bonsai can be combined with or
 used as a final layer classifier for other architectures (RNNs, CNNs).
