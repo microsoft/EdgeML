@@ -49,7 +49,7 @@ Final Test Accuracy: 0.93024415
 Non-Zeros: 4156.0 Model Size: 31.703125 KB hasSparse: True
 ```
 
-usps10 directory will now have a consolidated results file called `TFBonsaiResults.txt` and a directory `TFBonsaiResults` with the corresponding models with each run of the code on the usps10 dataset
+usps10 directory will now have a consolidated results file called `PyTorchBonsaiResults.txt` and a directory `PyTorchBonsaiResults` with the corresponding models with each run of the code on the usps10 dataset
 
 ## Byte Quantization (Q) for model compression
 If you wish to quantize the generated model to use byte quantized integers use `quantizeBonsaiModels.py`. Usage Instructions:
@@ -58,7 +58,7 @@ If you wish to quantize the generated model to use byte quantized integers use `
 python quantizeBonsaiModels.py -h
 ```
 
-This will generate quantized models with a suffix of `q` before every param stored in a new directory `QuantizedTFBonsaiModel` inside the model directory.
+This will generate quantized models with a suffix of `q` before every param stored in a new directory `QuantizedPyTorchBonsaiModel` inside the model directory.
 One can use this model further on edge devices.
 
 
