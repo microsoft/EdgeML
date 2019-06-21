@@ -8,8 +8,9 @@ from pytorch_edgeml.trainer.bonsaiTrainer import BonsaiTrainer
 from pytorch_edgeml.graph.bonsai import Bonsai
 import torch
 
-
 def main():
+    # change cuda:0 to cuda:gpuid for specific allocation
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # Fixing seeds for reproducibility
     torch.manual_seed(42)
     np.random.seed(42)
@@ -60,7 +61,7 @@ def main():
     else:
         batchSize = args.batch_size
 
-    useMCHLoss = True
+    useMCHLoss = False
 
     if numClasses == 2:
         numClasses = 1
@@ -72,12 +73,12 @@ def main():
 
     # numClasses = 1 for binary case
     bonsaiObj = Bonsai(numClasses, dataDimension,
-                       projectionDimension, depth, sigma)
+                       projectionDimension, depth, sigma).to(device)
 
     bonsaiTrainer = BonsaiTrainer(bonsaiObj,
                                   regW, regT, regV, regZ,
                                   sparW, sparT, sparV, sparZ,
-                                  learningRate, useMCHLoss, outFile)
+                                  learningRate, useMCHLoss, outFile, device)
 
     bonsaiTrainer.train(batchSize, totalEpochs,
                         torch.from_numpy(Xtrain.astype(np.float32)),

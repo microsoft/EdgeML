@@ -11,7 +11,7 @@ import pytorch_edgeml.utils as utils
 class BonsaiTrainer:
 
     def __init__(self, bonsaiObj, lW, lT, lV, lZ, sW, sT, sV, sZ,
-                 learningRate, useMCHLoss=False, outFile=None):
+                 learningRate, useMCHLoss=False, outFile=None, device=None):
         '''
         bonsaiObj - Initialised Bonsai Object and Graph
         lW, lT, lV and lZ are regularisers to Bonsai Params
@@ -33,6 +33,11 @@ class BonsaiTrainer:
         self.sV = sV
         self.sT = sT
         self.sZ = sZ
+
+        if device is None:
+            self.device = "cpu"
+        else:
+            self.device = device
 
         self.useMCHLoss = useMCHLoss
 
@@ -106,15 +111,15 @@ class BonsaiTrainer:
         currZ = self.bonsaiObj.Z.data
         currT = self.bonsaiObj.T.data
 
-        self.__thrsdW = utils.hardThreshold(currW, self.sW)
-        self.__thrsdV = utils.hardThreshold(currV, self.sV)
-        self.__thrsdZ = utils.hardThreshold(currZ, self.sZ)
-        self.__thrsdT = utils.hardThreshold(currT, self.sT)
+        self.__thrsdW = utils.hardThreshold(currW.cpu(), self.sW)
+        self.__thrsdV = utils.hardThreshold(currV.cpu(), self.sV)
+        self.__thrsdZ = utils.hardThreshold(currZ.cpu(), self.sZ)
+        self.__thrsdT = utils.hardThreshold(currT.cpu(), self.sT)
 
-        self.bonsaiObj.W.data = torch.FloatTensor(self.__thrsdW)
-        self.bonsaiObj.V.data = torch.FloatTensor(self.__thrsdV)
-        self.bonsaiObj.Z.data = torch.FloatTensor(self.__thrsdZ)
-        self.bonsaiObj.T.data = torch.FloatTensor(self.__thrsdT)
+        self.bonsaiObj.W.data = torch.FloatTensor(self.__thrsdW).to(self.device)
+        self.bonsaiObj.V.data = torch.FloatTensor(self.__thrsdV).to(self.device)
+        self.bonsaiObj.Z.data = torch.FloatTensor(self.__thrsdZ).to(self.device)
+        self.bonsaiObj.T.data = torch.FloatTensor(self.__thrsdT).to(self.device)
 
     def runSparseTraining(self):
         '''
@@ -125,15 +130,15 @@ class BonsaiTrainer:
         currZ = self.bonsaiObj.Z.data
         currT = self.bonsaiObj.T.data
 
-        newW = utils.copySupport(self.__thrsdW, currW)
-        newV = utils.copySupport(self.__thrsdV, currV)
-        newZ = utils.copySupport(self.__thrsdZ, currZ)
-        newT = utils.copySupport(self.__thrsdT, currT)
+        newW = utils.copySupport(self.__thrsdW, currW.cpu())
+        newV = utils.copySupport(self.__thrsdV, currV.cpu())
+        newZ = utils.copySupport(self.__thrsdZ, currZ.cpu())
+        newT = utils.copySupport(self.__thrsdT, currT.cpu())
 
-        self.bonsaiObj.W.data = torch.FloatTensor(newW)
-        self.bonsaiObj.V.data = torch.FloatTensor(newV)
-        self.bonsaiObj.Z.data = torch.FloatTensor(newZ)
-        self.bonsaiObj.T.data = torch.FloatTensor(newT)
+        self.bonsaiObj.W.data = torch.FloatTensor(newW).to(self.device)
+        self.bonsaiObj.V.data = torch.FloatTensor(newV).to(self.device)
+        self.bonsaiObj.Z.data = torch.FloatTensor(newZ).to(self.device)
+        self.bonsaiObj.T.data = torch.FloatTensor(newT).to(self.device)
 
     def assertInit(self):
         err = "sparsity must be between 0 and 1"
@@ -147,10 +152,10 @@ class BonsaiTrainer:
         Function to save Parameter matrices into a given folder
         '''
         paramDir = currDir + '/'
-        np.save(paramDir + "W.npy", self.bonsaiObj.W.data)
-        np.save(paramDir + "V.npy", self.bonsaiObj.V.data)
-        np.save(paramDir + "T.npy", self.bonsaiObj.T.data)
-        np.save(paramDir + "Z.npy", self.bonsaiObj.Z.data)
+        np.save(paramDir + "W.npy", self.bonsaiObj.W.data.cpu())
+        np.save(paramDir + "V.npy", self.bonsaiObj.V.data.cpu())
+        np.save(paramDir + "T.npy", self.bonsaiObj.T.data.cpu())
+        np.save(paramDir + "Z.npy", self.bonsaiObj.Z.data.cpu())
         hyperParamDict = {'dataDim': self.bonsaiObj.dataDimension,
                           'projDim': self.bonsaiObj.projectionDimension,
                           'numClasses': self.bonsaiObj.numClasses,
@@ -173,17 +178,17 @@ class BonsaiTrainer:
                       seeDotDir)
 
         np.savetxt(seeDotDir + "W",
-                   utils.restructreMatrixBonsaiSeeDot(self.bonsaiObj.W.data,
+                   utils.restructreMatrixBonsaiSeeDot(self.bonsaiObj.W.data.cpu(),
                                                       self.bonsaiObj.numClasses,
                                                       self.bonsaiObj.totalNodes),
                    delimiter="\t")
         np.savetxt(seeDotDir + "V",
-                   utils.restructreMatrixBonsaiSeeDot(self.bonsaiObj.V.data,
+                   utils.restructreMatrixBonsaiSeeDot(self.bonsaiObj.V.data.cpu(),
                                                       self.bonsaiObj.numClasses,
                                                       self.bonsaiObj.totalNodes),
                    delimiter="\t")
-        np.savetxt(seeDotDir + "T", self.bonsaiObj.T.data, delimiter="\t")
-        np.savetxt(seeDotDir + "Z", self.bonsaiObj.Z.data, delimiter="\t")
+        np.savetxt(seeDotDir + "T", self.bonsaiObj.T.data.cpu(), delimiter="\t")
+        np.savetxt(seeDotDir + "Z", self.bonsaiObj.Z.data.cpu(), delimiter="\t")
         np.savetxt(seeDotDir + "Sigma",
                    np.array([self.bonsaiObj.sigma]), delimiter="\t")
 
@@ -274,11 +279,11 @@ class BonsaiTrainer:
 
                     Teval = self.bonsaiObj.T.data
                     Xcapeval = (torch.matmul(self.bonsaiObj.Z, torch.t(
-                        batchX)) / self.bonsaiObj.projectionDimension).data
+                        batchX.to(self.device))) / self.bonsaiObj.projectionDimension).data
 
                     sum_tr = 0.0
                     for k in range(0, self.bonsaiObj.internalNodes):
-                        sum_tr += (np.sum(np.abs(np.dot(Teval[k], Xcapeval))))
+                        sum_tr += (np.sum(np.abs(np.dot(Teval[k].cpu(), Xcapeval.cpu()))))
 
                     if(self.bonsaiObj.internalNodes > 0):
                         sum_tr /= (100 * self.bonsaiObj.internalNodes)
@@ -292,10 +297,10 @@ class BonsaiTrainer:
                     self.sigmaI = sum_tr
 
                 itersInPhase += 1
-                batchX = Xtrain[j * batchSize:(j + 1) * batchSize]
+                batchX = Xtrain[j * batchSize:(j + 1) * batchSize].to(self.device)
                 batchY = Ytrain[j * batchSize:(j + 1) * batchSize]
                 batchY = np.reshape(
-                    batchY, [-1, self.bonsaiObj.numClasses])
+                    batchY, [-1, self.bonsaiObj.numClasses]).to(self.device)
 
                 self.optimizer.zero_grad()
                 logits, _ = self.bonsaiObj(batchX, self.sigmaI)
@@ -341,9 +346,9 @@ class BonsaiTrainer:
 
             oldSigmaI = self.sigmaI
             self.sigmaI = 1e9
-            logits, _ = self.bonsaiObj(Xtest, self.sigmaI)
-            testLoss, marginLoss, regLoss = self.loss(logits, Ytest)
-            testAcc = self.accuracy(logits, Ytest).item()
+            logits, _ = self.bonsaiObj(Xtest.to(self.device), self.sigmaI)
+            testLoss, marginLoss, regLoss = self.loss(logits, Ytest.to(self.device))
+            testAcc = self.accuracy(logits, Ytest.to(self.device)).item()
 
             if ihtDone == 0:
                 maxTestAcc = -10000
