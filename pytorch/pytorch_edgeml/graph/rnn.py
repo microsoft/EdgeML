@@ -43,30 +43,35 @@ class BaseRNN(nn.Module):
     [batchSize, timeSteps, inputDims]
     '''
 
-    def __init__(self, RNNCell):
+    def __init__(self, RNNCell, timeSteps, device=None):
         super(BaseRNN, self).__init__()
         self.RNNCell = RNNCell
+        if device is None:
+            self.device = "cpu"
+        else:
+            self.device = device
+        self.timeSteps = timeSteps
 
     def forward(self, input):
         hiddenStates = torch.zeros(
-            [input.shape[0], self.RNNCell.input_size, self.RNNCell.output_size])
+            [input.shape[0], self.timeSteps, self.RNNCell.output_size]).to(self.device)
 
-        hiddenState = torch.zeros([input.shape[0], self.RNNCell.output_size])
+        hiddenState = torch.zeros([input.shape[0], self.RNNCell.output_size]).to(self.device)
         if self.RNNCell.cellType == "LSTMLR":
             cellStates = torch.zeros(
-                [input.shape[0], self.RNNCell.input_size, self.RNNCell.output_size])
-            cellState = torch.zeros([input.shape[0], self.RNNCell.output_size])
+                [input.shape[0], self.timeSteps, self.RNNCell.output_size]).to(self.device)
+            cellState = torch.zeros([input.shape[0], self.RNNCell.output_size]).to(self.device)
             for i in range(0, input.shape[1]):
                 hiddenState, cellState = self.RNNCell(
                     input[:, i, :], (hiddenState, cellState))
                 hiddenStates[:, i, :] = hiddenState
                 cellStates[:, i, :] = cellState
-            return torch.FloatTensor(hiddenStates), torch.FloatTensor(cellStates)
+            return hiddenStates, cellStates
         else:
             for i in range(0, input.shape[1]):
                 hiddenState = self.RNNCell(input[:, i, :], hiddenState)
                 hiddenStates[:, i, :] = hiddenState
-            return torch.FloatTensor(hiddenStates)
+            return hiddenStates
 
 
 class FastGRNNCell(nn.Module):

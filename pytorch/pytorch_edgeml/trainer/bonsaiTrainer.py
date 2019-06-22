@@ -297,15 +297,15 @@ class BonsaiTrainer:
                     self.sigmaI = sum_tr
 
                 itersInPhase += 1
-                batchX = Xtrain[j * batchSize:(j + 1) * batchSize].to(self.device)
+                batchX = Xtrain[j * batchSize:(j + 1) * batchSize]
                 batchY = Ytrain[j * batchSize:(j + 1) * batchSize]
                 batchY = np.reshape(
-                    batchY, [-1, self.bonsaiObj.numClasses]).to(self.device)
+                    batchY, [-1, self.bonsaiObj.numClasses])
 
                 self.optimizer.zero_grad()
-                logits, _ = self.bonsaiObj(batchX, self.sigmaI)
-                batchLoss, _, _ = self.loss(logits, batchY)
-                batchAcc = self.accuracy(logits, batchY)
+                logits, _ = self.bonsaiObj(batchX.to(self.device), self.sigmaI)
+                batchLoss, _, _ = self.loss(logits, batchY.to(self.device))
+                batchAcc = self.accuracy(logits, batchY.to(self.device))
 
                 batchLoss.backward()
                 self.optimizer.step()

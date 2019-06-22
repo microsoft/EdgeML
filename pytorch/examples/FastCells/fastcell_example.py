@@ -10,6 +10,8 @@ from pytorch_edgeml.trainer.fastTrainer import FastTrainer
 
 
 def main():
+    # change cuda:0 to cuda:gpuid for specific allocation
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # Fixing seeds for reproducibility
     torch.manual_seed(42)
     np.random.seed(42)
@@ -44,6 +46,8 @@ def main():
     assert dataDimension % inputDims == 0, "Infeasible per step input, " + \
         "Timesteps have to be integer"
 
+    timeSteps = int(dataDimension/inputDims)
+
     currDir = helpermethods.createTimeStampDir(dataDir, cell)
 
     helpermethods.dumpCommand(sys.argv, currDir)
@@ -53,28 +57,28 @@ def main():
         FastCell = FastGRNNCell(inputDims, hiddenDims,
                                 gate_non_linearity=gate_non_linearity,
                                 update_non_linearity=update_non_linearity,
-                                wRank=wRank, uRank=uRank)
+                                wRank=wRank, uRank=uRank).to(device)
     elif cell == "FastRNN":
         FastCell = FastRNNCell(inputDims, hiddenDims,
                                update_non_linearity=update_non_linearity,
-                               wRank=wRank, uRank=uRank)
+                               wRank=wRank, uRank=uRank).to(device)
     elif cell == "UGRNN":
         FastCell = UGRNNLRCell(inputDims, hiddenDims,
                                update_non_linearity=update_non_linearity,
-                               wRank=wRank, uRank=uRank)
+                               wRank=wRank, uRank=uRank).to(device)
     elif cell == "GRU":
         FastCell = GRULRCell(inputDims, hiddenDims,
                              update_non_linearity=update_non_linearity,
-                             wRank=wRank, uRank=uRank)
+                             wRank=wRank, uRank=uRank).to(device)
     elif cell == "LSTM":
         FastCell = LSTMLRCell(inputDims, hiddenDims,
                               update_non_linearity=update_non_linearity,
-                              wRank=wRank, uRank=uRank)
+                              wRank=wRank, uRank=uRank).to(device)
     else:
         sys.exit('Exiting: No Such Cell as ' + cell)
 
-    FastCellTrainer = FastTrainer(FastCell, numClasses, sW=sW, sU=sU,
-                                  learningRate=learningRate, outFile=outFile)
+    FastCellTrainer = FastTrainer(FastCell, timeSteps, numClasses, sW=sW, sU=sU,
+                                  learningRate=learningRate, outFile=outFile, device=device)
 
     FastCellTrainer.train(batchSize, totalEpochs,
                           torch.from_numpy(Xtrain.astype(np.float32)),
