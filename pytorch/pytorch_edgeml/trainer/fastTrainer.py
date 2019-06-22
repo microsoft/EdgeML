@@ -9,9 +9,11 @@ import pytorch_edgeml.utils as utils
 from pytorch_edgeml.graph.rnn import *
 import numpy as np
 
+
 class FastTrainer:
 
-    def __init__(self, FastObj, numClasses, sW=1.0, sU=1.0, learningRate=0.01, outFile=None, device=None):
+    def __init__(self, FastObj, numClasses, sW=1.0, sU=1.0,
+                 learningRate=0.01, outFile=None, device=None):
         '''
         FastObj - Can be either FastRNN or FastGRNN or any of the RNN cells 
         in graph.rnn with proper initialisations
@@ -52,7 +54,8 @@ class FastTrainer:
 
         self.RNN = BaseRNN(self.FastObj, self.device).to(device)
 
-        self.FC = nn.Parameter(torch.randn([self.FastObj.output_size, self.numClasses])).to(device)
+        self.FC = nn.Parameter(torch.randn(
+            [self.FastObj.output_size, self.numClasses])).to(device)
         self.FCbias = nn.Parameter(torch.randn([self.numClasses])).to(device)
 
         self.FastParams = self.FastObj.getVars()
@@ -120,7 +123,8 @@ class FastTrainer:
             self.thrsdParams.append(
                 utils.hardThreshold(self.FastParams[i].data.cpu(), self.sU))
         for i in range(0, self.totalMatrices):
-            self.FastParams[i].data = torch.FloatTensor(self.thrsdParams[i]).to(self.device)
+            self.FastParams[i].data = torch.FloatTensor(
+                self.thrsdParams[i]).to(self.device)
 
     def runSparseTraining(self):
         '''
@@ -129,10 +133,11 @@ class FastTrainer:
         self.reTrainParams = []
         for i in range(0, self.totalMatrices):
             self.reTrainParams.append(
-                utils.copySupport(self.thrsdParams[i].data, self.FastParams[i].data.cpu()))
+                utils.copySupport(self.thrsdParams[i].data,
+                                  self.FastParams[i].data.cpu()))
         for i in range(0, self.totalMatrices):
-            self.FastParams[i].data = torch.FloatTensor(self.reTrainParams[i]).to(self.device)
-
+            self.FastParams[i].data = torch.FloatTensor(
+                self.reTrainParams[i]).to(self.device)
 
     def getModelSize(self):
         '''
@@ -176,7 +181,8 @@ class FastTrainer:
         Function to save Parameter matrices
         '''
         if self.numMatrices[0] == 1:
-            np.save(os.path.join(currDir, "W.npy"), self.FastParams[0].data.cpu())
+            np.save(os.path.join(currDir, "W.npy"),
+                    self.FastParams[0].data.cpu())
         elif self.FastObj.wRank is None:
             if self.numMatrices[0] == 2:
                 np.save(os.path.join(currDir, "W1.npy"),
@@ -235,7 +241,8 @@ class FastTrainer:
 
         idx = self.numMatrices[0]
         if self.numMatrices[1] == 1:
-            np.save(os.path.join(currDir, "U.npy"), self.FastParams[idx + 0].data.cpu())
+            np.save(os.path.join(currDir, "U.npy"),
+                    self.FastParams[idx + 0].data.cpu())
         elif self.FastObj.uRank is None:
             if self.numMatrices[1] == 2:
                 np.save(os.path.join(currDir, "U1.npy"),
@@ -333,7 +340,6 @@ class FastTrainer:
         np.save(os.path.join(currDir, "FC.npy"), self.FC.data.cpu())
         np.save(os.path.join(currDir, "FCbias.npy"), self.FCbias.data.cpu())
 
-
     def train(self, batchSize, totalEpochs, Xtrain, Xtest, Ytrain, Ytest,
               decayStep, decayRate, dataDir, currDir):
         '''
@@ -352,7 +358,7 @@ class FastTrainer:
             ihtDone = 1
             maxTestAcc = -10000
         header = '*' * 20
-        self.timeSteps = int(Xtest.shape[1]/self.inputDims)
+        self.timeSteps = int(Xtest.shape[1] / self.inputDims)
         Xtest = Xtest.reshape((-1, self.timeSteps, self.inputDims))
         Xtrain = Xtrain.reshape((-1, self.timeSteps, self.inputDims))
 
@@ -423,7 +429,6 @@ class FastTrainer:
             testLoss = self.loss(logits, Ytest.to(self.device)).item()
             testAcc = self.accuracy(logits, Ytest.to(self.device)).item()
 
-
             if ihtDone == 0:
                 maxTestAcc = -10000
                 maxTestAccEpoch = i
@@ -436,7 +441,6 @@ class FastTrainer:
             print("Test Loss: " + str(testLoss) +
                   " Test Accuracy: " + str(testAcc), file=self.outFile)
             self.outFile.flush()
-
 
         print("\nMaximum Test accuracy at compressed" +
               " model size(including early stopping): " +
@@ -467,10 +471,3 @@ class FastTrainer:
         self.outFile.flush()
         if self.outFile is not sys.stdout:
             self.outFile.close()
-
-
-
-
-
-
-

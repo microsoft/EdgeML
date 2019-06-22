@@ -8,6 +8,7 @@ from pytorch_edgeml.trainer.bonsaiTrainer import BonsaiTrainer
 from pytorch_edgeml.graph.bonsai import Bonsai
 import torch
 
+
 def main():
     # change cuda:0 to cuda:gpuid for specific allocation
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

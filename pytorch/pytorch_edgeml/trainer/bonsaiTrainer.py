@@ -69,7 +69,8 @@ class BonsaiTrainer:
 
         if (self.bonsaiObj.numClasses > 2):
             if self.useMCHLoss is True:
-                marginLoss = utils.multiClassHingeLoss(logits, labels, self.device)
+                marginLoss = utils.multiClassHingeLoss(
+                    logits, labels, self.device)
             else:
                 marginLoss = utils.crossEntropyLoss(logits, labels)
             loss = marginLoss + regLoss
@@ -116,10 +117,14 @@ class BonsaiTrainer:
         self.__thrsdZ = utils.hardThreshold(currZ.cpu(), self.sZ)
         self.__thrsdT = utils.hardThreshold(currT.cpu(), self.sT)
 
-        self.bonsaiObj.W.data = torch.FloatTensor(self.__thrsdW).to(self.device)
-        self.bonsaiObj.V.data = torch.FloatTensor(self.__thrsdV).to(self.device)
-        self.bonsaiObj.Z.data = torch.FloatTensor(self.__thrsdZ).to(self.device)
-        self.bonsaiObj.T.data = torch.FloatTensor(self.__thrsdT).to(self.device)
+        self.bonsaiObj.W.data = torch.FloatTensor(
+            self.__thrsdW).to(self.device)
+        self.bonsaiObj.V.data = torch.FloatTensor(
+            self.__thrsdV).to(self.device)
+        self.bonsaiObj.Z.data = torch.FloatTensor(
+            self.__thrsdZ).to(self.device)
+        self.bonsaiObj.T.data = torch.FloatTensor(
+            self.__thrsdT).to(self.device)
 
     def runSparseTraining(self):
         '''
@@ -283,7 +288,8 @@ class BonsaiTrainer:
 
                     sum_tr = 0.0
                     for k in range(0, self.bonsaiObj.internalNodes):
-                        sum_tr += (np.sum(np.abs(np.dot(Teval[k].cpu(), Xcapeval.cpu()))))
+                        sum_tr += (
+                            np.sum(np.abs(np.dot(Teval[k].cpu(), Xcapeval.cpu()))))
 
                     if(self.bonsaiObj.internalNodes > 0):
                         sum_tr /= (100 * self.bonsaiObj.internalNodes)
@@ -347,7 +353,8 @@ class BonsaiTrainer:
             oldSigmaI = self.sigmaI
             self.sigmaI = 1e9
             logits, _ = self.bonsaiObj(Xtest.to(self.device), self.sigmaI)
-            testLoss, marginLoss, regLoss = self.loss(logits, Ytest.to(self.device))
+            testLoss, marginLoss, regLoss = self.loss(
+                logits, Ytest.to(self.device))
             testAcc = self.accuracy(logits, Ytest.to(self.device)).item()
 
             if ihtDone == 0:

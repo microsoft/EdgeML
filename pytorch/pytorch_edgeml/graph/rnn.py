@@ -53,13 +53,17 @@ class BaseRNN(nn.Module):
 
     def forward(self, input):
         hiddenStates = torch.zeros(
-            [input.shape[0], input.shape[1], self.RNNCell.output_size]).to(self.device)
+            [input.shape[0], input.shape[1],
+             self.RNNCell.output_size]).to(self.device)
 
-        hiddenState = torch.zeros([input.shape[0], self.RNNCell.output_size]).to(self.device)
+        hiddenState = torch.zeros([input.shape[0],
+                                   self.RNNCell.output_size]).to(self.device)
         if self.RNNCell.cellType == "LSTMLR":
             cellStates = torch.zeros(
-                [input.shape[0], input.shape[1], self.RNNCell.output_size]).to(self.device)
-            cellState = torch.zeros([input.shape[0], self.RNNCell.output_size]).to(self.device)
+                [input.shape[0], input.shape[1],
+                 self.RNNCell.output_size]).to(self.device)
+            cellState = torch.zeros(
+                [input.shape[0], self.RNNCell.output_size]).to(self.device)
             for i in range(0, input.shape[1]):
                 hiddenState, cellState = self.RNNCell(
                     input[:, i, :], (hiddenState, cellState))
@@ -906,9 +910,9 @@ class LSTM(nn.Module):
         self._uRank = uRank
 
         self.cell = LSTMLRCell(input_size, hidden_size,
-                                   gate_non_linearity=gate_non_linearity,
-                                   update_non_linearity=update_non_linearity,
-                                   wRank=wRank, uRank=uRank)
+                               gate_non_linearity=gate_non_linearity,
+                               update_non_linearity=update_non_linearity,
+                               wRank=wRank, uRank=uRank)
         self.unrollRNN = BaseRNN(self.cell)
 
     def forward(self, input):
@@ -929,9 +933,9 @@ class GRU(nn.Module):
         self._uRank = uRank
 
         self.cell = GRULRCell(input_size, hidden_size,
-                                 gate_non_linearity=gate_non_linearity,
-                                 update_non_linearity=update_non_linearity,
-                                 wRank=wRank, uRank=uRank)
+                              gate_non_linearity=gate_non_linearity,
+                              update_non_linearity=update_non_linearity,
+                              wRank=wRank, uRank=uRank)
         self.unrollRNN = BaseRNN(self.cell)
 
     def forward(self, input):
@@ -952,9 +956,9 @@ class UGRNN(nn.Module):
         self._uRank = uRank
 
         self.cell = UGRNNLRCell(input_size, hidden_size,
-                                     gate_non_linearity=gate_non_linearity,
-                                     update_non_linearity=update_non_linearity,
-                                     wRank=wRank, uRank=uRank)
+                                gate_non_linearity=gate_non_linearity,
+                                update_non_linearity=update_non_linearity,
+                                wRank=wRank, uRank=uRank)
         self.unrollRNN = BaseRNN(self.cell)
 
     def forward(self, input):
@@ -976,10 +980,10 @@ class FastRNN(nn.Module):
         self._uRank = uRank
 
         self.cell = FastRNNCell(input_size, hidden_size,
-                                       gate_non_linearity=gate_non_linearity,
-                                       update_non_linearity=update_non_linearity,
-                                       wRank=wRank, uRank=uRank,
-                                       alphaInit=alphaInit, betaInit=betaInit)
+                                gate_non_linearity=gate_non_linearity,
+                                update_non_linearity=update_non_linearity,
+                                wRank=wRank, uRank=uRank,
+                                alphaInit=alphaInit, betaInit=betaInit)
         self.unrollRNN = BaseRNN(self.cell)
 
     def forward(self, input):
@@ -1001,10 +1005,10 @@ class FastGRNN(nn.Module):
         self._uRank = uRank
 
         self.cell = FastGRNNCell(input_size, hidden_size,
-                                         gate_non_linearity=gate_non_linearity,
-                                         update_non_linearity=update_non_linearity,
-                                         wRank=wRank, uRank=uRank,
-                                         zetaInit=zetaInit, nuInit=nuInit)
+                                 gate_non_linearity=gate_non_linearity,
+                                 update_non_linearity=update_non_linearity,
+                                 wRank=wRank, uRank=uRank,
+                                 zetaInit=zetaInit, nuInit=nuInit)
         self.unrollRNN = BaseRNN(self.cell)
 
     def forward(self, input):
