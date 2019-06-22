@@ -19,7 +19,7 @@ yet unlike the tf counterpart Lastly,
 the training data, `train.npy`, is assumed to well shuffled 
 as the training routine doesn't shuffle internally.
 
-**Tested With:** Tensorflow >1.6 with Python 2 and Python 3
+**Tested With:** PyTorch =1.1 with Python 3
 
 ## Download and clean up sample dataset
 
