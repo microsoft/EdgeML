@@ -43,23 +43,22 @@ class BaseRNN(nn.Module):
     [batchSize, timeSteps, inputDims]
     '''
 
-    def __init__(self, RNNCell, timeSteps, device=None):
+    def __init__(self, RNNCell, device=None):
         super(BaseRNN, self).__init__()
         self.RNNCell = RNNCell
         if device is None:
             self.device = "cpu"
         else:
             self.device = device
-        self.timeSteps = timeSteps
 
     def forward(self, input):
         hiddenStates = torch.zeros(
-            [input.shape[0], self.timeSteps, self.RNNCell.output_size]).to(self.device)
+            [input.shape[0], input.shape[1], self.RNNCell.output_size]).to(self.device)
 
         hiddenState = torch.zeros([input.shape[0], self.RNNCell.output_size]).to(self.device)
         if self.RNNCell.cellType == "LSTMLR":
             cellStates = torch.zeros(
-                [input.shape[0], self.timeSteps, self.RNNCell.output_size]).to(self.device)
+                [input.shape[0], input.shape[1], self.RNNCell.output_size]).to(self.device)
             cellState = torch.zeros([input.shape[0], self.RNNCell.output_size]).to(self.device)
             for i in range(0, input.shape[1]):
                 hiddenState, cellState = self.RNNCell(

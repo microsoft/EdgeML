@@ -46,7 +46,6 @@ def main():
     assert dataDimension % inputDims == 0, "Infeasible per step input, " + \
         "Timesteps have to be integer"
 
-    timeSteps = int(dataDimension/inputDims)
 
     currDir = helpermethods.createTimeStampDir(dataDir, cell)
 
@@ -77,7 +76,7 @@ def main():
     else:
         sys.exit('Exiting: No Such Cell as ' + cell)
 
-    FastCellTrainer = FastTrainer(FastCell, timeSteps, numClasses, sW=sW, sU=sU,
+    FastCellTrainer = FastTrainer(FastCell, numClasses, sW=sW, sU=sU,
                                   learningRate=learningRate, outFile=outFile, device=device)
 
     FastCellTrainer.train(batchSize, totalEpochs,

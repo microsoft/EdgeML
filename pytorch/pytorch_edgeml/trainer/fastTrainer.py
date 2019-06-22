@@ -11,7 +11,7 @@ import numpy as np
 
 class FastTrainer:
 
-    def __init__(self, FastObj, timeSteps, numClasses, sW=1.0, sU=1.0, learningRate=0.01, outFile=None, device=None):
+    def __init__(self, FastObj, numClasses, sW=1.0, sU=1.0, learningRate=0.01, outFile=None, device=None):
         '''
         FastObj - Can be either FastRNN or FastGRNN or any of the RNN cells 
         in graph.rnn with proper initialisations
@@ -44,14 +44,13 @@ class FastTrainer:
         else:
             self.isDenseTraining = False
 
-        self.timeSteps = timeSteps
         self.assertInit()
         self.numMatrices = self.FastObj.num_weight_matrices
         self.totalMatrices = self.numMatrices[0] + self.numMatrices[1]
 
         self.optimizer = self.optimizer()
 
-        self.RNN = BaseRNN(self.FastObj, self.timeSteps, self.device).to(device)
+        self.RNN = BaseRNN(self.FastObj, self.device).to(device)
 
         self.FC = nn.Parameter(torch.randn([self.FastObj.output_size, self.numClasses])).to(device)
         self.FCbias = nn.Parameter(torch.randn([self.numClasses])).to(device)
@@ -353,7 +352,7 @@ class FastTrainer:
             ihtDone = 1
             maxTestAcc = -10000
         header = '*' * 20
-
+        self.timeSteps = int(Xtest.shape[1]/self.inputDims)
         Xtest = Xtest.reshape((-1, self.timeSteps, self.inputDims))
         Xtrain = Xtrain.reshape((-1, self.timeSteps, self.inputDims))
 
