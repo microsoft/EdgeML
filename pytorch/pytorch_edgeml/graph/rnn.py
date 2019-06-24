@@ -47,20 +47,21 @@ class BaseRNN(nn.Module):
         super(BaseRNN, self).__init__()
         self.RNNCell = RNNCell
 
-    def forward(self, input):
+    def forward(self, input, hiddenState=None, cellState=None):
         self.device = input.device
         hiddenStates = torch.zeros(
             [input.shape[0], input.shape[1],
              self.RNNCell.output_size]).to(self.device)
-
-        hiddenState = torch.zeros([input.shape[0],
-                                   self.RNNCell.output_size]).to(self.device)
+        if hiddenState is None:
+            hiddenState = torch.zeros([input.shape[0],
+                                       self.RNNCell.output_size]).to(self.device)
         if self.RNNCell.cellType == "LSTMLR":
             cellStates = torch.zeros(
                 [input.shape[0], input.shape[1],
                  self.RNNCell.output_size]).to(self.device)
-            cellState = torch.zeros(
-                [input.shape[0], self.RNNCell.output_size]).to(self.device)
+            if cellState is None:
+                cellState = torch.zeros(
+                    [input.shape[0], self.RNNCell.output_size]).to(self.device)
             for i in range(0, input.shape[1]):
                 hiddenState, cellState = self.RNNCell(
                     input[:, i, :], (hiddenState, cellState))
