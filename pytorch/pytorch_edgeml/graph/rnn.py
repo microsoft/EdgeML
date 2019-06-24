@@ -915,8 +915,8 @@ class LSTM(nn.Module):
                                wRank=wRank, uRank=uRank)
         self.unrollRNN = BaseRNN(self.cell)
 
-    def forward(self, input):
-        return self.unrollRNN(input)
+    def forward(self, input, hiddenState=None, cellState=None):
+        return self.unrollRNN(input, hiddenState, cellState)
 
 
 class GRU(nn.Module):
@@ -938,8 +938,8 @@ class GRU(nn.Module):
                               wRank=wRank, uRank=uRank)
         self.unrollRNN = BaseRNN(self.cell)
 
-    def forward(self, input):
-        return self.unrollRNN(input)
+    def forward(self, input, hiddenState=None, cellState=None):
+        return self.unrollRNN(input, hiddenState, cellState)
 
 
 class UGRNN(nn.Module):
@@ -961,8 +961,8 @@ class UGRNN(nn.Module):
                                 wRank=wRank, uRank=uRank)
         self.unrollRNN = BaseRNN(self.cell)
 
-    def forward(self, input):
-        return self.unrollRNN(input)
+    def forward(self, input, hiddenState=None, cellState=None):
+        return self.unrollRNN(input, hiddenState, cellState)
 
 
 class FastRNN(nn.Module):
@@ -986,8 +986,8 @@ class FastRNN(nn.Module):
                                 alphaInit=alphaInit, betaInit=betaInit)
         self.unrollRNN = BaseRNN(self.cell)
 
-    def forward(self, input):
-        return self.unrollRNN(input)
+    def forward(self, input, hiddenState=None, cellState=None):
+        return self.unrollRNN(input, hiddenState, cellState)
 
 
 class FastGRNN(nn.Module):
@@ -1011,5 +1011,5 @@ class FastGRNN(nn.Module):
                                  zetaInit=zetaInit, nuInit=nuInit)
         self.unrollRNN = BaseRNN(self.cell)
 
-    def forward(self, input):
-        return self.unrollRNN(input)
+    def forward(self, input, hiddenState=None, cellState=None):
+        return self.unrollRNN(input, hiddenState, cellState)
