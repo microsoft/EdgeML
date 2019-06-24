@@ -25,7 +25,8 @@ devices/sensors, and used to make fast and accurate predictions completely
 offline.
 
 The `tf` directory contains code, examples and scripts for all these algorithms
-in TensorFlow. The `cpp` directory has training and inference code for Bonsai and
+in TensorFlow. The `pytorch` directory contains code, examples and scripts for all these algorithms
+in PyTorch. The `cpp` directory has training and inference code for Bonsai and
 ProtoNN algorithms in C++. Please see install/run instruction in the Readme
 pages within these directories. The `applications` directory has code/demonstrations
 of applications of the EdgeML algorithms. The `Tools/SeeDot` directory has the
