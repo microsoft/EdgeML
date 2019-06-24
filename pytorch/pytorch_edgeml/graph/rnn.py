@@ -39,40 +39,69 @@ class BaseRNN(nn.Module):
     '''
     Generic equivalent of static_rnn in tf
     Used to unroll all the cell written in this file
-    We assume data to be batch_first ie.,
-    [batchSize, timeSteps, inputDims]
+    We assume data to be batch_first by default ie.,
+    [batchSize, timeSteps, inputDims] else
+    [timeSteps, batchSize, inputDims]
     '''
 
     def __init__(self, RNNCell):
         super(BaseRNN, self).__init__()
         self.RNNCell = RNNCell
 
-    def forward(self, input, hiddenState=None, cellState=None):
-        self.device = input.device
-        hiddenStates = torch.zeros(
-            [input.shape[0], input.shape[1],
-             self.RNNCell.output_size]).to(self.device)
-        if hiddenState is None:
-            hiddenState = torch.zeros([input.shape[0],
-                                       self.RNNCell.output_size]).to(self.device)
-        if self.RNNCell.cellType == "LSTMLR":
-            cellStates = torch.zeros(
+    def forward(self, input, hiddenState=None,
+                cellState=None, batch_first=True):
+        if batch_first is True:
+            self.device = input.device
+            hiddenStates = torch.zeros(
                 [input.shape[0], input.shape[1],
                  self.RNNCell.output_size]).to(self.device)
-            if cellState is None:
-                cellState = torch.zeros(
-                    [input.shape[0], self.RNNCell.output_size]).to(self.device)
-            for i in range(0, input.shape[1]):
-                hiddenState, cellState = self.RNNCell(
-                    input[:, i, :], (hiddenState, cellState))
-                hiddenStates[:, i, :] = hiddenState
-                cellStates[:, i, :] = cellState
-            return hiddenStates, cellStates
+            if hiddenState is None:
+                hiddenState = torch.zeros([input.shape[0],
+                                           self.RNNCell.output_size]).to(self.device)
+            if self.RNNCell.cellType == "LSTMLR":
+                cellStates = torch.zeros(
+                    [input.shape[0], input.shape[1],
+                     self.RNNCell.output_size]).to(self.device)
+                if cellState is None:
+                    cellState = torch.zeros(
+                        [input.shape[0], self.RNNCell.output_size]).to(self.device)
+                for i in range(0, input.shape[1]):
+                    hiddenState, cellState = self.RNNCell(
+                        input[:, i, :], (hiddenState, cellState))
+                    hiddenStates[:, i, :] = hiddenState
+                    cellStates[:, i, :] = cellState
+                return hiddenStates, cellStates
+            else:
+                for i in range(0, input.shape[1]):
+                    hiddenState = self.RNNCell(input[:, i, :], hiddenState)
+                    hiddenStates[:, i, :] = hiddenState
+                return hiddenStates
         else:
-            for i in range(0, input.shape[1]):
-                hiddenState = self.RNNCell(input[:, i, :], hiddenState)
-                hiddenStates[:, i, :] = hiddenState
-            return hiddenStates
+            self.device = input.device
+            hiddenStates = torch.zeros(
+                [input.shape[0], input.shape[1],
+                 self.RNNCell.output_size]).to(self.device)
+            if hiddenState is None:
+                hiddenState = torch.zeros([input.shape[0],
+                                           self.RNNCell.output_size]).to(self.device)
+            if self.RNNCell.cellType == "LSTMLR":
+                cellStates = torch.zeros(
+                    [input.shape[0], input.shape[1],
+                     self.RNNCell.output_size]).to(self.device)
+                if cellState is None:
+                    cellState = torch.zeros(
+                        [input.shape[0], self.RNNCell.output_size]).to(self.device)
+                for i in range(0, input.shape[0]):
+                    hiddenState, cellState = self.RNNCell(
+                        input[i, :, :], (hiddenState, cellState))
+                    hiddenStates[i, :, :] = hiddenState
+                    cellStates[i, :, :] = cellState
+                return hiddenStates, cellStates
+            else:
+                for i in range(0, input.shape[1]):
+                    hiddenState = self.RNNCell(input[i, :, :], hiddenState)
+                    hiddenStates[i, :, :] = hiddenState
+                return hiddenStates
 
 
 class FastGRNNCell(nn.Module):
@@ -915,8 +944,9 @@ class LSTM(nn.Module):
                                wRank=wRank, uRank=uRank)
         self.unrollRNN = BaseRNN(self.cell)
 
-    def forward(self, input, hiddenState=None, cellState=None):
-        return self.unrollRNN(input, hiddenState, cellState)
+    def forward(self, input, hiddenState=None,
+                cellState=None, batch_first=True):
+        return self.unrollRNN(input, hiddenState, cellState, batch_first)
 
 
 class GRU(nn.Module):
@@ -938,8 +968,9 @@ class GRU(nn.Module):
                               wRank=wRank, uRank=uRank)
         self.unrollRNN = BaseRNN(self.cell)
 
-    def forward(self, input, hiddenState=None, cellState=None):
-        return self.unrollRNN(input, hiddenState, cellState)
+    def forward(self, input, hiddenState=None,
+                cellState=None, batch_first=True):
+        return self.unrollRNN(input, hiddenState, cellState, batch_first)
 
 
 class UGRNN(nn.Module):
@@ -961,8 +992,9 @@ class UGRNN(nn.Module):
                                 wRank=wRank, uRank=uRank)
         self.unrollRNN = BaseRNN(self.cell)
 
-    def forward(self, input, hiddenState=None, cellState=None):
-        return self.unrollRNN(input, hiddenState, cellState)
+    def forward(self, input, hiddenState=None,
+                cellState=None, batch_first=True):
+        return self.unrollRNN(input, hiddenState, cellState, batch_first)
 
 
 class FastRNN(nn.Module):
@@ -986,8 +1018,9 @@ class FastRNN(nn.Module):
                                 alphaInit=alphaInit, betaInit=betaInit)
         self.unrollRNN = BaseRNN(self.cell)
 
-    def forward(self, input, hiddenState=None, cellState=None):
-        return self.unrollRNN(input, hiddenState, cellState)
+    def forward(self, input, hiddenState=None,
+                cellState=None, batch_first=True):
+        return self.unrollRNN(input, hiddenState, cellState, batch_first)
 
 
 class FastGRNN(nn.Module):
@@ -1011,5 +1044,6 @@ class FastGRNN(nn.Module):
                                  zetaInit=zetaInit, nuInit=nuInit)
         self.unrollRNN = BaseRNN(self.cell)
 
-    def forward(self, input, hiddenState=None, cellState=None):
-        return self.unrollRNN(input, hiddenState, cellState)
+    def forward(self, input, hiddenState=None,
+                cellState=None, batch_first=True):
+        return self.unrollRNN(input, hiddenState, cellState, batch_first)

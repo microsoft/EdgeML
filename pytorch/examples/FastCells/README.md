@@ -17,7 +17,7 @@ architectures (NMT, Encoder-Decoder etc.,) in place of the inbuilt `RNNCell`, `G
 `pytorch_edgeml.graph.rnn` also contains fully wrapped RNNs which are equivalent to `nn.LSTM` and `nn.GRU`. Implemented cells:
 **FastRNN** ([`FastRNN`](../../pytorch_edgeml/graph/rnn.py#L968)), **FastGRNN** ([`FastGRNN`](../../pytorch_edgeml/graph/rnn.py#L993)), **UGRNN** ([`UGRNN`](../../pytorch_edgeml/graph/rnn.py#L945)), **GRU** ([`GRU`](../../edgeml/graph/rnn.py#L922)) and **LSTM** ([`LSTM`](../../pytorch_edgeml/graph/rnn.py#L899)).
 
-Note that all the cells and wrappers (when used independently from `fastcell_example.py` or `pytorch_edgeml.trainer.fastTrainer`) take in data in a batch first format ie., [batchSize, timeSteps, inputDims]. `fast_example.py` automatically takes care it while assuming the standard format between tf, c++ and pytorch.
+Note that all the cells and wrappers (when used independently from `fastcell_example.py` or `pytorch_edgeml.trainer.fastTrainer`) take in data in a batch first format ie., [batchSize, timeSteps, inputDims] by default but it can also support [timeSteps, batchSize, inputDims] format by setting `batch_first` argument to False when used. `fast_example.py` automatically takes care it while assuming the standard format between tf, c++ and pytorch.
 
 For training FastCells, `pytorch_edgeml.trainer.fastTrainer` implements the three-phase
 FastCell training routine in PyTorch. A simple example,
