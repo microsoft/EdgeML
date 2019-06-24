@@ -56,10 +56,11 @@ def copySupport(src, dest):
     '''
     copy support of src tensor to dest tensor
     '''
-    support = np.nonzero(src)
-    dest_ = dest
-    dest = np.zeros(dest_.shape)
-    dest[support] = dest_[support]
+    zeroSupport = (src.view(-1)==0.0).nonzero()
+    dest = dest.reshape(-1)
+    dest[zeroSupport] = 0
+    dest = dest.reshape(src.shape)
+    del zeroSupport
     return dest
 
 

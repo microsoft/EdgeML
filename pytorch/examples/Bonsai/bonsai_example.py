@@ -87,7 +87,6 @@ def main():
                         torch.from_numpy(Ytrain.astype(np.float32)),
                         torch.from_numpy(Ytest.astype(np.float32)),
                         dataDir, currDir)
-
     sys.stdout.close()
 
 

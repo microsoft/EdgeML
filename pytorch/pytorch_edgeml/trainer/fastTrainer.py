@@ -133,11 +133,10 @@ class FastTrainer:
         self.reTrainParams = []
         for i in range(0, self.totalMatrices):
             self.reTrainParams.append(
-                utils.copySupport(self.thrsdParams[i].data,
-                                  self.FastParams[i].data.cpu()))
+                utils.copySupport(torch.FloatTensor(self.thrsdParams[i]),
+                                  self.FastParams[i].data))
         for i in range(0, self.totalMatrices):
-            self.FastParams[i].data = torch.FloatTensor(
-                self.reTrainParams[i]).to(self.device)
+            self.FastParams[i].data = self.reTrainParams[i]
 
     def getModelSize(self):
         '''

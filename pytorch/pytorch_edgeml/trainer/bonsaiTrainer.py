@@ -69,8 +69,7 @@ class BonsaiTrainer:
 
         if (self.bonsaiObj.numClasses > 2):
             if self.useMCHLoss is True:
-                marginLoss = utils.multiClassHingeLoss(
-                    logits, labels, self.device)
+                marginLoss = utils.multiClassHingeLoss(logits, labels)
             else:
                 marginLoss = utils.crossEntropyLoss(logits, labels)
             loss = marginLoss + regLoss
@@ -135,15 +134,15 @@ class BonsaiTrainer:
         currZ = self.bonsaiObj.Z.data
         currT = self.bonsaiObj.T.data
 
-        newW = utils.copySupport(self.__thrsdW, currW.cpu())
-        newV = utils.copySupport(self.__thrsdV, currV.cpu())
-        newZ = utils.copySupport(self.__thrsdZ, currZ.cpu())
-        newT = utils.copySupport(self.__thrsdT, currT.cpu())
+        newW = utils.copySupport(torch.FloatTensor(self.__thrsdW), currW)
+        newV = utils.copySupport(torch.FloatTensor(self.__thrsdV), currV)
+        newZ = utils.copySupport(torch.FloatTensor(self.__thrsdZ), currZ)
+        newT = utils.copySupport(torch.FloatTensor(self.__thrsdT), currT)
 
-        self.bonsaiObj.W.data = torch.FloatTensor(newW).to(self.device)
-        self.bonsaiObj.V.data = torch.FloatTensor(newV).to(self.device)
-        self.bonsaiObj.Z.data = torch.FloatTensor(newZ).to(self.device)
-        self.bonsaiObj.T.data = torch.FloatTensor(newT).to(self.device)
+        self.bonsaiObj.W.data = newW
+        self.bonsaiObj.V.data = newV
+        self.bonsaiObj.Z.data = newZ
+        self.bonsaiObj.T.data = newT
 
     def assertInit(self):
         err = "sparsity must be between 0 and 1"
