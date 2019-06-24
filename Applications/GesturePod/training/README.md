@@ -1,4 +1,4 @@
-Training Ml model for gesture recognition
+Training ML model for gesture recognition
 =========================
 
 ## Table of Contents
@@ -7,7 +7,7 @@ Training Ml model for gesture recognition
 - [Data Collection](#data-dollection)
 - [Data Labelling](#data-labelling)
 - [Feature Extraction](#feature-extraction)
-- [Also](#also)
+- [Training and Deploying](#train-deploy)
 - [Dependencies](#dependencies)
 
 
@@ -45,7 +45,13 @@ The raw data file is stored at `./data/raw_data/`.
 
 ## Data Labelling
 
-*Coming Soon..*
+1. The raw data in `./data/raw_data/foo.csv` must be labelled with the following command:
+```
+python labelData.py foo.csv
+```
+This command will launch an interactive GUI. Sensor values will keep rolling acorss the screen. Use `spacebar` to pause the action. Center the signature using the arrow keys, and key in the corresponding "label" using number keys. Press spacebar to continue. For example, on seeing a signature of Double Tap - hit spacebar to freeze the values. Then after centering the signature using right/left arrow keys, hit 3 (DTAP). Press spacebar to continue.
+
+1. The labelled data file `foo_labelled.csv` will be written at `./data/labelled_data/`.  
 
 
 ## Feature Extraction
@@ -58,6 +64,8 @@ python generateFeatures.py
 ```
 This will generate a `train.csv` and `test.csv` files that should be used to generate a ML model.
 
+## Training and Deploying
+*Coming Soon...*
 
 ## Dependencies
 To communicate with the MPU6050, we use [jrowberg's](https://github.com/jrowberg/i2cdevlib) ```i2cdevlib``` library.  Last tested with commit [900b8f9](https://github.com/jrowberg/i2cdevlib/tree/900b8f959e9fa5c3126e0301f8a61d45a4ea99cc).

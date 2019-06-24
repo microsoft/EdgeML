@@ -1,3 +1,8 @@
+'''
+Copyright (c) Microsoft Corporation. All rights reserved.
+Licensed under the MIT license.
+'''
+
 import matplotlib.pyplot as plt
 from timestep.plotterobjects import LinePlotter
 import numpy as np

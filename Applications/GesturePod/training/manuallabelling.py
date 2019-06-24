@@ -1,3 +1,10 @@
+'''
+Copyright (c) Microsoft Corporation. All rights reserved.
+Licensed under the MIT license.
+
+labelData.py used to label (sliding) window of data.
+'''
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import sys
@@ -9,13 +16,12 @@ from timestep.plotterobjects import LinePlotter, BarPlotter
 from timestep.plotterobjects import BooleanPlotter, StatusBox
 from timestep.eventhandler import BasicEventHandler
 
-NOTA = '0'
+NOISE = '0'
 SILENCE = '1'
 DTAP = '3'
 RIGHT_TWIST = '4'
 LEFT_TWIST = '5'
-RIGHT_TWIST_SLOW = '7'
-LEFT_TWIST_SLOW= '8'
+TWIRL = '7'
 DOUBLE_SWIPE = '9'
 
 def defaultCB(event, eventHandlerObj):
@@ -195,7 +201,9 @@ def run(dataFrame, length, stride):
 
 
 def main():
-    dataFrame = pd.read_csv(sys.argv[1])
+    fileName  = sys.argv[1]
+    file      = "./data/raw_data/" + fileName 
+    dataFrame = pd.read_csv(file)
     run(dataFrame, 400, 20)
 
 
