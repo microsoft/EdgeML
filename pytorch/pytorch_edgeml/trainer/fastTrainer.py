@@ -117,15 +117,19 @@ class FastTrainer:
         Function to run the IHT routine on FastObj
         '''
         self.thrsdParams = []
+        thrsdParams = []
         for i in range(0, self.numMatrices[0]):
-            self.thrsdParams.append(
+            thrsdParams.append(
                 utils.hardThreshold(self.FastParams[i].data.cpu(), self.sW))
         for i in range(self.numMatrices[0], self.totalMatrices):
-            self.thrsdParams.append(
+            thrsdParams.append(
                 utils.hardThreshold(self.FastParams[i].data.cpu(), self.sU))
         for i in range(0, self.totalMatrices):
             self.FastParams[i].data = torch.FloatTensor(
-                self.thrsdParams[i]).to(self.device)
+                thrsdParams[i]).to(self.device)
+        for i in range(0, self.totalMatrices):
+            self.thrsdParams.append(torch.FloatTensor(
+                np.copy(thrsdParams[i])).to(self.device))
 
     def runSparseTraining(self):
         '''
@@ -134,7 +138,7 @@ class FastTrainer:
         self.reTrainParams = []
         for i in range(0, self.totalMatrices):
             self.reTrainParams.append(
-                utils.copySupport(torch.FloatTensor(self.thrsdParams[i]),
+                utils.copySupport(self.thrsdParams[i],
                                   self.FastParams[i].data))
         for i in range(0, self.totalMatrices):
             self.FastParams[i].data = self.reTrainParams[i]

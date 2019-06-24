@@ -111,19 +111,28 @@ class BonsaiTrainer:
         currZ = self.bonsaiObj.Z.data
         currT = self.bonsaiObj.T.data
 
-        self.__thrsdW = utils.hardThreshold(currW.cpu(), self.sW)
-        self.__thrsdV = utils.hardThreshold(currV.cpu(), self.sV)
-        self.__thrsdZ = utils.hardThreshold(currZ.cpu(), self.sZ)
-        self.__thrsdT = utils.hardThreshold(currT.cpu(), self.sT)
+        __thrsdW = utils.hardThreshold(currW.cpu(), self.sW)
+        __thrsdV = utils.hardThreshold(currV.cpu(), self.sV)
+        __thrsdZ = utils.hardThreshold(currZ.cpu(), self.sZ)
+        __thrsdT = utils.hardThreshold(currT.cpu(), self.sT)
 
         self.bonsaiObj.W.data = torch.FloatTensor(
-            self.__thrsdW).to(self.device)
+            __thrsdW).to(self.device)
         self.bonsaiObj.V.data = torch.FloatTensor(
-            self.__thrsdV).to(self.device)
+            __thrsdV).to(self.device)
         self.bonsaiObj.Z.data = torch.FloatTensor(
-            self.__thrsdZ).to(self.device)
+            __thrsdZ).to(self.device)
         self.bonsaiObj.T.data = torch.FloatTensor(
-            self.__thrsdT).to(self.device)
+            __thrsdT).to(self.device)
+
+        self.__thrsdW = torch.FloatTensor(
+            np.copy(__thrsdW)).to(self.device)
+        self.__thrsdV = torch.FloatTensor(
+            np.copy(__thrsdV)).to(self.device)
+        self.__thrsdZ = torch.FloatTensor(
+            np.copy(__thrsdZ)).to(self.device)
+        self.__thrsdT = torch.FloatTensor(
+            np.copy(__thrsdT)).to(self.device)
 
     def runSparseTraining(self):
         '''
@@ -134,10 +143,10 @@ class BonsaiTrainer:
         currZ = self.bonsaiObj.Z.data
         currT = self.bonsaiObj.T.data
 
-        newW = utils.copySupport(torch.FloatTensor(self.__thrsdW), currW)
-        newV = utils.copySupport(torch.FloatTensor(self.__thrsdV), currV)
-        newZ = utils.copySupport(torch.FloatTensor(self.__thrsdZ), currZ)
-        newT = utils.copySupport(torch.FloatTensor(self.__thrsdT), currT)
+        newW = utils.copySupport(self.__thrsdW, currW)
+        newV = utils.copySupport(self.__thrsdV, currV)
+        newZ = utils.copySupport(self.__thrsdZ, currZ)
+        newT = utils.copySupport(self.__thrsdT, currT)
 
         self.bonsaiObj.W.data = newW
         self.bonsaiObj.V.data = newV
