@@ -1,4 +1,4 @@
-Data Collection *(for MKR1000)*
+Training Ml model for gesture recognition
 =========================
 
 ## Table of Contents
