@@ -34,7 +34,14 @@ data into the required format.
 
 Along with the example notebook, a command line execution script for ProtoNN is
 provided in `protoNN_example.py`. After the USPS data has been setup, this
-script can be used with the following command:
+script can be used to run ProtoNN on the processed data.
+
+Create a temporary matrices for the model matrices.
+```
+mkdir ./model
+```
+
+The run the ProtoNN script;
 
 ```
 python protoNN_example.py \
@@ -45,7 +52,7 @@ python protoNN_example.py \
       --learning-rate 0.1 \
       --epochs 200 \
       --val-step 10 \
-      --output-dir ./
+      --output-dir ./model
 ```
 
 You can expect a test set accuracy of about 92.5%.
