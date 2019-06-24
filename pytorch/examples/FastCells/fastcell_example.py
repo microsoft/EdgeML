@@ -55,23 +55,23 @@ def main():
         FastCell = FastGRNNCell(inputDims, hiddenDims,
                                 gate_non_linearity=gate_non_linearity,
                                 update_non_linearity=update_non_linearity,
-                                wRank=wRank, uRank=uRank).to(device)
+                                wRank=wRank, uRank=uRank)
     elif cell == "FastRNN":
         FastCell = FastRNNCell(inputDims, hiddenDims,
                                update_non_linearity=update_non_linearity,
-                               wRank=wRank, uRank=uRank).to(device)
+                               wRank=wRank, uRank=uRank)
     elif cell == "UGRNN":
         FastCell = UGRNNLRCell(inputDims, hiddenDims,
                                update_non_linearity=update_non_linearity,
-                               wRank=wRank, uRank=uRank).to(device)
+                               wRank=wRank, uRank=uRank)
     elif cell == "GRU":
         FastCell = GRULRCell(inputDims, hiddenDims,
                              update_non_linearity=update_non_linearity,
-                             wRank=wRank, uRank=uRank).to(device)
+                             wRank=wRank, uRank=uRank)
     elif cell == "LSTM":
         FastCell = LSTMLRCell(inputDims, hiddenDims,
                               update_non_linearity=update_non_linearity,
-                              wRank=wRank, uRank=uRank).to(device)
+                              wRank=wRank, uRank=uRank)
     else:
         sys.exit('Exiting: No Such Cell as ' + cell)
 

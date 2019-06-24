@@ -6,14 +6,14 @@ import torch
 import torch.nn.functional as F
 
 
-def multiClassHingeLoss(logits, labels, device):
+def multiClassHingeLoss(logits, labels):
     '''
     MultiClassHingeLoss to match C++ Version - No pytorch internal version
     '''
     flatLogits = torch.reshape(logits, [-1, ])
     labels_ = labels.argmax(dim=1)
 
-    correctId = torch.arange(labels.shape[0]).to(device) * labels.shape[1] + labels_
+    correctId = torch.arange(labels.shape[0]).to(logits.device) * labels.shape[1] + labels_
     correctLogit = torch.gather(flatLogits, 0, correctId)
 
     maxLabel = logits.argmax(dim=1)

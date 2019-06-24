@@ -30,7 +30,7 @@ class FastTrainer:
         self.numClasses = numClasses
         self.inputDims = self.FastObj.input_size
         if device is None:
-            self.device = "cpu"
+            self.device = torch.device("cpu")
         else:
             self.device = device
 
@@ -52,11 +52,11 @@ class FastTrainer:
 
         self.optimizer = self.optimizer()
 
-        self.RNN = BaseRNN(self.FastObj, self.device).to(device)
+        self.RNN = BaseRNN(self.FastObj).to(self.device)
 
         self.FC = nn.Parameter(torch.randn(
-            [self.FastObj.output_size, self.numClasses])).to(device)
-        self.FCbias = nn.Parameter(torch.randn([self.numClasses])).to(device)
+            [self.FastObj.output_size, self.numClasses])).to(self.device)
+        self.FCbias = nn.Parameter(torch.randn([self.numClasses])).to(self.device)
 
         self.FastParams = self.FastObj.getVars()
 
@@ -392,6 +392,8 @@ class FastTrainer:
                 batchAcc = self.accuracy(logits, batchY.to(self.device))
                 batchLoss.backward()
                 self.optimizer.step()
+
+                del batchX, batchY
 
                 trainAcc += batchAcc.item()
                 trainLoss += batchLoss.item()

@@ -43,15 +43,12 @@ class BaseRNN(nn.Module):
     [batchSize, timeSteps, inputDims]
     '''
 
-    def __init__(self, RNNCell, device=None):
+    def __init__(self, RNNCell):
         super(BaseRNN, self).__init__()
         self.RNNCell = RNNCell
-        if device is None:
-            self.device = "cpu"
-        else:
-            self.device = device
 
     def forward(self, input):
+        self.device = input.device
         hiddenStates = torch.zeros(
             [input.shape[0], input.shape[1],
              self.RNNCell.output_size]).to(self.device)
@@ -180,7 +177,7 @@ class FastGRNNCell(nn.Module):
     @property
     def cellType(self):
         return "FastGRNN"
-
+    
     def forward(self, input, state):
         if self._wRank is None:
             wComp = torch.matmul(input, self.W)
@@ -639,6 +636,7 @@ class GRULRCell(nn.Module):
         self.bias_r = nn.Parameter(torch.ones([1, hidden_size]))
         self.bias_gate = nn.Parameter(torch.ones([1, hidden_size]))
         self.bias_update = nn.Parameter(torch.ones([1, hidden_size]))
+        self._device = self.bias_update.device
 
     @property
     def state_size(self):
@@ -808,6 +806,7 @@ class UGRNNLRCell(nn.Module):
 
         self.bias_gate = nn.Parameter(torch.ones([1, hidden_size]))
         self.bias_update = nn.Parameter(torch.ones([1, hidden_size]))
+        self._device = self.bias_update.device
 
     @property
     def state_size(self):
