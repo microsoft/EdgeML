@@ -13,7 +13,8 @@ def multiClassHingeLoss(logits, labels):
     flatLogits = torch.reshape(logits, [-1, ])
     labels_ = labels.argmax(dim=1)
 
-    correctId = torch.arange(labels.shape[0]).to(logits.device) * labels.shape[1] + labels_
+    correctId = torch.arange(labels.shape[0]).to(
+        logits.device) * labels.shape[1] + labels_
     correctLogit = torch.gather(flatLogits, 0, correctId)
 
     maxLabel = logits.argmax(dim=1)
@@ -56,7 +57,7 @@ def copySupport(src, dest):
     '''
     copy support of src tensor to dest tensor
     '''
-    zeroSupport = (src.view(-1)==0.0).nonzero()
+    zeroSupport = (src.view(-1) == 0.0).nonzero()
     dest = dest.reshape(-1)
     dest[zeroSupport] = 0
     dest = dest.reshape(src.shape)

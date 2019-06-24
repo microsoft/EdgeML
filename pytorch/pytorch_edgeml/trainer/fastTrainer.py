@@ -56,7 +56,8 @@ class FastTrainer:
 
         self.FC = nn.Parameter(torch.randn(
             [self.FastObj.output_size, self.numClasses])).to(self.device)
-        self.FCbias = nn.Parameter(torch.randn([self.numClasses])).to(self.device)
+        self.FCbias = nn.Parameter(torch.randn(
+            [self.numClasses])).to(self.device)
 
         self.FastParams = self.FastObj.getVars()
 

@@ -39,7 +39,7 @@ class BaseRNN(nn.Module):
     '''
     Generic equivalent of static_rnn in tf
     Used to unroll all the cell written in this file
-    We assume data to be batch_first ie., 
+    We assume data to be batch_first ie.,
     [batchSize, timeSteps, inputDims]
     '''
 
@@ -178,7 +178,7 @@ class FastGRNNCell(nn.Module):
     @property
     def cellType(self):
         return "FastGRNN"
-    
+
     def forward(self, input, state):
         if self._wRank is None:
             wComp = torch.matmul(input, self.W)
