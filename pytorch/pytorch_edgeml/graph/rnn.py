@@ -82,7 +82,7 @@ class BaseRNN(nn.Module):
                 [input.shape[0], input.shape[1],
                  self.RNNCell.output_size]).to(self.device)
             if hiddenState is None:
-                hiddenState = torch.zeros([input.shape[0],
+                hiddenState = torch.zeros([input.shape[1],
                                            self.RNNCell.output_size]).to(self.device)
             if self.RNNCell.cellType == "LSTMLR":
                 cellStates = torch.zeros(
@@ -90,7 +90,7 @@ class BaseRNN(nn.Module):
                      self.RNNCell.output_size]).to(self.device)
                 if cellState is None:
                     cellState = torch.zeros(
-                        [input.shape[0], self.RNNCell.output_size]).to(self.device)
+                        [input.shape[1], self.RNNCell.output_size]).to(self.device)
                 for i in range(0, input.shape[0]):
                     hiddenState, cellState = self.RNNCell(
                         input[i, :, :], (hiddenState, cellState))
@@ -98,7 +98,7 @@ class BaseRNN(nn.Module):
                     cellStates[i, :, :] = cellState
                 return hiddenStates, cellStates
             else:
-                for i in range(0, input.shape[1]):
+                for i in range(0, input.shape[0]):
                     hiddenState = self.RNNCell(input[i, :, :], hiddenState)
                     hiddenStates[i, :, :] = hiddenState
                 return hiddenStates
