@@ -56,7 +56,8 @@ class Bonsai(nn.Module):
             Z = torch.randn([self.projectionDimension, self.dataDimension])
             Z = nn.Parameter(Z)
         else:
-            Z.data = torch.from_numpy(Z.astype(np.float32))
+            Z = torch.from_numpy(Z.astype(np.float32))
+            Z = nn.Parameter(Z)
         return Z
 
     def initW(self, W):
@@ -65,7 +66,8 @@ class Bonsai(nn.Module):
                 [self.numClasses * self.totalNodes, self.projectionDimension])
             W = nn.Parameter(W)
         else:
-            W.data = torch.from_numpy(W.astype(np.float32))
+            W = torch.from_numpy(W.astype(np.float32))
+            W = nn.Parameter(W)
         return W
 
     def initV(self, V):
@@ -74,7 +76,8 @@ class Bonsai(nn.Module):
                 [self.numClasses * self.totalNodes, self.projectionDimension])
             V = nn.Parameter(V)
         else:
-            V.data = torch.from_numpy(V.astype(np.float32))
+            V = torch.from_numpy(V.astype(np.float32))
+            V = nn.Parameter(V)
         return V
 
     def initT(self, T):
@@ -82,7 +85,8 @@ class Bonsai(nn.Module):
             T = torch.randn([self.internalNodes, self.projectionDimension])
             T = nn.Parameter(T)
         else:
-            T.data = torch.from_numpy(T.astype(np.float32))
+            T = torch.from_numpy(T.astype(np.float32))
+            T = nn.Parameter(T)
         return T
 
     def forward(self, X, sigmaI):
