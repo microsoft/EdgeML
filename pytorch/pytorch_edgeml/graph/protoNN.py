@@ -31,15 +31,11 @@ class ProtoNN:
         self.__L = numOutputLabels
 
         self.W, self.B, self.Z = None, None, None
-        self.gamma = None
+        self.gamma = gamma
 
         self.__validInit = False
         self.__initWBZ(W, B, Z)
-        self.__initGamma(gamma)
         self.__validateInit()
-        self.protoNNOut = None
-        self.predictions = None
-        self.accuracy = None
 
     def __validateInit(self):
         self.__validinit = False
@@ -62,20 +58,16 @@ class ProtoNN:
             self.W = nn.Parameter(torch.from_numpy(inW.astype(np.float32)))
 
         if inB is None:
-            self.B = torch.randn([self.__d, self.__d_cap])
+            self.B = torch.randn([self.__d_cap, self.__m])
             self.B = nn.Parameter(self.B)
         else:
             self.B = nn.Parameter(torch.from_numpy(inB.astype(np.float32)))
 
         if inZ is None:
-            self.Z = torch.randn([self.__d, self.__d_cap])
+            self.Z = torch.randn([self.__L, self.__m])
             self.Z = nn.Parameter(self.Z)
         else:
             self.Z = nn.Parameter(torch.from_numpy(inZ.astype(np.float32)))
-
-    def __initGamma(self, gamma):
-        # TODO: Verify if this has the intended effect
-        self.gamma = nn.Parameter(gamma, requires_grad=False)
 
     def getHyperParams(self):
         '''
@@ -121,9 +113,7 @@ class ProtoNN:
         returns: The forward computation outputs, self.protoNNOut
         '''
         assert self.__validInit is True, "Initialization failed!"
-        # TODO: Is this the right way to do it in pytorch ?
-        if self.protoNNOut is not None:
-            return self.protoNNOut
+
         W, B, Z, gamma = self.W, self.B, self.Z, self.gamma
         WX = torch.matmul(X, W)
         dim = [-1, WX.shape[1], 1]
@@ -132,28 +122,14 @@ class ProtoNN:
         B_ = torch.reshape(B, dim)
         l2sim = B_ - WX
         l2sim = torch.pow(l2sim, 2)
-        l2sim = torch.sum(l2sim, dim=1)
+        l2sim = torch.sum(l2sim, dim=1, keepdim=True)
         self.l2sim = l2sim
         gammal2sim = (-1 * gamma * gamma) * l2sim
         M = torch.exp(gammal2sim)
-        dim = [1] + Z.shape
+        dim = [1] + list(Z.shape)
         Z_ = torch.reshape(Z, dim)
-        y = torch.multiply(Z_, M)
-        y = torch.sum(y, axis=2)
-        self.protoNNOut = y
-        self.predictions = torch.argmax(y, dim=1)
-        if Y is not None:
-            self.createAccOp(self.protoNNOut, Y)
+        y = Z_ * M
+        y = torch.sum(y, dim=2)
         return y
-
-    def createAccOp(self, outputs, target):
-        raise NotImplementedError
-
-    def getPredictionOps(self):
-        raise NotImplementedError
-
-    def getAccuracyOp(self):
-        raise NotImplementedError
-
 
 
