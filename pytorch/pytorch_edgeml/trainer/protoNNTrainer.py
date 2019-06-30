@@ -37,7 +37,7 @@ class ProtoNNTrainer:
 
         TODO:
             1. [Done] Test all Loss types
-            2. Implement sparcity (IHT)
+            2. [Done] Implement sparcity (IHT)
             3. [Done] Implement regularization
             4. [Done] Implement accuracy
             5. Implement on GPU training
@@ -112,8 +112,18 @@ class ProtoNNTrainer:
         acc = torch.mean(correct)
         return acc, numCorrect
 
+    def hardThreshold(self, device):
+        prtn = self.protoNNObj
+        W, B, Z = prtn.W.data, prtn.B.data, prtn.Z.data
+        newW = utils.hardThreshold(W, self.__sW)
+        newB = utils.hardThreshold(B, self.__sB)
+        newZ = utils.hardThreshold(Z, self.__sZ)
+        prtn.W.data = torch.FloatTensor(newW).to(device)
+        prtn.B.data = torch.FloatTensor(newB).to(device)
+        prtn.Z.data = torch.FloatTensor(newZ).to(device)
+
     def train(self, batchSize, epochs, x_train, x_val, y_train, y_val,
-              printStep=10, valStep=1):
+              printStep=10, valStep=1, device='cpu'):
         '''
         Performs dense training of ProtoNN followed by iterative hard
         thresholding to enforce sparsity constraints.
@@ -162,6 +172,8 @@ class ProtoNNTrainer:
                     print("Epoch %d batch %d loss %f acc %f" % (epoch, i, loss,
                                                                acc))
             # Perform IHT Here.
+            if self.sparseTraining:
+                self.hardThreshold(device)
             # Perform validation set evaluation
             if (epoch + 1) % valStep == 0:
                 numCorrect = 0
