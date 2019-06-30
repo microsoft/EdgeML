@@ -36,9 +36,9 @@ class ProtoNNTrainer:
         lossType: ['l2', 'xentropy']
 
         TODO:
-            1. Test all Loss types
+            1. [Done] Test all Loss types
             2. Implement sparcity (IHT)
-            3. Implement regularization
+            3. [Done] Implement regularization
             4. [Done] Implement accuracy
             5. Implement on GPU training
             6. Implement async data ingestion
@@ -89,15 +89,14 @@ class ProtoNNTrainer:
     def loss(self, logits, labels_or_target):
         labels = labels_or_target
         assert len(logits) == len(labels)
-        assert labels.ndim == 2
-        assert logits.ndim == 2
+        assert len(labels.shape) == 2
+        assert len(logits.shape) == 2
         regLoss = (self.__regW * (torch.norm(self.protoNNObj.W)**2) +
                    self.__regB * (torch.norm(self.protoNNObj.B)**2) +
                    self.__regZ * (torch.norm(self.protoNNObj.Z)**2))
-
         if self.__lossType == 'xentropy':
             _, labels = torch.max(labels, dim=1)
-            assert labels.ndim == 1
+            assert len(labels.shape)== 1
         loss = self.lossCriterion(logits, labels) + regLoss
         return loss
 
@@ -153,7 +152,7 @@ class ProtoNNTrainer:
                 x_batch, y_batch = torch.Tensor(x_batch), torch.Tensor(y_batch)
                 self.optimizer.zero_grad()
                 logits = self.protoNNObj.forward(x_batch)
-                loss = self.lossCriterion(logits, y_batch)
+                loss = self.loss(logits, y_batch)
                 loss.backward()
                 self.optimizer.step()
                 _, predictions = torch.max(logits, dim=1)
