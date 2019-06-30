@@ -60,9 +60,9 @@ to this
 If you use the EdgeML library in your projects or publications, please do cite
 us:
 ```
-   D. Dennis, S. Gopinath, C. Gupta, A. Kumar, A. Kusupati, S. Patil and H.V. Simhadri.
-   The EdgeML Library: A library for machine learning on the edge.
-   https://github.com/Microsoft/EdgeML
+ D. Dennis, S. Gopinath, C. Gupta, A. Kumar, A. Kusupati, S. Patil and H.V. Simhadri.
+ The EdgeML Library: A library for machine learning on the edge.
+ https://github.com/Microsoft/EdgeML
 ```
 
 The following BibTeX can also be used.
@@ -75,7 +75,6 @@ The following BibTeX can also be used.
  url = {https://github.com/Microsoft/EdgeML}
 }
 ```
-
 
 ### Microsoft Open Source Code of Conduct This project has adopted the
 [Microsoft Open Source Code of
