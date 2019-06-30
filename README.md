@@ -57,6 +57,19 @@ us](mailto:edgeml@microsoft.com).
 to this
 [project](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
 
+If you use the EdgeML library in your projects or publications, please use the
+following BibTeX to cite us.
+
+```
+   @online{edgemlcode,
+     title = {{The EdgeML Library: An ML library for machine learning on the Edge}},
+     author={Kusupati, Aditya and Dennis, Don and Gupta, Chirag and Kumar, Ashish and Patil, Shishir and Simhadri, Harsha},
+     year = 2017,
+     url = {https://github.com/Microsoft/EdgeML}
+  }
+
+```
+
 
 ### Microsoft Open Source Code of Conduct This project has adopted the
 [Microsoft Open Source Code of
