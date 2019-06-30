@@ -39,7 +39,7 @@ class ProtoNNTrainer:
             1. Test all Loss types
             2. Implement sparcity (IHT)
             3. Implement regularization
-            4. Implement accuracy
+            4. [Done] Implement accuracy
             5. Implement on GPU training
             6. Implement async data ingestion
         '''
