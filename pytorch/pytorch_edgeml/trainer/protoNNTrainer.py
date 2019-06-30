@@ -89,10 +89,14 @@ class ProtoNNTrainer:
         assert len(logits) == len(labels)
         assert labels.ndim == 2
         assert logits.ndim == 2
+        regLoss = (self.__regW * (torch.norm(self.protoNNObj.W)**2) +
+                   self.__regB * (torch.norm(self.protoNNObj.B)**2) +
+                   self.__regZ * (torch.norm(self.protoNNObj.Z)**2))
+
         if self.__lossType == 'xentropy':
             _, labels = torch.max(labels, dim=1)
             assert labels.ndim == 1
-        loss = self.lossCriterion(logits, labels)
+        loss = self.lossCriterion(logits, labels) + regLoss
         return loss
 
     def accuracy(self, predictions, labels):
