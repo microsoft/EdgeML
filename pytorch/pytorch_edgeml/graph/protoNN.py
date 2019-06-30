@@ -6,7 +6,7 @@ import torch.nn as nn
 import numpy as np
 
 
-class ProtoNN:
+class ProtoNN(nn.Module):
     def __init__(self, inputDimension, projectionDimension, numPrototypes,
                  numOutputLabels, gamma, W=None, B=None, Z=None):
         '''
@@ -24,7 +24,7 @@ class ProtoNN:
                 B   projectionDimension (d_cap) x numPrototypes (m)
                 Z   numOutputLabels (L) x numPrototypes (m)
         '''
-
+        super(ProtoNN, self).__init__()
         self.__d = inputDimension
         self.__d_cap = projectionDimension
         self.__m = numPrototypes
@@ -93,23 +93,13 @@ class ProtoNN:
         '''
         return self.W, self.B, self.Z, self.gamma
 
-
-    def forward(self, X, Y=None):
+    def forward(self, X):
         '''
         This method is responsible for construction of the forward computation
         graph. The end point of the computation graph, or in other words the
-        output operator for the forward computation is returned. Additionally,
-        if the argument Y is provided, a classification accuracy operator with
-        Y as target will also be created. For this, Y is assumed to in one-hot
-        encoded format and the class with the maximum prediction score is
-        compared to the encoded class in Y.  This accuracy operator is returned
-        by getAccuracyOp() method. If a different accuracyOp is required, it
-        can be defined by overriding the createAccOp(protoNNScoresOut, Y)
-        method.
+        output operator for the forward computation is returned. 
 
         X: Input of shape [-1, inputDimension]
-        Y: Optional, for targets (labels or classes).
-            Expected shape is [-1, numOutputLabels].
         returns: The forward computation outputs, self.protoNNOut
         '''
         assert self.__validInit is True, "Initialization failed!"
