@@ -42,6 +42,8 @@ class ProtoNNTrainer:
             4. [Done] Implement accuracy
             5. Implement on GPU training
             6. Implement async data ingestion
+            7. [Done] Implement USPS
+            8. [Done] Implement validation accuracy computation
         '''
         self.protoNNObj = protoNNObj
         self.__regW = regW
@@ -100,11 +102,16 @@ class ProtoNNTrainer:
         return loss
 
     def accuracy(self, predictions, labels):
+        '''
+        Returns accuracy and number of correct predictions.
+        '''
         assert len(predictions.shape) == 1
         assert len(labels.shape) == 1
         assert len(predictions) == len(labels)
-        acc = torch.mean((predictions == labels).double())
-        return acc
+        correct = (predictions == labels).double()
+        numCorrect = torch.sum(correct)
+        acc = torch.mean(correct)
+        return acc, numCorrect
 
     def train(self, batchSize, epochs, x_train, x_val, y_train, y_val,
               printStep=10, valStep=1):
@@ -151,9 +158,24 @@ class ProtoNNTrainer:
                 self.optimizer.step()
                 _, predictions = torch.max(logits, dim=1)
                 _, target = torch.max(y_batch, dim=1)
-                acc = self.accuracy(predictions, target)
+                acc, _ = self.accuracy(predictions, target)
                 if i % printStep == 0:
                     print("Epoch %d batch %d loss %f acc %f" % (epoch, i, loss,
                                                                acc))
+            # Perform IHT Here.
+            # Perform validation set evaluation
+            if (epoch + 1) % valStep == 0:
+                numCorrect = 0
+                for i in range(len(x_val_batches)):
+                    x_batch, y_batch = x_val_batches[i], y_val_batches[i]
+                    x_batch, y_batch = torch.Tensor(x_batch), torch.Tensor(y_batch)
+                    logits = self.protoNNObj.forward(x_batch)
+                    _, predictions = torch.max(logits, dim=1)
+                    _, target = torch.max(y_batch, dim=1)
+                    _, count = self.accuracy(predictions, target)
+                    numCorrect += count
+                print("Validation accuracy: %f" % (numCorrect / len(x_val)))
+
+
 
 
