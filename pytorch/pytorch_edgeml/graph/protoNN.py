@@ -97,7 +97,7 @@ class ProtoNN(nn.Module):
         '''
         This method is responsible for construction of the forward computation
         graph. The end point of the computation graph, or in other words the
-        output operator for the forward computation is returned. 
+        output operator for the forward computation is returned.
 
         X: Input of shape [-1, inputDimension]
         returns: The forward computation outputs, self.protoNNOut
