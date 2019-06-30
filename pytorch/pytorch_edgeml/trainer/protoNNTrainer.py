@@ -35,15 +35,6 @@ class ProtoNNTrainer:
             Y [-1, num Labels]
         lossType: ['l2', 'xentropy']
 
-        TODO:
-            1. [Done] Test all Loss types
-            2. [Done] Implement sparcity (IHT)
-            3. [Done] Implement regularization
-            4. [Done] Implement accuracy
-            5. Implement on GPU training
-            6. Implement async data ingestion
-            7. [Done] Implement USPS
-            8. [Done] Implement validation accuracy computation
         '''
         self.protoNNObj = protoNNObj
         self.__regW = regW
@@ -186,7 +177,4 @@ class ProtoNNTrainer:
                     _, count = self.accuracy(predictions, target)
                     numCorrect += count
                 print("Validation accuracy: %f" % (numCorrect / len(x_val)))
-
-
-
 
