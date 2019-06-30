@@ -58,12 +58,12 @@ to this
 [project](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
 
 If you use the EdgeML library in your projects or publications, please use the
-following BibTeX to cite us.
+following BibTeX to cite us. Note: Author ordering is based on last names.
 
 ```
    @online{edgemlcode,
      title = {{The EdgeML Library: An ML library for machine learning on the Edge}},
-     author={Kusupati, Aditya and Dennis, Don and Gupta, Chirag and Kumar, Ashish and Patil, Shishir and Simhadri, Harsha},
+     author={Dennis, Don and Gopinath, Sridhar and Gupta, Chirag and Kumar, Ashish and Kusupati, Aditya and Patil, Shishir and Simhadri, Harsha Vardhan},
      year = 2017,
      url = {https://github.com/Microsoft/EdgeML}
   }
