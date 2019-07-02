@@ -61,7 +61,7 @@ If you use the EdgeML library in your projects or publications, please do cite
 us:
 ```
  D. Dennis, S. Gopinath, C. Gupta, A. Kumar, A. Kusupati, S. Patil and H.V. Simhadri.
- The EdgeML Library: A library for machine learning on the edge.
+ EdgeML: Machine Learning for resource-constrained Edge devices.
  https://github.com/Microsoft/EdgeML
 ```
 
@@ -69,7 +69,7 @@ The following BibTeX can also be used.
 
 ```
 @online{edgemlcode,
- title = {{The EdgeML Library: A library for machine learning on the Edge}},
+ title = {{EdgeML: Machine Learning for resource-constrained Edge devices}},
  author={Dennis, Don and Gopinath, Sridhar and Gupta, Chirag and Kumar, Ashish and Kusupati, Aditya and Patil, Shishir and Simhadri, Harsha Vardhan},
  year = 2017,
  url = {https://github.com/Microsoft/EdgeML}
