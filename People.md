@@ -9,7 +9,7 @@ permalink: /People
   <div class="col-sm-3 pt-2 pb-4">
     <div class="row">
       <div class="col-sm-12">
-        <img src="/img/people/manchepalli.jpg" alt="Ajay Manchepalli's Image" class="img-thumbnail">
+        <img src="{{ site.baseurl }}/img/people/manchepalli.jpg" alt="Ajay Manchepalli's Image" class="img-thumbnail">
       </div>
     </div>
     <div class="row text-center">
