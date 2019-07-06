@@ -1047,3 +1047,8 @@ class FastGRNN(nn.Module):
     def forward(self, input, hiddenState=None,
                 cellState=None, batch_first=True):
         return self.unrollRNN(input, hiddenState, cellState, batch_first)
+
+class SRNN2(nn.Module):
+
+    def __init__(self, cellType, hiddenDim0, hiddenDim1):
+        pass
