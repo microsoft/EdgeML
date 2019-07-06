@@ -23,7 +23,7 @@ permalink: /People
   <div class="col-sm-3 pt-2 pb-4">
     <div class="row">
       <div class="col-sm-12">
-        <img src="/img/people/simhadri.jpg" alt="Harsha Simhadri's Image" class="img-thumbnail">
+        <img src="{{ site.baseurl }}/img/people/simhadri.jpg" alt="Harsha Simhadri's Image" class="img-thumbnail">
       </div>
     </div>
     <div class="row text-center">
@@ -37,7 +37,7 @@ permalink: /People
   <div class="col-sm-3 pt-2 pb-4">
     <div class="row">
       <div class="col-sm-12">
-        <img src="/img/people/varma.jpg" alt="Manik Varma's Image" class="img-thumbnail">
+        <img src="{{ site.baseurl }}/img/people/varma.jpg" alt="Manik Varma's Image" class="img-thumbnail">
       </div>
     </div>
     <div class="row text-center">
@@ -52,7 +52,7 @@ permalink: /People
   <div class="col-sm-3 pt-2 pb-4">
     <div class="row">
       <div class="col-sm-12">
-        <img src="/img/people/natarajan.png" alt="Nagarajan Natarajan's Image" class="img-thumbnail">
+        <img src="{{ site.baseurl }}/img/people/natarajan.png" alt="Nagarajan Natarajan's Image" class="img-thumbnail">
       </div>
     </div>
     <div class="row text-center">
@@ -71,7 +71,7 @@ permalink: /People
   <div class="col-sm-3 pt-2 pb-4">
     <div class="row">
       <div class="col-sm-12">
-        <img src="/img/people/netrapalli.jpg" alt="Praneeth Netrapalli's Image" class="img-thumbnail">
+        <img src="{{ site.baseurl }}/img/people/netrapalli.jpg" alt="Praneeth Netrapalli's Image" class="img-thumbnail">
       </div>
     </div>
     <div class="row text-center">
@@ -85,7 +85,7 @@ permalink: /People
   <div class="col-sm-3 pt-2 pb-4">
     <div class="row">
       <div class="col-sm-12">
-        <img src="/img/people/jain.jpg" alt="Prateek Jain's Image" class="img-thumbnail">
+        <img src="{{ site.baseurl }}/img/people/jain.jpg" alt="Prateek Jain's Image" class="img-thumbnail">
       </div>
     </div>
     <div class="row text-center">
@@ -99,7 +99,7 @@ permalink: /People
   <div class="col-sm-3 pt-2 pb-4">
     <div class="row">
       <div class="col-sm-12">
-        <img src="/img/people/sharma.png" alt="Rahul Sharma's Image" class="img-thumbnail">
+        <img src="{{ site.baseurl }}/img/people/sharma.png" alt="Rahul Sharma's Image" class="img-thumbnail">
       </div>
     </div>
     <div class="row text-center">
@@ -115,7 +115,7 @@ permalink: /People
   <div class="col-sm-3 pt-2 pb-4">
     <div class="row">
       <div class="col-sm-12">
-        <img src="/img/people/parthasarathy.jpg" alt="Suresh Parthasarathy's Image" class="img-thumbnail">
+        <img src="{{ site.baseurl }}/img/people/parthasarathy.jpg" alt="Suresh Parthasarathy's Image" class="img-thumbnail">
       </div>
     </div>
     <div class="row text-center">
@@ -135,7 +135,7 @@ permalink: /People
   <div class="col-sm-3 pt-2 pb-4">
     <div class="row">
       <div class="col-sm-12">
-        <img src="/img/people/sheshadri.jpg" alt="Vivek Seshadri's Image" class="img-thumbnail">
+        <img src="{{ site.baseurl }}/img/people/sheshadri.jpg" alt="Vivek Seshadri's Image" class="img-thumbnail">
       </div>
     </div>
     <div class="row text-center">
