@@ -1,0 +1,235 @@
+---
+Title: CSS
+---
+/* Color pallet
+ * ------------
+ * http://www.colorzilla.com/chrome/
+ * To use:
+ 			color: var(--ms-red);
+ */	
+
+/* Commong-CSS */
+.landing-subheading {
+	font-size: 2em;
+	font-weight: 500;
+}
+
+.landing-subsubheading{
+	font-size: 1.2em;
+	font-weight: 500;
+}
+
+.top-buffer-1 {
+	padding-top: 1%;
+}
+
+.top-buffer-3 {
+	padding-top: 3%;
+}
+
+.top-buffer-5{
+	padding-top: 5%;
+}
+
+.top-buffer-7{
+	padding-top: 7%;
+}
+
+.bottom-buffer-1 {
+  padding-bottom: 1%;
+}
+
+.bottom-buffer-3 {
+  padding-bottom: 3%;
+}
+
+.ms-btn-blue{
+  color: white;
+  background-color: var(--ms-blue);
+  border-color: var(--ms-blue);
+}
+
+.ms-btn-white{
+  color: var(--ms-blue);
+  background-color: white;
+  border-color: var(--ms-grey);
+}
+
+.ms-btn-white:hover {
+  background-color: var(--ms-green);
+}
+
+
+/* Slide 1 */
+header {
+  position: relative;
+  background-color: var(--ms-blue);
+  height: 65vh;
+  min-height: 25rem;
+  width: 100%;
+  overflow: hidden;
+}
+
+
+/*header video {*/
+  /*position: absolute;*/
+  /*top: 50%;*/
+  /*left: 50%;*/
+  /*min-width: 100%;*/
+  /*min-height: 100%;*/
+  /*width: auto;*/
+  /*height: auto;*/
+  /*z-index: 0;*/
+  /*-ms-transform: translateX(-50%) translateY(-50%);*/
+  /*-moz-transform: translateX(-50%) translateY(-50%);*/
+  /*-webkit-transform: translateX(-50%) translateY(-50%);*/
+  /*transform: translateX(-50%) translateY(-50%);*/
+/*}*/
+
+header .container {
+  position: relative;
+  z-index: 2;
+}
+
+/*header .overlay {*/
+  /*position: absolute;*/
+  /*top: 0;*/
+  /*left: 0;*/
+  /*height: 100%;*/
+  /*width: 100%;*/
+  /*background-color: black;*/
+  /*opacity: 0.6;*/
+  /*z-index: 1;*/
+/*}*/
+
+/*@media (pointer: coarse) and (hover: none) {*/
+  /*header {*/
+    /*background: url('/img/ICane/only_cane_first_page.jgp') black no-repeat center center scroll;*/
+  /*}*/
+  /*header video {*/
+    /*display: none;*/
+  /*}*/
+/*}*/
+
+
+#landing-heading {
+	font-size: 6em;
+	font-weight: 400;
+}
+
+
+#landing-caption{
+	font-size: 1.52em;
+	font-weight: 300;
+}
+
+/* Slide description */
+.landing-slide-description{
+  position:relative;
+  min-height: 30vh;
+  font-size: 1.2em;
+  color: var(--ms-grey);
+  padding-top: 3%;
+  padding-bottom: 2%;
+}
+
+/* Slide features */
+.landing-slide-features {
+	background-color: #ffffff;
+}
+.landing-img-features {
+	max-width: 55%;
+}
+
+.landing-subheading-features { 
+	font-weight: 500;
+	
+}
+
+/* Slide connected-world */
+.landing-connected-world {
+	/* The image used */
+	background-image: url('{{ site.baseurl }}/img/connected_world.jpg');
+	height: 40%;
+	
+	/* Center and scale the image nicely */
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+/* Slide applications */
+.landing-slide-applications {
+  background-color: white;
+  color: var(--ms-grey);
+}
+
+.landing-img-applications{
+	width: 50%;
+}
+
+.landing-bottom-applications{
+  position: absolute;
+  bottom: 0;
+  margin-right: 0;
+}
+
+/* Slide 4 Algorithms */
+.landing-slide-algorithms {
+  background-color: var(--ms-blue);
+  color: white;
+  font-size: 1em;
+}
+
+.landing-slide-algorithms-card {
+  background-color: white;
+  color: var(--ms-blue);
+}
+
+.landing-img-algorithms{
+	width: 55%;
+}
+
+/* Slide 5 */
+.landing-slide-usecases {
+	padding-top: 5%;
+	padding-bottom: 5%;
+	background-color: #fffcf3;
+}
+
+.landing-img-usecases{
+	width: 55%;
+}
+
+/* Slide 6 Tools */
+.landing-slide-tools{
+  background-color: var(--ms-blue);
+  color: white;
+  font-size: 1em;
+}
+
+.landing-slide-tools-card {
+  background-color: white;
+  color: var(--ms-blue);
+}
+
+.landing-img-tools{
+	width: 65%;
+}
+	
+/* Slide people */
+.landing-slide-people{
+	background-color: var(--ms-blue);
+  color: white;
+}
+
+.landing-slide-people a {color: white; text-decoration: underline;}
+.landing-slide-people a:hover {color: var(--ms-yellow); text-decoration: underline;}
+.landing-slide-people a:visited {color: var(--ms-yellow); text-decoration: underline;}
+
+/* Slide citation */
+.landing-slide-citation {
+  position:relative;
+  color: var(--ms-grey);
+}
+

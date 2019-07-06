@@ -1,0 +1,31 @@
+
+<!DOCTYPE html>
+<html lang=en>
+  <head>
+  {% include head.html %}
+  </head>
+  <body>
+    {% include header.html %}
+    {% include macros.html %}
+     <div class="container">
+      <div class="row text-center top-buffer5">
+        <div class="col-sm-2 text-center"></div>
+        <div class="col-sm-8 text-center"> <h1 class="text-grey">Projects</h1></div>
+        <div class="col-sm-2 text-center"></div>
+      </div>
+      <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-10"><hr class="hr-blue" id='hr-post'></div>
+        <div class="col-sm-1"></div>
+      </div>
+      <div class="row">
+        <div class="col-sm-1"></div>
+        <div class="col-sm-10 text-grey text-justify">
+          {{ content }}
+        </div>
+        <div class="col-sm-1"></div>
+      </div>
+    </div>
+  </body>
+    {% include footer.html %}
+</html>

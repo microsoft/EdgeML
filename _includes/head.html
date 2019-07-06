@@ -1,0 +1,43 @@
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	
+	<title>{% if page.title %}{{ page.title | escape }}{% else %}{{ site.title | escape }}{% endif %}</title>
+	
+	<meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<!-- For Icons -->
+	<link rel="shortcut icon" href="{{ site.baseurl }}/img/favicon.png" type="image/x-icon">
+	<link rel="icon" href="{{ site.baseurl }}/img/favicon.png" type="image/x-icon">
+
+	<!-- JQuery -->
+	<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+	
+	<!-- Boot strap!  -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+	<!-- Using font awesome for the icons (thank you OSS) -->
+	<script src="https://use.fontawesome.com/84a0e59ef1.js"></script>
+
+	<!-- Mathjax -->
+	<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({
+			messageStyle: "simple",
+		  showProcessingMessages: true
+		});
+	</script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+	
+	<link rel="stylesheet" href="{{ site.baseurl }}/css/style.css" media="screen" type="text/css">
+	<!-- Custom Styles  -->
+	{% if page.custom_css %}
+  	{% for stylesheet in page.custom_css %}
+		<link rel="stylesheet" href="{{ site.baseurl }}/css/{{ stylesheet }}" media="screen" type="text/css">
+  	{% endfor %}
+	{% endif %}
+
+	<!-- Fonts -->
+	<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Great+Vibes">
+

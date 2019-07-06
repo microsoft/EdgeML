@@ -1,0 +1,19 @@
+# Site settings
+title: EdgeML
+email: 
+description: > 
+  Project page for EdgeML
+baseurl: ""
+url: "https://microsoft.github.io/EdgeML"
+
+# Build settings
+markdown: kramdown
+port: 4000
+host: localhost
+
+collections:
+  Blog:
+    output: true
+    permalink: /:collection/:name
+
+exclude: [archive]

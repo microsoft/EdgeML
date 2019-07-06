@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang=en>
+  <head>
+  {% include head.html %}
+  </head>
+  <body>
+    {% include header.html %}
+    {% include macros.html %}
+     <div class="container">
+      <div class="row text-center top-buffer10">
+        <div class="col-sm-2 text-center"></div>
+
+        <div class="col-sm-8 text-center">
+          <div class="row">
+            <div class="col-sm-12 blog-card-subtitle">
+              <h1 class="text-grey">{{ page.title }}</h1>
+              <span class="blog-card-subtitle-author">{{ page.author}}</span>
+              <span class="blog-card-subtitle-middle-dot">&bull;</span>
+              <span class="blog-card-subtitle-date">{{ page.postdate}}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-sm-2 text-center"></div>
+      </div>  
+      <div class="row"><div class="col-sm-12"><hr class="hr-blue" id='hr-post'></div></div>
+      <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-8 text-grey text-justify">{{ content }}</div>
+        <div class="col-sm-2"></div>
+      </div>
+    </div>
+    {% include footer.html %}
+  </body>
+</html>

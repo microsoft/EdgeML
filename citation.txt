@@ -1,0 +1,7 @@
+@software{edgeml01,
+  author = {{Dennis, Don and Gopinath, Sridhar and Gupta, Chirag and Kumar,
+  Ashish and Kusupati, Aditya and Patil, Shishir and Simhadhri, Harsha Vardhan}},
+  title = {{EdgeML: Machine Learning for resource-constrained edge devices}},
+  url = {https://github.com/Microsoft/EdgeML},
+  version = {0.1},
+}

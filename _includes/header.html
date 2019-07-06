@@ -1,0 +1,48 @@
+<div class="container navbar-custom">
+  <nav class="navbar navbar-fixed navbar-light navbar-expand-lg colortheme-navbar">
+    <a class="navbar-brand navbar-brand-custom" href="{{ site.baseurl }}/">EdgeML</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      {% assign current = page.url | split: '/'%}
+      <ul class="navbar-nav">
+        {% assign highlight = "" %}
+        {% if current contains "Algorithms" %}
+          {% assign highlight = "active" %}
+        {% endif %}
+        <li class="nav-item">
+          <a class="nav-link navbar-item-custom {{ highlight }}" href="{{
+            site.baseurl }}/Algorithms">Algorithms</a>
+        </li>
+        
+        {% assign highlight = "" %}
+        {% if current contains "Projects" %}
+          {% assign highlight = "active" %}
+        {% endif %}
+        <li class="nav-item">
+          <a class="nav-link navbar-item-custom {{ highlight }}" href="{{ site.baseurl }}/Projects">Projects</a>
+        </li>
+        {% assign highlight = "" %}
+        {% if current contains "People" %}
+          {% assign highlight = "active" %}
+        {% endif %}
+        <li class="nav-item">
+          <a class="nav-link navbar-item-custom {{ highlight }}" href="{{ site.baseurl }}/People">People</a>
+        </li>
+        {% assign highlight = "" %}
+        {% if current contains "Publications" %}
+          {% assign highlight = "active" %}
+        {% endif %}
+        <li class="nav-item">
+          <a class="nav-link navbar-item-custom {{ highlight }}" href="{{ site.baseurl }}/Publications">Publications</a>
+        </li>
+      </ul>
+      <form class="form-inline">
+        <button class="btn btn-outline-success" type="button">Clone on GitHub
+          </button>
+      </form>
+    </div>
+  </nav>
+</div>
+

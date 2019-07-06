@@ -1,1 +1,20 @@
-Hello! This is a test pages.
+---
+layout: landingpage
+custom_css: landing.css
+---
+
+{% include_relative landing/background.html %}
+{% include_relative landing/description.html %}
+<!--{% include_relative landing/features.html %}-->
+
+<!-- Connected world -->
+<!--<div class='container-fluid landing-connected-world'>-->
+<!--</div>-->
+
+{% include_relative landing/algorithms.html %}
+{% include_relative landing/applications.html %}
+<!--{% include_relative landing/people_plug.html %}-->
+<!--{% include_relative landing/usecases.html %}-->
+{% include_relative landing/tools.html %}
+{% include_relative landing/citation.html %}
+

@@ -1,0 +1,37 @@
+<div class="custom-mathjax-hidden">
+{% raw %}
+$$
+
+% Not all commands are supported. Please refer to MathJax docs before including
+% your macros
+%			http://docs.mathjax.org/en/latest/tex.html#defining-tex-macros
+%
+\newcommand{\ALG}{FastGRNN\xspace}
+\newcommand{\redSpace}{\vspace{-6mm}}
+\newcommand{\algs}{FastRNN\xspace}
+\newcommand{\alg}{FastGRNN\xspace}
+\newcommand{\salg}{FastRNN\xspace}
+\newcommand{\algfloat}{FastGRNN-LSQ\xspace}
+
+%!TEX root = paper.tex
+\newcommand{\reals}{\mathbb R}
+\newcommand{\ex}{\mathbb E}
+\newcommand{\prob}{\mathbb P}
+
+\renewcommand{\vec}[1]{{\mathbf{#1}}}
+\newcommand{\br}[1]{\left({#1}\right)}
+
+\DeclareMathOperator{\Tr}{Tr}
+
+% Asymptotic notation
+\newcommand{\bigO}[1]{{\cal O}\br{{#1}}}
+\newcommand{\softO}[1]{\widetilde{\cal O}\br{{#1}}}
+\newcommand{\Om}[1]{\Omega\br{{#1}}}
+\newcommand{\softOm}[1]{\tilde\Omega\br{{#1}}}
+
+\def\half{{\textstyle\frac{1}{2}}}
+\newcommand{\smallfrac}[2]{{\textstyle \frac{#1}{#2}}}
+\def\v#1{\vec #1}
+$$
+{% endraw %}
+</div>
