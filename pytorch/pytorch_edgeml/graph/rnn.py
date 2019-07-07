@@ -3,7 +3,7 @@
 
 import torch
 import torch.nn as nn
-
+import numpy as np
 
 def gen_non_linearity(A, non_linearity):
     '''
@@ -1048,7 +1048,80 @@ class FastGRNN(nn.Module):
                 cellState=None, batch_first=True):
         return self.unrollRNN(input, hiddenState, cellState, batch_first)
 
+
 class SRNN2(nn.Module):
 
-    def __init__(self, cellType, hiddenDim0, hiddenDim1):
-        pass
+    def __init__(self, inputDim, outputDim, hiddenDim0, hiddenDim1, cellType):
+        '''
+        A 2 Layer Shallow RNN.
+
+        inputDim: Input data's feature dimension.
+        hiddenDim0: Hidden state dimension of the lower layer RNN cell.
+        hiddenDim1: Hidden state dimension of the second layer RNN cell.
+        cellType: The type of RNN cell to use. Options are ['LSTM']
+        '''
+        super(SRNN2, self).__init__()
+        # Create two RNN Cells
+        self.inputDim = inputDim
+        self.hiddenDim0 = hiddenDim0
+        self.hiddenDim1 = hiddenDim1
+        self.outputDim = outputDim
+        supportedCells = ['LSTM']
+        assert cellType in supportedCells, 'Currently supported cells: %r' % supportedCells
+        self.cellType = cellType
+        if self.cellType == 'LSTM':
+            self.rnnClass = nn.LSTM
+
+        self.rnn0 = self.rnnClass(input_size=inputDim, hidden_size=hiddenDim0)
+        self.rnn1 = self.rnnClass(input_size=hiddenDim0, hidden_size=hiddenDim1)
+        self.W = torch.randn([self.hiddenDim0, self.outputDim])
+        self.W = nn.Parameter(self.W)
+        self.B = torch.randn([self.outputDim])
+        self.B = nn.Parameter(self.B)
+
+    def getBrickedData(self, x, brickSize):
+        '''
+        Takes x of shape [timeSteps, batchSize, featureDim] and returns bricked
+        x of shape [numBricks, brickSize, batchSize, featureDim] by chunking
+        along 0-th axes.
+        '''
+        timeSteps = x.shape[0]
+        numSplits = int(timeSteps / brickSize)
+        batchSize = x.shape[1]
+        eqlen = numSplits * brickSize
+        x = x[:eqlen]
+        x_bricked = np.split(x, numSplits)
+        x_bricked_batched = np.array(x_bricked)
+        return x_bricked_batched
+
+    def forward(self, x, brickSize):
+        '''
+        x: Input data in numpy. Expected to be a 3D tensor  with shape
+            [timeStep, batchSize, featureDim]. Note that this is different from
+            the convention followed in the TF codebase.
+        brickSize: The brick size for the lower dimension. The input data will
+            be divided into bricks along the timeStep axis (axis=0) internally
+            and fed into the lowest layer RNN. Note that if the last brick has
+            fewer than 'brickSize' steps, it will be ignored (no internal
+            padding is done).
+        '''
+        assert x.ndim == 3
+        assert x.shape[2] == self.inputDim
+        x_bricks = self.getBrickedData(x, brickSize)
+        # x bricks: [numBricks, brickSize, batchSize, featureDim]
+        x_bricks = np.swapaxes(x_bricks, 0, 1)
+        # x bricks: [brickSize, numBricks, batchSize, featureDim]
+        oldShape = x_bricks.shape
+        x_bricks = np.reshape(x_bricks, [oldShape[0], -1, oldShape[-1]])
+        # x bricks: [brickSize, numBricks * batchSize, featureDim]
+        x_bricks = torch.Tensor(x_bricks)
+        hidd0, out0 = self.rnn0(x_bricks)
+        hidd0 = torch.squeeze(hidd0[-1])
+        # [numBricks * batchSize, hiddenDim0]
+        inp1 = hidd0.view(oldShape[1], oldShape[2], self.hiddenDim0)
+        # [numBricks, batchSize, hiddenDim0]
+        hidd1, out1 = self.rnn1(inp1)
+        hidd1 = torch.squeeze(hidd1[-1])
+        out = torch.matmul(hidd1, self.W) + self.B
+        return out
+
