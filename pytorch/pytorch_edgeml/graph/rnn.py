@@ -1108,6 +1108,9 @@ class SRNN2(nn.Module):
         assert x.ndim == 3
         assert x.shape[2] == self.inputDim
         x_bricks = self.getBrickedData(x, brickSize)
+        # This conversion between shapes is tricky. Might infact even be buggy
+        # if numpy operations are non-invertible. I've tested to a point but
+        # you never know.
         # x bricks: [numBricks, brickSize, batchSize, featureDim]
         x_bricks = np.swapaxes(x_bricks, 0, 1)
         # x bricks: [brickSize, numBricks, batchSize, featureDim]
