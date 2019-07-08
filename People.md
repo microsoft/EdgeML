@@ -222,7 +222,7 @@ permalink: /People
 - [Ankit Goyal](https://www.linkedin.com/in/ankit-goyal-5baaa287) _(Intern at MSRI from University of Michigan, Ann Arbor)_
 - [Bhargavi Paranjape](https://www.linkedin.com/in/bhargaviparanjape) _(Research Fellow at MSRI, now masters student at Carnegie Mellon University)_
 - [Chirag Gupta](https://aigen.github.io/) _(Research Fellow at MSRI, now a PhD student at Carnegie Mellon University)_
-- [Chirag Pabbaraju](https://in.linkedin.com/in/chirag-pabbaraju-277a4ba5) _(Intern at MSRI, now a masters student at Carnegie Mellon University)_
+- [Chirag Pabbaraju](https://in.linkedin.com/in/chirag-pabbaraju-277a4ba5) _(Research Fellow at MSRI, now a masters student at Carnegie Mellon University)_
 <!--- [Don Dennis](https://dkdennis.xyz) _(Research Fellow at MSRI, now a PhD student at Carnegie Mellon University)_-->
 - [Kush Bhatia](http://people.eecs.berkeley.edu/~kush/) _(Research Fellow at MSRI, now a PhD student at UC Berkeley)_
 - [Manish Singh](https://in.linkedin.com/in/manish-singh-ab4358b6) _(B.Tech student at IIT Delhi, now a PhD student at MIT)_
