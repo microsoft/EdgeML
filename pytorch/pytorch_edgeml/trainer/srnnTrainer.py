@@ -113,5 +113,5 @@ class SRNNTrainer:
                     _, target = torch.max(y_batch, dim=1)
                     _, count = self.accuracy(predictions, target)
                     numCorrect += count
-                print("Validation accuracy: %f" % (numCorrect / len(x_val)))
+                print("Validation accuracy: %f" % (numCorrect / x_val.shape[1]))
 
