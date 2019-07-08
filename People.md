@@ -5,6 +5,19 @@ permalink: /People
 ---
 
 <div class="row text-center people-page-img">
+  <div class="col-sm-3 pt-2 pb-4">
+    <div class="row">
+      <div class="col-sm-12">
+        <img src="{{ site.baseurl }}/img/people/kusupati.jpg" alt="Kusupati's Image" class="img-thumbnail">
+      </div>
+    </div>
+    <div class="row text-center">
+      <div class="col-sm-12">
+        <a href="https://adityakusupati.github.io">Aditya Kusupati</a><br>
+        Research Fellow, Microsoft Research
+      </div>
+    </div>
+  </div>
 
   <div class="col-sm-3 pt-2 pb-4">
     <div class="row">
@@ -16,6 +29,21 @@ permalink: /People
       <div class="col-sm-12">
         <a href="https://www.microsoft.com/en-us/research/people/ajayma/">Ajay Manchepalli</a><br>
         Principal Research Program Manager, Microsoft Research
+      </div>
+    </div>
+  </div>
+
+
+  <div class="col-sm-3 pt-2 pb-4">
+    <div class="row">
+      <div class="col-sm-12">
+        <img src="{{ site.baseurl }}/img/people/dennis.jpg" alt="Don Dennis's Image" class="img-thumbnail">
+      </div>
+    </div>
+    <div class="row text-center">
+      <div class="col-sm-12">
+        <a href="https://dkdennis.xyz">Don Dennis</a><br>
+        Research Fellow, Microsoft Research
       </div>
     </div>
   </div>
@@ -34,6 +62,10 @@ permalink: /People
     </div>
   </div>
 
+
+</div>
+
+<div class="row text-center people-page-img">
   <div class="col-sm-3 pt-2 pb-4">
     <div class="row">
       <div class="col-sm-12">
@@ -64,10 +96,6 @@ permalink: /People
   </div>
 
 
-
-</div>
-
-<div class="row text-center people-page-img">
   <div class="col-sm-3 pt-2 pb-4">
     <div class="row">
       <div class="col-sm-12">
@@ -96,6 +124,11 @@ permalink: /People
     </div>
   </div>
 
+
+
+</div>
+
+<div class="row text-center people-page-img">
   <div class="col-sm-3 pt-2 pb-4">
     <div class="row">
       <div class="col-sm-12">
@@ -126,9 +159,36 @@ permalink: /People
     </div>
   </div>
 
+  <div class="col-sm-3 pt-2 pb-4">
+    <div class="row">
+      <div class="col-sm-12">
+        <img src="{{ site.baseurl }}/img/people/patil.jpg" alt="Shishir Patil's Image" class="img-thumbnail">
+      </div>
+    </div>
+    <div class="row text-center">
+      <div class="col-sm-12">
+        <a href="https://shishirpatil.github.io/">Shishir Patil</a><br>
+        Research Fellow,<br>Microsoft Research
+      </div>
+    </div>
+  </div>
 
 
+  <div class="col-sm-3 pt-2 pb-4">
+    <div class="row">
+      <div class="col-sm-12">
+        <img src="{{ site.baseurl }}/img/people/gopinath.jpg" alt="Sridhar Gopinath's Image" class="img-thumbnail">
+      </div>
+    </div>
+    <div class="row text-center">
+      <div class="col-sm-12">
+        <a href="http://www.sridhargopinath.in/">Sridhar Gopinath</a><br>
+        Research Fellow,<br>Microsoft Research
+      </div>
+    </div>
+  </div>
 </div>
+
 
 <div class="row text-center people-page-img">
 
@@ -147,35 +207,29 @@ permalink: /People
   </div>
 
 
-  <div class="col-sm-3 pt-2 pb-4">
-  </div>
-
-
-  <div class="col-sm-3 pt-2 pb-4">
-  </div>
-
-  <div class="col-sm-3 pt-2 pb-4">
-  </div>
+  <div class="col-sm-3 pt-2 pb-4"></div>
+  <div class="col-sm-3 pt-2 pb-4"></div>
+  <div class="col-sm-3 pt-2 pb-4"></div>
 
 </div>
 
 
 ## Former Members
 
-- [Aditya Kusupati](https://adityakusupati.github.io/) _(Research Fellow at MSRI, now a PhD student at University of Washington)_
+<!--- [Aditya Kusupati](https://adityakusupati.github.io/) _(Research Fellow at MSRI, now a PhD student at University of Washington)_-->
 - [Arun Sai Suggala](http://www.cs.cmu.edu/~asuggala/) _(Intern at MSRI from Carnegie Mellon University)_
 - [Ashish Kumar](https://ashishkumar1993.github.io/) _(Research Fellow at MSRI, now a PhD student at UC Berkeley)_
 - [Ankit Goyal](https://www.linkedin.com/in/ankit-goyal-5baaa287) _(Intern at MSRI from University of Michigan, Ann Arbor)_
 - [Bhargavi Paranjape](https://www.linkedin.com/in/bhargaviparanjape) _(Research Fellow at MSRI, now masters student at Carnegie Mellon University)_
 - [Chirag Gupta](https://aigen.github.io/) _(Research Fellow at MSRI, now a PhD student at Carnegie Mellon University)_
 - [Chirag Pabbaraju](https://in.linkedin.com/in/chirag-pabbaraju-277a4ba5) _(Intern at MSRI, now a masters student at Carnegie Mellon University)_
-- [Don Dennis](https://dkdennis.xyz) _(Research Fellow at MSRI, now a PhD student at Carnegie Mellon University)_
+<!--- [Don Dennis](https://dkdennis.xyz) _(Research Fellow at MSRI, now a PhD student at Carnegie Mellon University)_-->
 - [Kush Bhatia](http://people.eecs.berkeley.edu/~kush/) _(Research Fellow at MSRI, now a PhD student at UC Berkeley)_
 - [Manish Singh](https://in.linkedin.com/in/manish-singh-ab4358b6) _(B.Tech student at IIT Delhi, now a PhD student at MIT)_
 - [Raghavendra Udupa](https://www.linkedin.com/in/raghavendra-udupa-6a943a2/) _(Researcher at MSRI, now Principal Researcher at Wadhwani AI)_
 - [Saurabh Goyal](https://in.linkedin.com/in/saurabh-goyal-6561162b) _(Masters student at IIT Delhi, now at IBM)_
-- [Shishir Patil](https://shishirpatil.github.io) _(Research Fellow at MSRI, now a PhD student at UC Berkeley)_
-- [Sridhar Gopinath](http://www.sridhargopinath.in/) _(Research Fellow at MSRI, now a PhD student at UT Austin)_
+<!--- [Shishir Patil](https://shishirpatil.github.io) _(Research Fellow at MSRI, now a PhD student at UC Berkeley)_-->
+<!--- [Sridhar Gopinath](http://www.sridhargopinath.in/) _(Research Fellow at MSRI, now a PhD student at UT Austin)_-->
 - [Suvadeep Hajra](https://www.linkedin.com/in/suvadeep-hajra-4a441159/) _(Intern at MSRI from IIT Bombay)_
 - [Vivek Gupta](https://vgupta123.github.io/) _(Research Fellow at MSRI, now a PhD student at University of Utah)_
 - [Yeshwanth Cherapanamjeri](https://yeshwanth94.github.io/) _(Research Fellow at MSRI, now a PhD student at UC Berkeley)_
