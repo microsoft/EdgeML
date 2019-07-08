@@ -713,7 +713,9 @@ void Exp(MYINT *A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT *B) {
 }
 
 // A = Sigmoid(A)
-void SigmoidNew(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit, MYINT scale) {
+void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit, MYINT scale_in, MYINT scale_out) {
+
+	MYINT scale_diff = scale_out / scale_in;
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -729,6 +731,8 @@ void SigmoidNew(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_
 			else
 				y = x;
 
+			y = y * scale_diff;
+
 			A[i * J + j] = y;
 		}
 	}
@@ -737,7 +741,7 @@ void SigmoidNew(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_
 }
 
 // A = Sigmoid(A)
-void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit, MYINT scale_in, MYINT scale_out) {
+void SigmoidOld(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit, MYINT scale_in, MYINT scale_out) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
