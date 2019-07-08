@@ -87,7 +87,6 @@ class SRNNTrainer:
         x_val_batches = np.array_split(x_val, valNumBatches, axis=1)
         y_val_batches = np.array_split(y_val, valNumBatches)
 
-        print(len(x_train_batches))
         for epoch in range(epochs):
             for i in range(len(x_train_batches)):
                 x_batch, y_batch = x_train_batches[i], y_train_batches[i]
