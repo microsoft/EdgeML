@@ -44,13 +44,14 @@ class BaseRNN(nn.Module):
     [timeSteps, batchSize, inputDims]
     '''
 
-    def __init__(self, RNNCell):
+    def __init__(self, RNNCell, batch_first=True):
         super(BaseRNN, self).__init__()
         self.RNNCell = RNNCell
+        self.batch_first = batch_first
 
     def forward(self, input, hiddenState=None,
-                cellState=None, batch_first=True):
-        if batch_first is True:
+                cellState=None):
+        if self.batch_first is True:
             self.device = input.device
             hiddenStates = torch.zeros(
                 [input.shape[0], input.shape[1],
@@ -106,25 +107,28 @@ class BaseRNN(nn.Module):
 
 class FastGRNNCell(nn.Module):
     '''
-    FastRNN Cell with Both Full Rank and Low Rank Formulations
+    FastGRNN Cell with Both Full Rank and Low Rank Formulations
     Has multiple activation functions for the gates
     hidden_size = # hidden units
 
+    gate_non_linearity = nonlinearity for the gate can be chosen from
+    [tanh, sigmoid, relu, quantTanh, quantSigm]
     update_non_linearity = nonlinearity for final rnn update
     can be chosen from [tanh, sigmoid, relu, quantTanh, quantSigm]
 
     wRank = rank of W matrix (creates two matrices if not None)
     uRank = rank of U matrix (creates two matrices if not None)
-    alphaInit = init for alpha, the update scalar
-    betaInit = init for beta, the weight for previous state
+    zetaInit = init for zeta, the scale param
+    nuInit = init for nu, the translation param
 
-    FastRNN architecture and compression techniques are found in
+    FastGRNN architecture and compression techniques are found in
     FastGRNN(LINK) paper
 
     Basic architecture is like:
 
+    z_t = gate_nl(Wx_t + Uh_{t-1} + B_g)
     h_t^ = update_nl(Wx_t + Uh_{t-1} + B_h)
-    h_t = sigmoid(beta)*h_{t-1} + sigmoid(alpha)*h_t^
+    h_t = z_t*h_{t-1} + (sigmoid(zeta)(1-z_t) + sigmoid(nu))*h_t^
 
     W and U can further parameterised into low rank version by
     W = matmul(W_1, W_2) and U = matmul(U_1, U_2)
@@ -276,14 +280,13 @@ class FastRNNCell(nn.Module):
     W = matmul(W_1, W_2) and U = matmul(U_1, U_2)
     '''
 
-    def __init__(self, input_size, hidden_size, gate_non_linearity="sigmoid",
+    def __init__(self, input_size, hidden_size,
                  update_non_linearity="tanh", wRank=None, uRank=None,
                  alphaInit=-3.0, betaInit=3.0, name="FastRNN"):
         super(FastRNNCell, self).__init__()
 
         self._input_size = input_size
         self._hidden_size = hidden_size
-        self._gate_non_linearity = gate_non_linearity
         self._update_non_linearity = update_non_linearity
         self._num_weight_matrices = [1, 1]
         self._wRank = wRank
@@ -324,10 +327,6 @@ class FastRNNCell(nn.Module):
     @property
     def output_size(self):
         return self._hidden_size
-
-    @property
-    def gate_non_linearity(self):
-        return self._gate_non_linearity
 
     @property
     def update_non_linearity(self):
@@ -929,7 +928,7 @@ class LSTM(nn.Module):
     """Equivalent to nn.LSTM using LSTMLRCell"""
 
     def __init__(self, input_size, hidden_size, gate_non_linearity="sigmoid",
-                 update_non_linearity="tanh", wRank=None, uRank=None):
+                 update_non_linearity="tanh", wRank=None, uRank=None, batch_first=True):
         super(LSTM, self).__init__()
         self._input_size = input_size
         self._hidden_size = hidden_size
@@ -937,23 +936,23 @@ class LSTM(nn.Module):
         self._update_non_linearity = update_non_linearity
         self._wRank = wRank
         self._uRank = uRank
+        self.batch_first = batch_first
 
         self.cell = LSTMLRCell(input_size, hidden_size,
                                gate_non_linearity=gate_non_linearity,
                                update_non_linearity=update_non_linearity,
                                wRank=wRank, uRank=uRank)
-        self.unrollRNN = BaseRNN(self.cell)
+        self.unrollRNN = BaseRNN(self.cell, batch_first=self.batch_first)
 
-    def forward(self, input, hiddenState=None,
-                cellState=None, batch_first=True):
-        return self.unrollRNN(input, hiddenState, cellState, batch_first)
+    def forward(self, input, hiddenState=None, cellState=None):
+        return self.unrollRNN(input, hiddenState, cellState)
 
 
 class GRU(nn.Module):
     """Equivalent to nn.GRU using GRULRCell"""
 
     def __init__(self, input_size, hidden_size, gate_non_linearity="sigmoid",
-                 update_non_linearity="tanh", wRank=None, uRank=None):
+                 update_non_linearity="tanh", wRank=None, uRank=None, batch_first=True):
         super(GRU, self).__init__()
         self._input_size = input_size
         self._hidden_size = hidden_size
@@ -961,23 +960,23 @@ class GRU(nn.Module):
         self._update_non_linearity = update_non_linearity
         self._wRank = wRank
         self._uRank = uRank
+        self.batch_first = batch_first
 
         self.cell = GRULRCell(input_size, hidden_size,
                               gate_non_linearity=gate_non_linearity,
                               update_non_linearity=update_non_linearity,
                               wRank=wRank, uRank=uRank)
-        self.unrollRNN = BaseRNN(self.cell)
+        self.unrollRNN = BaseRNN(self.cell, batch_first=self.batch_first)
 
-    def forward(self, input, hiddenState=None,
-                cellState=None, batch_first=True):
-        return self.unrollRNN(input, hiddenState, cellState, batch_first)
+    def forward(self, input, hiddenState=None, cellState=None):
+        return self.unrollRNN(input, hiddenState, cellState)
 
 
 class UGRNN(nn.Module):
     """Equivalent to nn.UGRNN using UGRNNLRCell"""
 
     def __init__(self, input_size, hidden_size, gate_non_linearity="sigmoid",
-                 update_non_linearity="tanh", wRank=None, uRank=None):
+                 update_non_linearity="tanh", wRank=None, uRank=None, batch_first=True):
         super(UGRNN, self).__init__()
         self._input_size = input_size
         self._hidden_size = hidden_size
@@ -985,16 +984,16 @@ class UGRNN(nn.Module):
         self._update_non_linearity = update_non_linearity
         self._wRank = wRank
         self._uRank = uRank
+        self.batch_first = batch_first
 
         self.cell = UGRNNLRCell(input_size, hidden_size,
                                 gate_non_linearity=gate_non_linearity,
                                 update_non_linearity=update_non_linearity,
                                 wRank=wRank, uRank=uRank)
-        self.unrollRNN = BaseRNN(self.cell)
+        self.unrollRNN = BaseRNN(self.cell, batch_first=self.batch_first)
 
-    def forward(self, input, hiddenState=None,
-                cellState=None, batch_first=True):
-        return self.unrollRNN(input, hiddenState, cellState, batch_first)
+    def forward(self, input, hiddenState=None, cellState=None):
+        return self.unrollRNN(input, hiddenState, cellState)
 
 
 class FastRNN(nn.Module):
@@ -1002,7 +1001,7 @@ class FastRNN(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_non_linearity="sigmoid",
                  update_non_linearity="tanh", wRank=None, uRank=None,
-                 alphaInit=-3.0, betaInit=3.0):
+                 alphaInit=-3.0, betaInit=3.0, batch_first=True):
         super(FastRNN, self).__init__()
         self._input_size = input_size
         self._hidden_size = hidden_size
@@ -1010,17 +1009,17 @@ class FastRNN(nn.Module):
         self._update_non_linearity = update_non_linearity
         self._wRank = wRank
         self._uRank = uRank
+        self.batch_first = batch_first
 
         self.cell = FastRNNCell(input_size, hidden_size,
                                 gate_non_linearity=gate_non_linearity,
                                 update_non_linearity=update_non_linearity,
                                 wRank=wRank, uRank=uRank,
                                 alphaInit=alphaInit, betaInit=betaInit)
-        self.unrollRNN = BaseRNN(self.cell)
+        self.unrollRNN = BaseRNN(self.cell, batch_first=self.batch_first)
 
-    def forward(self, input, hiddenState=None,
-                cellState=None, batch_first=True):
-        return self.unrollRNN(input, hiddenState, cellState, batch_first)
+    def forward(self, input, hiddenState=None, cellState=None):
+        return self.unrollRNN(input, hiddenState, cellState)
 
 
 class FastGRNN(nn.Module):
@@ -1028,7 +1027,7 @@ class FastGRNN(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_non_linearity="sigmoid",
                  update_non_linearity="tanh", wRank=None, uRank=None,
-                 zetaInit=1.0, nuInit=-4.0):
+                 zetaInit=1.0, nuInit=-4.0, batch_first=True):
         super(FastGRNN, self).__init__()
         self._input_size = input_size
         self._hidden_size = hidden_size
@@ -1036,17 +1035,17 @@ class FastGRNN(nn.Module):
         self._update_non_linearity = update_non_linearity
         self._wRank = wRank
         self._uRank = uRank
+        self.batch_first = batch_first
 
         self.cell = FastGRNNCell(input_size, hidden_size,
                                  gate_non_linearity=gate_non_linearity,
                                  update_non_linearity=update_non_linearity,
                                  wRank=wRank, uRank=uRank,
                                  zetaInit=zetaInit, nuInit=nuInit)
-        self.unrollRNN = BaseRNN(self.cell)
+        self.unrollRNN = BaseRNN(self.cell, batch_first=self.batch_first)
 
-    def forward(self, input, hiddenState=None,
-                cellState=None, batch_first=True):
-        return self.unrollRNN(input, hiddenState, cellState, batch_first)
+    def forward(self, input, hiddenState=None, cellState=None):
+        return self.unrollRNN(input, hiddenState, cellState)
 
 
 class SRNN2(nn.Module):
