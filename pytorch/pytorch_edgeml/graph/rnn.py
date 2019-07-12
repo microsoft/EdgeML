@@ -1084,13 +1084,15 @@ class SRNN2(nn.Module):
         x of shape [numBricks, brickSize, batchSize, featureDim] by chunking
         along 0-th axes.
         '''
-        timeSteps = x.shape[0]
+        timeSteps = list(x.size())[0]
         numSplits = int(timeSteps / brickSize)
-        batchSize = x.shape[1]
+        batchSize = list(x.size())[1]
+        featureDim = list(x.size())[2]
         eqlen = numSplits * brickSize
         x = x[:eqlen]
-        x_bricked = np.split(x, numSplits)
-        x_bricked_batched = np.array(x_bricked)
+        x_bricked = torch.split(x, numSplits, dim =0)
+        x_bricked_batched = torch.cat(x_bricked)
+        x_bricked_batched = torch.reshape(x_bricked_batched, (numBricks,brickSize,batchSize,featureDim))
         return x_bricked_batched
 
     def forward(self, x, brickSize):
@@ -1104,19 +1106,19 @@ class SRNN2(nn.Module):
             fewer than 'brickSize' steps, it will be ignored (no internal
             padding is done).
         '''
-        assert x.ndim == 3
-        assert x.shape[2] == self.inputDim
+        assert x.ndimension == 3
+        assert list(x.size())[2] == self.inputDim
         x_bricks = self.getBrickedData(x, brickSize)
         # This conversion between shapes is tricky. Might infact even be buggy
         # if numpy operations are non-invertible. I've tested to a point but
         # you never know.
         # x bricks: [numBricks, brickSize, batchSize, featureDim]
-        x_bricks = np.swapaxes(x_bricks, 0, 1)
+        x_bricks = x_bricks.permute(1,0,2,3)
         # x bricks: [brickSize, numBricks, batchSize, featureDim]
-        oldShape = x_bricks.shape
-        x_bricks = np.reshape(x_bricks, [oldShape[0], -1, oldShape[-1]])
+        oldShape = list(x_bricks.size())
+        x_bricks = torch.reshape(x_bricks, [oldShape[0], oldShape[1] * oldShape[2], oldShape[3]])
         # x bricks: [brickSize, numBricks * batchSize, featureDim]
-        x_bricks = torch.Tensor(x_bricks)
+        # x_bricks = torch.Tensor(x_bricks)
         hidd0, out0 = self.rnn0(x_bricks)
         hidd0 = torch.squeeze(hidd0[-1])
         # [numBricks * batchSize, hiddenDim0]
@@ -1126,4 +1128,3 @@ class SRNN2(nn.Module):
         hidd1 = torch.squeeze(hidd1[-1])
         out = torch.matmul(hidd1, self.W) + self.B
         return out
-
