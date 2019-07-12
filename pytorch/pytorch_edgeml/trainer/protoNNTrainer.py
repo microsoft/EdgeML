@@ -11,7 +11,7 @@ import pytorch_edgeml.utils as utils
 class ProtoNNTrainer:
 
     def __init__(self, protoNNObj, regW, regB, regZ, sparcityW, sparcityB,
-                 sparcityZ, learningRate, lossType='l2'):
+                 sparcityZ, learningRate, lossType='l2', device=None):
         '''
         A wrapper for the various techniques used for training ProtoNN. This
         subsumes both the responsibility of loss graph construction and
@@ -63,6 +63,10 @@ class ProtoNNTrainer:
             print("Using x-entropy loss")
         self.__validInit = False
         self.__validInit = self.__validateInit()
+        if device is None:
+            self.device = "cpu"
+        else:
+            self.device = device
 
     def __validateInit(self):
         assert self.__validInit == False
@@ -103,18 +107,18 @@ class ProtoNNTrainer:
         acc = torch.mean(correct)
         return acc, numCorrect
 
-    def hardThreshold(self, device):
+    def hardThreshold(self):
         prtn = self.protoNNObj
         W, B, Z = prtn.W.data, prtn.B.data, prtn.Z.data
         newW = utils.hardThreshold(W, self.__sW)
         newB = utils.hardThreshold(B, self.__sB)
         newZ = utils.hardThreshold(Z, self.__sZ)
-        prtn.W.data = torch.FloatTensor(newW).to(device)
-        prtn.B.data = torch.FloatTensor(newB).to(device)
-        prtn.Z.data = torch.FloatTensor(newZ).to(device)
+        prtn.W.data = torch.FloatTensor(newW).to(self.device)
+        prtn.B.data = torch.FloatTensor(newB).to(self.device)
+        prtn.Z.data = torch.FloatTensor(newZ).to(self.device)
 
     def train(self, batchSize, epochs, x_train, x_val, y_train, y_val,
-              printStep=10, valStep=1, device='cpu'):
+              printStep=10, valStep=1):
         '''
         Performs dense training of ProtoNN followed by iterative hard
         thresholding to enforce sparsity constraints.
@@ -151,6 +155,7 @@ class ProtoNNTrainer:
             for i in range(len(x_train_batches)):
                 x_batch, y_batch = x_train_batches[i], y_train_batches[i]
                 x_batch, y_batch = torch.Tensor(x_batch), torch.Tensor(y_batch)
+                x_batch, y_batch = x_batch.to(self.device), y_batch.to(self.device)
                 self.optimizer.zero_grad()
                 logits = self.protoNNObj.forward(x_batch)
                 loss = self.loss(logits, y_batch)
@@ -164,13 +169,14 @@ class ProtoNNTrainer:
                                                                acc))
             # Perform IHT Here.
             if self.sparseTraining:
-                self.hardThreshold(device)
+                self.hardThreshold()
             # Perform validation set evaluation
             if (epoch + 1) % valStep == 0:
                 numCorrect = 0
                 for i in range(len(x_val_batches)):
                     x_batch, y_batch = x_val_batches[i], y_val_batches[i]
                     x_batch, y_batch = torch.Tensor(x_batch), torch.Tensor(y_batch)
+                    x_batch, y_batch = x_batch.to(self.device), y_batch.to(self.device)
                     logits = self.protoNNObj.forward(x_batch)
                     _, predictions = torch.max(logits, dim=1)
                     _, target = torch.max(y_batch, dim=1)

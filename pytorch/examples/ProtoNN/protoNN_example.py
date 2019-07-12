@@ -11,8 +11,9 @@ import pytorch_edgeml.utils as utils
 import helpermethods as helper
 import torch
 
-
 def main():
+    # change cuda:0 to cuda:gpu_id for using particular gpu
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     config = helper.getProtoNNArgs()
     # Get hyper parameters
     DATA_DIR = config.data_dir
@@ -51,20 +52,24 @@ def main():
     # Setup input and train protoNN
     protoNN = ProtoNN(dataDimension, PROJECTION_DIM,
                       NUM_PROTOTYPES, numClasses,
-                      gamma, W=W, B=B)
+                      gamma, W=W, B=B).to(device)
+
     trainer = ProtoNNTrainer(protoNN, REG_W, REG_B, REG_Z,
                              SPAR_W, SPAR_B, SPAR_Z,
-                             LEARNING_RATE, lossType='xentropy')
+                             LEARNING_RATE, lossType='xentropy', device=device)
     # Train the protoNN object
     trainer.train(BATCH_SIZE, NUM_EPOCHS, x_train, x_test,
                   y_train, y_test, printStep=PRINT_STEP, valStep=VAL_STEP)
 
     # Print some summary metrics
-    x_, y_= torch.Tensor(x_test), torch.Tensor(y_test)
+    x_, y_= (torch.Tensor(x_test)).to(device), (torch.Tensor(y_test)).to(device)
+
     logits = protoNN.forward(x_)
     _, predictions = torch.max(logits, dim=1)
     _, target = torch.max(y_, dim=1)
     acc, count = trainer.accuracy(predictions, target)
+    #Model needs to be on cpu for numpy operations below
+    protoNN = protoNN.cpu()
     W, B, Z, gamma  = protoNN.getModelMatrices()
     matrixList = [W, B, Z]
     matrixList = [x.detach().numpy() for x in matrixList]
