@@ -20,7 +20,6 @@ class ProtoNNTrainer:
         gamma estimation through median heuristic and other tricks for
         training ProtoNN. This module implements the same in pytorch
         and python.
-
         protoNNObj: An instance of ProtoNN class defining the forward
             computation graph. The loss functions and training routines will be
             attached to this instance.
@@ -34,7 +33,6 @@ class ProtoNNTrainer:
             X [-1, featureDimension]
             Y [-1, num Labels]
         lossType: ['l2', 'xentropy']
-
         '''
         self.protoNNObj = protoNNObj
         self.__regW = regW
@@ -118,7 +116,6 @@ class ProtoNNTrainer:
         '''
         Performs dense training of ProtoNN followed by iterative hard
         thresholding to enforce sparsity constraints.
-
         batchSize: Batch size per update
         epochs : The number of epochs to run training for. One epoch is
             defined as one pass over the entire training data.
@@ -151,6 +148,9 @@ class ProtoNNTrainer:
             for i in range(len(x_train_batches)):
                 x_batch, y_batch = x_train_batches[i], y_train_batches[i]
                 x_batch, y_batch = torch.Tensor(x_batch), torch.Tensor(y_batch)
+                if use_gpu:
+                    x_batch = x_batch.cuda()
+                    y_batch = y_batch.cuda()
                 self.optimizer.zero_grad()
                 logits = self.protoNNObj.forward(x_batch)
                 loss = self.loss(logits, y_batch)
@@ -171,10 +171,12 @@ class ProtoNNTrainer:
                 for i in range(len(x_val_batches)):
                     x_batch, y_batch = x_val_batches[i], y_val_batches[i]
                     x_batch, y_batch = torch.Tensor(x_batch), torch.Tensor(y_batch)
+                    if use_gpu:
+                        x_batch = x_batch.cuda()
+                        y_batch = y_batch.cuda()
                     logits = self.protoNNObj.forward(x_batch)
                     _, predictions = torch.max(logits, dim=1)
                     _, target = torch.max(y_batch, dim=1)
                     _, count = self.accuracy(predictions, target)
                     numCorrect += count
                 print("Validation accuracy: %f" % (numCorrect / len(x_val)))
-
