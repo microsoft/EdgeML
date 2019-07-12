@@ -11,6 +11,7 @@ import pytorch_edgeml.utils as utils
 import helpermethods as helper
 import torch
 
+use_gpu = torch.cuda.is_available()
 
 def main():
     config = helper.getProtoNNArgs()
@@ -52,19 +53,31 @@ def main():
     protoNN = ProtoNN(dataDimension, PROJECTION_DIM,
                       NUM_PROTOTYPES, numClasses,
                       gamma, W=W, B=B)
+
+    #Check if gpu available
+    if use_gpu:
+        protoNN = protoNN.cuda()
+
     trainer = ProtoNNTrainer(protoNN, REG_W, REG_B, REG_Z,
                              SPAR_W, SPAR_B, SPAR_Z,
                              LEARNING_RATE, lossType='xentropy')
     # Train the protoNN object
     trainer.train(BATCH_SIZE, NUM_EPOCHS, x_train, x_test,
-                  y_train, y_test, printStep=PRINT_STEP, valStep=VAL_STEP)
+                  y_train, y_test, use_gpu, printStep=PRINT_STEP, valStep=VAL_STEP)
 
     # Print some summary metrics
     x_, y_= torch.Tensor(x_test), torch.Tensor(y_test)
+    if use_gpu:
+        x_ = x_.cuda()
+        y_ = y_.cuda()
+
     logits = protoNN.forward(x_)
     _, predictions = torch.max(logits, dim=1)
     _, target = torch.max(y_, dim=1)
     acc, count = trainer.accuracy(predictions, target)
+
+    #Model back to CPU
+    protoNN = protoNN.cpu()
     W, B, Z, gamma  = protoNN.getModelMatrices()
     matrixList = [W, B, Z]
     matrixList = [x.detach().numpy() for x in matrixList]

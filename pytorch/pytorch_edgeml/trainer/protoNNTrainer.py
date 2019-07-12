@@ -114,7 +114,7 @@ class ProtoNNTrainer:
         prtn.Z.data = torch.FloatTensor(newZ).to(device)
 
     def train(self, batchSize, epochs, x_train, x_val, y_train, y_val,
-              printStep=10, valStep=1, device='cpu'):
+              use_gpu, printStep=10, valStep=1, device='cpu'):
         '''
         Performs dense training of ProtoNN followed by iterative hard
         thresholding to enforce sparsity constraints.
@@ -151,6 +151,9 @@ class ProtoNNTrainer:
             for i in range(len(x_train_batches)):
                 x_batch, y_batch = x_train_batches[i], y_train_batches[i]
                 x_batch, y_batch = torch.Tensor(x_batch), torch.Tensor(y_batch)
+                if use_gpu:
+                    x_batch = x_batch.cuda()
+                    y_batch = y_batch.cuda()
                 self.optimizer.zero_grad()
                 logits = self.protoNNObj.forward(x_batch)
                 loss = self.loss(logits, y_batch)
@@ -171,6 +174,9 @@ class ProtoNNTrainer:
                 for i in range(len(x_val_batches)):
                     x_batch, y_batch = x_val_batches[i], y_val_batches[i]
                     x_batch, y_batch = torch.Tensor(x_batch), torch.Tensor(y_batch)
+                    if use_gpu:
+                        x_batch = x_batch.cuda()
+                        y_batch = y_batch.cuda()
                     logits = self.protoNNObj.forward(x_batch)
                     _, predictions = torch.max(logits, dim=1)
                     _, target = torch.max(y_batch, dim=1)
