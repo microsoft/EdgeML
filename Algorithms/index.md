@@ -25,14 +25,14 @@ Usecases:
 - **SeeDot**: 
 
 Links to appropriate resources for each of the algorithms and tools:
-1. Bonsai - [Paper](http://manikvarma.org/pubs/kumar17.pdf) | [Bibtex](http://manikvarma.org/pubs/selfbib.html#Kumar17) | [Cpp code](https://github.com/microsoft/EdgeML/tree/master/cpp) | [Tensorflow example](https://github.com/microsoft/EdgeML/tree/master/tf/examples/Bonsai) | [PyTorch example](https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/Bonsai) | [Blog](https://blogs.microsoft.com/ai/ais-big-leap-tiny-devices-opens-world-possibilities/).
-2. ProtoNN - [Paper](http://manikvarma.org/pubs/gupta17.pdf) | [Bibtex](http://manikvarma.org/pubs/selfbib.html#Gupta17) | [Cpp code](https://github.com/microsoft/EdgeML/tree/master/cpp) | [Tensorflow example](https://github.com/microsoft/EdgeML/tree/master/tf/examples/ProtoNN) | [PyTorch example](https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/ProtoNN) | [Blog](https://blogs.microsoft.com/ai/ais-big-leap-tiny-devices-opens-world-possibilities/).
-3. EMI-RNN - [Paper](http://www.prateekjain.org/publications/all_papers/DennisPSJ18.pdf) | [Bibtex](https://dkdennis.xyz/static/emi-rnn-nips18-bibtex.html) | [Tensorflow example](https://github.com/microsoft/EdgeML/tree/master/tf/examples/EMI-RNN) | [PyTorch example](https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/EMI-RNN).
-4. FastRNN & FastGRNN - [Paper](http://manikvarma.org/pubs/kusupati18.pdf) | [Bibtex](http://manikvarma.org/pubs/selfbib.html#Kusupati18) | [Tensorflow example](https://github.com/microsoft/EdgeML/tree/master/tf/examples/FastCells) | [PyTorch example](https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/FastCells) | [Blog](https://www.microsoft.com/en-us/research/blog/fast-accurate-stable-and-tiny-breathing-life-into-iot-devices-with-an-innovative-algorithmic-approach/).
-5. SeeDot - [Paper](http://www.sridhargopinath.in/wp-content/uploads/2019/06/pldi19-SeeDot.pdf) | [Bibtex](https://dblp.org/rec/bibtex/conf/pldi/GopinathGSS19) | [Code](https://github.com/microsoft/EdgeML/tree/master/Tools/SeeDot).
+1. Bonsai (ICML 2017) - [Paper](http://manikvarma.org/pubs/kumar17.pdf) | [Bibtex](http://manikvarma.org/pubs/selfbib.html#Kumar17) | [Cpp code](https://github.com/microsoft/EdgeML/tree/master/cpp) | [Tensorflow example](https://github.com/microsoft/EdgeML/tree/master/tf/examples/Bonsai) | [PyTorch example](https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/Bonsai) | [Blog](https://blogs.microsoft.com/ai/ais-big-leap-tiny-devices-opens-world-possibilities/).
+2. ProtoNN (ICML 2017) - [Paper](http://manikvarma.org/pubs/gupta17.pdf) | [Bibtex](http://manikvarma.org/pubs/selfbib.html#Gupta17) | [Cpp code](https://github.com/microsoft/EdgeML/tree/master/cpp) | [Tensorflow example](https://github.com/microsoft/EdgeML/tree/master/tf/examples/ProtoNN) | [PyTorch example](https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/ProtoNN) | [Blog](https://blogs.microsoft.com/ai/ais-big-leap-tiny-devices-opens-world-possibilities/).
+3. EMI-RNN (NeurIPS 2018) - [Paper](http://www.prateekjain.org/publications/all_papers/DennisPSJ18.pdf) | [Bibtex](https://dkdennis.xyz/static/emi-rnn-nips18-bibtex.html) | [Tensorflow example](https://github.com/microsoft/EdgeML/tree/master/tf/examples/EMI-RNN) | [PyTorch example](https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/EMI-RNN).
+4. FastRNN & FastGRNN (NeurIPS 2018) - [Paper](http://manikvarma.org/pubs/kusupati18.pdf) | [Bibtex](http://manikvarma.org/pubs/selfbib.html#Kusupati18) | [Tensorflow example](https://github.com/microsoft/EdgeML/tree/master/tf/examples/FastCells) | [PyTorch example](https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/FastCells) | [Blog](https://www.microsoft.com/en-us/research/blog/fast-accurate-stable-and-tiny-breathing-life-into-iot-devices-with-an-innovative-algorithmic-approach/).
+5. SeeDot (PLDI 2019) - [Paper](http://www.sridhargopinath.in/wp-content/uploads/2019/06/pldi19-SeeDot.pdf) | [Bibtex](https://dblp.org/rec/bibtex/conf/pldi/GopinathGSS19) | [Code](https://github.com/microsoft/EdgeML/tree/master/Tools/SeeDot).
 
  
-Bonsai enables
+<!-- Bonsai enables
 high prediction accuracy while minimizing model size and prediction costs by a)
 learning a single, shallow, sparse tree with powerful nodes, b) sparsely
 projecting data into a low-dimensional space and c) jointly learning the tree
@@ -100,4 +100,4 @@ href="https://github.com/Microsoft/EdgeML/tree/master/tf/examples/FastCells">exa
 Learn more about Fast Cells from our
 <a
 href="http://manikvarma.org/pubs/kusupati18.pdf"
-style="color:var(--ms-green);">NIPS '18 publication</a>.
+style="color:var(--ms-green);">NIPS '18 publication</a>. -->
