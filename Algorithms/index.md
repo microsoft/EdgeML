@@ -44,7 +44,7 @@ A very brief introduction of these algorithms and tools is provided below.
     [<a href="https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/EMI-RNN">PyTorch example</a>]
     [<a href="https://youtu.be/l7PlPbWSbcc">Video</a>]
 </span>
-4. **FastRNN** & **FastGRNN**: Fast, Accurate, Stable and Tiny (Gated) RNN Cells which can be used instead of LSTM and GRU. FastGRNN can be up to 35x smaller and faster than LSTM and GRU while solving time series classification problems with models with size less than 1-10KB.  
+4. **FastRNN** & **FastGRNN**: Fast, Accurate, Stable and Tiny (Gated) RNN Cells which can be used instead of LSTM and GRU. FastGRNN can be up to 35x smaller and faster than LSTM and GRU for time series classification problems with models with size less than 10KB.  
 <span>
 	[<a href="./static/docs/publications/FastGRNN.pdf">Paper @ NeurIPS 2018</a>]
 	[<a href="./static/docs/publications/bib.html#FastGRNN">Bibtex</a>]
