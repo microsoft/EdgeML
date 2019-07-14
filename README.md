@@ -60,19 +60,20 @@ to this
 If you use the EdgeML library in your projects or publications, please do cite
 us:
 ```
- D. Dennis, S. Gopinath, C. Gupta, A. Kumar, A. Kusupati, S. Patil and H.V. Simhadri.
- EdgeML: Machine Learning for resource-constrained Edge devices.
+ DK Dennis, S Gopinath, C Gupta, A Kumar, A Kusupati, S Patil and HV Simhadri.
+ EdgeML: Machine Learning for resource-constrained edge devices.
  https://github.com/Microsoft/EdgeML
 ```
 
 The following BibTeX can also be used.
 
 ```
-@online{edgemlcode,
- title = {{EdgeML: Machine Learning for resource-constrained Edge devices}},
- author={Dennis, Don and Gopinath, Sridhar and Gupta, Chirag and Kumar, Ashish and Kusupati, Aditya and Patil, Shishir and Simhadri, Harsha Vardhan},
- year = 2017,
- url = {https://github.com/Microsoft/EdgeML}
+@software{edgeml01,
+   author = {{Dennis, Don Kurian and Gopinath, Sridhar and Gupta, Chirag and
+      Kumar, Ashish and Kusupati, Aditya and Patil, Shishir and Simhadri, Harsha Vardhan}},
+   title = {{EdgeML: Machine Learning for resource-constrained edge devices}},
+   url = {https://github.com/Microsoft/EdgeML},
+   version = {0.1},
 }
 ```
 
