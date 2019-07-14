@@ -21,7 +21,7 @@ All the above algorithms and tools are aimed at enabling machine learning infere
 
 Usecases:
 - **Bonsai** & **ProtoNN**: Can be used for traditional machine learning tasks with pre-computed features like gesture recongition ([Gesturepod](https://microsoft.github.io/EdgeML/Projects/GesturePod/instructable.html)). They can also be used to replace bulky traditonal classifiers like Fully Connected layers, RBF-SVMs etc., in general ML pipleines.
-- **EMI-RNN** & **FastGRNN**: These complementary techniques can be applied on time-series classification tasks which require the models to learn new feature representations such as wakeword detection ([Wakeword detection](https://microsoft.github.io/EdgeML/Projects/WakeWord/instructable.html)). FastGRNN can be used as a cheaper alternative to LSTM and GRU in deep learning pipleines while EMI-RNN provides framework for computational saving using multi-instance learning.
+- **EMI-RNN** & **FastGRNN**: These complementary techniques can be applied on time-series classification tasks which require the models to learn new feature representations such as wakeword detection ([Key-word spotting](https://microsoft.github.io/EdgeML/Projects/WakeWord/instructable.html)). FastGRNN can be used as a cheaper alternative to LSTM and GRU in deep learning pipleines while EMI-RNN provides framework for computational saving using multi-instance learning.
 - **SeeDot**: 
 
 Links to appropriate resources for each of the algorithms and tools:
