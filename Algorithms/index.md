@@ -17,7 +17,7 @@ Usecases:
 A very brief introduction of these algorithms and tools is provided below.
 
 1. **Bonsai**: *Bonsai* is a shallow and strong non-linear tree based classifier which is designed to solve traditional ML problem with 2KB sized models.
-<span><br></span>
+
 <span>
     [<a href="https://github.com/microsoft/EdgeML/tree/master/tf/examples/EMI-RNN">Code</a>]
     [<a href="https://youtu.be/l7PlPbWSbcc">Video</a>]
