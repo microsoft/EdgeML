@@ -1073,7 +1073,7 @@ class SRNN2(nn.Module):
 
         self.rnn0 = self.rnnClass(input_size=inputDim, hidden_size=hiddenDim0)
         self.rnn1 = self.rnnClass(input_size=hiddenDim0, hidden_size=hiddenDim1)
-        self.W = torch.randn([self.hiddenDim0, self.outputDim])
+        self.W = torch.randn([self.hiddenDim1, self.outputDim])
         self.W = nn.Parameter(self.W)
         self.B = torch.randn([self.outputDim])
         self.B = nn.Parameter(self.B)
