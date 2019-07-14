@@ -7,22 +7,28 @@ permalink: /Algorithms
 The algorithms that are part of EdgeML are written in Tensorflow and PyTorch for Python.
 They are hosted on [GitHub](https://github.com/Microsoft/EdgeML/).
 Additionally, the repository also provides fast and scalable C++
-implementations of Bonsai and ProtoNN. A very brief introduction of these
-algorithms and tools is provided below.
+implementations of Bonsai and ProtoNN. 
 
+Usecases:
+- **Bonsai** & **ProtoNN**: Can be used for traditional machine learning tasks with pre-computed features like gesture recongition ([Gesturepod](https://microsoft.github.io/EdgeML/Projects/GesturePod/instructable.html)), activity detection, image classification. They can also be used to replace bulky traditonal classifiers like fully connected layers, RBF-SVMs etc., in ML pipleines.
+- **EMI-RNN** & **FastGRNN**: These complementary techniques can be applied on time-series classification tasks which require the models to learn new feature representations such as wakeword detection ([Key-word spotting](https://microsoft.github.io/EdgeML/Projects/WakeWord/instructable.html)), sentiment classification, activity recognition. FastGRNN can be used as a cheaper alternative to LSTM and GRU in deep learning pipleines while EMI-RNN provides framework for computational savings using multi-instance learning.
+- **SeeDot**: 
 
-1. **Bonsai**: *Bonsai* is a shallow and strong non-linear tree based classifier.
-2. **ProtoNN**: *ProtoNN* is a prototype based k-nearest neighbors (kNN) classifier.
-3. **EMI-RNN**: Training routine to recover critical signature from time series data for faster and accurate RNN predictions.
-4. **FastRNN** & **FastGRNN**: Fast, Accurate, Stable and Tiny (Gated) RNN Cells which can be used instead of LSTM and GRU.
+A very brief introduction of these algorithms and tools is provided below.
+
+1. **Bonsai**: *Bonsai* is a shallow and strong non-linear tree based classifier which is designed to solve traditional ML problem with 2KB sized models.
+<span>
+    [<a href="https://github.com/microsoft/EdgeML/tree/master/tf/examples/EMI-RNN">Code</a>]
+    [<a href="https://youtu.be/l7PlPbWSbcc">Video</a>]
+</span>
+2. **ProtoNN**: *ProtoNN* is a prototype based k-nearest neighbors (kNN) classifier which is designed to solve traditional ML problem with 2KB sized models.
+3. **EMI-RNN**: Training routine to recover critical signature from time series data for faster and accurate RNN predictions. EMI-RNN helps in speeding-up RNN inference up to 72x when compared to traditional implementations.
+4. **FastRNN** & **FastGRNN**: Fast, Accurate, Stable and Tiny (Gated) RNN Cells which can be used instead of LSTM and GRU. FastGRNN can be up to 35x smaller and faster than LSTM and GRU while solving time series classification problems with models with size less than 10KB.
 5. **SeeDot**: Floating-point to fixed-point quantization tool including a new language and compiler.
 
 All the above algorithms and tools are aimed at enabling machine learning inference on the edge devices which form the back-bone for the Internet of Things (IoT).
 
-Usecases:
-- **Bonsai** & **ProtoNN**: Can be used for traditional machine learning tasks with pre-computed features like gesture recongition ([Gesturepod](https://microsoft.github.io/EdgeML/Projects/GesturePod/instructable.html)). They can also be used to replace bulky traditonal classifiers like Fully Connected layers, RBF-SVMs etc., in general ML pipleines.
-- **EMI-RNN** & **FastGRNN**: These complementary techniques can be applied on time-series classification tasks which require the models to learn new feature representations such as wakeword detection ([Key-word spotting](https://microsoft.github.io/EdgeML/Projects/WakeWord/instructable.html)). FastGRNN can be used as a cheaper alternative to LSTM and GRU in deep learning pipleines while EMI-RNN provides framework for computational saving using multi-instance learning.
-- **SeeDot**: 
+
 
 Links to appropriate resources for each of the algorithms and tools:
 1. **Bonsai** (ICML 2017) - [Paper](http://manikvarma.org/pubs/kumar17.pdf) | [Bibtex](http://manikvarma.org/pubs/selfbib.html#Kumar17) | [Cpp code](https://github.com/microsoft/EdgeML/tree/master/cpp) | [Tensorflow example](https://github.com/microsoft/EdgeML/tree/master/tf/examples/Bonsai) | [PyTorch example](https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/Bonsai) | [Blog](https://blogs.microsoft.com/ai/ais-big-leap-tiny-devices-opens-world-possibilities/).
