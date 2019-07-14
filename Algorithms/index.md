@@ -16,56 +16,48 @@ implementations of Bonsai and ProtoNN. The common usecases are as follows:
 A very brief introduction of these algorithms and tools is provided below.
 
 1. **Bonsai**: *Bonsai* is a shallow and strong non-linear tree based classifier which is designed to solve traditional ML problem with 2KB sized models.
-
 <span>
-	[<a href="../static/docs/publications/Bonsai.pdf">Paper @ ICML 2017</a>]
-	[<a href="../static/docs/publications/bib.html#Bonsai">Bibtex</a>]
-	[<a href="../static/docs/posters/BonsaiPoster.pdf">Poster</a>]
+	[<a href="./static/docs/publications/Bonsai.pdf">Paper @ ICML 2017</a>]
+	[<a href="./static/docs/publications/bib.html#Bonsai">Bibtex</a>]
+	[<a href="./static/docs/posters/BonsaiPoster.pdf">Poster</a>]
 	[<a href="https://github.com/microsoft/EdgeML/tree/master/cpp">Cpp code</a>]
     [<a href="https://github.com/microsoft/EdgeML/tree/master/tf/examples/Bonsai">Tensorflow example</a>]
     [<a href="https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/Bonsai">PyTorch example</a>]
     [<a href="https://blogs.microsoft.com/ai/ais-big-leap-tiny-devices-opens-world-possibilities/">Blog</a>]
 </span>
-
 2. **ProtoNN**: *ProtoNN* is a prototype based k-nearest neighbors (kNN) classifier which is designed to solve traditional ML problem with 2KB sized models.
-
 <span>
-	[<a href="../static/docs/publications/ProtoNN.pdf">Paper @ ICML 2017</a>]
-	[<a href="../static/docs/publications/bib.html#ProtoNN">Bibtex</a>]
-	[<a href="../static/docs/posters/ProtoNNICMLPoster.pdf">Poster</a>]
+	[<a href="./static/docs/publications/ProtoNN.pdf">Paper @ ICML 2017</a>]
+	[<a href="./static/docs/publications/bib.html#ProtoNN">Bibtex</a>]
+	[<a href="./static/docs/posters/ProtoNNICMLPoster.pdf">Poster</a>]
 	[<a href="https://github.com/microsoft/EdgeML/tree/master/cpp">Cpp code</a>]
     [<a href="https://github.com/microsoft/EdgeML/tree/master/tf/examples/ProtoNN">Tensorflow example</a>]
     [<a href="https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/ProtoNN">PyTorch example</a>]
     [<a href="https://blogs.microsoft.com/ai/ais-big-leap-tiny-devices-opens-world-possibilities/">Blog</a>]
 </span>
-
 3. **EMI-RNN**: Training routine to recover critical signature from time series data for faster and accurate RNN predictions. EMI-RNN helps in speeding-up RNN inference up to 72x when compared to traditional implementations.
-
 <span>
-	[<a href="../static/docs/publications/emi-rnn-nips18.pdf">Paper @ NeurIPS 2018</a>]
-	[<a href="../static/docs/publications/bib.html#EMI-RNN">Bibtex</a>]
-	[<a href="../static/docs/posters/emi-rnn-nips18-poster.pdf">Poster</a>]
+	[<a href="./static/docs/publications/emi-rnn-nips18.pdf">Paper @ NeurIPS 2018</a>]
+	[<a href="./static/docs/publications/bib.html#EMI-RNN">Bibtex</a>]
+	[<a href="./static/docs/posters/emi-rnn-nips18-poster.pdf">Poster</a>]
     [<a href="https://github.com/microsoft/EdgeML/tree/master/tf/examples/EMI-RNN">Tensorflow example</a>]
     [<a href="https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/EMI-RNN">PyTorch example</a>]
     [<a href="https://youtu.be/l7PlPbWSbcc">Video</a>]
 </span>
-
 4. **FastRNN** & **FastGRNN**: Fast, Accurate, Stable and Tiny (Gated) RNN Cells which can be used instead of LSTM and GRU. FastGRNN can be up to 35x smaller and faster than LSTM and GRU while solving time series classification problems with models with size less than 10KB.
-
 <span>
-	[<a href="../static/docs/publications/FastGRNN.pdf">Paper @ NeurIPS 2018</a>]
-	[<a href="../static/docs/publications/bib.html#FastGRNN">Bibtex</a>]
-	[<a href="../static/docs/posters/FastGRNNPoster.pdf">Poster</a>]
+	[<a href="./static/docs/publications/FastGRNN.pdf">Paper @ NeurIPS 2018</a>]
+	[<a href="./static/docs/publications/bib.html#FastGRNN">Bibtex</a>]
+	[<a href="./static/docs/posters/FastGRNNPoster.pdf">Poster</a>]
     [<a href="https://github.com/microsoft/EdgeML/tree/master/tf/examples/FastCells">Tensorflow example</a>]
     [<a href="https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/FastCells">PyTorch example</a>]
     [<a href="https://youtu.be/3ZpCnOWBrio">Video</a>]
 </span>
-
 5. **SeeDot**: Floating-point to fixed-point quantization tool including a new language and compiler.
 
 <span>
-	[<a href="../static/docs/publications/SeeDot.pdf">Paper @ PLDI 2019</a>]
-	[<a href="../static/docs/publications/bib.html#SeeDot">Bibtex</a>]
+	[<a href="./static/docs/publications/SeeDot.pdf">Paper @ PLDI 2019</a>]
+	[<a href="./static/docs/publications/bib.html#SeeDot">Bibtex</a>]
 	[<a href="https://github.com/microsoft/EdgeML/tree/master/Tools/SeeDot">Code</a>]
 </span>
 
