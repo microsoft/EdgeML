@@ -1,19 +1,38 @@
 ---
 layout: default
-title: Getting Started with EdgeML
+title: Algorithms and Tools
 permalink: /Algorithms
 ---
 
-The algorithms that are part of EdgeML are written in Tensorflow for Python.
+The algorithms that are part of EdgeML are written in Tensorflow and PyTorch for Python.
 They are hosted on [GitHub](https://github.com/Microsoft/EdgeML/).
 Additionally, the repository also provides fast and scalable C++
 implementations of Bonsai and ProtoNN. A very brief introduction of these
-algorithms is provided below.
+algorithms and tools is provided below.
 
 
-## Bonsai
+1. **Bonsai**: *Bonsai* is a shallow and strong non-linear tree based classifier.
+2. **ProtoNN**: *ProtoNN* is a prototype based k-nearest neighbors (kNN) classifier.
+3. **EMI-RNN**: Training routine to recover critical signature from time series data for faster and accurate RNN predictions.
+4. **FastRNN** & **FastGRNN**: Fast, Accurate, Stable and Tiny (Gated) RNN Cells which can be used instead of LSTM and GRU.
+5. **SeeDot**: Floating-point to fixed-point quantization tool including a new language and compiler.
 
-*Bonsai* is tree-based multi-class classification algorithm. Bonsai enables
+All the above algorithms and tools are aimed at enabling machine learning inference on the edge devices which form the back-bone for the Internet of Things (IoT).
+
+Usecases:
+- **Bonsai** & **ProtoNN**: Can be used for traditional machine learning tasks with pre-computed features like gesture recongition (link to gesturepod). They can also be used to replace bulky traditonal classifiers like Fully Connected layers, RBF-SVMs etc., in general ML pipleines.
+- **EMI-RNN** & **FastGRNN**: These complementary techniques can be applied on time-series classification tasks which require the models to learn new feature representations such as wakeword detection (link to the wakeword demo). FastGRNN can be used as a cheaper alternative to LSTM and GRU in deep learning pipleines while EMI-RNN provides framework for computational saving using multi-instance learning.
+- **SeeDot**: 
+
+Links to appropriate resources for each of the algorithms and tools:
+1. Bonsai - [Paper](http://manikvarma.org/pubs/kumar17.pdf) [Bibtex](http://manikvarma.org/pubs/selfbib.html#Kumar17) [Cpp code](https://github.com/microsoft/EdgeML/tree/master/cpp) [Tensorflow example](https://github.com/microsoft/EdgeML/tree/master/tf/examples/Bonsai) [PyTorch example](https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/Bonsai) [Blog](https://blogs.microsoft.com/ai/ais-big-leap-tiny-devices-opens-world-possibilities/).
+2. ProtoNN - [Paper](http://manikvarma.org/pubs/gupta17.pdf) [Bibtex](http://manikvarma.org/pubs/selfbib.html#Gupta17) [Cpp code](https://github.com/microsoft/EdgeML/tree/master/cpp) [Tensorflow example](https://github.com/microsoft/EdgeML/tree/master/tf/examples/ProtoNN) [PyTorch example](https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/ProtoNN) [Blog](https://blogs.microsoft.com/ai/ais-big-leap-tiny-devices-opens-world-possibilities/).
+3. EMI-RNN - [Paper](http://www.prateekjain.org/publications/all_papers/DennisPSJ18.pdf) [Bibtex](https://dkdennis.xyz/static/emi-rnn-nips18-bibtex.html) [Tensorflow example](https://github.com/microsoft/EdgeML/tree/master/tf/examples/EMI-RNN) [PyTorch example](https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/EMI-RNN).
+4. FastRNN & FastGRNN - [Paper](http://manikvarma.org/pubs/kusupati18.pdf) [Bibtex](http://manikvarma.org/pubs/selfbib.html#Kusupati18) [Tensorflow example](https://github.com/microsoft/EdgeML/tree/master/tf/examples/FastCells) [PyTorch example](https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/FastCells) [Blog](https://www.microsoft.com/en-us/research/blog/fast-accurate-stable-and-tiny-breathing-life-into-iot-devices-with-an-innovative-algorithmic-approach/).
+5. SeeDot - [Paper](http://www.sridhargopinath.in/wp-content/uploads/2019/06/pldi19-SeeDot.pdf) [Bibtex](https://dblp.org/rec/bibtex/conf/pldi/GopinathGSS19) [Code](https://github.com/microsoft/EdgeML/tree/master/Tools/SeeDot).
+
+ 
+Bonsai enables
 high prediction accuracy while minimizing model size and prediction costs by a)
 learning a single, shallow, sparse tree with powerful nodes, b) sparsely
 projecting data into a low-dimensional space and c) jointly learning the tree
