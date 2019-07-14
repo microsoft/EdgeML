@@ -16,6 +16,7 @@ implementations of Bonsai and ProtoNN. The common usecases are as follows:
 A very brief introduction of these algorithms and tools is provided below.
 
 1. **Bonsai**: *Bonsai* is a shallow and strong non-linear tree based classifier which is designed to solve traditional ML problem with 2KB sized models.
+
 <span>
 	[<a href="./static/docs/publications/Bonsai.pdf">Paper @ ICML 2017</a>]
 	[<a href="./static/docs/publications/bib.html#Bonsai">Bibtex</a>]
