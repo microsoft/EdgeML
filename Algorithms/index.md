@@ -17,11 +17,12 @@ Usecases:
 A very brief introduction of these algorithms and tools is provided below.
 
 1. **Bonsai**: *Bonsai* is a shallow and strong non-linear tree based classifier which is designed to solve traditional ML problem with 2KB sized models.
-
+<span><br></span>
 <span>
     [<a href="https://github.com/microsoft/EdgeML/tree/master/tf/examples/EMI-RNN">Code</a>]
     [<a href="https://youtu.be/l7PlPbWSbcc">Video</a>]
 </span>
+
 2. **ProtoNN**: *ProtoNN* is a prototype based k-nearest neighbors (kNN) classifier which is designed to solve traditional ML problem with 2KB sized models.
 3. **EMI-RNN**: Training routine to recover critical signature from time series data for faster and accurate RNN predictions. EMI-RNN helps in speeding-up RNN inference up to 72x when compared to traditional implementations.
 4. **FastRNN** & **FastGRNN**: Fast, Accurate, Stable and Tiny (Gated) RNN Cells which can be used instead of LSTM and GRU. FastGRNN can be up to 35x smaller and faster than LSTM and GRU while solving time series classification problems with models with size less than 10KB.
