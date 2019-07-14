@@ -7,10 +7,9 @@ permalink: /Algorithms
 The algorithms that are part of EdgeML are written in Tensorflow and PyTorch for Python.
 They are hosted on [GitHub](https://github.com/Microsoft/EdgeML/).
 Additionally, the repository also provides fast and scalable C++
-implementations of Bonsai and ProtoNN. 
+implementations of Bonsai and ProtoNN. The common usecases are as follows:
 
-Usecases:
-- **Bonsai** & **ProtoNN**: Can be used for traditional machine learning tasks with pre-computed features like gesture recongition ([Gesturepod](https://microsoft.github.io/EdgeML/Projects/GesturePod/instructable.html)), activity detection, image classification. They can also be used to replace bulky traditonal classifiers like fully connected layers, RBF-SVMs etc., in ML pipleines.
+- **Bonsai** or **ProtoNN**: Can be used for traditional machine learning tasks with pre-computed features like gesture recongition ([Gesturepod](https://microsoft.github.io/EdgeML/Projects/GesturePod/instructable.html)), activity detection, image classification. They can also be used to replace bulky traditonal classifiers like fully connected layers, RBF-SVMs etc., in ML pipleines.
 - **EMI-RNN** & **FastGRNN**: These complementary techniques can be applied on time-series classification tasks which require the models to learn new feature representations such as wakeword detection ([Key-word spotting](https://microsoft.github.io/EdgeML/Projects/WakeWord/instructable.html)), sentiment classification, activity recognition. FastGRNN can be used as a cheaper alternative to LSTM and GRU in deep learning pipleines while EMI-RNN provides framework for computational savings using multi-instance learning.
 - **SeeDot**: 
 
@@ -27,6 +26,7 @@ A very brief introduction of these algorithms and tools is provided below.
     [<a href="https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/Bonsai">PyTorch example</a>]
     [<a href="https://blogs.microsoft.com/ai/ais-big-leap-tiny-devices-opens-world-possibilities/">Blog</a>]
 </span>
+
 2. **ProtoNN**: *ProtoNN* is a prototype based k-nearest neighbors (kNN) classifier which is designed to solve traditional ML problem with 2KB sized models.
 
 <span>
@@ -38,6 +38,7 @@ A very brief introduction of these algorithms and tools is provided below.
     [<a href="https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/ProtoNN">PyTorch example</a>]
     [<a href="https://blogs.microsoft.com/ai/ais-big-leap-tiny-devices-opens-world-possibilities/">Blog</a>]
 </span>
+
 3. **EMI-RNN**: Training routine to recover critical signature from time series data for faster and accurate RNN predictions. EMI-RNN helps in speeding-up RNN inference up to 72x when compared to traditional implementations.
 
 <span>
@@ -48,6 +49,7 @@ A very brief introduction of these algorithms and tools is provided below.
     [<a href="https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/EMI-RNN">PyTorch example</a>]
     [<a href="https://youtu.be/l7PlPbWSbcc">Video</a>]
 </span>
+
 4. **FastRNN** & **FastGRNN**: Fast, Accurate, Stable and Tiny (Gated) RNN Cells which can be used instead of LSTM and GRU. FastGRNN can be up to 35x smaller and faster than LSTM and GRU while solving time series classification problems with models with size less than 10KB.
 
 <span>
@@ -58,6 +60,7 @@ A very brief introduction of these algorithms and tools is provided below.
     [<a href="https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/FastCells">PyTorch example</a>]
     [<a href="https://youtu.be/3ZpCnOWBrio">Video</a>]
 </span>
+
 5. **SeeDot**: Floating-point to fixed-point quantization tool including a new language and compiler.
 
 <span>
