@@ -52,6 +52,7 @@ A very brief introduction of these algorithms and tools is provided below.
     [<a href="https://github.com/microsoft/EdgeML/tree/master/tf/examples/FastCells">Tensorflow example</a>]
     [<a href="https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/FastCells">PyTorch example</a>]
     [<a href="https://youtu.be/3ZpCnOWBrio">Video</a>]
+    [<a href="https://www.microsoft.com/en-us/research/blog/fast-accurate-stable-and-tiny-breathing-life-into-iot-devices-with-an-innovative-algorithmic-approach/">Blog</a>]
 </span>
 5. **SeeDot**: Floating-point to fixed-point quantization tool including a new language and compiler.  
 <span>
