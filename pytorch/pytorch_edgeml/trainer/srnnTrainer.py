@@ -10,7 +10,7 @@ import pytorch_edgeml.utils as utils
 
 class SRNNTrainer:
 
-    def __init__(self, srnnObj, learningRate, lossType='l2'):
+    def __init__(self, srnnObj, learningRate, lossType='l2', device = None):
         '''
         A simple trainer for SRNN
         '''
@@ -27,6 +27,11 @@ class SRNNTrainer:
         else :
             self.lossCriterion = torch.nn.CrossEntropyLoss()
             print("Using x-entropy loss")
+
+        if device is None:
+            self.device = "cpu"
+        else:
+            self.device = device
 
     def __optimizer(self):
         optimizer = torch.optim.Adam(self.srnnObj.parameters(),
@@ -57,7 +62,7 @@ class SRNNTrainer:
         return acc, numCorrect
 
     def train(self, brickSize, batchSize, epochs, x_train, x_val, y_train, y_val,
-              printStep=10, valStep=1, device='cpu'):
+              printStep=10, valStep=1):
         '''
         Performs training of SRNN.
 
@@ -90,7 +95,9 @@ class SRNNTrainer:
         for epoch in range(epochs):
             for i in range(len(x_train_batches)):
                 x_batch, y_batch = x_train_batches[i], y_train_batches[i]
+                x_batch = torch.Tensor(x_batch)
                 y_batch = torch.Tensor(y_batch)
+                x_batch, y_batch = x_batch.to(self.device), y_batch.to(self.device)
                 self.optimizer.zero_grad()
                 logits = self.srnnObj.forward(x_batch, brickSize)
                 loss = self.loss(logits, y_batch)
@@ -107,7 +114,9 @@ class SRNNTrainer:
                 numCorrect = 0
                 for i in range(len(x_val_batches)):
                     x_batch, y_batch = x_val_batches[i], y_val_batches[i]
+                    x_batch = torch.Tensor(x_batch)
                     y_batch = torch.Tensor(y_batch)
+                    x_batch, y_batch = x_batch.to(self.device), y_batch.to(self.device)
                     logits = self.srnnObj.forward(x_batch, brickSize)
                     _, predictions = torch.max(logits, dim=1)
                     _, target = torch.max(y_batch, dim=1)
