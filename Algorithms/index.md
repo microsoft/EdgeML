@@ -15,7 +15,8 @@ implementations of Bonsai and ProtoNN. The common usecases are as follows:
 
 A very brief introduction of these algorithms and tools is provided below.
 
-1. **Bonsai**: *Bonsai* is a shallow and strong non-linear tree based classifier which is designed to solve traditional ML problem with 2KB sized models.  
+1. **Bonsai**: *Bonsai* is a shallow and strong non-linear tree based classifier which is designed to solve traditional ML problem with 2KB sized models. 
+Bonsai has logarithmic prediction complexity and can be trained end-to-end with deep learning models.  
 <span>
 	[<a href="./static/docs/publications/Bonsai.pdf">Paper @ ICML 2017</a>]
 	[<a href="./static/docs/publications/bib.html#Bonsai">Bibtex</a>]
@@ -25,7 +26,8 @@ A very brief introduction of these algorithms and tools is provided below.
     [<a href="https://github.com/microsoft/EdgeML/tree/master/pytorch/examples/Bonsai">PyTorch example</a>]
     [<a href="https://blogs.microsoft.com/ai/ais-big-leap-tiny-devices-opens-world-possibilities/">Blog</a>]
 </span>
-2. **ProtoNN**: *ProtoNN* is a prototype based k-nearest neighbors (kNN) classifier which is designed to solve traditional ML problem with 2KB sized models.  
+2. **ProtoNN**: *ProtoNN* is a prototype based k-nearest neighbors (kNN) classifier which is designed to solve traditional ML problem with 2KB sized models. 
+ProtoNN can be trained end-to-end with deep learning models and has been used for deployment in GesturePod.  
 <span>
 	[<a href="./static/docs/publications/ProtoNN.pdf">Paper @ ICML 2017</a>]
 	[<a href="./static/docs/publications/bib.html#ProtoNN">Bibtex</a>]

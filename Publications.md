@@ -20,6 +20,7 @@ _Programming Language Design and Implementation (PLDI), 2019_<br>
     [<a href="./static/docs/publications/SeeDot.pdf">PDF</a>]
     [<a href="./static/docs/publications/bib.html#SeeDot">Bibtex</a>]
     [<a href="https://github.com/microsoft/EdgeML/tree/master/Tools/SeeDot">Code</a>]
+    [<a href="https://www.youtube.com/watch?v=pC2HXV0eDMI">Video</a>]
 </span>
 
 &bull; **FastGRNN: A Fast, Accurate, Stable and Tiny Kilobyte Sized Gated Recurrent Neural Network**<br>
