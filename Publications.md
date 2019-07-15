@@ -8,6 +8,7 @@ permalink: /Publications
 _Shishir G. Patil, Don Kurian Dennis, Chirag Pabbaraju, Nadeem Shaheer, Harsha Vardhan Simhadri, Vivek Seshadri, Manik Varma and Prateek Jain_<br>
 _ACM User Interface Software and Technology Symposium (UIST), 2019_<br>
 <span>
+    [<a href="./static/docs/publications/bib.html#GesturePod">Bibtex</a>]
     [<a href="https://github.com/Microsoft/EdgeML/Applications/GesturePod">Code</a>]
     [<a href="https://1drv.ms/u/s!AjDloPaG_l0Et7Ikid1voOVFuI116Q">Video</a>]
 </span>
@@ -81,8 +82,9 @@ _Yeshwanth Cherapanamjeri, Prateek Jain and Praneeth Netrapalli_<br>
 _Conference on Learning Theory (COLT), 2017_ <br>
 <span>
     [<a href="./static/docs/publications/RobustPCAPaper.pdf">PDF</a>]
+    [<a href="./static/docs/publications/bib.html#RobustPCA">Bibtex</a>]
+    [<a href="./static/docs/posters/RobustPCACOLTPoster.pdf">Poster</a>]
     [<a href="./static/code/RobustPCACode.zip">Matlab ZIP</a>]
     [<a href="https://github.com/andrewssobral/lrslibrary/tree/master/algorithms/mc/PG-RMC">More Code</a>]
-    [<a href="./static/docs/posters/RobustPCACOLTPoster.pdf">Poster</a>]
     [<a href="./static/docs/slides/RobustPCACOLTSlides.pptx">Slides</a>]
 </span>
