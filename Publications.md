@@ -5,7 +5,7 @@ permalink: /Publications
 ---
 
 &bull; **GesturePod: Enabling On-device Gesture-based Interaction for White Cane Users**<br>
-_Shishir G. Patil, Don Kurian Dennis, Chirag Pabbaraju, Nadeem Shaheer, Harsha Vardhan Simhadri, Vivek Seshadri, Manik Varma and Prateek Jain_<br>
+_Shishir G. Patil, Don Kurian Dennis, Chirag Pabbaraju, Nadeem Shaheer, Harsha Vardhan Simhadri, Vivek Seshadri, <br>Manik Varma and Prateek Jain_<br>
 _ACM User Interface Software and Technology Symposium (UIST), 2019_<br>
 <span>
     [<a href="./static/docs/publications/bib.html#GesturePod">Bibtex</a>]
@@ -50,7 +50,7 @@ _Neural Information Processing Systems (NeurIPS), 2018_<br>
 
 &bull; **ProtoNN: Compressed and Accurate kNN for Resource-scarce Devices**<br>
 _Chirag Gupta, Arun Sai Suggala, Ankit Goyal, Harsha Vardhan Simhadri, Bhargavi
-Paranjape, Ashish Kumar, Saurabh Goyal, Raghavendra Udupa, Manik Varma and Prateek
+Paranjape, Ashish Kumar, <br>Saurabh Goyal, Raghavendra Udupa, Manik Varma and Prateek
 Jain_<br>
 _International Conference on Machine Learning (ICML), 2017_<br>
 <span>
@@ -64,7 +64,7 @@ _International Conference on Machine Learning (ICML), 2017_<br>
 </span> 
 
 &bull; **Resource-efficient Machine Learning in 2 KB RAM for the Internet of Things**<br>
-_Ashish Kumar, Saurabh Goyal and Manik Varma _<br>
+_Ashish Kumar, Saurabh Goyal and Manik Varma_<br>
 _International Conference on Machine Learning (ICML), 2017_<br>
 <span>
     [<a href="./static/docs/publications/Bonsai.pdf">PDF</a>]
