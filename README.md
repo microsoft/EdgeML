@@ -57,15 +57,7 @@ us](mailto:edgeml@microsoft.com).
 to this
 [project](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
 
-If you use the EdgeML library in your projects or publications, please do cite
-us:
-```
- DK Dennis, S Gopinath, C Gupta, A Kumar, A Kusupati, S Patil and HV Simhadri.
- EdgeML: Machine Learning for resource-constrained edge devices.
- https://github.com/Microsoft/EdgeML
-```
-
-The following BibTeX can also be used.
+If you use the EdgeML library in your projects or publications, please do cite us using the following BibTex:
 
 ```
 @software{edgeml01,
