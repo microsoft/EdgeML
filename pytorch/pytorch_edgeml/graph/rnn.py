@@ -1073,7 +1073,7 @@ class SRNN2(nn.Module):
 
         self.rnn0 = self.rnnClass(input_size=inputDim, hidden_size=hiddenDim0)
         self.rnn1 = self.rnnClass(input_size=hiddenDim0, hidden_size=hiddenDim1)
-        self.W = torch.randn([self.hiddenDim0, self.outputDim])
+        self.W = torch.randn([self.hiddenDim1, self.outputDim])
         self.W = nn.Parameter(self.W)
         self.B = torch.randn([self.outputDim])
         self.B = nn.Parameter(self.B)
@@ -1088,6 +1088,7 @@ class SRNN2(nn.Module):
         numSplits = int(timeSteps / brickSize)
         batchSize = list(x.size())[1]
         featureDim = list(x.size())[2]
+        numBricks = int(timeSteps/brickSize)
         eqlen = numSplits * brickSize
         x = x[:eqlen]
         x_bricked = torch.split(x, numSplits, dim =0)
@@ -1106,7 +1107,7 @@ class SRNN2(nn.Module):
             fewer than 'brickSize' steps, it will be ignored (no internal
             padding is done).
         '''
-        assert x.ndimension == 3
+        assert x.ndimension() == 3
         assert list(x.size())[2] == self.inputDim
         x_bricks = self.getBrickedData(x, brickSize)
         # This conversion between shapes is tricky. Might infact even be buggy
