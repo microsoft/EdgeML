@@ -70,7 +70,7 @@ The following BibTeX can also be used.
 ```
 @software{edgeml01,
    author = {{Dennis, Don Kurian and Gopinath, Sridhar and Gupta, Chirag and
-      Kumar, Ashish and Kusupati, Aditya and Patil, Shishir and Simhadri, Harsha Vardhan}},
+      Kumar, Ashish and Kusupati, Aditya and Patil, Shishir G and Simhadri, Harsha Vardhan}},
    title = {{EdgeML: Machine Learning for resource-constrained edge devices}},
    url = {https://github.com/Microsoft/EdgeML},
    version = {0.1},
