@@ -61,6 +61,7 @@ ProtoNN can be trained end-to-end with deep learning models and has been used fo
 	[<a href="./static/docs/publications/SeeDot.pdf">Paper @ PLDI 2019</a>]
 	[<a href="./static/docs/publications/bib.html#SeeDot">Bibtex</a>]
 	[<a href="https://github.com/microsoft/EdgeML/tree/master/Tools/SeeDot">Code</a>]
+	[<a href="https://1drv.ms/u/s!AjDloPaG_l0Et7Ikid1voOVFuI116Q">Video</a>]
 </span>
 
 All the above algorithms and tools are aimed at enabling machine learning inference on the edge devices which form the back-bone for the Internet of Things (IoT).
