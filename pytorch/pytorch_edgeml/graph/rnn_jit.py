@@ -11,6 +11,7 @@
 
 import torch
 import torch.nn as nn
+import torch.jit as jit
 
 
 def gen_nonlinearity(A, nonlinearity):
@@ -116,7 +117,7 @@ class BaseRNN(nn.Module):
                 return hiddenStates
 
 
-class FastGRNNCell(nn.Module):
+class FastGRNNCell(jit.ScriptModule):
     '''
     FastRNN Cell with Both Full Rank and Low Rank Formulations
     Has multiple activation functions for the gates
@@ -222,25 +223,29 @@ class FastGRNNCell(nn.Module):
     def cellType(self):
         return "FastGRNN"
 
+    @jit.script_method
     def forward(self, input, state):
-        if self._wRank is None:
-            wComp = torch.matmul(input, torch.transpose(self.W, 0, 1))
-        else:
-            wComp = torch.matmul(
-                torch.matmul(input, torch.transpose(self.W1, 0, 1)), torch.transpose(self.W2, 0, 1))
+        pre_comp = torch.mm(input, self.W.t()) + torch.mm(state, self.U.t())
+        # if self._wRank is None:
+        #     wComp = torch.matmul(input, torch.transpose(self.W, 0, 1))
+        # else:
+        #     wComp = torch.matmul(
+        #         torch.matmul(input, torch.transpose(self.W1, 0, 1)), torch.transpose(self.W2, 0, 1))
 
-        if self._uRank is None:
-            uComp = torch.matmul(state, torch.transpose(self.U, 0, 1))
-        else:
-            uComp = torch.matmul(
-                torch.matmul(state, torch.transpose(self.U1, 0, 1)), torch.transpose(self.U2, 0, 1))
+        # if self._uRank is None:
+        #     uComp = torch.matmul(state, torch.transpose(self.U, 0, 1))
+        # else:
+        #     uComp = torch.matmul(
+        #         torch.matmul(state, torch.transpose(self.U1, 0, 1)), torch.transpose(self.U2, 0, 1))
 
-        pre_comp = wComp + uComp
+        # pre_comp = wComp + uComp
 
-        z = gen_nonlinearity(pre_comp + self.bias_gate,
-                             self._gate_nonlinearity)
-        c = gen_nonlinearity(pre_comp + self.bias_update,
-                             self._update_nonlinearity)
+        # z = gen_nonlinearity(pre_comp + self.bias_gate,
+        #                      self._gate_nonlinearity)
+        # c = gen_nonlinearity(pre_comp + self.bias_update,
+        #                      self._update_nonlinearity)
+        z = torch.sigmoid(pre_comp + self.bias_gate)
+        c = torch.tanh(pre_comp + self.bias_update)
         new_h = z * state + (torch.sigmoid(self.zeta) *
                              (1.0 - z) + torch.sigmoid(self.nu)) * c
 

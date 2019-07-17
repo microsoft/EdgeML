@@ -11,6 +11,7 @@
 
 import torch
 import torch.nn as nn
+import torch.jit as jit
 
 
 def gen_nonlinearity(A, nonlinearity):
@@ -43,7 +44,7 @@ def gen_nonlinearity(A, nonlinearity):
         return nonlinearity(A)
 
 
-class BaseRNN(nn.Module):
+class BaseRNN(jit.ScriptModule):
     '''
     Generic equivalent of static_rnn in tf
     Used to unroll all the cell written in this file
@@ -59,64 +60,64 @@ class BaseRNN(nn.Module):
     def getWeights(self):
         return self.RNNCell.getWeights()
 
-    def forward(self, input, hiddenState=None,
-                cellState=None, batch_first=True):
-        if batch_first is True:
-            self.device = input.device
-            hiddenStates = torch.zeros(
-                [input.shape[0], input.shape[1],
-                 self.RNNCell.output_size]).to(self.device)
-            if hiddenState is None:
-                hiddenState = torch.zeros([input.shape[0],
-                                           self.RNNCell.output_size]).to(self.device)
-            if self.RNNCell.cellType == "LSTMLR":
-                cellStates = torch.zeros(
-                    [input.shape[0], input.shape[1],
-                     self.RNNCell.output_size]).to(self.device)
-                if cellState is None:
-                    cellState = torch.zeros(
-                        [input.shape[0], self.RNNCell.output_size]).to(self.device)
-                for i in range(0, input.shape[1]):
-                    hiddenState, cellState = self.RNNCell(
-                        input[:, i, :], (hiddenState, cellState))
-                    hiddenStates[:, i, :] = hiddenState
-                    cellStates[:, i, :] = cellState
-                return hiddenStates, cellStates
-            else:
-                for i in range(0, input.shape[1]):
-                    hiddenState = self.RNNCell(input[:, i, :], hiddenState)
-                    hiddenStates[:, i, :] = hiddenState
-                return hiddenStates
-        else:
-            self.device = input.device
-            hiddenStates = torch.zeros(
-                [input.shape[0], input.shape[1],
-                 self.RNNCell.output_size]).to(self.device)
-            if hiddenState is None:
-                hiddenState = torch.zeros([1, input.shape[1],
-                                           self.RNNCell.output_size]).to(self.device)
-            if self.RNNCell.cellType == "LSTMLR":
-                cellStates = torch.zeros(
-                    [input.shape[0], input.shape[1],
-                     self.RNNCell.output_size]).to(self.device)
-                if cellState is None:
-                    cellState = torch.zeros(
-                        [input.shape[1], self.RNNCell.output_size]).to(self.device)
-                for i in range(0, input.shape[0]):
-                    hiddenState, cellState = self.RNNCell(
-                        input[i, :, :], (hiddenState, cellState))
-                    hiddenStates[i, :, :] = hiddenState
-                    cellStates[i, :, :] = cellState
-                return hiddenStates, cellStates
-            else:
-                hiddenState = hiddenState[0]
-                for i in range(0, input.shape[0]):
-                    hiddenState = self.RNNCell(input[i, :, :], hiddenState)
-                    hiddenStates[i, :, :] = hiddenState
-                return hiddenStates
+    @jit.script_method
+    def forward(self, input):
+        # if batch_first is True:
+        #     self.device = input.device
+        #     hiddenStates = torch.zeros(
+        #         [input.shape[0], input.shape[1],
+        #          self.RNNCell.output_size]).to(self.device)
+        #     if hiddenState is None:
+        #         hiddenState = torch.zeros([input.shape[0],
+        #                                    self.RNNCell.output_size]).to(self.device)
+        #     if self.RNNCell.cellType == "LSTMLR":
+        #         cellStates = torch.zeros(
+        #             [input.shape[0], input.shape[1],
+        #              self.RNNCell.output_size]).to(self.device)
+        #         if cellState is None:
+        #             cellState = torch.zeros(
+        #                 [input.shape[0], self.RNNCell.output_size]).to(self.device)
+        #         for i in range(0, input.shape[1]):
+        #             hiddenState, cellState = self.RNNCell(
+        #                 input[:, i, :], (hiddenState, cellState))
+        #             hiddenStates[:, i, :] = hiddenState
+        #             cellStates[:, i, :] = cellState
+        #         return hiddenStates, cellStates
+        #     else:
+        #         for i in range(0, input.shape[1]):
+        #             hiddenState = self.RNNCell(input[:, i, :], hiddenState)
+        #             hiddenStates[:, i, :] = hiddenState
+        #         return hiddenStates
+        # else:
+        # self.device = input.device
+        hiddenStates = torch.zeros(
+            [input.shape[0], input.shape[1],
+             128]).to(torch.device("cuda"))
+        # if hiddenState is None:
+        hiddenState = torch.zeros([input.shape[1],
+                                   128]).to(torch.device("cuda"))
+        # if self.RNNCell.cellType == "LSTMLR":
+        #     cellStates = torch.zeros(
+        #         [input.shape[0], input.shape[1],
+        #          self.RNNCell.output_size]).to(self.device)
+        #     if cellState is None:
+        #         cellState = torch.zeros(
+        #             [input.shape[1], self.RNNCell.output_size]).to(self.device)
+        #     for i in range(0, input.shape[0]):
+        #         hiddenState, cellState = self.RNNCell(
+        #             input[i, :, :], (hiddenState, cellState))
+        #         hiddenStates[i, :, :] = hiddenState
+        #         cellStates[i, :, :] = cellState
+        #     return hiddenStates, cellStates
+        # else:
+        # hiddenState = hiddenState[0]
+        for i in range(input.shape[0]):
+            hiddenState = self.RNNCell(input[i, :, :], hiddenState)
+            hiddenStates[i, :, :] = hiddenState
+        return hiddenStates
 
 
-class FastGRNNCell(nn.Module):
+class FastGRNNCell(jit.ScriptModule):
     '''
     FastRNN Cell with Both Full Rank and Low Rank Formulations
     Has multiple activation functions for the gates
@@ -222,25 +223,29 @@ class FastGRNNCell(nn.Module):
     def cellType(self):
         return "FastGRNN"
 
+    @jit.script_method
     def forward(self, input, state):
-        if self._wRank is None:
-            wComp = torch.matmul(input, torch.transpose(self.W, 0, 1))
-        else:
-            wComp = torch.matmul(
-                torch.matmul(input, torch.transpose(self.W1, 0, 1)), torch.transpose(self.W2, 0, 1))
+        pre_comp = torch.mm(input, self.W.t()) + torch.mm(state, self.U.t())
+        # if self._wRank is None:
+        #     wComp = torch.matmul(input, torch.transpose(self.W, 0, 1))
+        # else:
+        #     wComp = torch.matmul(
+        #         torch.matmul(input, torch.transpose(self.W1, 0, 1)), torch.transpose(self.W2, 0, 1))
 
-        if self._uRank is None:
-            uComp = torch.matmul(state, torch.transpose(self.U, 0, 1))
-        else:
-            uComp = torch.matmul(
-                torch.matmul(state, torch.transpose(self.U1, 0, 1)), torch.transpose(self.U2, 0, 1))
+        # if self._uRank is None:
+        #     uComp = torch.matmul(state, torch.transpose(self.U, 0, 1))
+        # else:
+        #     uComp = torch.matmul(
+        #         torch.matmul(state, torch.transpose(self.U1, 0, 1)), torch.transpose(self.U2, 0, 1))
 
-        pre_comp = wComp + uComp
+        # pre_comp = wComp + uComp
 
-        z = gen_nonlinearity(pre_comp + self.bias_gate,
-                             self._gate_nonlinearity)
-        c = gen_nonlinearity(pre_comp + self.bias_update,
-                             self._update_nonlinearity)
+        # z = gen_nonlinearity(pre_comp + self.bias_gate,
+        #                      self._gate_nonlinearity)
+        # c = gen_nonlinearity(pre_comp + self.bias_update,
+        #                      self._update_nonlinearity)
+        z = torch.sigmoid(pre_comp + self.bias_gate)
+        c = torch.tanh(pre_comp + self.bias_update)
         new_h = z * state + (torch.sigmoid(self.zeta) *
                              (1.0 - z) + torch.sigmoid(self.nu)) * c
 
@@ -1069,4 +1074,4 @@ class FastGRNN(nn.Module):
 
     def forward(self, input, hiddenState=None,
                 cellState=None, batch_first=True):
-        return self.unrollRNN(input, hiddenState, cellState, batch_first)
+        return self.unrollRNN(input)
