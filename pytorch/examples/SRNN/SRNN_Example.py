@@ -11,9 +11,10 @@ import pytorch_edgeml.utils as utils
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 DATA_DIR = '/datadrive/data/SRNN/GoogleSpeech/Extracted/'
-x_train_, y_train = np.squeeze(np.load(DATA_DIR + 'x_train.npy')), np.squeeze(np.load(DATA_DIR + 'y_train.npy'))
-x_val_, y_val = np.squeeze(np.load(DATA_DIR + 'x_val.npy')), np.squeeze(np.load(DATA_DIR + 'y_val.npy'))
-x_test_, y_test = np.squeeze(np.load(DATA_DIR + 'x_test.npy')), np.squeeze(np.load(DATA_DIR + 'y_test.npy'))
+x_train_, y_train = np.load(DATA_DIR + 'x_train.npy'), np.load(DATA_DIR + 'y_train.npy')
+x_val_, y_val = np.load(DATA_DIR + 'x_val.npy'), np.load(DATA_DIR + 'y_val.npy')
+x_test_, y_test = np.load(DATA_DIR + 'x_test.npy'), np.load(DATA_DIR + 'y_test.npy')
+
 # Mean-var normalize
 mean = np.mean(np.reshape(x_train_, [-1, x_train_.shape[-1]]), axis=0)
 std = np.std(np.reshape(x_train_, [-1, x_train_.shape[-1]]), axis=0)
