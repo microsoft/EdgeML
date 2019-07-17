@@ -1110,9 +1110,6 @@ class SRNN2(nn.Module):
         assert x.ndimension() == 3
         assert list(x.size())[2] == self.inputDim
         x_bricks = self.getBrickedData(x, brickSize)
-        # This conversion between shapes is tricky. Might infact even be buggy
-        # if numpy operations are non-invertible. I've tested to a point but
-        # you never know.
         # x bricks: [numBricks, brickSize, batchSize, featureDim]
         x_bricks = x_bricks.permute(1,0,2,3)
         # x bricks: [brickSize, numBricks, batchSize, featureDim]
