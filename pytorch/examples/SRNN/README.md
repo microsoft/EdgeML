@@ -1,7 +1,8 @@
 # Pytorch Shallow RNN Examples
 
-This directory includes an example [notebook](SRNN_Example.ipynb) of how to use
-SRNN on the [Google Speech Commands
+This directory includes an example [notebook](SRNN_Example.ipynb)  and a
+[python script](SRNN_Example.py) that explains the basic setup of SRNN by
+training a simple model on the [Google Speech Commands
 Dataset](https://ai.googleblog.com/2017/08/launching-speech-commands-dataset.html).
 
 `pytorch_edgeml.graph.rnn.SRNN2` implements a 2 layer SRNN network. We will use
@@ -23,8 +24,17 @@ dataset and write numpy files that confirm to the required format.
     ./fetch_google.py
     python process_google.py
 
-With the provided configuration, you can expect a validation accuracy of about
-92%.
+## Training the Model
+
+A sample [notebook](SRNN_Example.ipynb) and a corresponding command line script
+is provided for training. To run the command line script, please use:
+  
+```
+python SRNN_Example.py --data-dir ./GoogleSpeech/Extracted --brick-size 11
+```
+
+With the provided default configuration, you can expect a validation accuracy
+of about 92%.
 
 Copyright (c) Microsoft Corporation. All rights reserved. 
 Licensed under the MIT license.
