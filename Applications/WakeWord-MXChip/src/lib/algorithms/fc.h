@@ -5,7 +5,7 @@ extern "C" {
 #endif 
 
 #include <math.h>
-#include "helpermath.h"
+#include "../utils/helpermath.h"
 
 /* An instance of FCParams needs to be defined else where. This will hold the
  * model matrices. You pass a pointer to this FCParams instance here to perform

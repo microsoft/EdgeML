@@ -5,7 +5,7 @@ extern "C" {
 #endif
 
 #include <math.h>
-#include "helpermath.h"
+#include "../utils/helpermath.h"
 #include <string.h>
 
 struct FastRNNParams {

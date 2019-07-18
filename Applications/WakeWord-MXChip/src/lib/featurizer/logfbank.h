@@ -2,15 +2,15 @@
 #include <arm_math.h>
 #include <arm_const_structs.h>
 #include <string.h>
-#include <config.h>
-#include <helpermath.h>
+#include "../config.h"
+#include "../utils/helpermath.h"
 
 #ifdef DEBUG_MODE
     #include <debugmethods.h>
 #endif
 
 #define DBL_EPS 2.2204460492503131e-16
-#define PI 3.14159265358979323846264338327
+// #define PI 3.14159265358979323846264338327
 #define SAMPLING_RATE 16000
 #define FRAME_LEN 400
 #define STRIDE 160

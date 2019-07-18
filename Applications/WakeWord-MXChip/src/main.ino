@@ -1,8 +1,8 @@
 #include "lib/sfastrnn_pipeline/sfastrnnpipeline.h"
-#include <model.h>
 #include <Arduino.h>
 #include <AudioClassV2.h>
-#include "circularq.h"
+#include "models/model.h"
+#include "lib/utils/circularq.h"
 
 extern struct FastRNNParams fastrnnParams0;
 extern struct FastRNNParams fastrnnParams1;
@@ -67,7 +67,7 @@ void prediction_callback(float *vec, int len){
     q_force_enqueue(&votingQ, &arg);
     if (votingFrequence[arg] >= VOTE_MAJORITY){
         char str[20];
-        sprintf(str, "Pred: %s (%d)", labelInvArr[arg], arg);
+        // sprintf(str, "Pred: %s (%d)", labelInvArr[arg], arg);
         Screen.print(str, false);
     }
 }

@@ -1,6 +1,6 @@
 
-#include <sfastrnn.h>
-#include <fc.h>
+#include "../lib/algorithms/sfastrnn.h"
+#include "../lib/algorithms/fc.h"
 #include <arm_math.h>
 
 #ifdef __cplusplus

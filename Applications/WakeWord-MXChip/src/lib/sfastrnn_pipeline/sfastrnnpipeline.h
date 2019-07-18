@@ -10,9 +10,9 @@
  */
 #include <arm_math.h>
 #include "../algorithms/sfastrnn.h"
-#include <fc.h>
-#include <circularq.h>
-#include <logfbank.h>
+#include "../algorithms/fc.h"
+#include "../utils/circularq.h"
+#include "../featurizer/logfbank.h"
 #include <Thread.h>
 #include <Mutex.h>
 #include <string.h>

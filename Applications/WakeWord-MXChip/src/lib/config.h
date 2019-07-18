@@ -10,7 +10,7 @@
  */
 
 // #define NFFT_256
-// #define NFFT_512
+#define NFFT_512
 
 /* The floating point type to use float32_t or q32_float.
  *

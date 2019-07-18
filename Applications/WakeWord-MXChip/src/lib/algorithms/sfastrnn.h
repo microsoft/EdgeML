@@ -12,9 +12,9 @@
 extern "C" {
 #endif
 
-#include "helpermath.h"
-#include "fastrnn.h"
-#include "circularq.h"
+#include "../utils/helpermath.h"
+#include "../algorithms/fastrnn.h"
+#include "../utils/circularq.h"
 
 #ifdef DEBUG_MODE
         #include <debugmethods.h>
