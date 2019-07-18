@@ -1050,7 +1050,7 @@ class FastGRNN(nn.Module):
 
 class SRNN2(nn.Module):
 
-    def __init__(self, inputDim, outputDim, hiddenDim0, hiddenDim1, cellType):
+    def __init__(self, inputDim, outputDim, hiddenDim0, hiddenDim1, cellType, **fastCellArgs):
         '''
         A 2 Layer Shallow RNN.
 
@@ -1065,14 +1065,33 @@ class SRNN2(nn.Module):
         self.hiddenDim0 = hiddenDim0
         self.hiddenDim1 = hiddenDim1
         self.outputDim = outputDim
-        supportedCells = ['LSTM']
+        supportedCells = ['LSTM','FastGRNNCell','GRULRCell']
         assert cellType in supportedCells, 'Currently supported cells: %r' % supportedCells
         self.cellType = cellType
+        
         if self.cellType == 'LSTM':
             self.rnnClass = nn.LSTM
+            self.rnn0 = self.rnnClass(input_size=inputDim, hidden_size=hiddenDim0)
+            self.rnn1 = self.rnnClass(input_size=hiddenDim0, hidden_size=hiddenDim1)
+        
+        if self.cellType == 'FastGRNNCell':
+            self.rnnClass = FastGRNN
+            self.rnn0 = self.rnnClass(input_size=inputDim, hidden_size=hiddenDim0, gate_non_linearity = fastCellArgs['gate_non_linearity'],
+                 update_non_linearity = fastCellArgs['update_non_linearity'], wRank = fastCellArgs['wRank'], uRank = fastCellArgs['uRank'],
+                 zetaInit = fastCellArgs['zetaInit'], nuInit = fastCellArgs['nuInit'], batch_first = fastCellArgs['batch_first'])
+            self.rnn1 = self.rnnClass(input_size=hiddenDim0, hidden_size=hiddenDim1, gate_non_linearity = fastCellArgs['gate_non_linearity'],
+                 update_non_linearity = fastCellArgs['update_non_linearity'], wRank = fastCellArgs['wRank'], uRank = fastCellArgs['uRank'],
+                 zetaInit = fastCellArgs['zetaInit'], nuInit = fastCellArgs['nuInit'], batch_first = fastCellArgs['batch_first'])
 
-        self.rnn0 = self.rnnClass(input_size=inputDim, hidden_size=hiddenDim0)
-        self.rnn1 = self.rnnClass(input_size=hiddenDim0, hidden_size=hiddenDim1)
+        if self.cellType == 'GRULRCell':
+            self.rnnClass = GRU
+            self.rnn0 = self.rnnClass(input_size=inputDim, hidden_size=hiddenDim0, gate_non_linearity = fastCellArgs['gate_non_linearity'],
+                 update_non_linearity = fastCellArgs['update_non_linearity'], wRank = fastCellArgs['wRank'], uRank = fastCellArgs['uRank'])
+            self.rnn1 = self.rnnClass(input_size=hiddenDim0, hidden_size=hiddenDim1, gate_non_linearity = fastCellArgs['gate_non_linearity'],
+                 update_non_linearity = fastCellArgs['update_non_linearity'], wRank = fastCellArgs['wRank'], uRank = fastCellArgs['uRank'])
+
+        # self.rnn0 = self.rnnClass(input_size=inputDim, hidden_size=hiddenDim0)
+        # self.rnn1 = self.rnnClass(input_size=hiddenDim0, hidden_size=hiddenDim1)
         self.W = torch.randn([self.hiddenDim1, self.outputDim])
         self.W = nn.Parameter(self.W)
         self.B = torch.randn([self.outputDim])
@@ -1117,12 +1136,12 @@ class SRNN2(nn.Module):
         x_bricks = torch.reshape(x_bricks, [oldShape[0], oldShape[1] * oldShape[2], oldShape[3]])
         # x bricks: [brickSize, numBricks * batchSize, featureDim]
         # x_bricks = torch.Tensor(x_bricks)
-        hidd0, out0 = self.rnn0(x_bricks)
+        hidd0 = self.rnn0(x_bricks)
         hidd0 = torch.squeeze(hidd0[-1])
         # [numBricks * batchSize, hiddenDim0]
         inp1 = hidd0.view(oldShape[1], oldShape[2], self.hiddenDim0)
         # [numBricks, batchSize, hiddenDim0]
-        hidd1, out1 = self.rnn1(inp1)
+        hidd1 = self.rnn1(inp1)
         hidd1 = torch.squeeze(hidd1[-1])
         out = torch.matmul(hidd1, self.W) + self.B
         return out
