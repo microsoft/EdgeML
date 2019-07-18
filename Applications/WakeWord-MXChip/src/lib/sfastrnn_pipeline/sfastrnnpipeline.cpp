@@ -1,4 +1,4 @@
-#include <sfastrnnpipeline.h>
+#include "../sfastrnn_pipeline/sfastrnnpipeline.h"
 
 static unsigned init_error_code = SFASTRNN2P_UNINITIALIZED;
 // Will be used as the buffer to hold the layer 0 input.
