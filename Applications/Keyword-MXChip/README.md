@@ -8,7 +8,7 @@ The model deployed is based on the [Speech Commands Dataset](https://ai.googlebl
 
 Unit testing and benchmarking code that was used to develop this implementation of S-RNN is provided in the `tests` directory.
 
-## Instructions for Deployement 
+## Instructions for Deployment 
 
 1. Instructions on how to get started quickly with MXChip can be found 
 [here](https://github.com/VSChina/devkit-mbedos5-getstarted). Please follow
