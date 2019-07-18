@@ -10,10 +10,9 @@ Unit testing and benchmarking code that was used to develop this implementation 
 
 ## Instructions for Deployment 
 
-1. Instructions on how to get started quickly with MXChip can be found 
-[here](https://github.com/VSChina/devkit-mbedos5-getstarted). Please follow
-those instructions to set-up the environment and verify that everything is
-working properly by burning the `GettingStarted`example mentioned there. 
+1. Follow instructions [here](https://github.com/VSChina/devkit-mbedos5-getstarted) 
+to set-up the MXChip environment. Verify that the set-up is
+working properly by burning the `GettingStarted` example mentioned there. 
 2. Clone the EdgeML repository. Let this repository lie in `$EDGEML_HOME`.
 3. Change directory to `devkit-mbedos5-getstarted` cloned in step 1.
    ```
