@@ -78,7 +78,7 @@
 // will be dropped.
 #define SFASTRNN2P_AUDIO_QUEUE_MUTEX_LOCK_ERR      10
 // Init function called twice. Since we spawn threads
-// internally, we can't support this. A NOP second init
+// internally, we can't support this. A NoOP second init
 // can be supported (that which just returns SUCCESS)
 // but I don't want to enable this behaviour to enforce
 // programmer awareness.
