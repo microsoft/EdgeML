@@ -19,7 +19,7 @@
 #include <mbed_wait_api.h>
 #include <mbed_error.h>
 #ifdef DEBUG_MODE
-    #include <debugmethods.h>
+    #include "../debug_mode/debugmethods.h"
 #endif
 
 #define TIME_STEPS0 8

@@ -2,11 +2,9 @@
 #include <arm_math.h>
 #include <arm_const_structs.h>
 #include <string.h>
-#include "../config.h"
-#include "../utils/helpermath.h"
 
 #ifdef DEBUG_MODE
-    #include <debugmethods.h>
+    #include "../debug_mode/debugmethods.h"
 #endif
 
 #define DBL_EPS 2.2204460492503131e-16

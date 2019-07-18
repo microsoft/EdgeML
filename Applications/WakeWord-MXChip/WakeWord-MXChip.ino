@@ -109,12 +109,17 @@ void loop(){
         }
         unsigned ret = sfastrnn2p_add_new_samples(transfer_buffer,
             transfer_buffer_curr_len);
-        if(ret != 0)
+        if(ret != 0){
             Serial.printf("Error pushing to interface %d\n", ret);
+        }
         static int count = 0;
         count += transfer_buffer_curr_len;
         if(count % (128 * 1000) == 0)
             Serial.printf("Pushed %d seconds\n", (count/16000));
         transfer_buffer_curr_len = 0;
     }
+}
+
+void printStr(char *a){
+    Serial.println(a);
 }

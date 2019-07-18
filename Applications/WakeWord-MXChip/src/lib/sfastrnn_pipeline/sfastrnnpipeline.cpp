@@ -106,7 +106,8 @@ unsigned sfastrnn2p_add_new_samples(int16_t *samples, int len){
     if(AUDIO_SAMPLES_BUFFER_LEN - size < len)
         return SFASTRNN2P_AUDIO_SAMPLES_BUFFER_FULL;
     // Try to lock with timeout of 1 ms. Should be enough.
-    if(audio_buffer_mutex.lock(1) != osOK)
+    int rett = audio_buffer_mutex.lock(1);
+    if(rett != osOK)
         return SFASTRNN2P_AUDIO_QUEUE_MUTEX_LOCK_ERR;
     // Don't use force push. We have asserted that there is enough space
     // The only reason for this to fail is a failed buffer. We want to
@@ -140,35 +141,38 @@ void pred_func(){
             int32_t tailnew = audio_frame_buffer[STRIDE - 1];
             // Compute FFT and push to feature vector buffer
             #ifdef FFT_Q31
+            printStr("Q31");
             logfbank(mfcc_result, audio_frame_buffer, fbank_q31, preemph_tail);
             #elif FFT_F32
+            printStr("F32");
             logfbank(mfcc_result, audio_frame_buffer, fbank_f32, preemph_tail);
             #endif
             // If required perform normalization
             #ifdef NORMALIZE_FEAT
+            printStr("Normalize");
             for(int i = 0; i < NFILT; i++){
                 mfcc_result[i] = (mfcc_result[i] - featNormMean[i]);
                 mfcc_result[i] /= featNormStd[i];
             }
             #endif
             preemph_tail = tailnew;
-            // Feature vector is never full - maintained as an invariant.
-            // If its is full, we are not processing fast enough. Fail
-            int ret = q_enqueue_batch(&featVecQ, mfcc_result,
-                sizeof(float), NFILT);
-            if (ret != 0)
-                error("PredThrErr: Critial: featVecQ push fail (code %d)", ret);
-            // If feature vector buffer is full, flatten and make prediction
-            // and empty. Maintain the invariant that feature_vec will allow
-            // for at least one push
-            if (q_is_full(&featVecQ)){
-                q_flatten_float(&featVecQ, flat_feat_vec);
-                q_reset(&featVecQ);
-                // We have a full feature vector. Make a prediction.
-                SFastRNNInference2(&sfastrnn2_params, flat_feat_vec, final_h);
-                FCInference(fcparams, final_h, logits, 0);
-                prediction_cb(logits, 13);
-            }
+        //     // Feature vector is never full - maintained as an invariant.
+        //     // If its is full, we are not processing fast enough. Fail
+        //     int ret = q_enqueue_batch(&featVecQ, mfcc_result,
+        //         sizeof(float), NFILT);
+        //     if (ret != 0)
+        //         error("PredThrErr: Critial: featVecQ push fail (code %d)", ret);
+        //     // If feature vector buffer is full, flatten and make prediction
+        //     // and empty. Maintain the invariant that feature_vec will allow
+        //     // for at least one push
+        //     if (q_is_full(&featVecQ)){
+        //         q_flatten_float(&featVecQ, flat_feat_vec);
+        //         q_reset(&featVecQ);
+        //         // We have a full feature vector. Make a prediction.
+        //         SFastRNNInference2(&sfastrnn2_params, flat_feat_vec, final_h);
+        //         FCInference(fcparams, final_h, logits, 0);
+        //         prediction_cb(logits, 13);
+        //     }
             qsize = q_getSize(&audioQ);
         }
     }

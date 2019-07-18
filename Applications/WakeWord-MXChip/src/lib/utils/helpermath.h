@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 #include <arm_math.h>
-#include "../config.h"
 
 #ifdef __cplusplus
 	extern "C" {

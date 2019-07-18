@@ -16,9 +16,6 @@ extern "C" {
 #include "../algorithms/fastrnn.h"
 #include "../utils/circularq.h"
 
-#ifdef DEBUG_MODE
-        #include <debugmethods.h>
-#endif
 
 // 2 Layer S-FastRNN
 struct SFastRNNParams2 {
