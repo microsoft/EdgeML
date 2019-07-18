@@ -33,7 +33,7 @@ working properly by burning the `GettingStarted`example mentioned there.
 5. Copy the provided build profile file, `develop_custom.json` into the
    `mbed-os` profiles folder:
    ```
-      cp develop_custom.json mbed-os/toos/
+      cp Keyword-MXChip/develop_custom.json mbed-os/tools/profiles
    ```
 6. Compile using:
    ```
