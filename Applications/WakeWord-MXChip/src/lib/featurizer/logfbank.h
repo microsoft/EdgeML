@@ -2,6 +2,7 @@
 #include <arm_math.h>
 #include <arm_const_structs.h>
 #include <string.h>
+#include "../utils/helpermath.h"
 
 #ifdef DEBUG_MODE
     #include "../debug_mode/debugmethods.h"
