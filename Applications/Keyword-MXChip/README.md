@@ -23,7 +23,7 @@ working properly by burning the `GettingStarted`example mentioned there.
    `$EDGEML_HOME/Applications/KeyWord-MXChip/`
    ```
       rm -r GetStarted
-      cp $EDGEML_HOME/Applications/KeyWord-MXChip/ ./
+      cp -r $EDGEML_HOME/Applications/KeyWord-MXChip/ ./
    ```
 4. Open `devkit-mbedos5-getstarted/.mbedignore` in your favourite text editor
    and append the following lines:
