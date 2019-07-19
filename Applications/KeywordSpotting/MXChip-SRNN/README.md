@@ -2,11 +2,9 @@
 
 Here we demonstrate how SRNN can be used to deploy a key-word spotting model on
 the [Azure IoT Dev-Kit](https://microsoft.github.io/azure-iot-developer-kit/)
-powered by the Coretex M4.
+powered by the Coretex M4. The model deployed is based on the [Speech Commands Dataset](https://ai.googleblog.com/2017/08/launching-speech-commands-dataset.html). It is trainined to recognise commands in the set: `[go, no, on, up, bed, cat, dog, off, one, six, two, yes]`. When no keyword is detected, the screen will print 'Noise'.
 
-The model deployed is based on the [Speech Commands Dataset](https://ai.googleblog.com/2017/08/launching-speech-commands-dataset.html). It is trainined to recognise commands in the set: [go, no, on, up, bed, cat, dog, off, one, six, two, yes]. When no keyword is detected, the screen will print 'Noise'.
-
-Unit testing and benchmarking code that was used to develop this implementation of S-RNN is provided in the `tests` directory.
+Unit testing and benchmarking code that was used to develop this implementation of S-RNN is provided in the `tests` directory and can be used for debugging purposes.
 
 ## Instructions for Deployment 
 
@@ -19,20 +17,20 @@ working properly by burning the `GettingStarted` example mentioned there.
       cd devkit-mbedos5-getstarted/
    ```
 3. Remove the provided `GetStarted` example and replace it with
-   `$EDGEML_HOME/Applications/KeyWord-MXChip/`
+   `$EDGEML_HOME/Applications/KeywordSpotting/MXChip-SRNN/`
    ```
       rm -r GetStarted
-      cp -r $EDGEML_HOME/Applications/KeyWord-MXChip/ ./
+      cp -r $EDGEML_HOME/Applications/KeywordSpotting/MXChip-SRNN ./
    ```
 4. Open `devkit-mbedos5-getstarted/.mbedignore` in your favourite text editor
    and append the following lines:
    ```
-      Keyword-MXChip/test/*
+      MXChip-SRNN/test/*
    ```
 5. Copy the provided build profile file, `develop_custom.json` into the
    `mbed-os` profiles folder:
    ```
-      cp Keyword-MXChip/develop_custom.json mbed-os/tools/profiles
+      cp MXChip-SRNN/develop_custom.json mbed-os/tools/profiles/
    ```
 6. Compile using:
    ```
