@@ -2,7 +2,7 @@
 
 Here we demonstrate how SRNN can be used to deploy a key-word spotting model on
 the [Azure IoT Dev-Kit](https://microsoft.github.io/azure-iot-developer-kit/)
-powered by the Coretex M4. The model deployed is based on the [Speech Commands Dataset](https://ai.googleblog.com/2017/08/launching-speech-commands-dataset.html). It is trainined to recognise commands in the set: `[go, no, on, up, bed, cat, dog, off, one, six, two, yes]`. When no keyword is detected, the screen will print 'Noise'.
+powered by the Coretex M4. The model provided is based on the [Speech Commands Dataset](https://ai.googleblog.com/2017/08/launching-speech-commands-dataset.html). It is trainined to recognise commands in the set: `[go, no, on, up, bed, cat, dog, off, one, six, two, yes]`. When no keyword is detected, the screen will print 'Noise'.
 
 Unit testing and benchmarking code that was used to develop this implementation of S-RNN is provided in the `tests` directory and can be used for debugging purposes.
 
