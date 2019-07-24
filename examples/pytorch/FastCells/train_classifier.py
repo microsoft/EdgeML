@@ -618,10 +618,10 @@ if __name__ == '__main__':
         config.model.hidden_units = args.hidden_units
     if args.hidden_units3:
         config.model.hidden_units = args.hidden_units
-    if config.model.num_layers == 1:
+    if config.model.num_layers >= 1:
         if config.model.hidden_units1 is None:
             config.model.hidden_units1 = config.model.hidden_units
-    if config.model.num_layers == 2:
+    if config.model.num_layers >= 2:
         if config.model.hidden_units2 is None:
             config.model.hidden_units2 = config.model.hidden_units1
     if config.model.num_layers == 3:
