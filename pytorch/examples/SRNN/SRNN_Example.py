@@ -52,11 +52,11 @@ epochs = config.epochs
 printStep = config.print_step
 valStep = config.val_step
 
-fastCellArgs = {'gate_non_linearity':"sigmoid",'update_non_linearity':"tanh",
-				'wRank':None, 'uRank':None,'zetaInit':1.0, 'nuInit':-4.0, 
+cellArgs = {'gate_non_linearity':"sigmoid",'update_non_linearity':"tanh",
+				'wRank':None, 'uRank':None,'alphaInit':-3.0, 'betaInit':3.0,'zetaInit':1.0, 'nuInit':-4.0, 
 				'batch_first':False}
 
-srnn2 = SRNN2(numInput, numClasses, hiddenDim0, hiddenDim1, cellType, **fastCellArgs).to(device)
+srnn2 = SRNN2(numInput, numClasses, hiddenDim0, hiddenDim1, cellType, **cellArgs).to(device)
 trainer = SRNNTrainer(srnn2, learningRate, lossType='xentropy', device=device)
 
 trainer.train(brickSize, batchSize, epochs, x_train, x_val, y_train, y_val,
