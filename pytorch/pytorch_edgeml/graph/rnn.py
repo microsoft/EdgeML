@@ -1012,7 +1012,6 @@ class FastRNN(nn.Module):
         self.batch_first = batch_first
 
         self.cell = FastRNNCell(input_size, hidden_size,
-                                gate_non_linearity=gate_non_linearity,
                                 update_non_linearity=update_non_linearity,
                                 wRank=wRank, uRank=uRank,
                                 alphaInit=alphaInit, betaInit=betaInit)
@@ -1057,7 +1056,7 @@ class SRNN2(nn.Module):
         inputDim: Input data's feature dimension.
         hiddenDim0: Hidden state dimension of the lower layer RNN cell.
         hiddenDim1: Hidden state dimension of the second layer RNN cell.
-        cellType: The type of RNN cell to use. Options are ['LSTM','FastRNNCell',FastGRNNCell','GRULRCell']
+        cellType: The type of RNN cell to use. Options are ['LSTM', 'FastRNNCell', 'FastGRNNCell', 'GRULRCell']
         '''
         super(SRNN2, self).__init__()
         # Create two RNN Cells
@@ -1065,6 +1064,8 @@ class SRNN2(nn.Module):
         self.hiddenDim0 = hiddenDim0
         self.hiddenDim1 = hiddenDim1
         self.outputDim = outputDim
+        self.cellArgs = {}
+        self.cellArgs.update(cellArgs)
         supportedCells = ['LSTM', 'FastRNNCell', 'FastGRNNCell', 'GRULRCell']
         assert cellType in supportedCells, 'Currently supported cells: %r' % supportedCells
         self.cellType = cellType
@@ -1081,8 +1082,8 @@ class SRNN2(nn.Module):
         else:
             self.rnnClass = GRU
 
-        self.rnn0 = self.rnnClass(input_size=inputDim, hidden_size=hiddenDim0, **cellArgs)
-        self.rnn1 = self.rnnClass(input_size=hiddenDim0, hidden_size=hiddenDim1, **cellArgs)
+        self.rnn0 = self.rnnClass(input_size=inputDim, hidden_size=hiddenDim0, **self.cellArgs)
+        self.rnn1 = self.rnnClass(input_size=hiddenDim0, hidden_size=hiddenDim1, **self.cellArgs)
         self.W = torch.randn([self.hiddenDim1, self.outputDim])
         self.W = nn.Parameter(self.W)
         self.B = torch.randn([self.outputDim])
@@ -1127,12 +1128,18 @@ class SRNN2(nn.Module):
         x_bricks = torch.reshape(x_bricks, [oldShape[0], oldShape[1] * oldShape[2], oldShape[3]])
         # x bricks: [brickSize, numBricks * batchSize, featureDim]
         # x_bricks = torch.Tensor(x_bricks)
-        hidd0 = self.rnn0(x_bricks)
+        if self.cellType == 'LSTM':
+            hidd0, out0 = self.rnn0(x_bricks)
+        else:
+            hidd0 = self.rnn0(x_bricks)
         hidd0 = torch.squeeze(hidd0[-1])
         # [numBricks * batchSize, hiddenDim0]
         inp1 = hidd0.view(oldShape[1], oldShape[2], self.hiddenDim0)
         # [numBricks, batchSize, hiddenDim0]
-        hidd1 = self.rnn1(inp1)
+        if self.cellType == 'LSTM':
+            hidd1, out1 = self.rnn1(inp1)
+        else:
+            hidd1 = self.rnn1(inp1)
         hidd1 = torch.squeeze(hidd1[-1])
         out = torch.matmul(hidd1, self.W) + self.B
         return out
