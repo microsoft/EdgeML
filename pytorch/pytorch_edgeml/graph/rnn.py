@@ -1005,14 +1005,12 @@ class FastRNN(nn.Module):
         super(FastRNN, self).__init__()
         self._input_size = input_size
         self._hidden_size = hidden_size
-        self._gate_non_linearity = gate_non_linearity
         self._update_non_linearity = update_non_linearity
         self._wRank = wRank
         self._uRank = uRank
         self.batch_first = batch_first
 
         self.cell = FastRNNCell(input_size, hidden_size,
-                                gate_non_linearity=gate_non_linearity,
                                 update_non_linearity=update_non_linearity,
                                 wRank=wRank, uRank=uRank,
                                 alphaInit=alphaInit, betaInit=betaInit)
