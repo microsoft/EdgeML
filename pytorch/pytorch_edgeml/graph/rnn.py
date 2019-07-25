@@ -999,7 +999,7 @@ class UGRNN(nn.Module):
 class FastRNN(nn.Module):
     """Equivalent to nn.FastRNN using FastRNNCell"""
 
-    def __init__(self, input_size, hidden_size, gate_non_linearity="sigmoid",
+    def __init__(self, input_size, hidden_size,
                  update_non_linearity="tanh", wRank=None, uRank=None,
                  alphaInit=-3.0, betaInit=3.0, batch_first=True):
         super(FastRNN, self).__init__()
