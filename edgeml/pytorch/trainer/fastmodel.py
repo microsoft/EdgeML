@@ -10,9 +10,13 @@ from edgeml.pytorch.graph.rnn import *
 
 def fastgrnnmodel(inheritance_class=nn.Module):
     class FastGRNNModel(inheritance_class):
-        """This class is a PyTorch Module that implements a 1, 2 or 3 layer GRU based audio classifier"""
+        """This class is a PyTorch Module that implements a 1, 2 or 3 layer
+           RNN-based classifier
+        """
 
-        def __init__(self, input_dim, num_layers, hidden_units_list, wRank_list, uRank_list, gate_nonlinearity, update_nonlinearity, num_classes=None, linear=True, batch_first=False, apply_softmax=True):
+        def __init__(self, input_dim, num_layers, hidden_units_list,
+                     wRank_list, uRank_list, gate_nonlinearity, update_nonlinearity,
+                     num_classes=None, linear=True, batch_first=False, apply_softmax=True):
             """
             Initialize the KeywordSpotter with the following parameters:
             input_dim - the size of the input audio frame in # samples.

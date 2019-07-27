@@ -111,9 +111,9 @@ class KeywordSpotter(nn.Module):
 
     def fit(self, training_data, validation_data, options, model, device=None, detail=False, run=None):
         """
-        Perform the training.  This is not called "train" because the base class already defines
-        that method with a different meaning.  The base class "train" method puts the Module into
-        "training mode".
+        Perform the training.  This is not called "train" because
+		the base class already defines that method with a different meaning.
+		The base class "train" method puts the Module into "training mode".
         """
         print("Training {} using {} rows of featurized training input...".format(self.name(), training_data.num_rows))
 

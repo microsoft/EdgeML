@@ -60,7 +60,7 @@ class BaseRNN(nn.Module):
     '''
     Generic equivalent of static_rnn in tf
     Used to unroll all the cell written in this file
-    We assume data to be batch_first by default ie.,
+    We assume input to be batch_first by default ie.,
     [batchSize, timeSteps, inputDims] else
     [timeSteps, batchSize, inputDims]
     '''
@@ -436,7 +436,7 @@ class LSTMLRCell(nn.Module):
     LSTM architecture and compression techniques are found in
     LSTM paper
 
-    Basic architecture is like:
+    Basic architecture:
 
     f_t = gate_nl(W1x_t + U1h_{t-1} + B_f)
     i_t = gate_nl(W2x_t + U2h_{t-1} + B_i)
