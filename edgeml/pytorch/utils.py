@@ -4,6 +4,7 @@
 import numpy as np
 import torch
 import torch.nn.functional as F
+import torch.optim as optim
 
 
 def multiClassHingeLoss(logits, labels):
@@ -98,3 +99,32 @@ def restructreMatrixBonsaiSeeDot(A, nClasses, nNodes):
             rowIndex += 1
 
     return tempMatrix
+
+class TriangularLR(optim.lr_scheduler._LRScheduler):
+    def __init__(self, optimizer, stepsize, lr_min, lr_max, gamma):
+        self.stepsize = stepsize
+        self.lr_min = lr_min
+        self.lr_max = lr_max
+        self.gamma = gamma
+        super(TriangularLR, self).__init__(optimizer)
+
+    def get_lr(self):
+        it = self.last_epoch
+        cycle = math.floor(1 + it / (2 * self.stepsize))
+        x = abs(it / self.stepsize - 2 * cycle + 1)
+        decayed_range = (self.lr_max - self.lr_min) * self.gamma ** (it / 3)
+        lr = self.lr_min + decayed_range * x
+        return [lr]
+
+class ExponentialResettingLR(optim.lr_scheduler._LRScheduler):
+    def __init__(self, optimizer, gamma, reset_epoch):
+        self.gamma = gamma
+        self.reset_epoch = int(reset_epoch)
+        super(ExponentialResettingLR, self).__init__(optimizer)
+
+    def get_lr(self):
+        epoch = self.last_epoch
+        if epoch > self.reset_epoch:
+            epoch -= self.reset_epoch
+        return [base_lr * self.gamma ** epoch
+                for base_lr in self.base_lrs]

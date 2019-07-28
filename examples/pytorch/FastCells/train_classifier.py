@@ -28,37 +28,6 @@ from torch.utils.data import Dataset, DataLoader
 from training_config import TrainingConfig
 from edgeml.pytorch.trainer.fastmodel import *
 
-class TriangularLR(optim.lr_scheduler._LRScheduler):
-    def __init__(self, optimizer, stepsize, lr_min, lr_max, gamma):
-        self.stepsize = stepsize
-        self.lr_min = lr_min
-        self.lr_max = lr_max
-        self.gamma = gamma
-        super(TriangularLR, self).__init__(optimizer)
-
-    def get_lr(self):
-        it = self.last_epoch
-        cycle = math.floor(1 + it / (2 * self.stepsize))
-        x = abs(it / self.stepsize - 2 * cycle + 1)
-        decayed_range = (self.lr_max - self.lr_min) * self.gamma ** (it / 3)
-        lr = self.lr_min + decayed_range * x
-        return [lr]
-
-
-class ExponentialResettingLR(optim.lr_scheduler._LRScheduler):
-    def __init__(self, optimizer, gamma, reset_epoch):
-        self.gamma = gamma
-        self.reset_epoch = int(reset_epoch)
-        super(ExponentialResettingLR, self).__init__(optimizer)
-
-    def get_lr(self):
-        epoch = self.last_epoch
-        if epoch > self.reset_epoch:
-            epoch -= self.reset_epoch
-        return [base_lr * self.gamma ** epoch
-                for base_lr in self.base_lrs]
-
-
 class KeywordSpotter(nn.Module):
     """ This baseclass provides the PyTorch Module pattern for defining and training keyword spotters """
 
@@ -109,29 +78,9 @@ class KeywordSpotter(nn.Module):
                 passed += 1
         return (float(passed) * 100.0 / float(batch_size), passed, results)
 
-    def fit(self, training_data, validation_data, options, model, device=None, detail=False, run=None):
-        """
-        Perform the training.  This is not called "train" because
-		the base class already defines that method with a different meaning.
-		The base class "train" method puts the Module into "training mode".
-        """
-        print("Training {} using {} rows of featurized training input...".format(self.name(), training_data.num_rows))
-
-        if training_data.mean is not None:
-            mean = torch.from_numpy(np.array([[training_data.mean]])).to(device)
-            std = torch.from_numpy(np.array([[training_data.std]])).to(device)
-        else:
-            mean = None
-            std = None
-
-        self.normalize(mean, std)
-
-        start = time.time()
-        loss_function = nn.NLLLoss()
+    def configure_optimizer(self, options):
         initial_rate = options.learning_rate
-        lr_scheduler = options.lr_scheduler
         oo = options.optimizer_options
-        self.training = True
 
         if options.optimizer == "Adadelta":
             optimizer = optim.Adadelta(self.parameters(), lr=initial_rate, weight_decay=oo.weight_decay,
@@ -157,17 +106,15 @@ class KeywordSpotter(nn.Module):
         elif options.optimizer == "SGD":
             optimizer = optim.SGD(self.parameters(), lr=initial_rate, weight_decay=oo.weight_decay,
                                   momentum=oo.momentum, dampening=oo.dampening)
+        return optimizer
 
-        print(optimizer)
+    def configure_lr(self, options, optimizer, ticks, total_iterations):
         num_epochs = options.max_epochs
-        batch_size = options.batch_size
         learning_rate = options.learning_rate
+        lr_scheduler = options.lr_scheduler
         lr_min = options.lr_min
         lr_peaks = options.lr_peaks
-        ticks = training_data.num_rows / batch_size  # iterations per epoch
-        total_iterations = ticks * num_epochs
         gamma = options.lr_gamma
-
         if not lr_min:
             lr_min = learning_rate
         scheduler = None
@@ -187,6 +134,37 @@ class KeywordSpotter(nn.Module):
         elif lr_scheduler == "ExponentialResettingLR":
             reset = (num_epochs * ticks) / 3  # reset at the 1/3 mark.
             scheduler = ExponentialResettingLR(optimizer, gamma, reset)
+        return scheduler
+
+    def fit(self, training_data, validation_data, options, model, device=None, detail=False, run=None):
+        """
+        Perform the training.  This is not called "train" because
+        the base class already defines that method with a different meaning.
+        The base class "train" method puts the Module into "training mode".
+        """
+        print("Training {} using {} rows of featurized training input...".format(self.name(), training_data.num_rows))
+
+        if training_data.mean is not None:
+            mean = torch.from_numpy(np.array([[training_data.mean]])).to(device)
+            std = torch.from_numpy(np.array([[training_data.std]])).to(device)
+        else:
+            mean = None
+            std = None
+
+        self.normalize(mean, std)
+
+        self.training = True
+        start = time.time()
+        loss_function = nn.NLLLoss()
+        optimizer = self.configure_optimizer(options)
+        print(optimizer)
+
+        num_epochs = options.max_epochs
+        batch_size = options.batch_size
+        
+        ticks = training_data.num_rows / batch_size  # iterations per epoch
+        total_iterations = ticks * num_epochs
+        scheduler = self.configure_lr(options, optimizer, ticks, total_iterations)
 
         # optimizer = optim.Adam(model.parameters(), lr=0.0001)
         log = []
