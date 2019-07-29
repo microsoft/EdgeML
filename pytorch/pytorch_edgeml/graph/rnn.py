@@ -1049,7 +1049,7 @@ class FastGRNN(nn.Module):
 
 class SRNN2(nn.Module):
 
-    def __init__(self, inputDim, outputDim, hiddenDim0, hiddenDim1, cellType, **cellArgs):
+    def __init__(self, inputDim, outputDim, hiddenDim0, hiddenDim1, cellType, dropoutProbability, **cellArgs):
         '''
         A 2 Layer Shallow RNN.
 
@@ -1064,6 +1064,7 @@ class SRNN2(nn.Module):
         self.hiddenDim0 = hiddenDim0
         self.hiddenDim1 = hiddenDim1
         self.outputDim = outputDim
+        self.dropoutProbability = dropoutProbability
         self.cellArgs = {}
         self.cellArgs.update(cellArgs)
         supportedCells = ['LSTM', 'FastRNNCell', 'FastGRNNCell', 'GRULRCell']
@@ -1128,18 +1129,23 @@ class SRNN2(nn.Module):
         x_bricks = torch.reshape(x_bricks, [oldShape[0], oldShape[1] * oldShape[2], oldShape[3]])
         # x bricks: [brickSize, numBricks * batchSize, featureDim]
         # x_bricks = torch.Tensor(x_bricks)
+        dropoutLayer = nn.Dropout(p = self.dropoutProbability)
         if self.cellType == 'LSTM':
             hidd0, out0 = self.rnn0(x_bricks)
+            hidd0 = dropoutLayer(hidd0)
         else:
             hidd0 = self.rnn0(x_bricks)
+            hidd0 = dropoutLayer(hidd0)
         hidd0 = torch.squeeze(hidd0[-1])
         # [numBricks * batchSize, hiddenDim0]
         inp1 = hidd0.view(oldShape[1], oldShape[2], self.hiddenDim0)
         # [numBricks, batchSize, hiddenDim0]
         if self.cellType == 'LSTM':
             hidd1, out1 = self.rnn1(inp1)
+            hidd1 = dropoutLayer(hidd1)
         else:
             hidd1 = self.rnn1(inp1)
+            hidd1 = dropoutLayer(hidd1)
         hidd1 = torch.squeeze(hidd1[-1])
         out = torch.matmul(hidd1, self.W) + self.B
         return out
