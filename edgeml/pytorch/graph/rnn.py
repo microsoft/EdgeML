@@ -162,7 +162,8 @@ class FastGRNNCell(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 zetaInit=1.0, nuInit=-4.0, name="FastGRNN"):
+                 wSparsity=1.0, uSparsity=1.0, zetaInit=1.0, nuInit=-4.0,
+                 name="FastGRNN"):
         super(FastGRNNCell, self).__init__()
 
         self._input_size = input_size
@@ -172,6 +173,8 @@ class FastGRNNCell(nn.Module):
         self._num_weight_matrices = [1, 1]
         self._wRank = wRank
         self._uRank = uRank
+        self._wSparsity = wSparsity 
+        self._uSparsity = uSparsity
         self._zetaInit = zetaInit
         self._nuInit = nuInit
         if wRank is not None:
@@ -198,18 +201,18 @@ class FastGRNNCell(nn.Module):
         self.zeta = nn.Parameter(self._zetaInit * torch.ones([1, 1]))
         self.nu = nn.Parameter(self._nuInit * torch.ones([1, 1]))
 
-    def sparsify(self, wsp, usp):
+    def sparsify(self):
         if self._wRank is None:
-            utils.hardThreshold(self.W, wsp)
+            utils.hardThreshold(self.W, self._wSparsity)
         else:
-            utils.hardThreshold(self.W1, wsp)
-            utils.hardThreshold(self.W2, wsp)
+            utils.hardThreshold(self.W1, self._wSparsity)
+            utils.hardThreshold(self.W2, self._wSparsity)
 
         if self._uRank is None:
-            utils.hardThreshold(self.U, usp)
+            utils.hardThreshold(self.U, self._uSparsity)
         else:
-            utils.hardThreshold(self.U1, usp)
-            utils.hardThreshold(self.U2, usp)
+            utils.hardThreshold(self.U1, self._uSparsity)
+            utils.hardThreshold(self.U2, self._uSparsity)
 
     @property
     def state_size(self):
@@ -321,7 +324,8 @@ class FastRNNCell(nn.Module):
 
     def __init__(self, input_size, hidden_size,
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 alphaInit=-3.0, betaInit=3.0, name="FastRNN"):
+                 wSparsity=1.0, uSparsity=1.0, alphaInit=-3.0, betaInit=3.0,
+                 name="FastRNN"):
         super(FastRNNCell, self).__init__()
 
         self._input_size = input_size
@@ -330,6 +334,8 @@ class FastRNNCell(nn.Module):
         self._num_weight_matrices = [1, 1]
         self._wRank = wRank
         self._uRank = uRank
+        self._wSparsity = wSparsity 
+        self._uSparsity = uSparsity
         self._alphaInit = alphaInit
         self._betaInit = betaInit
         if wRank is not None:
@@ -355,18 +361,18 @@ class FastRNNCell(nn.Module):
         self.alpha = nn.Parameter(self._alphaInit * torch.ones([1, 1]))
         self.beta = nn.Parameter(self._betaInit * torch.ones([1, 1]))
 
-    def sparsify(self, wsp, usp):
+    def sparsify(self):
         if self._wRank is None:
-            utils.hardThreshold(self.W, wsp)
+            utils.hardThreshold(self.W, self._wSparsity)
         else:
-            utils.hardThreshold(self.W1, wsp)
-            utils.hardThreshold(self.W2, wsp)
+            utils.hardThreshold(self.W1, self._wSparsity)
+            utils.hardThreshold(self.W2, self._wSparsity)
 
         if self._uRank is None:
-            utils.hardThreshold(self.U, usp)
+            utils.hardThreshold(self.U, self._uSparsity)
         else:
-            utils.hardThreshold(self.U1, usp)
-            utils.hardThreshold(self.U2, usp)
+            utils.hardThreshold(self.U1, self._uSparsity)
+            utils.hardThreshold(self.U2, self._uSparsity)
 
 
     @property

@@ -15,7 +15,8 @@ def fastgrnnmodel(inheritance_class=nn.Module):
         """
 
         def __init__(self, input_dim, num_layers, hidden_units_list,
-                     wRank_list, uRank_list, gate_nonlinearity, update_nonlinearity,
+                     wRank_list, uRank_list, wSparsity_list, uSparsity_list,
+                     gate_nonlinearity, update_nonlinearity,
                      num_classes=None, linear=True, batch_first=False, apply_softmax=True):
             """
             Initialize the KeywordSpotter with the following parameters:
@@ -47,6 +48,7 @@ def fastgrnnmodel(inheritance_class=nn.Module):
                                       gate_nonlinearity=self.gate_nonlinearity,
                                       update_nonlinearity=self.update_nonlinearity,
                                       wRank=self.wRank_list[0], uRank=self.uRank_list[0],
+                                      wSparisty=self.wSparisty_list[0], uSparisty=self.uSparisty_list[0],
                                       batch_first = self.batch_first)
             self.fastgrnn2 = None
             last_output_size = self.hidden_units_list[0]
@@ -55,6 +57,7 @@ def fastgrnnmodel(inheritance_class=nn.Module):
                                           gate_nonlinearity=self.gate_nonlinearity,
                                           update_nonlinearity=self.update_nonlinearity,
                                           wRank=self.wRank_list[1], uRank=self.uRank_list[1],
+                                          wSparisty=self.wSparisty_list[1], uSparisty=self.uSparisty_list[1],
                                           batch_first = self.batch_first)
                 last_output_size = self.hidden_units_list[1]
             self.fastgrnn3 = None
@@ -63,6 +66,7 @@ def fastgrnnmodel(inheritance_class=nn.Module):
                                           gate_nonlinearity=self.gate_nonlinearity,
                                           update_nonlinearity=self.update_nonlinearity,
                                           wRank=self.wRank_list[2], uRank=self.uRank_list[2],
+                                          wSparisty=self.wSparisty_list[2], uSparisty=self.uSparisty_list[2],
                                           batch_first = self.batch_first)
                 last_output_size = self.hidden_units_list[2]
 
@@ -72,12 +76,12 @@ def fastgrnnmodel(inheritance_class=nn.Module):
                 self.hidden2keyword = nn.Linear(last_output_size, num_classes)
             self.init_hidden()
 
-        def sparsify(self, wsp, usp):
-            self.fastgrnn1.cell.sparsify(wsp, usp)
+        def sparsify(self):
+            self.fastgrnn1.cell.sparsify()
             if self.num_layers > 1:
-                self.fastgrnn2.cell.sparsify(wsp, usp)
+                self.fastgrnn2.cell.sparsify()
             if self.num_layers > 2:
-                self.fastgrnn3.cell.sparsify(wsp, usp)
+                self.fastgrnn3.cell.sparsify()
 
 
         def normalize(self, mean, std):

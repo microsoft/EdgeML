@@ -136,7 +136,7 @@ class KeywordSpotter(nn.Module):
             scheduler = ExponentialResettingLR(optimizer, gamma, reset)
         return scheduler
 
-    def fit(self, training_data, validation_data, training_options, model_options, device=None, detail=False, run=None):
+    def fit(self, training_data, validation_data, options, sparsify=false, device=None, detail=False, run=None):
         """
         Perform the training.  This is not called "train" because
         the base class already defines that method with a different meaning.
@@ -156,29 +156,29 @@ class KeywordSpotter(nn.Module):
         self.training = True
         start = time.time()
         loss_function = nn.NLLLoss()
-        optimizer = self.configure_optimizer(training_options)
+        optimizer = self.configure_optimizer(options)
         print(optimizer)
 
-        num_epochs = training_options.max_epochs
-        batch_size = training_options.batch_size
+        num_epochs = options.max_epochs
+        batch_size = options.batch_size
         
         ticks = training_data.num_rows / batch_size  # iterations per epoch
         total_iterations = ticks * num_epochs
-        scheduler = self.configure_lr(training_options, optimizer, ticks, total_iterations)
+        scheduler = self.configure_lr(options, optimizer, ticks, total_iterations)
 
         # optimizer = optim.Adam(model.parameters(), lr=0.0001)
         log = []
-        if training_options.rolling:
+        if options.rolling:
             rolling_length = 2
             max_rolling_length = int(ticks)
-            if max_rolling_length > training_options.max_rolling_length:
-                max_rolling_length = training_options.max_rolling_length
+            if max_rolling_length > options.max_rolling_length:
+                max_rolling_length = options.max_rolling_length
             bag_count = 100
             hidden_bag_size = batch_size * bag_count
 
         for epoch in range(num_epochs):
             self.train()
-            if training_options.rolling:
+            if options.rolling:
                 rolling_length += 1
                 if rolling_length < max_rolling_length:
                     self.init_hidden_bag(hidden_bag_size, device)
@@ -192,7 +192,7 @@ class KeywordSpotter(nn.Module):
 
                 # Also, we need to clear out the hidden state,
                 # detaching it from its history on the last instance.
-                if training_options.rolling:
+                if options.rolling:
                     if rolling_length < max_rolling_length:
                         if (i_batch + 1) % rolling_length == 0:
                             self.init_hidden()
@@ -228,8 +228,8 @@ class KeywordSpotter(nn.Module):
                 # applying the gradients we computed during back propagation
                 optimizer.step()
 
-                if model_options.wSparsity < 1.0 or model_options.uSparsity < 1.0:
-                    self.sparsify(model_options.wSparsity, model_options.uSparsity)
+                if sparsify:
+                    self.sparsify()
 
                 learning_rate = optimizer.param_groups[0]['lr']
                 if detail:
@@ -351,8 +351,12 @@ def create_model(model, input_size, num_keywords):
     hidden_units_list = [model.hidden_units1, model.hidden_units2, model.hidden_units3]
     wRank_list = [model.wRank1, model.wRank2, model.wRank3]
     uRank_list = [model.uRank1, model.uRank2, model.uRank3]
+    wSparsity_list = [model.wSparsity, model.wSparsity, model.wSparsity]
+    uSparsity_list = [model.uSparsity, model.uSparsity, model.uSparsity]
     print(model.gate_nonlinearity, model.update_nonlinearity)
-    return FastGRNNModel(input_size, model.num_layers, hidden_units_list, wRank_list, uRank_list, model.gate_nonlinearity, model.update_nonlinearity, num_keywords)
+    return FastGRNNModel(input_size, model.num_layers, hidden_units_list,
+                            wRank_list, uRank_list, wSparsity_list, uSparsity_list,
+                            model.gate_nonlinearity, model.update_nonlinearity, num_keywords)
 
 def save_json(obj, filename):
     with open(filename, "w") as f:
@@ -459,7 +463,7 @@ def train(config, evaluate_only=False, outdir=".", detail=False, azureml=False):
             model.cuda()  # move the processing to GPU
 
         start = time.time()
-        log = model.fit(training_data, validation_data, config.training, config.model, device, detail, run)
+        log = model.fit(training_data, validation_data, config.training, config.model.sparsify, device, detail, run)
         end = time.time()
 
         passed, total, rate = model.evaluate(training_data, batch_size, device)
@@ -650,6 +654,10 @@ if __name__ == '__main__':
         config.model.uSparsity = args.uSparsity
     else:
         config.model.uSparsity = 1.0
+    if config.model.uSparsity < 1.0 or config.model.wSparsity < 1.0
+        config.model.sparsify = True
+    else:
+        config.model.sparsify = False
     if args.gate_nonlinearity:
         config.model.gate_nonlinearity = args.gate_nonlinearity
     if args.update_nonlinearity:
