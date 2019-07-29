@@ -1086,20 +1086,22 @@ class FastGRNN(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 zetaInit=1.0, nuInit=-4.0, batch_first=True):
+                 wSparsity=1.0, uSparsity=1.0, zetaInit=1.0, nuInit=-4.0,
+                 batch_first=True):
         super(FastGRNN, self).__init__()
-        self._input_size = input_size
-        self._hidden_size = hidden_size
-        self._gate_nonlinearity = gate_nonlinearity
-        self._update_nonlinearity = update_nonlinearity
-        self._wRank = wRank
-        self._uRank = uRank
+        #self._input_size = input_size
+        #self._hidden_size = hidden_size
+        #self._gate_nonlinearity = gate_nonlinearity
+        #self._update_nonlinearity = update_nonlinearity
+        #self._wRank = wRank
+        #self._uRank = uRank
         self.batch_first = batch_first
 
         self.cell = FastGRNNCell(input_size, hidden_size,
                                  gate_nonlinearity=gate_nonlinearity,
                                  update_nonlinearity=update_nonlinearity,
-                                 wRank=wRank, uRank=uRank,
+                                 wRank=wRank, uRank=uRank, 
+                                 wSparsity=wSparsity, uSparsity=uSparsity, 
                                  zetaInit=zetaInit, nuInit=nuInit)
         self.unrollRNN = BaseRNN(self.cell, batch_first=self.batch_first)
 

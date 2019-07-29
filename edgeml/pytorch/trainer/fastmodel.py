@@ -31,6 +31,8 @@ def fastgrnnmodel(inheritance_class=nn.Module):
             self.num_classes = num_classes
             self.wRank_list = wRank_list
             self.uRank_list = uRank_list
+            self.wSparsity_list = wSparsity_list
+            self.uSparsity_list = uSparsity_list
             self.gate_nonlinearity = gate_nonlinearity
             self.update_nonlinearity = update_nonlinearity
             self.linear = linear
@@ -48,7 +50,7 @@ def fastgrnnmodel(inheritance_class=nn.Module):
                                       gate_nonlinearity=self.gate_nonlinearity,
                                       update_nonlinearity=self.update_nonlinearity,
                                       wRank=self.wRank_list[0], uRank=self.uRank_list[0],
-                                      wSparisty=self.wSparisty_list[0], uSparisty=self.uSparisty_list[0],
+                                      wSparsity=self.wSparsity_list[0], uSparsity=self.uSparsity_list[0],
                                       batch_first = self.batch_first)
             self.fastgrnn2 = None
             last_output_size = self.hidden_units_list[0]
@@ -57,7 +59,7 @@ def fastgrnnmodel(inheritance_class=nn.Module):
                                           gate_nonlinearity=self.gate_nonlinearity,
                                           update_nonlinearity=self.update_nonlinearity,
                                           wRank=self.wRank_list[1], uRank=self.uRank_list[1],
-                                          wSparisty=self.wSparisty_list[1], uSparisty=self.uSparisty_list[1],
+                                          wSparsity=self.wSparsity_list[1], uSparsity=self.uSparsity_list[1],
                                           batch_first = self.batch_first)
                 last_output_size = self.hidden_units_list[1]
             self.fastgrnn3 = None
@@ -66,7 +68,7 @@ def fastgrnnmodel(inheritance_class=nn.Module):
                                           gate_nonlinearity=self.gate_nonlinearity,
                                           update_nonlinearity=self.update_nonlinearity,
                                           wRank=self.wRank_list[2], uRank=self.uRank_list[2],
-                                          wSparisty=self.wSparisty_list[2], uSparisty=self.uSparisty_list[2],
+                                          wSparsity=self.wSparsity_list[2], uSparsity=self.uSparsity_list[2],
                                           batch_first = self.batch_first)
                 last_output_size = self.hidden_units_list[2]
 

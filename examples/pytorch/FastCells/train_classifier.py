@@ -136,7 +136,7 @@ class KeywordSpotter(nn.Module):
             scheduler = ExponentialResettingLR(optimizer, gamma, reset)
         return scheduler
 
-    def fit(self, training_data, validation_data, options, sparsify=false, device=None, detail=False, run=None):
+    def fit(self, training_data, validation_data, options, sparsify=False, device=None, detail=False, run=None):
         """
         Perform the training.  This is not called "train" because
         the base class already defines that method with a different meaning.
@@ -654,7 +654,7 @@ if __name__ == '__main__':
         config.model.uSparsity = args.uSparsity
     else:
         config.model.uSparsity = 1.0
-    if config.model.uSparsity < 1.0 or config.model.wSparsity < 1.0
+    if config.model.uSparsity < 1.0 or config.model.wSparsity < 1.0:
         config.model.sparsify = True
     else:
         config.model.sparsify = False
