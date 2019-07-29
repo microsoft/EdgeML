@@ -60,8 +60,6 @@ class EMI_Trainer:
         # Input validation
         self.supportedLosses = ['xentropy', 'l2']
         self.supportedOptimizers = ['Adam']
-
-
         assert lossType in self.supportedLosses
         assert optimizer in self.supportedOptimizers
         # Internal
