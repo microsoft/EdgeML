@@ -6,6 +6,8 @@ import torch.nn as nn
 from torch.autograd import Function
 import numpy as np
 
+import edgeml.pytorch.utils as utils
+
 def onnx_exportable_fastgrnn(input, fargs, output, hidden_size, wRank, uRank, gate_nonlinearity, update_nonlinearity):
     class RNNSymbolic(Function):
         @staticmethod
@@ -196,6 +198,19 @@ class FastGRNNCell(nn.Module):
         self.zeta = nn.Parameter(self._zetaInit * torch.ones([1, 1]))
         self.nu = nn.Parameter(self._nuInit * torch.ones([1, 1]))
 
+    def sparsify(self, wsp, usp):
+        if self._wRank is None:
+            utils.hardThreshold(self.W, wsp)
+        else:
+            utils.hardThreshold(self.W1, wsp)
+            utils.hardThreshold(self.W2, wsp)
+
+        if self._uRank is None:
+            utils.hardThreshold(self.U, usp)
+        else:
+            utils.hardThreshold(self.U1, usp)
+            utils.hardThreshold(self.U2, usp)
+
     @property
     def state_size(self):
         return self._hidden_size
@@ -339,6 +354,20 @@ class FastRNNCell(nn.Module):
         self.bias_update = nn.Parameter(torch.ones([1, hidden_size]))
         self.alpha = nn.Parameter(self._alphaInit * torch.ones([1, 1]))
         self.beta = nn.Parameter(self._betaInit * torch.ones([1, 1]))
+
+    def sparsify(self, wsp, usp):
+        if self._wRank is None:
+            utils.hardThreshold(self.W, wsp)
+        else:
+            utils.hardThreshold(self.W1, wsp)
+            utils.hardThreshold(self.W2, wsp)
+
+        if self._uRank is None:
+            utils.hardThreshold(self.U, usp)
+        else:
+            utils.hardThreshold(self.U1, usp)
+            utils.hardThreshold(self.U2, usp)
+
 
     @property
     def state_size(self):

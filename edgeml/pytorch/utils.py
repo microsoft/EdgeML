@@ -41,17 +41,21 @@ def binaryHingeLoss(logits, labels):
     return torch.mean(F.relu(1.0 - (2 * labels - 1) * logits))
 
 
-def hardThreshold(A, s):
+def hardThreshold(A: torch.nn.Parameter, s):
     '''
-    Hard thresholding function on Tensor A with sparsity s
+    Hard thresholds and modifies in-palce nn.Parameter A with sparsity s 
     '''
-    A_ = np.copy(A)
+    #PyTorch disallows numpy access/copy to tensors in graph.
+    #.detach() creates a new tensor not attached to the graph.
+    A_ = A.detach().numpy()
+    
     A_ = A_.ravel()
     if len(A_) > 0:
         th = np.percentile(np.abs(A_), (1 - s) * 100.0, interpolation='higher')
         A_[np.abs(A_) < th] = 0.0
     A_ = A_.reshape(A.shape)
-    return A_
+    
+    A.data = torch.tensor(A_, requires_grad=True)
 
 
 def copySupport(src, dest):

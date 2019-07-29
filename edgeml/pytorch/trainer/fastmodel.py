@@ -72,6 +72,14 @@ def fastgrnnmodel(inheritance_class=nn.Module):
                 self.hidden2keyword = nn.Linear(last_output_size, num_classes)
             self.init_hidden()
 
+        def sparsify(self, wsp, usp):
+            self.fastgrnn1.cell.sparsify(wsp, usp)
+            if self.num_layers > 1:
+                self.fastgrnn2.cell.sparsify(wsp, usp)
+            if self.num_layers > 2:
+                self.fastgrnn3.cell.sparsify(wsp, usp)
+
+
         def normalize(self, mean, std):
             self.mean = mean
             self.std = std
