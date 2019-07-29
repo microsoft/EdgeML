@@ -151,29 +151,29 @@ class FastTrainer:
         totalSize = 0
         hasSparse = False
         for i in range(0, self.numMatrices[0]):
-            nnz, size, sparseFlag = utils.countnnZ(self.FastParams[i], self.sW)
+            nnz, size, sparseFlag = utils.estimateNNZ(self.FastParams[i], self.sW)
             totalnnZ += nnz
             totalSize += size
             hasSparse = hasSparse or sparseFlag
 
         for i in range(self.numMatrices[0], self.totalMatrices):
-            nnz, size, sparseFlag = utils.countnnZ(self.FastParams[i], self.sU)
+            nnz, size, sparseFlag = utils.estimateNNZ(self.FastParams[i], self.sU)
             totalnnZ += nnz
             totalSize += size
             hasSparse = hasSparse or sparseFlag
         for i in range(self.totalMatrices, len(self.FastParams)):
-            nnz, size, sparseFlag = utils.countnnZ(self.FastParams[i], 1.0)
+            nnz, size, sparseFlag = utils.estimateNNZ(self.FastParams[i], 1.0)
             totalnnZ += nnz
             totalSize += size
             hasSparse = hasSparse or sparseFlag
 
         # Replace this with classifier class call
-        nnz, size, sparseFlag = utils.countnnZ(self.FC, 1.0)
+        nnz, size, sparseFlag = utils.estimateNNZ(self.FC, 1.0)
         totalnnZ += nnz
         totalSize += size
         hasSparse = hasSparse or sparseFlag
 
-        nnz, size, sparseFlag = utils.countnnZ(self.FCbias, 1.0)
+        nnz, size, sparseFlag = utils.estimateNNZ(self.FCbias, 1.0)
         totalnnZ += nnz
         totalSize += size
         hasSparse = hasSparse or sparseFlag

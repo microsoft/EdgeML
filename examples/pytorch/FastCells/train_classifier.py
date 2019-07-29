@@ -21,8 +21,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.autograd import Variable, Function
 import torch.onnx
+
+from torch.autograd import Variable, Function
 from torch.utils.data import Dataset, DataLoader
 
 from training_config import TrainingConfig

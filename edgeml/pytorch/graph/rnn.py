@@ -292,9 +292,27 @@ class FastGRNNCell(nn.Module):
 
         Vars.extend([self.bias_gate, self.bias_update])
         Vars.extend([self.zeta, self.nu])
-
         return Vars
 
+    def getModelSize(self):
+        '''
+		Function to get aimed model size
+		'''
+        totalnnz = 2  # For Zeta and Nu
+        totalnnz += utils.countNNZ(self.bias_gate, False)
+        totalnnz += utils.countNNZ(self.bias_update, False)
+        if self._wRank is None:
+            totalnnz += utils.countNNZ(self.W, self._wSparsity)
+        else:
+            totalnnz += utils.countNNZ(self.W1, self._wSparsity)
+            totalnnz += utils.countNNZ(self.W2, self._wSparsity)
+
+        if self._uRank is None:
+            totalnnz += utils.countNNZ(self.U, self._uSparsity)
+        else:
+            totalnnz += utils.countNNZ(self.U1, self._uSparsity)
+            totalnnz += utils.countNNZ(self.U2, self._uSparsity)
+        return totalnnz
 
 class FastRNNCell(nn.Module):
     '''

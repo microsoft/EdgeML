@@ -85,6 +85,14 @@ def fastgrnnmodel(inheritance_class=nn.Module):
             if self.num_layers > 2:
                 self.fastgrnn3.cell.sparsify()
 
+        def getModelSize(self):
+            total_size = self.fastgrnn1.cell.getModelSize()
+            if self.num_layers > 1:
+                total_size += self.fastgrnn2.cell.getModelSize()
+            if self.num_layers > 2:
+                total_size += self.fastgrnn3.cell.getModelSize()
+            total_size += self.hidden_units_list[2] * self.num_classes
+            return total_size
 
         def normalize(self, mean, std):
             self.mean = mean

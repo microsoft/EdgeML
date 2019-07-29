@@ -70,7 +70,7 @@ def copySupport(src, dest):
     return dest
 
 
-def countnnZ(A, s, bytesPerVar=4):
+def estimateNNZ(A, s, bytesPerVar=4):
     '''
     Returns # of non-zeros and representative size of the tensor
     Uses dense for s >= 0.5 - 4 byte
@@ -88,6 +88,19 @@ def countnnZ(A, s, bytesPerVar=4):
         nnZ = params
         return nnZ, nnZ * bytesPerVar, hasSparse
 
+
+def countNNZ(A: torch.nn.Parameter, isSparse):
+    '''
+    Returns # of non-zeros 
+    '''
+    A_ = A.detach().numpy()
+    if isSparse:
+        return np.count_nonzero(A_)
+    else:
+        nnzs = 1
+        for i in range(0, len(A.shape)):
+            nnzs *= int(A.shape[i])
+        return nnzs
 
 def restructreMatrixBonsaiSeeDot(A, nClasses, nNodes):
     '''
