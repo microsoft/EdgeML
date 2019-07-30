@@ -162,6 +162,7 @@ class KeywordSpotter(nn.Module):
 
         num_epochs = options.max_epochs
         batch_size = options.batch_size
+        trim_level = options.trim_level
         
         ticks = training_data.num_rows / batch_size  # iterations per epoch
         total_iterations = ticks * num_epochs
@@ -230,7 +231,14 @@ class KeywordSpotter(nn.Module):
                 optimizer.step()
 
                 if sparsify:
-                    self.sparsify()
+                    if epoch > num_epochs/3:
+                        if epoch < (2*num_epochs)/3:
+                            if i_batch % trim_level == 0:
+                                self.sparsify()
+                            else:
+                                self.sparsifyWithSupport()
+                        else:
+                            self.sparsifyWithSupport()
 
                 learning_rate = optimizer.param_groups[0]['lr']
                 if detail:
@@ -524,6 +532,7 @@ if __name__ == '__main__':
 
     # all the training parameters
     parser.add_argument("--epochs", help="Number of epochs to train", type=int)
+    parser.add_argument("--trim_level", help="Number of batches before sparse support is updated in IHT", type=int)
     parser.add_argument("--lr_scheduler", help="Type of learning rate scheduler (None, TriangleLR, CosineAnnealingLR,"
                                                " ExponentialLR, ExponentialResettingLR)")
     parser.add_argument("--learning_rate", help="Default learning rate, and maximum for schedulers", type=float)
@@ -580,6 +589,10 @@ if __name__ == '__main__':
     # then any user defined options overrides these defaults
     if args.epochs:
         config.training.max_epochs = args.epochs
+    if args.trim_level:
+        config.training.trim_level = args.trim_level
+    else:
+        config.training.trim_level = 15
     if args.learning_rate:
         config.training.learning_rate = args.learning_rate
     if args.lr_min:

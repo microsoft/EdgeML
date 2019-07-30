@@ -85,6 +85,13 @@ def fastgrnnmodel(inheritance_class=nn.Module):
             if self.num_layers > 2:
                 self.fastgrnn3.cell.sparsify()
 
+        def sparsifyWithSupport(self):
+            self.fastgrnn1.cell.sparsifyWithSupport()
+            if self.num_layers > 1:
+                self.fastgrnn2.cell.sparsifyWithSupport()
+            if self.num_layers > 2:
+                self.fastgrnn3.cell.sparsifyWithSupport()
+
         def getModelSize(self):
             total_size = self.fastgrnn1.cell.getModelSize()
             if self.num_layers > 1:

@@ -144,6 +144,13 @@ class FastGRNNCell(nn.Module):
 
     wRank = rank of W matrix (creates two matrices if not None)
     uRank = rank of U matrix (creates two matrices if not None)
+    
+    wSparsity = intended sparsity of W matrix(ces)
+    uSparsity = intended sparsity of U matrix(ces)
+    Warning:
+    The Cell will not automatically sparsify.
+    The user must invoke .sparsify to hard threshold.
+
     zetaInit = init for zeta, the scale param
     nuInit = init for nu, the translation param
 
@@ -190,29 +197,69 @@ class FastGRNNCell(nn.Module):
             self.W2 = nn.Parameter(0.1 * torch.randn([hidden_size, wRank]))
 
         if uRank is None:
-            self.U = nn.Parameter(
-                0.1 * torch.randn([hidden_size, hidden_size]))
+            self.U = nn.Parameter(0.1 * torch.randn([hidden_size, hidden_size]))
         else:
             self.U1 = nn.Parameter(0.1 * torch.randn([uRank, hidden_size]))
             self.U2 = nn.Parameter(0.1 * torch.randn([hidden_size, uRank]))
-
+        
+        self.copy_previous_state()
+          
         self.bias_gate = nn.Parameter(torch.ones([1, hidden_size]))
         self.bias_update = nn.Parameter(torch.ones([1, hidden_size]))
         self.zeta = nn.Parameter(self._zetaInit * torch.ones([1, 1]))
         self.nu = nn.Parameter(self._nuInit * torch.ones([1, 1]))
 
-    def sparsify(self):
+    def copy_previous_state(self):
         if self._wRank is None:
-            utils.hardThreshold(self.W, self._wSparsity)
+            if self._wSparsity < 1.0:
+                self.W_old = torch.FloatTensor(np.copy(self.W.data.cpu().detach().numpy()))
+                self.W_old.to(self.W.device)
         else:
-            utils.hardThreshold(self.W1, self._wSparsity)
-            utils.hardThreshold(self.W2, self._wSparsity)
+            if self._wSparsity < 1.0:
+                self.W1_old = torch.FloatTensor(np.copy(self.W1.data.cpu().detach().numpy()))
+                self.W2_old = torch.FloatTensor(np.copy(self.W2.data.cpu().detach().numpy()))
+                self.W1_old.to(self.W1.device)
+                self.W2_old.to(self.W2.device)
 
         if self._uRank is None:
-            utils.hardThreshold(self.U, self._uSparsity)
+            if self._uSparsity < 1.0:
+                self.U_old = torch.FloatTensor(np.copy(self.U.data.cpu().detach().numpy()))
+                self.U_old.to(self.U.device)
         else:
-            utils.hardThreshold(self.U1, self._uSparsity)
-            utils.hardThreshold(self.U2, self._uSparsity)
+            if self._uSparsity < 1.0:
+                self.U1_old = torch.FloatTensor(np.copy(self.U1.data.cpu().detach().numpy()))
+                self.U2_old = torch.FloatTensor(np.copy(self.U2.data.cpu().detach().numpy()))
+                self.U1_old.to(self.U1.device)
+                self.U2_old.to(self.U2.device)
+
+        
+    def sparsify(self):
+        if self._wRank is None:
+            self.W.data = utils.hardThreshold(self.W, self._wSparsity)
+        else:
+            self.W1.data = utils.hardThreshold(self.W1, self._wSparsity)
+            self.W2.data = utils.hardThreshold(self.W2, self._wSparsity)
+
+        if self._uRank is None:
+            self.U.data = utils.hardThreshold(self.U, self._uSparsity)
+        else:
+            self.U1.data = utils.hardThreshold(self.U1, self._uSparsity)
+            self.U2.data = utils.hardThreshold(self.U2, self._uSparsity)
+        self.copy_previous_state()
+
+    def sparsifyWithSupport(self):
+        if self._wRank is None:
+            self.W.data = utils.supportBasedThreshold(self.W, self.W_old)
+        else:
+            self.W1.data = utils.supportBasedThreshold(self.W1, self.W1_old)
+            self.W2.data = utils.supportBasedThreshold(self.W2, self.W2_old)
+
+        if self._uRank is None:
+            self.U.data = utils.supportBasedThreshold(self.U, self.U_old)
+        else:
+            self.U1.data = utils.supportBasedThreshold(self.U1, self.U1_old)
+            self.U2.data = utils.supportBasedThreshold(self.U2, self.U2_old)
+        #self.copy_previous_state()
 
     @property
     def state_size(self):
@@ -325,6 +372,13 @@ class FastRNNCell(nn.Module):
 
     wRank = rank of W matrix (creates two matrices if not None)
     uRank = rank of U matrix (creates two matrices if not None)
+     
+    wSparsity = intended sparsity of W matrix(ces)
+    uSparsity = intended sparsity of U matrix(ces)
+    Warning:
+    The Cell will not automatically sparsify.
+    The user must invoke .sparsify to hard threshold.
+
     alphaInit = init for alpha, the update scalar
     betaInit = init for beta, the weight for previous state
 
@@ -381,16 +435,16 @@ class FastRNNCell(nn.Module):
 
     def sparsify(self):
         if self._wRank is None:
-            utils.hardThreshold(self.W, self._wSparsity)
+            self.W.data = utils.hardThreshold(self.W, self._wSparsity)
         else:
-            utils.hardThreshold(self.W1, self._wSparsity)
-            utils.hardThreshold(self.W2, self._wSparsity)
+            self.W1.data = utils.hardThreshold(self.W1, self._wSparsity)
+            self.W2.data = utils.hardThreshold(self.W2, self._wSparsity)
 
         if self._uRank is None:
-            utils.hardThreshold(self.U, self._uSparsity)
+            self.U.data = utils.hardThreshold(self.U, self._uSparsity)
         else:
-            utils.hardThreshold(self.U1, self._uSparsity)
-            utils.hardThreshold(self.U2, self._uSparsity)
+            self.U1.data = utils.hardThreshold(self.U1, self._uSparsity)
+            self.U2.data = utils.hardThreshold(self.U2, self._uSparsity)
 
 
     @property
@@ -468,6 +522,24 @@ class FastRNNCell(nn.Module):
 
         return Vars
 
+    def getModelSize(self):
+        '''
+		Function to get aimed model size
+		'''
+        totalnnz = 2  # For \alpha and \beta
+        totalnnz += utils.countNNZ(self.bias_update, False)
+        if self._wRank is None:
+            totalnnz += utils.countNNZ(self.W, self._wSparsity)
+        else:
+            totalnnz += utils.countNNZ(self.W1, self._wSparsity)
+            totalnnz += utils.countNNZ(self.W2, self._wSparsity)
+
+        if self._uRank is None:
+            totalnnz += utils.countNNZ(self.U, self._uSparsity)
+        else:
+            totalnnz += utils.countNNZ(self.U1, self._uSparsity)
+            totalnnz += utils.countNNZ(self.U2, self._uSparsity)
+        return totalnnz
 
 class LSTMLRCell(nn.Module):
     '''
