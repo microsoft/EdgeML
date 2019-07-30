@@ -239,6 +239,7 @@ class KeywordSpotter(nn.Module):
                                 self.sparsifyWithSupport()
                         else:
                             self.sparsifyWithSupport()
+                    self.to(device) # sparsify routines might move param matrices to cpu
 
                 learning_rate = optimizer.param_groups[0]['lr']
                 if detail:

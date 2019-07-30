@@ -231,7 +231,6 @@ class FastGRNNCell(nn.Module):
                 self.U2_old = torch.FloatTensor(np.copy(self.U2.data.cpu().detach().numpy()))
                 self.U1_old.to(self.U1.device)
                 self.U2_old.to(self.U2.device)
-
         
     def sparsify(self):
         if self._wRank is None:
