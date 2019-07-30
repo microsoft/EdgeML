@@ -262,6 +262,7 @@ class KeywordSpotter(nn.Module):
         end = time.time()
         self.training = False
         print("Trained in {:.2f} seconds".format(end - start))
+        print("Model size {}".format(self.getModelSize()))
         return log
 
     def evaluate(self, test_data, batch_size, device=None, outfile=None):
