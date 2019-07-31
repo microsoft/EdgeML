@@ -1081,13 +1081,10 @@ class SRNN2(nn.Module):
         
         if self.cellType == 'LSTM':
             self.rnnClass = nn.LSTM
-        
         elif self.cellType == 'FastRNNCell':
             self.rnnClass = FastRNN
-
         elif self.cellType == 'FastGRNNCell':
             self.rnnClass = FastGRNN
-
         else:
             self.rnnClass = GRU
 
