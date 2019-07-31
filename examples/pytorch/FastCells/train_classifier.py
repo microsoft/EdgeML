@@ -231,7 +231,7 @@ class KeywordSpotter(nn.Module):
                 optimizer.step()
 
                 if sparsify:
-                    if epoch > num_epochs/3:
+                    if epoch >= num_epochs/3:
                         if epoch < (2*num_epochs)/3:
                             if i_batch % trim_level == 0:
                                 self.sparsify()
