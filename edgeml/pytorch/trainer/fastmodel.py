@@ -8,8 +8,8 @@ import numpy as np
 import sys
 from edgeml.pytorch.graph.rnn import *
 
-def fastgrnnmodel(inheritance_class=nn.Module):
-    class FastGRNNModel(inheritance_class):
+def get_model_class(inheritance_class=nn.Module):
+    class RNNClassifierModel(inheritance_class):
         """This class is a PyTorch Module that implements a 1, 2 or 3 layer
            RNN-based classifier
         """
@@ -42,7 +42,7 @@ def fastgrnnmodel(inheritance_class=nn.Module):
                 if not self.num_classes:
                     raise Exception("num_classes need to be specified if linear is True")
 
-            super(FastGRNNModel, self).__init__()
+            super(RNNClassifierModel, self).__init__()
 
             # The FastGRNN takes audio sequences as input, and outputs hidden states
             # with dimensionality hidden_units.
@@ -185,4 +185,4 @@ def fastgrnnmodel(inheritance_class=nn.Module):
             if self.apply_softmax:
                 fastgrnn_output = F.log_softmax(fastgrnn_output, dim=1)
             return fastgrnn_output
-    return FastGRNNModel
+    return RNNClassifierModel

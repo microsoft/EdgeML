@@ -357,17 +357,18 @@ class AudioDataset(Dataset):
         return sample
 
 
-def create_model(model, input_size, num_keywords):
-    FastGRNNModel = fastgrnnmodel(KeywordSpotter)
-    hidden_units_list = [model.hidden_units1, model.hidden_units2, model.hidden_units3]
-    wRank_list = [model.wRank1, model.wRank2, model.wRank3]
-    uRank_list = [model.uRank1, model.uRank2, model.uRank3]
-    wSparsity_list = [model.wSparsity, model.wSparsity, model.wSparsity]
-    uSparsity_list = [model.uSparsity, model.uSparsity, model.uSparsity]
-    print(model.gate_nonlinearity, model.update_nonlinearity)
-    return FastGRNNModel(input_size, model.num_layers, hidden_units_list,
-                            wRank_list, uRank_list, wSparsity_list, uSparsity_list,
-                            model.gate_nonlinearity, model.update_nonlinearity, num_keywords)
+def create_model(model_config, input_size, num_keywords):
+    ModelClass = get_model_class(KeywordSpotter)
+    hidden_units_list = [model_config.hidden_units1, model_config.hidden_units2, model_config.hidden_units3]
+    wRank_list = [model_config.wRank1, model_config.wRank2, model_config.wRank3]
+    uRank_list = [model_config.uRank1, model_config.uRank2, model_config.uRank3]
+    wSparsity_list = [model_config.wSparsity, model_config.wSparsity, model_config.wSparsity]
+    uSparsity_list = [model_config.uSparsity, model_config.uSparsity, model_config.uSparsity]
+    print(model_config.gate_nonlinearity, model_config.update_nonlinearity)
+    return ModelClass(input_size, model_config.num_layers, hidden_units_list,
+                        wRank_list, uRank_list, wSparsity_list, uSparsity_list,
+                        model_config.gate_nonlinearity, model_config.update_nonlinearity,
+                        num_keywords)
 
 def save_json(obj, filename):
     with open(filename, "w") as f:
