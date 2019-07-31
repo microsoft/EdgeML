@@ -1049,14 +1049,17 @@ class FastGRNN(nn.Module):
 
 class SRNN2(nn.Module):
 
-    def __init__(self, inputDim, outputDim, hiddenDim0, hiddenDim1, cellType, dropoutProbability_l0 = None, dropoutProbability_l1 = None, **cellArgs):
+    def __init__(self, inputDim, outputDim, hiddenDim0, hiddenDim1, cellType,
+                 dropoutProbability_l0 = None, dropoutProbability_l1 = None,
+                 **cellArgs):
         '''
         A 2 Layer Shallow RNN.
 
         inputDim: Input data's feature dimension.
         hiddenDim0: Hidden state dimension of the lower layer RNN cell.
         hiddenDim1: Hidden state dimension of the second layer RNN cell.
-        cellType: The type of RNN cell to use. Options are ['LSTM', 'FastRNNCell', 'FastGRNNCell', 'GRULRCell']
+        cellType: The type of RNN cell to use. Options are ['LSTM', 'FastRNNCell',
+        'FastGRNNCell', 'GRULRCell']
         '''
         super(SRNN2, self).__init__()
 
