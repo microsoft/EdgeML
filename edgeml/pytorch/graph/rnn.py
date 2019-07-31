@@ -178,6 +178,9 @@ class RNNCell(nn.Module):
     def name(self):
         return self._name
 
+    def forward(self, input, state):
+        raise NotImplementedError()
+
     def getVars(self):
         raise NotImplementedError()
 
