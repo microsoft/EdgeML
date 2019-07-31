@@ -51,7 +51,8 @@ batchSize = config.batch_size
 epochs = config.epochs
 printStep = config.print_step
 valStep = config.val_step
-dropoutProbability = 0.2
+dropoutProbability_l0 = 0.2
+dropoutProbability_l1 = 0.2
 
 print(cellType)
 '''
@@ -65,7 +66,7 @@ cellArgs = {'gate_non_linearity':"sigmoid",'update_non_linearity':"tanh",
 '''
 cellArgs = {}
 
-srnn2 = SRNN2(numInput, numClasses, hiddenDim0, hiddenDim1, cellType, dropoutProbability, **cellArgs).to(device)
+srnn2 = SRNN2(numInput, numClasses, hiddenDim0, hiddenDim1, cellType, dropoutProbability_l0, dropoutProbability_l1, **cellArgs).to(device)  
 trainer = SRNNTrainer(srnn2, learningRate, lossType='xentropy', device=device)
 
 trainer.train(brickSize, batchSize, epochs, x_train, x_val, y_train, y_val,
