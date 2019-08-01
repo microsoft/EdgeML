@@ -8,18 +8,16 @@ import numpy as np
 
 import edgeml.pytorch.utils as utils
 
-def onnx_exportable_rnn(input, fargs, cell_name,
-                        output, hidden_size, wRank, uRank,
-                        gate_nonlinearity, update_nonlinearity):
+def onnx_exportable_rnn(input, fargs, cell, output):
     class RNNSymbolic(Function):
         @staticmethod
         def symbolic(g, *fargs):
             # NOTE: args/kwargs contain RNN parameters
-            return g.op(cell_name, *fargs, 
-                        outputs=1, hidden_size_i=hidden_size,
-                        wRank_i=wRank, uRank_i=uRank,
-                        gate_nonlinearity_s=gate_nonlinearity,
-                        update_nonlinearity_s=update_nonlinearity)
+            return g.op(cell.name, *fargs, 
+                        outputs=1, hidden_size_i=cell.state_size,
+                        wRank_i=cell.wRank, uRank_i=cell.uRank,
+                        gate_nonlinearity_s=cell.gate_nonlinearity,
+                        update_nonlinearity_s=cell.update_nonlinearity)
 
         @staticmethod
         def forward(ctx, *fargs):
