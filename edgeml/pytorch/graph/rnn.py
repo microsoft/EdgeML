@@ -8,15 +8,18 @@ import numpy as np
 
 import edgeml.pytorch.utils as utils
 
-def onnx_exportable_fastgrnn(input, fargs, output, hidden_size, wRank, uRank,
-                            gate_nonlinearity, update_nonlinearity):
+def onnx_exportable_rnn(input, fargs, cell_name,
+                        output, hidden_size, wRank, uRank,
+                        gate_nonlinearity, update_nonlinearity):
     class RNNSymbolic(Function):
         @staticmethod
         def symbolic(g, *fargs):
             # NOTE: args/kwargs contain RNN parameters
-            return g.op("FastGRNN", *fargs, outputs=1,
-                        hidden_size_i=hidden_size, wRank_i=wRank, uRank_i=uRank,
-                        gate_nonlinearity_s=gate_nonlinearity, update_nonlinearity_s=update_nonlinearity)
+            return g.op(cell_name, *fargs, 
+                        outputs=1, hidden_size_i=hidden_size,
+                        wRank_i=wRank, uRank_i=uRank,
+                        gate_nonlinearity_s=gate_nonlinearity,
+                        update_nonlinearity_s=update_nonlinearity)
 
         @staticmethod
         def forward(ctx, *fargs):
@@ -107,10 +110,6 @@ class RNNCell(nn.Module):
     def uRank(self):
         return self._uRank
 
-    #@property
-    #def num_weight_matrices(self):
-    #    return self._num_weight_matrices
-
     @property
     def num_W_matrices(self):
         return self._num_W_matrices
@@ -118,6 +117,10 @@ class RNNCell(nn.Module):
     @property
     def num_U_matrices(self):
         return self._num_U_matrices
+
+    @property
+    def name(self):
+        raise NotImplementedError()
 
     def forward(self, input, state):
         raise NotImplementedError()
