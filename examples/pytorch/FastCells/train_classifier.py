@@ -199,7 +199,6 @@ class KeywordSpotter(nn.Module):
                         if (i_batch + 1) % rolling_length == 0:
                             self.init_hidden()
                             break
-
                     self.rolling_step()
                 else:
                     self.init_hidden()
@@ -478,8 +477,8 @@ def train(config, evaluate_only=False, outdir=".", detail=False, azureml=False):
         log = model.fit(training_data, validation_data, config.training, config.model.sparsify, device, detail, run)
         end = time.time()
 
-        passed, total, rate = model.evaluate(training_data, batch_size, device)
-        print("Training accuracy = {:.3f} %".format(rate * 100))
+        #passed, total, rate = model.evaluate(training_data, batch_size, device)
+        #print("Training accuracy = {:.3f} %".format(rate * 100))
 
         torch.save(model.state_dict(), os.path.join(outdir, filename))
 

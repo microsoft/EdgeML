@@ -13,8 +13,8 @@ def onnx_exportable_rnn(input, fargs, cell, output):
         @staticmethod
         def symbolic(g, *fargs):
             # NOTE: args/kwargs contain RNN parameters
-            return g.op(cell.name, *fargs, 
-                        outputs=1, hidden_size_i=cell.state_size,
+            return g.op(cell.name, *fargs, outputs=1,
+                        hidden_size_i=cell.state_size,
                         wRank_i=cell.wRank, uRank_i=cell.uRank,
                         gate_nonlinearity_s=cell.gate_nonlinearity,
                         update_nonlinearity_s=cell.update_nonlinearity)
