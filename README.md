@@ -25,7 +25,8 @@ devices/sensors, and used to make fast and accurate predictions completely
 offline.
 
 The `tf` directory contains code, examples and scripts for all these algorithms
-in TensorFlow. The `cpp` directory has training and inference code for Bonsai and
+in TensorFlow. The `pytorch` directory contains code, examples and scripts for all these algorithms
+in PyTorch. The `cpp` directory has training and inference code for Bonsai and
 ProtoNN algorithms in C++. Please see install/run instruction in the Readme
 pages within these directories. The `applications` directory has code/demonstrations
 of applications of the EdgeML algorithms. The `Tools/SeeDot` directory has the
@@ -56,6 +57,17 @@ us](mailto:edgeml@microsoft.com).
 to this
 [project](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
 
+If you use the EdgeML library in your projects or publications, please do cite us using the following BibTex:
+
+```
+@software{edgeml01,
+   author = {{Dennis, Don Kurian and Gopinath, Sridhar and Gupta, Chirag and
+      Kumar, Ashish and Kusupati, Aditya and Patil, Shishir G and Simhadri, Harsha Vardhan}},
+   title = {{EdgeML: Machine Learning for resource-constrained edge devices}},
+   url = {https://github.com/Microsoft/EdgeML},
+   version = {0.1},
+}
+```
 
 ### Microsoft Open Source Code of Conduct This project has adopted the
 [Microsoft Open Source Code of
