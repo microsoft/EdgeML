@@ -1049,7 +1049,7 @@ class FastGRNN(nn.Module):
 class SRNN2(nn.Module):
 
     def __init__(self, inputDim, outputDim, hiddenDim0, hiddenDim1, cellType,
-                 dropoutProbability_l0 = None, dropoutProbability_l1 = None,
+                 dropoutProbability0 = None, dropoutProbability1 = None,
                  **cellArgs):
         '''
         A 2 Layer Shallow RNN.
@@ -1067,14 +1067,12 @@ class SRNN2(nn.Module):
         self.hiddenDim0 = hiddenDim0
         self.hiddenDim1 = hiddenDim1
         self.outputDim = outputDim
-        self.dropoutProbability_l0 = 0
-        self.dropoutProbability_l1 = 0
-        if dropoutProbability_l0 != None:
-            assert 0 < dropoutProbability_l0 < 1.0
-            self.dropoutProbability_l0 = dropoutProbability_l0
-        if dropoutProbability_l1 != None:
-            assert 0 < dropoutProbability_l1 < 1.0 
-            self.dropoutProbability_l1 = dropoutProbability_l1
+        self.dropoutProbability0 = dropoutProbability0
+        self.dropoutProbability1 = dropoutProbability1
+        if dropoutProbability0 != None:
+            assert 0 < dropoutProbability0 <= 1.0
+        if dropoutProbability1 != None:
+            assert 0 < dropoutProbability1 <= 1.0 
         self.cellArgs = {}
         self.cellArgs.update(cellArgs)
         supportedCells = ['LSTM', 'FastRNNCell', 'FastGRNNCell', 'GRULRCell']
@@ -1110,7 +1108,7 @@ class SRNN2(nn.Module):
         numBricks = int(timeSteps/brickSize)
         eqlen = numSplits * brickSize
         x = x[:eqlen]
-        x_bricked = torch.split(x, numSplits, dim =0)
+        x_bricked = torch.split(x, numSplits, dim = 0)
         x_bricked_batched = torch.cat(x_bricked)
         x_bricked_batched = torch.reshape(x_bricked_batched, (numBricks,brickSize,batchSize,featureDim))
         return x_bricked_batched
@@ -1136,15 +1134,18 @@ class SRNN2(nn.Module):
         x_bricks = torch.reshape(x_bricks, [oldShape[0], oldShape[1] * oldShape[2], oldShape[3]])
         # x bricks: [brickSize, numBricks * batchSize, featureDim]
         # x_bricks = torch.Tensor(x_bricks)
-        dropoutLayer_0 = nn.Dropout(p = self.dropoutProbability_l0)
-        dropoutLayer_1 = nn.Dropout(p = self.dropoutProbability_l1)
+
+        self.dropoutLayer0 = None
+        self.dropoutLayer1 = None
+
         if self.cellType == 'LSTM':
             hidd0, out0 = self.rnn0(x_bricks)
         else:
             hidd0 = self.rnn0(x_bricks)
 
-        if self.dropoutProbability_l0 != None:
-            hidd0 = dropoutLayer_0(hidd0)
+        if self.dropoutProbability0 != None:
+            self.dropoutLayer0 = nn.Dropout(p=self.dropoutProbability0)
+            hidd0 = self.dropoutLayer0(hidd0)
         hidd0 = torch.squeeze(hidd0[-1])
         # [numBricks * batchSize, hiddenDim0]
         inp1 = hidd0.view(oldShape[1], oldShape[2], self.hiddenDim0)
@@ -1153,8 +1154,9 @@ class SRNN2(nn.Module):
             hidd1, out1 = self.rnn1(inp1)
         else:
             hidd1 = self.rnn1(inp1)
-        if self.dropoutProbability_l1 != None:
-            hidd1 = dropoutLayer_1(hidd1)
+        if self.dropoutProbability1 != None:
+            self.dropoutLayer1 = nn.Dropout(p=self.dropoutProbability1)
+            hidd1 = self.dropoutLayer1(hidd1)
         hidd1 = torch.squeeze(hidd1[-1])
         out = torch.matmul(hidd1, self.W) + self.B
         return out
