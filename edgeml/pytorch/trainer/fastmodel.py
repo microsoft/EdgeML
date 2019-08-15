@@ -175,7 +175,6 @@ def get_model_class(inheritance_class=nn.Module):
                 input = (input - self.mean) / self.std
 
             rnn_in = input
-            rnn_out = None
             for l in range(self.num_layers):
                 rnn = self.rnn_list[l]
                 rnn_out = rnn(rnn_in, hiddenState=self.hidden_states[l])
