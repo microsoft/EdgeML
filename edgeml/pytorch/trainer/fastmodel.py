@@ -101,10 +101,10 @@ def get_model_class(inheritance_class=nn.Module):
             for rnn in self.rnn_list:
                 rnn.cell.sparsifyWithSupport()
 
-        def getModelSize(self):
+        def get_model_size(self):
             total_size = 4 * self.hidden_units_list[self.num_layers-1] * self.num_classes
             for rnn in self.rnn_list:
-                total_size += rnn.cell.getModelSize()
+                total_size += rnn.cell.get_model_size()
             return total_size
 
         def normalize(self, mean, std):
