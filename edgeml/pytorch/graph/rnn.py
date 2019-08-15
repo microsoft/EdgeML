@@ -136,11 +136,11 @@ class RNNCell(nn.Module):
 
         totalnnz = 2  # For Zeta and Nu
         for i in range(0, endW):
-            totalnnz += utils.countNNZ(mats[i], self._wSparsity)
+            totalnnz += utils.countNNZ(mats[i].cpu(), self._wSparsity)
         for i in range(endW, endU):
-            totalnnz += utils.countNNZ(mats[i], self._uSparsity)
+            totalnnz += utils.countNNZ(mats[i].cpu(), self._uSparsity)
         for i in range(endU, len(mats)):
-            totalnnz += utils.countNNZ(mats[i], False)
+            totalnnz += utils.countNNZ(mats[i].cpu(), False)
         return totalnnz * 4
 
     def copy_previous_UW(self):
