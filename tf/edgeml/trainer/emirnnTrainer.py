@@ -37,15 +37,7 @@ class EMI_Trainer:
             it by adding regularization or other terms.
             3. After the modification has been performed, the user needs to
             call the `createOpCollections()` method so that the newly edited
-            operations can be added to Tensorflow collections. This helps in
-
-        HELP_WANTED: Automode is more of a hack than a systematic way of
-        supporting multiple loss functions/ optimizers. One way of
-        accomplishing this would be to make __createTrainOp and __createLossOp
-        methods protected or public, and having users override these.
-        Alternatively, we can change the structure to incorporate the
-        _createExtendedGraph and _restoreExtendedGraph operations used in
-        EMI-LSTM and so forth.
+            operations can be added to Tensorflow collections.
         '''
         self.numTimeSteps = numTimeSteps
         self.numOutput = numOutput
@@ -94,7 +86,7 @@ class EMI_Trainer:
         target: The target labels in one hot-encoding. Expects [-1,
             numSubinstance, numClass]
         '''
-        if self.graphCreated is True:
+        if self.graphCreated:
             # TODO: These statements are redundant after self.validInit call
             # A simple check to self.__validInit should suffice. Test this.
             assert self.lossOp is not None
@@ -120,7 +112,7 @@ class EMI_Trainer:
             A__ = tf.tile(A_, [1, 1, self.numTimeSteps, 1])
         return A__
 
-    def __createLossOp(self, predicted, target):
+    def createLossOp(self, predicted, target):
         assert self.__validInit is True, 'Initialization failure'
         with tf.name_scope(self.scope):
             # Loss indicator tensor
@@ -157,7 +149,7 @@ class EMI_Trainer:
                 lossOp = tf.nn.l2_loss(diff, name='l2-loss')
         return lossOp
 
-    def __createTrainOp(self):
+    def createTrainOp(self):
         with tf.name_scope(self.scope):
             tst = tf.train.AdamOptimizer(self.stepSize).minimize(self.lossOp)
         return tst
@@ -178,10 +170,9 @@ class EMI_Trainer:
             self.equalTilda = tf.cast(equal, tf.float32, name='equal-tilda')
             self.accTilda = tf.reduce_mean(self.equalTilda, name='acc-tilda')
 
-        self.lossOp = self.__createLossOp(predicted, target)
-        self.trainOp = self.__createTrainOp()
-        if self.automode:
-            self.createOpCollections()
+        self.lossOp = self.createLossOp(predicted, target)
+        self.trainOp = self.createTrainOp()
+        self.createOpCollections()
         self.graphCreated = True
 
     def _restoreGraph(self, predicted, target):
@@ -359,7 +350,7 @@ class EMI_Driver:
 
         graph: The computation graph needed to be used for the current session.
         reuse: If True, global_variables_initializer will not be invoked and
-            the graph will retain the current tensor states/values. 
+            the graph will retain the current tensor states/values.
         feedDict: Not used
         '''
         sess = self.__sess
@@ -955,7 +946,7 @@ class EMI_Driver:
         # longestContinuousClass[i] is the class label having
         # longest substring in bag i
         longestContinuousClass = np.argmax(scoreList, axis=1) + 1
-        # longestContinuousClassLength[i] is length of 
+        # longestContinuousClassLength[i] is length of
         # longest class substring in bag i
         longestContinuousClassLength = np.max(scoreList, axis=1)
         assert longestContinuousClass.ndim == 1
