@@ -114,24 +114,29 @@ def get_model_class(inheritance_class=nn.Module):
         def name(self):
             return "{} layer FastGRNN".format(self.num_layers)
 
+        def move_to(self, device):
+            for rnn in self.rnn_list:
+                rnn.to(device)
+            if hasattr(self, 'hidden2keyword'):
+                self.hidden2keyword.to(device)
+
         def init_hidden_bag(self, hidden_bag_size, device):
             self.hidden_bag_size = hidden_bag_size
-            self.device = device
             self.hidden_bags_list = [] 
 
             for l in range(self.num_layers):
                 self.hidden_bags_list.append(
                     torch.from_numpy(np.zeros([self.hidden_bag_size, self.hidden_units_list[l]],
-                                              dtype=np.float32)).to(self.device))
+                                              dtype=np.float32)).to(device))
 
             #self.hidden1_bag = torch.from_numpy(np.zeros([self.hidden_bag_size, self.hidden_units_list[0]],
-            #                                        dtype=np.float32)).to(self.device)
+            #                                        dtype=np.float32)).to(device)
             #if self.num_layers >= 2:
             #    self.hidden2_bag = torch.from_numpy(np.zeros([self.hidden_bag_size, self.hidden_units_list[1]],
-            #                                            dtype=np.float32)).to(self.device)
+            #                                            dtype=np.float32)).to(device)
             #if self.num_layers == 3:
             #    self.hidden3_bag = torch.from_numpy(np.zeros([self.hidden_bag_size, self.hidden_units_list[2]],
-            #                                            dtype=np.float32)).to(self.device)
+            #                                            dtype=np.float32)).to(device)
 
         def rolling_step(self):
             shuffled_indices = list(range(self.hidden_bag_size))

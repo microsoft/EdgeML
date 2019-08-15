@@ -189,6 +189,7 @@ class KeywordSpotter(nn.Module):
                     audio = audio.transpose(1, 0)  # GRU wants seq,batch,feature
 
                 if device:
+                    self.move_to(device)
                     audio = audio.to(device)
                     labels = labels.to(device)
 
