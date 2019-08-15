@@ -30,7 +30,7 @@ A sample [notebook](SRNN_Example.ipynb) and a corresponding command line script
 is provided for training. To run the command line script, please use:
   
 ```
-python SRNN_Example.py --data-dir ./GoogleSpeech/Extracted --brick-size 11
+python SRNN_Example.py --data-dir ./GoogleSpeech/Extracted/ --brick-size 11
 ```
 
 With the provided default configuration, you can expect a validation accuracy
