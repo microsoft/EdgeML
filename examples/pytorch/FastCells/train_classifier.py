@@ -204,6 +204,8 @@ class KeywordSpotter(nn.Module):
                 else:
                     self.init_hidden()
 
+                self.to(device) # sparsify routines might move param matrices to cpu
+
                 # Before the backward pass, use the optimizer object to zero all of the
                 # gradients for the variables it will update (which are the learnable
                 # weights of the model). This is because by default, gradients are
@@ -239,7 +241,7 @@ class KeywordSpotter(nn.Module):
                                 self.sparsifyWithSupport()
                         else:
                             self.sparsifyWithSupport()
-                    self.to(device) # sparsify routines might move param matrices to cpu
+                    self.to(device)
 
                 learning_rate = optimizer.param_groups[0]['lr']
                 if detail:
@@ -441,6 +443,7 @@ def train(config, evaluate_only=False, outdir=".", detail=False, azureml=False):
     if use_gpu:
         if torch.cuda.is_available():
             device = torch.device("cuda")
+            print(device)
         else:
             print("### CUDA not available!!")
 
