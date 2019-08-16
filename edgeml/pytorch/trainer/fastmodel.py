@@ -38,7 +38,6 @@ def get_model_class(inheritance_class=nn.Module):
             self.linear = linear
             self.batch_first = batch_first
             self.apply_softmax = apply_softmax
-            self.rnn_list = []
 
             if self.linear:
                 if not self.num_classes:
@@ -46,38 +45,21 @@ def get_model_class(inheritance_class=nn.Module):
 
             super(RNNClassifierModel, self).__init__()
 
-            # The FastGRNN takes audio sequences as input, and outputs hidden states
-            # with dimensionality hidden_units.
-            self.rnn1 = FastGRNN(self.input_dim, self.hidden_units_list[0],
-                                      gate_nonlinearity=self.gate_nonlinearity,
-                                      update_nonlinearity=self.update_nonlinearity,
-                                      wRank=self.wRank_list[0], uRank=self.uRank_list[0],
-                                      wSparsity=self.wSparsity_list[0], uSparsity=self.uSparsity_list[0],
-                                      batch_first = self.batch_first)
-            self.rnn_list.append(self.rnn1)
-            last_output_size = self.hidden_units_list[0]
-            if self.num_layers > 1:
-                self.rnn2 = FastGRNN(self.hidden_units_list[0], self.hidden_units_list[1],
-                                          gate_nonlinearity=self.gate_nonlinearity,
-                                          update_nonlinearity=self.update_nonlinearity,
-                                          wRank=self.wRank_list[1], uRank=self.uRank_list[1],
-                                          wSparsity=self.wSparsity_list[1], uSparsity=self.uSparsity_list[1],
-                                          batch_first = self.batch_first)
-                last_output_size = self.hidden_units_list[1]
-                self.rnn_list.append(self.rnn2)
-            if self.num_layers > 2:
-                self.rnn3 = FastGRNN(self.hidden_units_list[1], self.hidden_units_list[2],
-                                          gate_nonlinearity=self.gate_nonlinearity,
-                                          update_nonlinearity=self.update_nonlinearity,
-                                          wRank=self.wRank_list[2], uRank=self.uRank_list[2],
-                                          wSparsity=self.wSparsity_list[2], uSparsity=self.uSparsity_list[2],
-                                          batch_first = self.batch_first)
-                last_output_size = self.hidden_units_list[2]
-                self.rnn_list.append(self.rnn3)
+            self.rnn_list = nn.ModuleList([
+                FastGRNN(self.input_dim if l==0 else self.hidden_units_list[l-1], 
+                            self.hidden_units_list[l], 
+                            gate_nonlinearity=self.gate_nonlinearity,
+                            update_nonlinearity=self.update_nonlinearity,
+                            wRank=self.wRank_list[l], uRank=self.uRank_list[l],
+                            wSparsity=self.wSparsity_list[l],
+                            uSparsity=self.uSparsity_list[l],
+                            batch_first = self.batch_first)
+                for l in range(self.num_layers)])
 
             # The linear layer is a fully connected layer that maps from hidden state space
             # to number of expected keywords
             if self.linear:
+                last_output_size = self.hidden_units_list[self.num_layers-1]
                 self.hidden2keyword = nn.Linear(last_output_size, num_classes)
             self.init_hidden()
 
