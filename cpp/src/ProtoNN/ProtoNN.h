@@ -41,7 +41,7 @@ namespace EdgeML
 
     //
     // ProtoNNModel includes hyperparameters, parameters, and some state on initialization
-    //    
+    //
     class ProtoNNModel
     {
 
@@ -71,6 +71,7 @@ namespace EdgeML
 
         void setHyperParamsFromArgs(const int argc, const char** argv);
         void finalizeHyperParams();
+        void exitWithHelp();
 
         //
         // Create a string with hyperParam settings
@@ -115,7 +116,7 @@ namespace EdgeML
     class ProtoNNTrainer
     {
       ////////////////////////////////////////////////////////
-      // DO NOT REORDER model and data. 
+      // DO NOT REORDER model and data.
       // They should be in this order for constructors to work
       ProtoNNModel model;
       Data data;
@@ -236,7 +237,7 @@ namespace EdgeML
       void RBF();
 
       void setFromArgs(const int argc, const char** argv);
-  
+
       void createOutputDirs();
 
     public:
@@ -253,7 +254,7 @@ namespace EdgeML
 
       ~ProtoNNPredictor();
 
-      // Not thread safe      
+      // Not thread safe
       FP_TYPE testDenseDataPoint(
         const FP_TYPE *const values,
         const labelCount_t *const labels,
@@ -277,13 +278,13 @@ namespace EdgeML
         dataCount_t batchSize);
 
       ResultStruct testBatchWise();
-      
+
       ResultStruct testPointWise();
 
       ResultStruct test();
 
       void saveTopKScores(std::string filename="", int topk=5);
-      
+
       void normalize();
     };
   }
