@@ -189,6 +189,7 @@ class KeywordSpotter(nn.Module):
                     audio = audio.transpose(1, 0)  # GRU wants seq,batch,feature
 
                 if device:
+                    self.move_to(device)
                     audio = audio.to(device)
                     labels = labels.to(device)
 
@@ -203,6 +204,8 @@ class KeywordSpotter(nn.Module):
                     self.rolling_step()
                 else:
                     self.init_hidden()
+
+                self.to(device) # sparsify routines might move param matrices to cpu    
 
                 # Before the backward pass, use the optimizer object to zero all of the
                 # gradients for the variables it will update (which are the learnable
@@ -262,7 +265,7 @@ class KeywordSpotter(nn.Module):
         end = time.time()
         self.training = False
         print("Trained in {:.2f} seconds".format(end - start))
-        print("Model size {}".format(self.getModelSize()))
+        print("Model size {}".format(self.get_model_size()))
         return log
 
     def evaluate(self, test_data, batch_size, device=None, outfile=None):

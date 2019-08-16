@@ -126,7 +126,7 @@ class RNNCell(nn.Module):
     def getVars(self):
         raise NotImplementedError()
 
-    def getModelSize(self):
+    def get_model_size(self):
         '''
 		Function to get aimed model size
 		'''
@@ -136,11 +136,17 @@ class RNNCell(nn.Module):
 
         totalnnz = 2  # For Zeta and Nu
         for i in range(0, endW):
+            device = mats[i].device
             totalnnz += utils.countNNZ(mats[i].cpu(), self._wSparsity)
+            mats[i].to(device)
         for i in range(endW, endU):
+            device = mats[i].device
             totalnnz += utils.countNNZ(mats[i].cpu(), self._uSparsity)
+            mats[i].to(device)
         for i in range(endU, len(mats)):
+            device = mats[i].device
             totalnnz += utils.countNNZ(mats[i].cpu(), False)
+            mats[i].to(device)
         return totalnnz * 4
 
     def copy_previous_UW(self):
