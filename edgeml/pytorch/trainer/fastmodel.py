@@ -54,7 +54,6 @@ def get_model_class(inheritance_class=nn.Module):
                                       wRank=self.wRank_list[0], uRank=self.uRank_list[0],
                                       wSparsity=self.wSparsity_list[0], uSparsity=self.uSparsity_list[0],
                                       batch_first = self.batch_first)
-            self.rnn2 = None
             self.rnn_list.append(self.rnn1)
             last_output_size = self.hidden_units_list[0]
             if self.num_layers > 1:
@@ -66,7 +65,6 @@ def get_model_class(inheritance_class=nn.Module):
                                           batch_first = self.batch_first)
                 last_output_size = self.hidden_units_list[1]
                 self.rnn_list.append(self.rnn2)
-            self.rnn3 = None
             if self.num_layers > 2:
                 self.rnn3 = FastGRNN(self.hidden_units_list[1], self.hidden_units_list[2],
                                           gate_nonlinearity=self.gate_nonlinearity,
@@ -112,63 +110,53 @@ def get_model_class(inheritance_class=nn.Module):
 
         def init_hidden_bag(self, hidden_bag_size, device):
             self.hidden_bag_size = hidden_bag_size
-            self.hidden1_bag = torch.from_numpy(np.zeros([self.hidden_bag_size, self.hidden_units_list[0]],
-                                                    dtype=np.float32)).to(device)
-            if self.num_layers >= 2:
-                self.hidden2_bag = torch.from_numpy(np.zeros([self.hidden_bag_size, self.hidden_units_list[1]],
-                                                        dtype=np.float32)).to(device)
-            if self.num_layers == 3:
-                self.hidden3_bag = torch.from_numpy(np.zeros([self.hidden_bag_size, self.hidden_units_list[2]],
-                                                        dtype=np.float32)).to(device)
+            self.device = device
+            self.hidden_bags_list = []
+
+            for l in range(self.num_layers):
+                self.hidden_bags_list.append(
+                   torch.from_numpy(np.zeros([self.hidden_bag_size, self.hidden_units_list[l]],
+                                              dtype=np.float32)).to(self.device))
 
         def rolling_step(self):
             shuffled_indices = list(range(self.hidden_bag_size))
             np.random.shuffle(shuffled_indices)
-            if self.hidden1 is not None:
-                batch_size = self.hidden1.shape[0]
+            # if self.hidden1 is not None:
+            #     batch_size = self.hidden1.shape[0]
+            if self.hidden_states[0] is not None:
+                batch_size = self.hidden_states[0].shape[0]
                 temp_indices = shuffled_indices[:batch_size]
-                self.hidden1_bag[temp_indices, :] = self.hidden1
-                self.hidden1 = self.hidden1_bag[0:batch_size, :]
-                if self.num_layers >= 2:
-                    self.hidden2_bag[temp_indices, :] = self.hidden2
-                    self.hidden2 = self.hidden2_bag[0:batch_size, :]
-                if self.num_layers == 3:
-                    self.hidden3_bag[temp_indices, :] = self.hidden3
-                    self.hidden3 = self.hidden3_bag[0:batch_size, :]
+                for l in range(self.num_layers):
+                    bag = self.hidden_bags_list[l]
+                    bag[temp_indices, :] = self.hidden_states[l]
+                    self.hidden_states[l] = bag[0:batch_size, :]
 
         def init_hidden(self):
             """ Clear the hidden state for the GRU nodes """
-            self.hidden1 = None
-            self.hidden2 = None
-            self.hidden3 = None
+            # self.hidden1 = None
+            # self.hidden2 = None
+            # self.hidden3 = None
+            self.hidden_states = []
+            for l in range(self.num_layers):
+                self.hidden_states.append(None)
 
         def forward(self, input):
             """ Perform the forward processing of the given input and return the prediction """
             # input is shape: [seq,batch,feature]
             if self.mean is not None:
                 input = (input - self.mean) / self.std
-            rnn_out1 = self.rnn1(input, hiddenState=self.hidden1)
-            model_output = rnn_out1
-            # we have to detach the hidden states because we may keep them longer than 1 iteration.
-            self.hidden1 = rnn_out1.detach()[-1, :, :]
-            if self.tracking:
-                weights = self.rnn1.getVars()
-                rnn_out1 = onnx_exportable_rnn(input, weights, self.rnn1.cell, output=rnn_out1)
-                model_output = rnn_out1
-            if self.rnn2 is not None:
-                rnn_out2 = self.rnn2(rnn_out1, hiddenState=self.hidden2)
-                self.hidden2 = rnn_out2.detach()[-1, :, :]
+
+            rnn_in = input
+            for l in range(self.num_layers):
+                rnn = self.rnn_list[l]
+                model_output = rnn(rnn_in, hiddenState=self.hidden_states[l])
+                self.hidden_states[l] = model_output.detach()[-1, :, :]
                 if self.tracking:
-                    weights = self.rnn2.getVars()
-                    rnn_out2 = onnx_exportable_rnn(rnn_out1, weights, self.rnn2.cell, output=rnn_out2)
-                model_output = rnn_out2
-            if self.rnn3 is not None:
-                rnn_out3 = self.rnn3(rnn_out2, hiddenState=self.hidden3)
-                self.hidden3 = rnn_out3.detach()[-1, :, :]
-                if self.tracking:
-                    weights = self.rnn3.getVars()
-                    rnn_out3 = onnx_exportable_rnn(rnn_out2, weights, self.rnn3.cell, output=rnn_out3)
-                model_output = rnn_out3
+                    weights = rnn.getVars()
+                    model_output = onnx_exportable_rnn(rnn_in, weights,
+                                                       rnn.cell, output=model_output)
+                rnn_in = model_output
+
             if self.linear:
                 model_output = self.hidden2keyword(model_output[-1, :, :])
             if self.apply_softmax:
