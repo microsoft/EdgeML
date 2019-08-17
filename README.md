@@ -1,4 +1,4 @@
-## Edge Machine Learning
+## The Edge Machine Learning library
 
 This repository provides code for machine learning algorithms for edge devices
 developed at [Microsoft Research
@@ -10,7 +10,7 @@ models are desirable is resource-scarce devices and sensors in the Internet
 of Things (IoT) setting. Making real-time predictions locally on IoT devices 
 without connecting to the cloud requires models that fit in a few kilobytes.
 
-###Contents
+### Contents
 Algorithms that shine in this setting in terms of both model size and compute, namely:
  - **Bonsai**: Strong and shallow non-linear tree based classifier.
  - **ProtoNN**: **Proto**type based k-nearest neighbors (k**NN**) classifier. 
@@ -28,7 +28,7 @@ A tool that adapts models trained by above algorithms to be inferred by fixed po
 
 Applications demonstrating usecases of these algorithms.
 
-###Organization
+### Organization
  - The `edgem_tf` directory contains the graphs and models in TensorFlow,
 	and `examples/tf` contains examples and scripts that illustrate their usage.
  - The `edgeml` directory contains the graphs and models in TensorFlow,
@@ -39,7 +39,7 @@ Applications demonstrating usecases of these algorithms.
  - The `applications` directory has code/demonstrations of applications of the EdgeML algorithms. 
  - The `Tools/SeeDot` directory has the quantization tool to generate fixed-point inference code.  
 
-###Details and project pages
+### Details and project pages
 For details, please see our [wiki page](https://github.com/Microsoft/EdgeML/wiki/),
 our ICML'17 publications on [Bonsai](docs/publications/Bonsai.pdf) and
 [ProtoNN](docs/publications/ProtoNN.pdf) algorithms, 
@@ -54,7 +54,7 @@ to this [project](https://microsoft.github.io/EdgeML/). Also see project page at
 Please also checkout the [ELL](https://github.com/Microsoft/ELL) which can
 provide optimized binaries for the models trained by this library.
 
-###Contributors:
+### Contributors:
 Algorithms, applications and tools were contributed by:
   - [Don Dennis](https://dkdennis.xyz)
   - [Sridhar Gopinath](http://www.sridhargopinath.in/)
