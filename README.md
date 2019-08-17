@@ -31,7 +31,7 @@ Applications demonstrating usecases of these algorithms.
 ### Organization
  - The `edgem_tf` directory contains the graphs and models in TensorFlow,
 	and `examples/tf` contains examples and scripts that illustrate their usage.
- - The `edgeml` directory contains the graphs and models in TensorFlow,
+ - The `edgeml` directory contains the graphs and models in PyTorch,
 	and `examples/pytorch` contains examples and scripts that illustrate their usage.
  - The `cpp` directory has training and inference code for Bonsai and
 	ProtoNN algorithms in C++. Please see install/run instruction in the Readme
@@ -52,7 +52,7 @@ and PLDI'19 publication on [SeeDot](docs/publications/SeeDot.pdf).
 
 
 Checkout the [ELL](https://github.com/Microsoft/ELL) project which can
-provide optimized binaries for the models trained by this library.
+provide optimized binaries for some of the ONNX models trained by this library.
 
 ### Contributors:
 Code for algorithms, applications and tools here was contributed by:
