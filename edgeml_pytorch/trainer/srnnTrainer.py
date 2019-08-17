@@ -5,7 +5,7 @@ import torch
 import numpy as np
 import os
 import sys
-import edgeml.pytorch.utils as utils
+import edgeml_pytorch.utils as utils
 
 
 class SRNNTrainer:

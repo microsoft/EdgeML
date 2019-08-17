@@ -55,7 +55,7 @@ Checkout the [ELL](https://github.com/Microsoft/ELL) project which can
 provide optimized binaries for some of the ONNX models trained by this library.
 
 ### Contributors:
-Code for algorithms, applications and tools here was contributed by:
+Code for algorithms, applications and tools was contributed by:
   - [Don Dennis](https://dkdennis.xyz)
   - [Sridhar Gopinath](http://www.sridhargopinath.in/)
   - [Chirag Gupta](https://aigen.github.io/)
@@ -64,8 +64,7 @@ Code for algorithms, applications and tools here was contributed by:
   - [Shishir Patil](https://shishirpatil.github.io/)
   - [Harsha Vardhan Simhadri](http://harsha-simhadri.org)
 
-[People](https://github.com/Microsoft/EdgeML/wiki/People/) who have contributed to this project. 
-New contributors welcome.
+[Contributors](https://github.com/Microsoft/EdgeML/wiki/People/) to this project. New contributors welcome.
 
 Please [email us](mailto:edgeml@microsoft.com) your comments, criticism, and questions.
 

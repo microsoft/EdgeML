@@ -6,7 +6,7 @@ import sys
 import os
 import numpy as np
 import tensorflow as tf
-import edgeml.tf.utils as utils
+import edgeml_tf.utils as utils
 import argparse
 
 

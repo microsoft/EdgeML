@@ -5,8 +5,8 @@ import os
 import sys
 import torch
 import torch.nn as nn
-import edgeml.pytorch.utils as utils
-from edgeml.pytorch.graph.rnn import *
+import edgeml_pytorch.utils as utils
+from edgeml_pytorch.graph.rnn import *
 import numpy as np
 
 

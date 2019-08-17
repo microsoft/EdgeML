@@ -6,12 +6,12 @@ import tensorflow as tf
 import numpy as np
 import sys
 
-from edgeml.tf.trainer.fastTrainer import FastTrainer
-from edgeml.tf.graph.rnn import FastGRNNCell
-from edgeml.tf.graph.rnn import FastRNNCell
-from edgeml.tf.graph.rnn import UGRNNLRCell
-from edgeml.tf.graph.rnn import GRULRCell
-from edgeml.tf.graph.rnn import LSTMLRCell
+from edgeml_tf.trainer.fastTrainer import FastTrainer
+from edgeml_tf.graph.rnn import FastGRNNCell
+from edgeml_tf.graph.rnn import FastRNNCell
+from edgeml_tf.graph.rnn import UGRNNLRCell
+from edgeml_tf.graph.rnn import GRULRCell
+from edgeml_tf.graph.rnn import LSTMLRCell
 
 
 def main():

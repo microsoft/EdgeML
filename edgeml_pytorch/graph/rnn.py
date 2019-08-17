@@ -6,7 +6,7 @@ import torch.nn as nn
 from torch.autograd import Function
 import numpy as np
 
-import edgeml.pytorch.utils as utils
+import edgeml_pytorch.utils as utils
 
 def onnx_exportable_rnn(input, fargs, cell, output):
     class RNNSymbolic(Function):

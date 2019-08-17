@@ -5,8 +5,8 @@ import helpermethods
 import tensorflow as tf
 import numpy as np
 import sys
-from edgeml.tf.trainer.bonsaiTrainer import BonsaiTrainer
-from edgeml.tf.graph.bonsai import Bonsai
+from edgeml_tf.trainer.bonsaiTrainer import BonsaiTrainer
+from edgeml_tf.graph.bonsai import Bonsai
 
 
 def main():

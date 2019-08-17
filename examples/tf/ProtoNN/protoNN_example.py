@@ -6,9 +6,9 @@ import sys
 import os
 import numpy as np
 import tensorflow as tf
-from edgeml.tf.trainer.protoNNTrainer import ProtoNNTrainer
-from edgeml.tf.graph.protoNN import ProtoNN
-import edgeml.tf.utils as utils
+from edgeml_tf.trainer.protoNNTrainer import ProtoNNTrainer
+from edgeml_tf.graph.protoNN import ProtoNN
+import edgeml_tf.utils as utils
 import helpermethods as helper
 
 

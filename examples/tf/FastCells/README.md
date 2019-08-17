@@ -5,7 +5,7 @@ FastCells (FastRNN & FastGRNN) developed as part of EdgeML along with modified
 UGRNN, GRU and LSTM to support the LSQ training routine. 
 Also, we include a sample cleanup and use-case on the USPS10 public dataset.
 
-`edgeml.tf.graph.rnn` implements the custom RNN cells of **FastRNN** ([`FastRNNCell`](../../edgeml/graph/rnn.py#L215)) and **FastGRNN** ([`FastGRNNCell`](../../edgeml/graph/rnn.py#L40)) with
+`edgeml_tf.graph.rnn` implements the custom RNN cells of **FastRNN** ([`FastRNNCell`](../../edgeml/graph/rnn.py#L215)) and **FastGRNN** ([`FastGRNNCell`](../../edgeml/graph/rnn.py#L40)) with
 multiple additional features like Low-Rank parameterisation, custom
 non-linearities etc., Similar to Bonsai and ProtoNN, the three-phase training
 routine for FastRNN and FastGRNN is decoupled from the custom cells to
@@ -14,7 +14,7 @@ architectures (NMT, Encoder-Decoder etc.,) in place of the inbuilt `RNNCell`, `G
 `edgeml.graph.rnn` also contains modified RNN cells of **UGRNN** ([`UGRNNLRCell`](../../edgeml/graph/rnn.py#L862)), 
 **GRU** ([`GRULRCell`](../../edgeml/graph/rnn.py#L635)) and **LSTM** ([`LSTMLRCell`](../../edgeml/graph/rnn.py#L376)). These cells also can be substituted for FastCells where ever feasible. 
 
-For training FastCells, `edgeml.tf.trainer.fastTrainer` implements the three-phase
+For training FastCells, `edgeml_tf.trainer.fastTrainer` implements the three-phase
 FastCell training routine in Tensorflow. A simple example,
 `examples/tf/fastcell_example.py` is provided to illustrate its usage.
 

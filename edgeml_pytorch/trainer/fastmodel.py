@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import sys
-from edgeml.pytorch.graph.rnn import *
+from edgeml_pytorch.graph.rnn import *
 
 def get_model_class(inheritance_class=nn.Module):
     class RNNClassifierModel(inheritance_class):

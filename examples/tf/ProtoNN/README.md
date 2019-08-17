@@ -4,11 +4,11 @@ This directory includes an example [notebook](protoNN_example.ipynb)  and a
 command line execution script of ProtoNN developed as part of EdgeML. The
 example is based on the USPS dataset.
 
-`edgeml.tf.graph.protoNN` implements the ProtoNN prediction graph in Tensorflow.
+`edgeml_tf.graph.protoNN` implements the ProtoNN prediction graph in Tensorflow.
 The training routine for ProtoNN is decoupled from the forward graph to
 facilitate a plug and play behaviour wherein ProtoNN can be combined with or
 used as a final layer classifier for other architectures (RNNs, CNNs). The
-training routine is implemented in `edgeml.tf.trainer.protoNNTrainer`.
+training routine is implemented in `edgeml_tf.trainer.protoNNTrainer`.
 
 Note that, `protoNN_example.py` assumes the data to be in a specific format.  It
 is assumed that train and test data is contained in two files, `train.npy` and
