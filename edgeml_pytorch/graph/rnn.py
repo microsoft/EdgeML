@@ -13,7 +13,7 @@ def onnx_exportable_rnn(input, fargs, cell, output):
         @staticmethod
         def symbolic(g, *fargs):
             # NOTE: args/kwargs contain RNN parameters
-            return g.op(cell.name, *fargs, 
+            return g.op(cell.name, *fargs,
                         outputs=1, hidden_size_i=cell.state_size,
                         wRank_i=cell.wRank, uRank_i=cell.uRank,
                         gate_nonlinearity_s=cell.gate_nonlinearity,
@@ -61,7 +61,7 @@ def gen_nonlinearity(A, nonlinearity):
 
 class RNNCell(nn.Module):
     def __init__(self, input_size, hidden_size,
-                 gate_nonlinearity, update_nonlinearity, 
+                 gate_nonlinearity, update_nonlinearity,
                  num_W_matrices, num_U_matrices,
                  wRank=None, uRank=None,
                  wSparsity=1.0, uSparsity=1.0):
@@ -70,16 +70,16 @@ class RNNCell(nn.Module):
         self._hidden_size = hidden_size
         self._gate_nonlinearity = gate_nonlinearity
         self._update_nonlinearity = update_nonlinearity
-        #self._num_weight_matrices = num_weight_matrices
+        #self._num_weight_matrices = [1,1]
         self._num_W_matrices = num_W_matrices
         self._num_U_matrices = num_U_matrices
         self._wRank = wRank
         self._uRank = uRank
-        self._wSparsity = wSparsity 
+        self._wSparsity = wSparsity
         self._uSparsity = uSparsity
         self.oldmats = []
 
-    
+
     @property
     def state_size(self):
         return self._hidden_size
@@ -158,7 +158,7 @@ class RNNCell(nn.Module):
         for i in range(num_mats):
             self.oldmats[i] = torch.FloatTensor(np.copy(mats[i].data.cpu().detach().numpy()))
             self.oldmats[i].to(mats[i].device)
-     
+
     def sparsify(self):
         mats = self.getVars()
         endW = self._num_W_matrices
@@ -188,7 +188,7 @@ class FastGRNNCell(RNNCell):
 
     wRank = rank of W matrix (creates two matrices if not None)
     uRank = rank of U matrix (creates two matrices if not None)
-    
+
     wSparsity = intended sparsity of W matrix(ces)
     uSparsity = intended sparsity of U matrix(ces)
     Warning:
@@ -225,6 +225,7 @@ class FastGRNNCell(RNNCell):
         if uRank is not None:
             self._num_U_matrices += 1
         self._name = name
+        self.num_weight_matrices = [self._num_W_matrices, self._num_U_matrices]
 
         if wRank is None:
             self.W = nn.Parameter(0.1 * torch.randn([hidden_size, input_size]))
@@ -237,7 +238,7 @@ class FastGRNNCell(RNNCell):
         else:
             self.U1 = nn.Parameter(0.1 * torch.randn([uRank, hidden_size]))
             self.U2 = nn.Parameter(0.1 * torch.randn([hidden_size, uRank]))
-            
+
         self.bias_gate = nn.Parameter(torch.ones([1, hidden_size]))
         self.bias_update = nn.Parameter(torch.ones([1, hidden_size]))
         self.zeta = nn.Parameter(self._zetaInit * torch.ones([1, 1]))
@@ -304,7 +305,7 @@ class FastRNNCell(RNNCell):
 
     wRank = rank of W matrix (creates two matrices if not None)
     uRank = rank of U matrix (creates two matrices if not None)
-     
+
     wSparsity = intended sparsity of W matrix(ces)
     uSparsity = intended sparsity of U matrix(ces)
     Warning:
@@ -330,7 +331,7 @@ class FastRNNCell(RNNCell):
                  update_nonlinearity="tanh", wRank=None, uRank=None,
                  wSparsity=1.0, uSparsity=1.0, alphaInit=-3.0, betaInit=3.0,
                  name="FastRNN"):
-        super(FastGRNNCell, self).__init__(input_size, hidden_size, 
+        super(FastGRNNCell, self).__init__(input_size, hidden_size,
                                            None, update_nonlinearity,
                                            1, 1, wRank, uRank, wSparsity, uSparsity)
 
@@ -977,8 +978,8 @@ class FastGRNN(nn.Module):
         self.cell = FastGRNNCell(input_size, hidden_size,
                                  gate_nonlinearity=gate_nonlinearity,
                                  update_nonlinearity=update_nonlinearity,
-                                 wRank=wRank, uRank=uRank, 
-                                 wSparsity=wSparsity, uSparsity=uSparsity, 
+                                 wRank=wRank, uRank=uRank,
+                                 wSparsity=wSparsity, uSparsity=uSparsity,
                                  zetaInit=zetaInit, nuInit=nuInit)
         self.unrollRNN = BaseRNN(self.cell, batch_first=batch_first)
 
@@ -1014,13 +1015,13 @@ class SRNN2(nn.Module):
         if dropoutProbability0 != None:
             assert 0 < dropoutProbability0 <= 1.0
         if dropoutProbability1 != None:
-            assert 0 < dropoutProbability1 <= 1.0 
+            assert 0 < dropoutProbability1 <= 1.0
         self.cellArgs = {}
         self.cellArgs.update(cellArgs)
         supportedCells = ['LSTM', 'FastRNNCell', 'FastGRNNCell', 'GRULRCell']
         assert cellType in supportedCells, 'Currently supported cells: %r' % supportedCells
         self.cellType = cellType
-        
+
         if self.cellType == 'LSTM':
             self.rnnClass = nn.LSTM
         elif self.cellType == 'FastRNNCell':
