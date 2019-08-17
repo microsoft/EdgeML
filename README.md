@@ -55,7 +55,7 @@ Checkout the [ELL](https://github.com/Microsoft/ELL) project which can
 provide optimized binaries for some of the ONNX models trained by this library.
 
 ### Contributors:
-Code for algorithms, applications and tools was contributed by:
+Code for algorithms, applications and tools contributed by:
   - [Don Dennis](https://dkdennis.xyz)
   - [Sridhar Gopinath](http://www.sridhargopinath.in/)
   - [Chirag Gupta](https://aigen.github.io/)
@@ -68,7 +68,7 @@ Code for algorithms, applications and tools was contributed by:
 
 Please [email us](mailto:edgeml@microsoft.com) your comments, criticism, and questions.
 
-If you use software from this library in your work, please cite us using this BibTex entry:
+If you use software from this library in your work, please use the BibTex entry below for citation.
 
 ```
 @software{edgeml01,
@@ -76,7 +76,7 @@ If you use software from this library in your work, please cite us using this Bi
       Kumar, Ashish and Kusupati, Aditya and Patil, Shishir G and Simhadri, Harsha Vardhan}},
    title = {{EdgeML: Machine Learning for resource-constrained edge devices}},
    url = {https://github.com/Microsoft/EdgeML},
-   version = {0.1},
+   version = {0.2},
 }
 ```
 
