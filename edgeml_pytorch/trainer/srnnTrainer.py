@@ -110,7 +110,7 @@ class SRNNTrainer:
                     print("Epoch %d batch %d loss %f acc %f" % (epoch, i, loss,
                                                                acc))
             # Perform validation set evaluation
-            if (epoch + 1) % valStep == 0:
+            if (epoch + 1) % valStep == 0 or (epoch == epochs - 1):
                 numCorrect = 0
                 for i in range(len(x_val_batches)):
                     x_batch, y_batch = x_val_batches[i], y_val_batches[i]
