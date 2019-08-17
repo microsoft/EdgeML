@@ -29,7 +29,7 @@ A tool that adapts models trained by above algorithms to be inferred by fixed po
 Applications demonstrating usecases of these algorithms.
 
 ### Organization
- - The `edgem_tf` directory contains the graphs and models in TensorFlow,
+ - The `edgeml_tf` directory contains the graphs and models in TensorFlow,
 	and `examples/tf` contains examples and scripts that illustrate their usage.
  - The `edgeml` directory contains the graphs and models in PyTorch,
 	and `examples/pytorch` contains examples and scripts that illustrate their usage.
