@@ -6,7 +6,7 @@ Tensorflow library. This document **does not** seek to be a comprehensive
 documentation of the EMI-RNN code base.
 
 For a quick and dirty 'getting started' example please refer to
-`examples/tf/EMI-RNN` directory.
+[EMI_RNN](../examples/tf/EMI-RNN) directory.
 
 ![MIML Formulation of Bags and Instances](img/MIML_illustration.png)
 
@@ -56,7 +56,7 @@ shape,
     [Num. of examples, Num. of instances, Num. classes]
 
 As a concrete end to end example, please refer to
-`examples/tf/EMI-RNN/fetch_har.py`.
+[EMI_RNN/fetch_har.py](../examples/tf/EMI-RNN/fetch_har.py).
 
 ## Training
 
@@ -181,8 +181,8 @@ matrices is also supported. This is achieved by attaching `tf.assign`
 operations to all the model tensors. Please have a look at `addAssignOps`
 method of `DataPipeline`, `EMI_RNN` and `EMI_Trainer` for more information.
 
-Please refer to `examples/tf/EMI-RNN/02_emi_lstm_initialization_and_restoring.ipynb` for
-example usages.
+Please refer to [EMI_RNN/02_emi_lstm_initialization_and_restoring.ipynb](../examples/tf/EMI-RNN/02_emi_lstm_initialization_and_restoring.ipynb)
+for example usages.
 
 ## Evaluating the  trained model
 
@@ -210,4 +210,4 @@ Early prediction is accomplished by defining an early prediction policy method.
 This method receives the prediction at each step of the learned RNN for a
 sub-instance as input and is expected to return a predicted class and the
 0-indexed step at which it made this prediction.  Please refer to the
-`tf/examples/EMI-RNN` for concrete examples of the same.
+[EMI-RNN](../examples/tf/EMI-RNN) for concrete examples of the same.
