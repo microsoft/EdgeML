@@ -851,14 +851,16 @@ class BaseRNN(nn.Module):
 
     def forward(self, input, hiddenState=None,
                 cellState=None):
-        if self._batch_first is True:
-            self.device = input.device
-            hiddenStates = torch.zeros(
+        self.device = input.device
+        hiddenStates = torch.zeros(
                 [input.shape[0], input.shape[1],
                  self._RNNCell.output_size]).to(self.device)
-            if hiddenState is None:
-                hiddenState = torch.zeros([input.shape[0],
-                                           self._RNNCell.output_size]).to(self.device)
+        if hiddenState is None:
+                hiddenState = torch.zeros(
+                    [input.shape[0] if self._batch_first else input.shape[1],
+                    self._RNNCell.output_size]).to(self.device)
+
+        if self._batch_first is True:
             if self._RNNCell.cellType == "LSTMLR":
                 cellStates = torch.zeros(
                     [input.shape[0], input.shape[1],
@@ -878,13 +880,6 @@ class BaseRNN(nn.Module):
                     hiddenStates[:, i, :] = hiddenState
                 return hiddenStates
         else:
-            self.device = input.device
-            hiddenStates = torch.zeros(
-                [input.shape[0], input.shape[1],
-                 self._RNNCell.output_size]).to(self.device)
-            if hiddenState is None:
-                hiddenState = torch.zeros([input.shape[1],
-                                           self._RNNCell.output_size]).to(self.device)
             if self._RNNCell.cellType == "LSTMLR":
                 cellStates = torch.zeros(
                     [input.shape[0], input.shape[1],
