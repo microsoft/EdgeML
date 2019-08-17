@@ -40,16 +40,17 @@ Applications demonstrating usecases of these algorithms.
  - The `Tools/SeeDot` directory has the quantization tool to generate fixed-point inference code.  
 
 ### Details and project pages
-For details, please see our [wiki page](https://github.com/Microsoft/EdgeML/wiki/),
+For details, please see our [project page](https://microsoft.github.io/EdgeML/)
+and [wiki](https://github.com/Microsoft/EdgeML/wiki/).
 our ICML'17 publications on [Bonsai](docs/publications/Bonsai.pdf) and
 [ProtoNN](docs/publications/ProtoNN.pdf) algorithms, 
 NeurIPS'18 publications on [EMI-RNN](docs/publications/emi-rnn-nips18.pdf) and
 [FastGRNN](docs/publications/FastGRNN.pdf),
 and PLDI'19 publication on [SeeDot](docs/publications/SeeDot.pdf).
 
-[People](https://github.com/Microsoft/EdgeML/wiki/People/) who have contributed
-to this [project](https://microsoft.github.io/EdgeML/). Also see project page at
-[Microsoft Research](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
+[People](https://github.com/Microsoft/EdgeML/wiki/People/) who have contributed to this project.
+Also see
+[Microsoft Research page](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
 
 Please also checkout the [ELL](https://github.com/Microsoft/ELL) which can
 provide optimized binaries for the models trained by this library.
