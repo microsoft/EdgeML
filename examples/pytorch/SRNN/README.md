@@ -5,9 +5,9 @@ This directory includes an example [notebook](SRNN_Example.ipynb)  and a
 training a simple model on the [Google Speech Commands
 Dataset](https://ai.googleblog.com/2017/08/launching-speech-commands-dataset.html).
 
-`edgeml.pytorch.graph.rnn.SRNN2` implements a 2 layer SRNN network. We will use
+`edgeml_pytorch.graph.rnn.SRNN2` implements a 2 layer SRNN network. We will use
 this with an LSTM cell on this dataset. The training routine for SRNN is
-implemented in `edgeml.pytorch.trainer.srnnTrainer` and will be used as part of
+implemented in `edgeml_pytorch.trainer.srnnTrainer` and will be used as part of
 this example.
 
 **Tested With:** pytorch > 1.1.0 with Python 2 and Python 3

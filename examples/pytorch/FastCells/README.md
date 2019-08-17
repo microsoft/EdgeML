@@ -5,21 +5,21 @@ FastCells (FastRNN & FastGRNN) developed as part of EdgeML along with modified
 UGRNN, GRU and LSTM to support the LSQ training routine. 
 Also, we include a sample cleanup and use-case on the USPS10 public dataset.
 
-`edgeml.pytorch.graph.rnn` implements the custom RNN cells of **FastRNN** ([`FastRNNCell`](../../pytorch_edgeml/graph/rnn.py#L226)) and **FastGRNN** ([`FastGRNNCell`](../../pytorch_edgeml/graph/rnn.py#L80)) with
+`edgeml_pytorch.graph.rnn` implements the custom RNN cells of **FastRNN** ([`FastRNNCell`](../../pytorch_edgeml/graph/rnn.py#L226)) and **FastGRNN** ([`FastGRNNCell`](../../pytorch_edgeml/graph/rnn.py#L80)) with
 multiple additional features like Low-Rank parameterisation, custom
 non-linearities etc., Similar to Bonsai and ProtoNN, the three-phase training
 routine for FastRNN and FastGRNN is decoupled from the custom cells to
 facilitate a plug and play behaviour of the custom RNN cells in other
 architectures (NMT, Encoder-Decoder etc.,) in place of the inbuilt `RNNCell`, `GRUCell`, `BasicLSTMCell` etc., 
-`edgeml.pytorch.graph.rnn` also contains modified RNN cells of **UGRNN** ([`UGRNNLRCell`](../../pytorch_edgeml/graph/rnn.py#L742)), 
+`edgeml_pytorch.graph.rnn` also contains modified RNN cells of **UGRNN** ([`UGRNNLRCell`](../../pytorch_edgeml/graph/rnn.py#L742)), 
 **GRU** ([`GRULRCell`](../../edgeml/graph/rnn.py#L565)) and **LSTM** ([`LSTMLRCell`](../../pytorch_edgeml/graph/rnn.py#L369)). These cells also can be substituted for FastCells where ever feasible. 
 
-`edgeml.pytorch.graph.rnn` also contains fully wrapped RNNs which are equivalent to `nn.LSTM` and `nn.GRU`. Implemented cells:
-**FastRNN** ([`FastRNN`](../../pytorch_edgeml/graph/rnn.py#L968)), **FastGRNN** ([`FastGRNN`](../../pytorch_edgeml/graph/rnn.py#L993)), **UGRNN** ([`UGRNN`](../../edgeml.pytorch/graph/rnn.py#L945)), **GRU** ([`GRU`](../../edgeml/graph/rnn.py#L922)) and **LSTM** ([`LSTM`](../../pytorch_edgeml/graph/rnn.py#L899)).
+`edgeml_pytorch.graph.rnn` also contains fully wrapped RNNs which are equivalent to `nn.LSTM` and `nn.GRU`. Implemented cells:
+**FastRNN** ([`FastRNN`](../../pytorch_edgeml/graph/rnn.py#L968)), **FastGRNN** ([`FastGRNN`](../../pytorch_edgeml/graph/rnn.py#L993)), **UGRNN** ([`UGRNN`](../../edgeml_pytorch/graph/rnn.py#L945)), **GRU** ([`GRU`](../../edgeml/graph/rnn.py#L922)) and **LSTM** ([`LSTM`](../../pytorch_edgeml/graph/rnn.py#L899)).
 
-Note that all the cells and wrappers (when used independently from `fastcell_example.py` or `edgeml.pytorch.trainer.fastTrainer`) take in data in a batch first format ie., [batchSize, timeSteps, inputDims] by default but it can also support [timeSteps, batchSize, inputDims] format by setting `batch_first` argument to False when used. `fast_example.py` automatically takes care it while assuming the standard format between tf, c++ and pytorch.
+Note that all the cells and wrappers (when used independently from `fastcell_example.py` or `edgeml_pytorch.trainer.fastTrainer`) take in data in a batch first format ie., [batchSize, timeSteps, inputDims] by default but it can also support [timeSteps, batchSize, inputDims] format by setting `batch_first` argument to False when used. `fast_example.py` automatically takes care it while assuming the standard format between tf, c++ and pytorch.
 
-For training FastCells, `edgeml.pytorch.trainer.fastTrainer` implements the three-phase
+For training FastCells, `edgeml_pytorch.trainer.fastTrainer` implements the three-phase
 FastCell training routine in PyTorch. A simple example,
 `examples/fastcell_example.py` is provided to illustrate its usage.
 

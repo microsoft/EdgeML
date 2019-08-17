@@ -27,7 +27,7 @@ from torch.autograd import Variable, Function
 from torch.utils.data import Dataset, DataLoader
 
 from training_config import TrainingConfig
-from edgeml.pytorch.trainer.fastmodel import *
+from edgeml_pytorch.trainer.fastmodel import *
 
 class KeywordSpotter(nn.Module):
     """ This baseclass provides the PyTorch Module pattern for defining and training keyword spotters """

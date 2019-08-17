@@ -7,9 +7,9 @@ import os
 import numpy as np
 import torch
 
-from edgeml.pytorch.graph.rnn import SRNN2
-from edgeml.pytorch.trainer.srnnTrainer import SRNNTrainer
-import edgeml.pytorch.utils as utils
+from edgeml_pytorch.graph.rnn import SRNN2
+from edgeml_pytorch.trainer.srnnTrainer import SRNNTrainer
+import edgeml_pytorch.utils as utils
 import helpermethods as helper
 
 config = helper.getSRNN2Args()

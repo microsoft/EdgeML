@@ -5,8 +5,8 @@ import helpermethods
 import torch
 import numpy as np
 import sys
-from edgeml.pytorch.graph.rnn import *
-from edgeml.pytorch.trainer.fastTrainer import FastTrainer
+from edgeml_pytorch.graph.rnn import *
+from edgeml_pytorch.trainer.fastTrainer import FastTrainer
 
 
 def main():

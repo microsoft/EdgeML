@@ -5,7 +5,7 @@ from __future__ import print_function
 import sys
 import os
 import numpy as np
-import edgeml.pytorch.utils as utils
+import edgeml_pytorch.utils as utils
 import argparse
 
 

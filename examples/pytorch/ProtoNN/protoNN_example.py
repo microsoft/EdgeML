@@ -5,9 +5,9 @@ from __future__ import print_function
 import sys
 import os
 import numpy as np
-from edgeml.pytorch.trainer.protoNNTrainer import ProtoNNTrainer
-from edgeml.pytorch.graph.protoNN import ProtoNN
-import edgeml.pytorch.utils as utils
+from edgeml_pytorch.trainer.protoNNTrainer import ProtoNNTrainer
+from edgeml_pytorch.graph.protoNN import ProtoNN
+import edgeml_pytorch.utils as utils
 import helpermethods as helper
 import torch
 

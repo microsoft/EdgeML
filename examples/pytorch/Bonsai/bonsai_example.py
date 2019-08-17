@@ -4,8 +4,8 @@
 import helpermethods
 import numpy as np
 import sys
-from edgeml.pytorch.trainer.bonsaiTrainer import BonsaiTrainer
-from edgeml.pytorch.graph.bonsai import Bonsai
+from edgeml_pytorch.trainer.bonsaiTrainer import BonsaiTrainer
+from edgeml_pytorch.graph.bonsai import Bonsai
 import torch
 
 
