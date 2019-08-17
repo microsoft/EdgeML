@@ -31,7 +31,7 @@ Applications demonstrating usecases of these algorithms.
 ### Organization
  - The `edgeml_tf` directory contains the graphs and models in TensorFlow,
 	and `examples/tf` contains examples and scripts that illustrate their usage.
- - The `edgeml` directory contains the graphs and models in PyTorch,
+ - The `edgeml_pytorch` directory contains the graphs and models in PyTorch,
 	and `examples/pytorch` contains examples and scripts that illustrate their usage.
  - The `cpp` directory has training and inference code for Bonsai and
 	ProtoNN algorithms in C++. Please see install/run instruction in the Readme
