@@ -5,7 +5,7 @@ from __future__ import print_function
 import os
 import sys
 import tensorflow as tf
-import edgeml.tf.utils as utils
+import edgeml_tf.utils as utils
 import numpy as np
 
 

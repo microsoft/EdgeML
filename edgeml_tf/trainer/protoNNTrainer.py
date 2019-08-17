@@ -5,7 +5,7 @@ from __future__ import print_function
 import tensorflow as tf
 import numpy as np
 import sys
-import edgeml.tf.utils as utils
+import edgeml_tf.utils as utils
 
 
 class ProtoNNTrainer:
