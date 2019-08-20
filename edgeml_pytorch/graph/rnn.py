@@ -156,8 +156,7 @@ class RNNCell(nn.Module):
             for i in range(num_mats):
                 self.oldmats.append(torch.FloatTensor())
         for i in range(num_mats):
-            self.oldmats[i] = torch.FloatTensor(np.copy(mats[i].data.cpu().detach().numpy()))
-            self.oldmats[i].to(mats[i].device)
+            self.oldmats[i] = torch.FloatTensor(mats[i].detach().clone().to(mats[i].device))
 
     def sparsify(self):
         mats = self.getVars()

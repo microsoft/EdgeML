@@ -126,13 +126,13 @@ class BonsaiTrainer:
             __thrsdT).to(self.device)
 
         self.__thrsdW = torch.FloatTensor(
-            __thrsdW.clone().detach()).to(self.device)
+            __thrsdW.detach().clone()).to(self.device)
         self.__thrsdV = torch.FloatTensor(
-            __thrsdV.clone().detach()).to(self.device)
+            __thrsdV.detach().clone()).to(self.device)
         self.__thrsdZ = torch.FloatTensor(
-            __thrsdZ.clone().detach()).to(self.device)
+            __thrsdZ.detach().clone()).to(self.device)
         self.__thrsdT = torch.FloatTensor(
-            __thrsdT.clone().detach()).to(self.device)
+            __thrsdT.detach().clone()).to(self.device)
 
     def runSparseTraining(self):
         '''
