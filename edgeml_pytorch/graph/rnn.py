@@ -330,7 +330,7 @@ class FastRNNCell(RNNCell):
                  update_nonlinearity="tanh", wRank=None, uRank=None,
                  wSparsity=1.0, uSparsity=1.0, alphaInit=-3.0, betaInit=3.0,
                  name="FastRNN"):
-        super(FastGRNNCell, self).__init__(input_size, hidden_size, 
+        super(FastRNNCell, self).__init__(input_size, hidden_size, 
                                            None, update_nonlinearity,
                                            1, 1, wRank, uRank, wSparsity, uSparsity)
 
@@ -443,7 +443,7 @@ class LSTMLRCell(RNNCell):
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
                  wSparsity=1.0, uSparsity=1.0, name="LSTMLR"):
-        super(FastGRNNCell, self).__init__(input_size, hidden_size,
+        super(LSTMLRCell, self).__init__(input_size, hidden_size,
                                           gate_nonlinearity, update_nonlinearity,
                                           4, 4, wRank, uRank, wSparsity, uSparsity)
 
@@ -603,7 +603,7 @@ class GRULRCell(RNNCell):
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
                  wSparsity=1.0, uSparsity=1.0, name="GRULR"):
-        super(FastGRNNCell, self).__init__(input_size, hidden_size,
+        super(GRULRCell, self).__init__(input_size, hidden_size,
                                            gate_nonlinearity, update_nonlinearity,
                                            3, 3, wRank, uRank, wSparsity, uSparsity)
 
@@ -743,7 +743,7 @@ class UGRNNLRCell(RNNCell):
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
                  wSparsity=1.0, uSparsity=1.0, name="UGRNNLR"):
-        super(FastGRNNCell, self).__init__(input_size, hidden_size,
+        super(UGRNNLRCell, self).__init__(input_size, hidden_size,
                                           gate_nonlinearity, update_nonlinearity,
                                           2, 2, wRank, uRank, wSparsity, uSparsity)
 
