@@ -62,7 +62,7 @@ def gen_nonlinearity(A, nonlinearity):
 class RNNCell(nn.Module):
     def __init__(self, input_size, hidden_size,
                  gate_nonlinearity, update_nonlinearity,
-                 num_W_matrices, num_U_matrices,
+                 num_W_matrices, num_U_matrices, num_biases,
                  wRank=None, uRank=None,
                  wSparsity=1.0, uSparsity=1.0):
         super(RNNCell, self).__init__()
@@ -70,9 +70,11 @@ class RNNCell(nn.Module):
         self._hidden_size = hidden_size
         self._gate_nonlinearity = gate_nonlinearity
         self._update_nonlinearity = update_nonlinearity
-        #self._num_weight_matrices = [1,1]
         self._num_W_matrices = num_W_matrices
         self._num_U_matrices = num_U_matrices
+        self._num_biases = num_biases
+        self._num_weight_matrices = [self._num_W_matrices, self._num_U_matrices,
+                                     self._num_biases]
         self._wRank = wRank
         self._uRank = uRank
         self._wSparsity = wSparsity
@@ -216,15 +218,20 @@ class FastGRNNCell(RNNCell):
                  name="FastGRNN"):
         super(FastGRNNCell, self).__init__(input_size, hidden_size,
                                           gate_nonlinearity, update_nonlinearity,
-                                          1, 1, wRank, uRank, wSparsity, uSparsity)
+                                          1, 1, 1, wRank, uRank, wSparsity,
+                                          uSparsity)
         self._zetaInit = zetaInit
         self._nuInit = nuInit
         if wRank is not None:
             self._num_W_matrices += 1
+            self._num_weight_matrices[0] = self._num_W_matrices
         if uRank is not None:
             self._num_U_matrices += 1
+            self._num_weight_matrices[1] = self._num_U_matrices
+        if uRank and wRank:
+            self._num_biases += 1
+            self._num_weight_matrices[2] = self._num_biases
         self._name = name
-        self.num_weight_matrices = [self._num_W_matrices, self._num_U_matrices]
 
         if wRank is None:
             self.W = nn.Parameter(0.1 * torch.randn([hidden_size, input_size]))
@@ -332,14 +339,20 @@ class FastRNNCell(RNNCell):
                  name="FastRNN"):
         super(FastGRNNCell, self).__init__(input_size, hidden_size,
                                            None, update_nonlinearity,
-                                           1, 1, wRank, uRank, wSparsity, uSparsity)
+                                           1, 1, 1, wRank, uRank, wSparsity,
+                                           uSparsity)
 
         self._alphaInit = alphaInit
         self._betaInit = betaInit
         if wRank is not None:
             self._num_W_matrices += 1
+            self._num_weight_matrices[0] = self._num_W_matrices
         if uRank is not None:
             self._num_U_matrices += 1
+            self._num_weight_matrices[1] = self._num_U_matrices
+        if uRank and wRank:
+            self._num_biases += 1
+            self._num_weight_matrices[2] = self._num_biases
         self._name = name
 
         if wRank is None:
@@ -445,12 +458,18 @@ class LSTMLRCell(RNNCell):
                  wSparsity=1.0, uSparsity=1.0, name="LSTMLR"):
         super(FastGRNNCell, self).__init__(input_size, hidden_size,
                                           gate_nonlinearity, update_nonlinearity,
-                                          4, 4, wRank, uRank, wSparsity, uSparsity)
+                                          4, 4, 4, wRank, uRank, wSparsity,
+                                          uSparsity)
 
         if wRank is not None:
             self._num_W_matrices += 1
+            self._num_weight_matrices[0] = self._num_W_matrices
         if uRank is not None:
             self._num_U_matrices += 1
+            self._num_weight_matrices[1] = self._num_U_matrices
+        if uRank and wRank:
+            self._num_biases += 1
+            self._num_weight_matrices[2] = self._num_biases
         self._name = name
 
         if wRank is None:
@@ -605,12 +624,18 @@ class GRULRCell(RNNCell):
                  wSparsity=1.0, uSparsity=1.0, name="GRULR"):
         super(FastGRNNCell, self).__init__(input_size, hidden_size,
                                            gate_nonlinearity, update_nonlinearity,
-                                           3, 3, wRank, uRank, wSparsity, uSparsity)
+                                           3, 3, 3, wRank, uRank, wSparsity,
+                                           uSparsity)
 
         if wRank is not None:
             self._num_W_matrices += 1
+            self._num_weight_matrices[0] = self._num_W_matrices
         if uRank is not None:
             self._num_U_matrices += 1
+            self._num_weight_matrices[1] = self._num_U_matrices
+        if uRank and wRank:
+            self._num_biases += 1
+            self._num_weight_matrices[2] = self._num_biases
         self._name = name
 
         if wRank is None:
@@ -745,12 +770,17 @@ class UGRNNLRCell(RNNCell):
                  wSparsity=1.0, uSparsity=1.0, name="UGRNNLR"):
         super(FastGRNNCell, self).__init__(input_size, hidden_size,
                                           gate_nonlinearity, update_nonlinearity,
-                                          2, 2, wRank, uRank, wSparsity, uSparsity)
+                                          2, 2, 2, wRank, uRank, wSparsity, uSparsity)
 
         if wRank is not None:
             self._num_W_matrices += 1
+            self._num_weight_matrices[0] = self._num_W_matrices
         if uRank is not None:
             self._num_U_matrices += 1
+            self._num_weight_matrices[1] = self._num_U_matrices
+        if uRank and wRank:
+            self._num_biases += 1
+            self._num_weight_matrices[2] = self._num_biases
         self._name = name
 
         if wRank is None:
