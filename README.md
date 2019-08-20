@@ -29,20 +29,19 @@ A tool that adapts models trained by above algorithms to be inferred by fixed po
 Applications demonstrating usecases of these algorithms.
 
 ### Organization
- - The `edgeml_tf` directory contains the graphs and models in TensorFlow,
-	and `examples/tf` contains examples and scripts that illustrate their usage.
- - The `edgeml_pytorch` directory contains the graphs and models in PyTorch,
-	and `examples/pytorch` contains examples and scripts that illustrate their usage.
- - The `cpp` directory has training and inference code for Bonsai and
-	ProtoNN algorithms in C++. Please see install/run instruction in the Readme
-	pages within these directories.
+ - The `edgeml_tf` directory contains the specification of these architectures in TensorFlow,
+   and `examples/tf` contains sample training routines for these algorithms.
+ - The `edgeml_pytorch` directory contains the specification of these architectures in PyTorch,
+   and `examples/pytorch` contains sample training routines for these algorithms.
+ - The `cpp` directory has training and inference code for Bonsai and ProtoNN algorithms in C++.
  - The `applications` directory has code/demonstrations of applications of the EdgeML algorithms. 
- - The `Tools/SeeDot` directory has the quantization tool to generate fixed-point inference code.  
+ - The `tools/SeeDot` directory has the quantization tool to generate fixed-point inference code.  
+
+Please see install/run instructions in the README pages within these directories.
 
 ### Details and project pages
 For details, please see our
- [project page](https://microsoft.github.io/EdgeML/),
- [wiki](https://github.com/Microsoft/EdgeML/wiki/), and
+ [project page](https://microsoft.github.io/EdgeML/) and
  [Microsoft Research page](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
 our ICML'17 publications on [Bonsai](docs/publications/Bonsai.pdf) and
 [ProtoNN](docs/publications/ProtoNN.pdf) algorithms, 
@@ -64,7 +63,7 @@ Code for algorithms, applications and tools contributed by:
   - [Shishir Patil](https://shishirpatil.github.io/)
   - [Harsha Vardhan Simhadri](http://harsha-simhadri.org)
 
-[Contributors](https://github.com/Microsoft/EdgeML/wiki/People/) to this project. New contributors welcome.
+[Contributors](https://microsoft.github.io/EdgeML/People) to this project. New contributors welcome.
 
 Please [email us](mailto:edgeml@microsoft.com) your comments, criticism, and questions.
 
