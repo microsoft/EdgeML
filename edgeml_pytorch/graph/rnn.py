@@ -218,7 +218,7 @@ class FastGRNNCell(RNNCell):
                  name="FastGRNN"):
         super(FastGRNNCell, self).__init__(input_size, hidden_size,
                                           gate_nonlinearity, update_nonlinearity,
-                                          1, 1, 1, wRank, uRank, wSparsity,
+                                          1, 1, 2, wRank, uRank, wSparsity,
                                           uSparsity)
         self._zetaInit = zetaInit
         self._nuInit = nuInit
@@ -228,9 +228,6 @@ class FastGRNNCell(RNNCell):
         if uRank is not None:
             self._num_U_matrices += 1
             self._num_weight_matrices[1] = self._num_U_matrices
-        if uRank and wRank:
-            self._num_biases += 1
-            self._num_weight_matrices[2] = self._num_biases
         self._name = name
 
         if wRank is None:
@@ -350,9 +347,6 @@ class FastRNNCell(RNNCell):
         if uRank is not None:
             self._num_U_matrices += 1
             self._num_weight_matrices[1] = self._num_U_matrices
-        if uRank and wRank:
-            self._num_biases += 1
-            self._num_weight_matrices[2] = self._num_biases
         self._name = name
 
         if wRank is None:
@@ -467,9 +461,6 @@ class LSTMLRCell(RNNCell):
         if uRank is not None:
             self._num_U_matrices += 1
             self._num_weight_matrices[1] = self._num_U_matrices
-        if uRank and wRank:
-            self._num_biases += 1
-            self._num_weight_matrices[2] = self._num_biases
         self._name = name
 
         if wRank is None:
@@ -633,9 +624,6 @@ class GRULRCell(RNNCell):
         if uRank is not None:
             self._num_U_matrices += 1
             self._num_weight_matrices[1] = self._num_U_matrices
-        if uRank and wRank:
-            self._num_biases += 1
-            self._num_weight_matrices[2] = self._num_biases
         self._name = name
 
         if wRank is None:
@@ -778,9 +766,6 @@ class UGRNNLRCell(RNNCell):
         if uRank is not None:
             self._num_U_matrices += 1
             self._num_weight_matrices[1] = self._num_U_matrices
-        if uRank and wRank:
-            self._num_biases += 1
-            self._num_weight_matrices[2] = self._num_biases
         self._name = name
 
         if wRank is None:
