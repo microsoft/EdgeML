@@ -158,7 +158,7 @@ def extractFeatures(fileList, LABELMAP, numLabels, maxlen, numFilt, samplerate,
         assert temp.ndim == 2, 'Should be [numSteps, numFilt]'
         assert temp.shape[0] == numSteps, 'Should be [numSteps, numFilt]'
         return np.array(temp)
-        
+
     fileList = np.array(fileList)
     i = 0
     winstepSamples = winstep * samplerate
@@ -169,11 +169,9 @@ def extractFeatures(fileList, LABELMAP, numLabels, maxlen, numFilt, samplerate,
         sample = np.zeros(maxlen)
         _, data = r.read(file)
         sample[maxlen-len(data):maxlen] += data
-        x = __extractFeatures(sample, numSteps, numFilt, samplerate, winlen,
+        X[i] = __extractFeatures(sample, numSteps, numFilt, samplerate, winlen,
                               winstep)
-        X[i] = x
-        y_ = file.split('/')
-        y_ = y_[-2]
+        y_ = file.split('/')[-2]
         y = LABELMAP[y_]
         b = np.zeros(numLabels)
         b[y] = 1
