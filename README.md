@@ -29,9 +29,9 @@ A tool that adapts models trained by above algorithms to be inferred by fixed po
 Applications demonstrating usecases of these algorithms.
 
 ### Organization
- - The `edgeml_tf` directory contains the specification of these architectures in TensorFlow,
+ - The `tf` directory contains the `edgeml_tf` package which specifies these architectures in TensorFlow,
    and `examples/tf` contains sample training routines for these algorithms.
- - The `edgeml_pytorch` directory contains the specification of these architectures in PyTorch,
+ - The `pytorch` directory contains the `edgeml_pytorch` package which specifies these architectures in PyTorch,
    and `examples/pytorch` contains sample training routines for these algorithms.
  - The `cpp` directory has training and inference code for Bonsai and ProtoNN algorithms in C++.
  - The `applications` directory has code/demonstrations of applications of the EdgeML algorithms. 
