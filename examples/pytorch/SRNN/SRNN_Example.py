@@ -6,6 +6,7 @@ import sys
 import os
 import numpy as np
 import torch
+import h5py
 
 from edgeml_pytorch.graph.rnn import SRNN2
 from edgeml_pytorch.trainer.srnnTrainer import SRNNTrainer
@@ -16,12 +17,15 @@ config = helper.getSRNN2Args()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 DATA_DIR = config.data_dir
-x_train_ = np.load(DATA_DIR + 'x_train.npy')
-y_train = np.load(DATA_DIR + 'y_train.npy')
-x_val_ = np.load(DATA_DIR + 'x_val.npy')
-y_val = np.load(DATA_DIR + 'y_val.npy')
-x_test_ = np.load(DATA_DIR + 'x_test.npy')
-y_test = np.load(DATA_DIR + 'y_test.npy')
+f = h5py.File(DATA_DIR + 'train.h5','r')
+x_train_ = np.array(f.get('X'))
+y_train = np.array(f.get('Y'))
+f = h5py.File(DATA_DIR + 'val.h5','r')
+x_val_ = np.array(f.get('X'))
+y_val = np.array(f.get('Y'))
+f = h5py.File(DATA_DIR + 'test.h5','r')
+x_test_ = np.array(f.get('X'))
+y_test = np.array(f.get('Y'))
 
 # Mean-var normalize
 mean = np.mean(np.reshape(x_train_, [-1, x_train_.shape[-1]]), axis=0)
@@ -60,7 +64,7 @@ cellArgs (optional) will be passed to the respective cell
 
 Example OPTIONAL args for FastGRNNCell
 cellArgs = {'gate_non_linearity':"sigmoid",'update_non_linearity':"tanh",
-				'wRank':None, 'uRank':None,'zetaInit':1.0, 'nuInit':-4.0, 
+				'wRank':None, 'uRank':None,'zetaInit':1.0, 'nuInit':-4.0,
 				'batch_first':False}
 
 '''
@@ -68,7 +72,7 @@ cellArgs = {}
 
 srnn2 = SRNN2(numInput, numClasses, hiddenDim0, hiddenDim1, cellType,
 			 dropoutProbability_l0, dropoutProbability_l1,
-			 **cellArgs).to(device)  
+			 **cellArgs).to(device)
 trainer = SRNNTrainer(srnn2, learningRate, lossType='xentropy', device=device)
 
 trainer.train(brickSize, batchSize, epochs, x_train, x_val, y_train, y_val,

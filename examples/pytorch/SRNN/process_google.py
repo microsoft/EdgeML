@@ -1,4 +1,3 @@
-
 # Google Speech data feature extraction
 
 # Note that the 'testing_list.txt' and 'validation_list.txt'
@@ -27,7 +26,7 @@ import glob
 import numpy as np
 import scipy.io.wavfile as r
 import random
-
+import h5py
 
 # Various version can be created depending on which labels are chosen and which
 # are moved to the negative (noise) set. We use LABELMAP13 for most of our
@@ -131,15 +130,15 @@ def createFileList(audioFileDir, testingList,
     np.save(outPrefix + 'file_test.npy', testingList)
     np.save(outPrefix + 'file_val.npy', validationList)
 
-
-def extractFeatures(fileList, LABELMAP, maxlen, numFilt, samplerate, winlen,
-                    winstep):
+def extractFeatures(fileList, LABELMAP, numLabels, maxlen, numFilt, samplerate,
+                    winlen, winstep, X, Y):
     '''
     Reads audio from files specified in fileList, extracts features and assigns
     labels to them.
 
     fileList: List of audio file names.
     LABELMAP: The label map to use.
+    numLabels: No of labels
     maxlen: maximum length of the audio file. Every other
         files is zero padded to maxlen
     numFilt: number of filters to use in MFCC
@@ -147,62 +146,42 @@ def extractFeatures(fileList, LABELMAP, maxlen, numFilt, samplerate, winlen,
         assumed to be of same sample rate
     winLen: winLen to use for fbank in seconds
     winstep: winstep for fbank in seconds
+    X: dataset input
+    Y: dataset ground-truth
     '''
-    def __extractFeatures(stackedWav, numSteps, numFilt,
-                          samplerate, winlen, winstep):
-        '''
-        [number of waves, Len(wave)]
-        returns [number of waves, numSteps, numFilt]
-        All waves are assumed to be of fixed length
-        '''
-        assert stackedWav.ndim == 2, 'Should be [number of waves, len(wav)]'
-        extractedList = []
+    def __extractFeatures(sample, numSteps, numFilt, samplerate, winLen,
+                           winstep):
         eps = 1e-10
-        for sample in stackedWav:
-            temp, _ = fbank(sample, samplerate=samplerate, winlen=winlen,
-                            winstep=winstep, nfilt=numFilt,
-                            winfunc=np.hamming)
-            temp = np.log(temp + eps)
-            assert temp.ndim == 2, 'Should be [numSteps, numFilt]'
-            assert temp.shape[0] == numSteps, 'Should be [numSteps, numFilt]'
-            extractedList.append(temp)
-        return np.array(extractedList)
-
+        temp, _ = fbank(sample, samplerate=samplerate, winlen=winlen,
+                        winstep=winstep, nfilt=numFilt, winfunc=np.hamming)
+        temp = [np.log(temp + eps)]
+        assert temp.ndim == 2, 'Should be [numSteps, numFilt]'
+        assert temp.shape[0] == numSteps, 'Should be [numSteps, numFilt]'
+        return np.array(temp)
+        
     fileList = np.array(fileList)
-    assert(fileList.ndim == 1)
-    allSamples = np.zeros((len(fileList), maxlen))
     i = 0
-    for i,file in enumerate(fileList):
-        _, x = r.read(file)
-        assert(len(x) <= maxlen)
-        allSamples[i, maxlen - len(x):maxlen] += x
-        i += 1
-    assert allSamples.ndim == 2
     winstepSamples = winstep * samplerate
     winlenSamples = winlen * samplerate
-    assert(winstepSamples.is_integer())
-    assert(winlenSamples.is_integer())
     numSteps = int(np.ceil((maxlen - winlenSamples)/winstepSamples) + 1)
-    x = __extractFeatures(allSamples, numSteps, numFilt, samplerate, winlen,
-                          winstep)
-    y_ = [t.split('/') for t in fileList]
-    y_ = [t[-2] for t in y_]
-    y = []
-    for t in y_:
-        assert t in LABELMAP
-        y.append(LABELMAP[t])
+    for i, file in enumerate(fileList):
+        print('Processing', file)
+        sample = np.zeros(maxlen)
+        _, data = r.read(file)
+        sample[maxlen-len(data):maxlen] += data
+        x = __extractFeatures(sample, numSteps, numFilt, samplerate, winlen,
+                              winstep)
+        X[i] = x
+        y_ = file.split('/')
+        y_ = y_[-2]
+        y = LABELMAP[y_]
+        b = np.zeros(numLabels)
+        b[y] = 1
+        Y[i] = b
+        i += 1
+    print('Total Processed Samples:', i)
 
-    def to_onehot(indices, numClasses):
-        assert indices.ndim == 1
-        n = max(indices) + 1
-        assert numClasses <= n
-        b = np.zeros((len(indices), numClasses))
-        b[np.arange(len(indices)), indices] = 1
-        return b
-    y = to_onehot(np.array(y), np.max(y) + 1)
-    return x, y
-
-if __name__=='__main__':
+if __name__ == '__main__':
     # ----------------------------------------- #
     # Configuration
     # ----------------------------------------- #
@@ -216,7 +195,7 @@ if __name__=='__main__':
     numLabels = 13 # 0 not assigned
     samplerate=16000
     # For creation of training file list, testing file list
-    # and validation list. 
+    # and validation list.
     audioFileDir = './GoogleSpeech/Raw/'
     testingList = './GoogleSpeech/Raw/testing_list.txt'
     validationList = './GoogleSpeech/Raw/validation_list.txt'
@@ -249,17 +228,26 @@ if __name__=='__main__':
     trainFileList_ = [audioFileDir + x for x in trainFileList]
     valFileList_ = [audioFileDir + x for x in valFileList]
     testFileList_ = [audioFileDir + x for x in testFileList]
-    x_test, y_test = extractFeatures(testFileList_, LABELMAP, maxlen, numFilt,
+    def generateDataset(datasetType, fileList, LABELMAP, numLabels, maxlen,
+                        numFilt, samplerate, winlen, winstep):
+        winstepSamples = winstep * samplerate
+        winlenSamples = winlen * samplerate
+        assert(winstepSamples.is_integer())
+        assert(winlenSamples.is_integer())
+        numSteps = int(np.ceil((maxlen - winlenSamples)/winstepSamples) + 1)
+
+        with h5py.File(outDir+datasetType+'.h5') as f:
+            x = f.create_dataset("X", shape=(len(fileList), numSteps, numFilt),
+                                dtype=np.float64)
+            y = f.create_dataset("Y", shape=(len(fileList), numLabels),
+                                dtype=np.float64)
+            extractFeatures(fileList, LABELMAP, numLabels, maxlen, numFilt,
+                            samplerate, winlen, winstep, x, y)
+        print(datasetType, 'dataset generated')
+
+    generateDataset('test', testFileList_, LABELMAP, numLabels, maxlen, numFilt,
                                      samplerate, winlen, winstep)
-    x_val, y_val = extractFeatures(valFileList_, LABELMAP, maxlen, numFilt,
+    generateDataset('val', valFileList_, LABELMAP, numLabels, maxlen, numFilt,
                                    samplerate, winlen, winstep)
-    x_train, y_train = extractFeatures(trainFileList_, LABELMAP, maxlen,
-                                       numFilt, samplerate, winlen, winstep)
-    np.save(outDir + 'x_train', x_train);np.save(outDir + 'y_train', y_train)
-    np.save(outDir + 'x_test', x_test);np.save(outDir + 'y_test', y_test)
-    np.save(outDir + 'x_val', x_val);np.save(outDir + 'y_val', y_val)
-    print("Shape train", x_train.shape, y_train.shape)
-    print("Shape test", x_test.shape, y_test.shape)
-    print("Shape val", x_val.shape, y_val.shape)
-
-
+    generateDataset('train', trainFileList_, LABELMAP, numLabels, maxlen,
+                                numFilt, samplerate, winlen, winstep)
