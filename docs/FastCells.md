@@ -1,9 +1,9 @@
 # FastRNN and FastGRNN - FastCells
 
-This document aims to explain and elaborate on specific details of FastCells
-present as part of [edgeml_tf/graph/rnn.py](../edgeml_tf/graph/rnn.py). The
+This document elaborates on the  details of FastCells
+present in [tf/edgeml_tf/graph/rnn.py](/tf/edgeml_tf/graph/rnn.py). The
 endpoint use case scripts with 3 phase training along with an example notebook
-are present in [examples/tf/FastCells](../examples/tf/FastCells). One can use the endpoint script to test
+are present in [examples/tf/FastCells](/examples/tf/FastCells). One can use the endpoint script to test
 out the RNN architectures on any dataset while specifying budget constraints as
 part of hyper-parameters in terms of sparsity and rank of weight matrices.
 
@@ -23,11 +23,11 @@ replace any of the standard RNN Cell in our architecture with FastCells.
 One can see the plug and play nature at the endpoint script for FastCells, where the graph
 building is very similar to LSTM/GRU in Tensorflow.
 
-Script: [Endpoint Script](../examples/tf/FastCells/fastcell_example.py)
+Script: [Endpoint Script](/examples/tf/FastCells/fastcell_example.py)
 
-Example Notebook: [iPython Notebook](../examples/tf/FastCells/fastcell_example.ipynb)
+Example Notebook: [iPython Notebook](/examples/tf/FastCells/fastcell_example.ipynb)
 
-Cells: [FastRNNCell](../edgeml/graph/rnn.py#L206) and [FastGRNNCell](../edgeml/graph/rnn.py#L31).
+Cells: [FastRNNCell](/tf/edgeml/graph/rnn.py#L206) and [FastGRNNCell](/tf/edgeml/graph/rnn.py#L31).
 
 # 3 phase Fast Training
 
@@ -50,7 +50,7 @@ Sparsity is taken in as hyper-parameter during the 3 phase training into `fastTr
 end spits out a sparse, low-rank model.
 
 Further compression is achieved by byte Quantization and can be performed using `quantizeFastModels.py`
-script which is part of [examples/tf/FastCells](../examples/tf/FastCells). This will give model size reduction of up to 4x if 8-bit
+script which is part of [examples/tf/FastCells](/examples/tf/FastCells). This will give model size reduction of up to 4x if 8-bit
 integers are used. Lastly, to facilitate all integer arithmetic, including the non-linearities, one could
 use `quantTanh` instead of `tanh` and `quantSigm` instead of `sigmoid` as the non-linearities in the RNN
 Cells followed by byte quantization. These non-linearities can be set using the appropriate parameters in
