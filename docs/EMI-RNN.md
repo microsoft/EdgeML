@@ -6,7 +6,7 @@ Tensorflow library. This document **does not** seek to be a comprehensive
 documentation of the EMI-RNN code base.
 
 For a quick and dirty 'getting started' example please refer to
-`tf/examples/EMI-RNN` directory.
+[EMI_RNN](../examples/tf/EMI-RNN) directory.
 
 ![MIML Formulation of Bags and Instances](img/MIML_illustration.png)
 
@@ -49,21 +49,21 @@ sub-instance is set initialized to equal the label of the entire bag.
 Thus, the EMI-RNN implementation expects the train data to be of shape,
 
     [Num. of examples, Num. of instances, Num. of timestep, Num. features]
-    
+
 Further, the label information is expected to be one hot encoded and of the
 shape,
 
     [Num. of examples, Num. of instances, Num. classes]
 
 As a concrete end to end example, please refer to
-`tf/examples/EMI-RNN/fetch_har.py`.
+[EMI_RNN/fetch_har.py](../examples/tf/EMI-RNN/fetch_har.py).
 
 ## Training
 
 ![An illustration of the parts of the computation graph](img/3PartsGraph.png)
 
 The EMI-RNN algorithm consists of a graph construction phase and a training
-phase. 
+phase.
 
 ### Graph Construction
 
@@ -83,7 +83,7 @@ forward computation graphs. All implementations of `EMI_RNN` are expected and
 assumed to provide an `EMI_RNN.output` attribute - the Tensor/Operation with
 the forward computation outputs. The following implementations of `EMI_RNN` are
 provided:
-  - `EMI_LSTM` 
+  - `EMI_LSTM`
   - `EMI_GRU`
   - `EMI_FastRNN`
   - `EMI_FastGRNN`
@@ -116,11 +116,11 @@ Train_EMI_RNN:
 		Y: Train labels
 		EMI_Graph: A complete training graph
 		updatePolicy: An update policy that will update the instace lables
-			after each training rounds. 
+			after each training rounds.
 		NUM_ROUNDS: Number of rounds of training
-    
+
     curr_Y = Y
-	for round in range(NUM_ROUNDS): 
+	for round in range(NUM_ROUNDS):
 		minimize_loss(EMI_graph, X, curr_Y)
 		curr_Y = updatePolicy(EMI_RNN(X))
 ```
@@ -163,7 +163,7 @@ invalid upon the graph being reset internally.
 
 It is possible to restore a trained model into a session from its checkpoint.
 `EMI_Driver` exposes an easy to use way of achieving this through
-`loadSavedGraphToNewSession` method. 
+`loadSavedGraphToNewSession` method.
 
 To use this method, first construct a new computation graph as you would
 normally do and setup `EMI_Driver` with this computation graph. Then you can
@@ -181,8 +181,8 @@ matrices is also supported. This is achieved by attaching `tf.assign`
 operations to all the model tensors. Please have a look at `addAssignOps`
 method of `DataPipeline`, `EMI_RNN` and `EMI_Trainer` for more information.
 
-Please refer to `tf/examples/02_emi_lstm_initialization_and_restoring.npy` for
-example usages.
+Please refer to [EMI_RNN/02_emi_lstm_initialization_and_restoring.ipynb](../examples/tf/EMI-RNN/02_emi_lstm_initialization_and_restoring.ipynb)
+for example usages.
 
 ## Evaluating the  trained model
 
@@ -210,4 +210,4 @@ Early prediction is accomplished by defining an early prediction policy method.
 This method receives the prediction at each step of the learned RNN for a
 sub-instance as input and is expected to return a predicted class and the
 0-indexed step at which it made this prediction.  Please refer to the
-`tf/examples/EMI-RNN` for concrete examples of the same.
+[EMI-RNN](../examples/tf/EMI-RNN) for concrete examples of the same.

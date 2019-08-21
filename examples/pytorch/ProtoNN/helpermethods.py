@@ -22,7 +22,7 @@ def getModelSize(matrixList, sparcityList, expected=True, bytesPerVar=4):
         assert A.ndim == 2
         assert s >= 0
         assert s <= 1
-        nnz, size, sparse = utils.countnnZ(A, s, bytesPerVar=bytesPerVar)
+        nnz, size, sparse = utils.estimateNNZ(A, s, bytesPerVar=bytesPerVar)
         nnzList.append(nnz)
         sizeList.append(size)
         hasSparse = (hasSparse or sparse)

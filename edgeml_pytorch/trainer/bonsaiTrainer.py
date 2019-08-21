@@ -126,13 +126,13 @@ class BonsaiTrainer:
             __thrsdT).to(self.device)
 
         self.__thrsdW = torch.FloatTensor(
-            np.copy(__thrsdW)).to(self.device)
+            __thrsdW.detach().clone()).to(self.device)
         self.__thrsdV = torch.FloatTensor(
-            np.copy(__thrsdV)).to(self.device)
+            __thrsdV.detach().clone()).to(self.device)
         self.__thrsdZ = torch.FloatTensor(
-            np.copy(__thrsdZ)).to(self.device)
+            __thrsdZ.detach().clone()).to(self.device)
         self.__thrsdT = torch.FloatTensor(
-            np.copy(__thrsdT)).to(self.device)
+            __thrsdT.detach().clone()).to(self.device)
 
     def runSparseTraining(self):
         '''
@@ -224,10 +224,10 @@ class BonsaiTrainer:
         '''
         Function to get aimed model size
         '''
-        nnzZ, sizeZ, sparseZ = utils.countnnZ(self.bonsaiObj.Z, self.sZ)
-        nnzW, sizeW, sparseW = utils.countnnZ(self.bonsaiObj.W, self.sW)
-        nnzV, sizeV, sparseV = utils.countnnZ(self.bonsaiObj.V, self.sV)
-        nnzT, sizeT, sparseT = utils.countnnZ(self.bonsaiObj.T, self.sT)
+        nnzZ, sizeZ, sparseZ = utils.estimateNNZ(self.bonsaiObj.Z, self.sZ)
+        nnzW, sizeW, sparseW = utils.estimateNNZ(self.bonsaiObj.W, self.sW)
+        nnzV, sizeV, sparseV = utils.estimateNNZ(self.bonsaiObj.V, self.sV)
+        nnzT, sizeT, sparseT = utils.estimateNNZ(self.bonsaiObj.T, self.sT)
 
         totalnnZ = (nnzZ + nnzT + nnzV + nnzW)
         totalSize = (sizeZ + sizeW + sizeV + sizeT)
