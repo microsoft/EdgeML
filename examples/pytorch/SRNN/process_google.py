@@ -154,10 +154,10 @@ def extractFeatures(fileList, LABELMAP, numLabels, maxlen, numFilt, samplerate,
         eps = 1e-10
         temp, _ = fbank(sample, samplerate=samplerate, winlen=winlen,
                         winstep=winstep, nfilt=numFilt, winfunc=np.hamming)
-        temp = [np.log(temp + eps)]
+        temp = np.log(temp + eps)
         assert temp.ndim == 2, 'Should be [numSteps, numFilt]'
         assert temp.shape[0] == numSteps, 'Should be [numSteps, numFilt]'
-        return np.array(temp)
+        return np.array([temp])
 
     fileList = np.array(fileList)
     i = 0
