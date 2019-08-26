@@ -533,8 +533,7 @@ def str2bool(v):
 
 
 if __name__ == '__main__':
-    config = TrainingConfig()
-    parser = argparse.ArgumentParser("train a GRU based neural network for keyword spotting")
+    parser = argparse.ArgumentParser("train a RNN based neural network for keyword spotting")
 
     # all the training parameters
     parser.add_argument("--epochs", help="Number of epochs to train", type=int)
@@ -587,6 +586,7 @@ if __name__ == '__main__':
                         action="store_true")
     args = parser.parse_args()
 
+    config = TrainingConfig()
     if args.config:
         config.load(args.config)
 

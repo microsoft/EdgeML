@@ -53,14 +53,14 @@ class OptimizerOptions:
 class TrainingOptions:
     def __init__(self):
         self.max_epochs = 30
-        self.learning_rate = 1e-3
+        self.learning_rate = 1e-2
         self.lr_scheduler = None
         self.lr_peaks = 1
         self.lr_min = 1e-5
         self.lr_gamma = 1
         self.lr_step_size = 1
         self.batch_size = 128
-        self.optimizer = "RMSprop"
+        self.optimizer = "Adam"
         self.optimizer_options = OptimizerOptions()
         self.use_gpu = False
         self.rolling = False
