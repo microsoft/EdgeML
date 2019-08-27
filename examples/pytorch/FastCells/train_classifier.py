@@ -106,7 +106,7 @@ class KeywordSpotter(nn.Module):
                                     step_sizes=oo.step_sizes)
         elif options.optimizer == "SGD":
             optimizer = optim.SGD(self.parameters(), lr=initial_rate, weight_decay=oo.weight_decay,
-                                  momentum=oo.momentum, dampening=oo.dampening)
+                                  momentum=oo.momentum, dampening=oo.dampening, nesterov=oo.nesterov)
         return optimizer
 
     def configure_lr(self, options, optimizer, ticks, total_iterations):
@@ -478,7 +478,8 @@ def train(config, evaluate_only=False, outdir=".", detail=False, azureml=False):
             model.cuda()  # move the processing to GPU
 
         start = time.time()
-        log = model.fit(training_data, validation_data, config.training, config.model.sparsify, device, detail, run)
+        log = model.fit(training_data, validation_data, config.training,
+                       config.model.sparsify, device, detail, run)
         end = time.time()
 
         passed, total, rate = model.evaluate(training_data, batch_size, device)

@@ -48,6 +48,7 @@ class OptimizerOptions:
         self.etas = (0.5, 1.2)  # Rprop
         self.dampening = 0  # SGD
         self.step_sizes = (1e-06, 50)  # Rprop
+        self.nesterov = True # SGD
 
 
 class TrainingOptions:
@@ -60,7 +61,7 @@ class TrainingOptions:
         self.lr_gamma = 1
         self.lr_step_size = 1
         self.batch_size = 128
-        self.optimizer = "Adam"
+        self.optimizer = "SGD"
         self.optimizer_options = OptimizerOptions()
         self.use_gpu = False
         self.rolling = False
