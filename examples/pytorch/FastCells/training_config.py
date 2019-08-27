@@ -36,7 +36,7 @@ class DatasetOptions:
 class OptimizerOptions:
     def __init__(self):
         self.weight_decay = 1e-5
-        self.momentum = 0  # RMSprop
+        self.momentum = 0.9  # RMSprop
         self.centered = False  # RMSprop
         self.alpha = 0  # ASGD, RMSprop
         self.eps = 1e-8
