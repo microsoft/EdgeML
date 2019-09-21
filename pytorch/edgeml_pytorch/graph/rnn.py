@@ -1,12 +1,16 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+import os
 import torch
 import torch.nn as nn
 from torch.autograd import Function
 import numpy as np
 
 import edgeml_pytorch.utils as utils
+
+if "CUDA_HOME" in os.environ:
+    import fastgrnn_cuda
 
 def onnx_exportable_rnn(input, fargs, cell, output):
     class RNNSymbolic(Function):
@@ -296,6 +300,63 @@ class FastGRNNCell(RNNCell):
         Vars.extend([self.zeta, self.nu])
         return Vars
 
+class FastGRNNCUDACell(RNNCell):
+    '''
+    A CUDA implementation of FastGRNN Cell with Full Rank Support
+    hidden_size = # hidden units
+
+    zetaInit = init for zeta, the scale param
+    nuInit = init for nu, the translation param
+
+    FastGRNN architecture and compression techniques are found in
+    FastGRNN(LINK) paper
+
+    Basic architecture is like:
+
+    z_t = sigmoid(Wx_t + Uh_{t-1} + B_g)
+    h_t^ = tanh(Wx_t + Uh_{t-1} + B_h)
+    h_t = z_t*h_{t-1} + (sigmoid(zeta)(1-z_t) + sigmoid(nu))*h_t^
+
+    '''
+    def __init__(self, input_size, hidden_size, zetaInit=1.0, nuInit=-4.0, name="FastGRNNCUDACell"):
+        super(FastGRNNCUDACell, self).__init__(input_size, hidden_size, "sigmoid", "tanh", 1, 1, 2)
+        if not "CUDA_HOME" in os.environ:
+            raise Exception('FastGRNNCUDACell is supported only on GPU devices.')
+        self._input_size = input_size
+        self._hidden_size = hidden_size
+        self._gate_non_linearity = gate_non_linearity
+        self._update_non_linearity = update_non_linearity
+        self._zetaInit = zetaInit
+        self._nuInit = nuInit
+        self._name = name
+
+        self.W = nn.Parameter(0.1 * torch.randn([input_size, hidden_size]))
+        self.U = nn.Parameter(0.1 * torch.randn([hidden_size, hidden_size]))
+
+        self.bias_gate = nn.Parameter(torch.ones([1, hidden_size]))
+        self.bias_update = nn.Parameter(torch.ones([1, hidden_size]))
+        self.zeta = nn.Parameter(self._zetaInit * torch.ones([1, 1]))
+        self.nu = nn.Parameter(self._nuInit * torch.ones([1, 1]))
+
+    def reset_parameters(self):
+        stdv = 1.0 / math.sqrt(self.state_size)
+        for weight in self.parameters():
+            weight.data.uniform_(-stdv, +stdv)
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def cellType(self):
+        return "FastGRNNCUDACell"
+
+    def forward(self, input, state):
+        # Calls the custom autograd function while invokes the CUDA implementation
+        return FastGRNNFunction.apply(input, self.W, self.U, self.bias_gate, self.bias_update, state, self.zeta, self.nu)
+
+    def getVars(self):
+        return [self.W, self.U, self.bias_gate, self.bias_update, self.zeta, self.nu]
 
 class FastRNNCell(RNNCell):
     '''
@@ -1117,3 +1178,20 @@ class SRNN2(nn.Module):
         hidd1 = torch.squeeze(hidd1[-1])
         out = torch.matmul(hidd1, self.W) + self.B
         return out
+
+class FastGRNNFunction(Function):
+    @staticmethod
+    def forward(ctx, input, w, u, bias_z, bias_h_prime, old_h, zeta, nu):
+        outputs = fastgrnn_cuda.forward(input, w, u, bias_z, bias_h_prime, old_h, zeta, nu)
+        new_h = outputs[0]
+        variables = [input, old_h] + outputs[1:] + [w, u, bias_z, bias_h_prime, zeta, nu]
+        ctx.save_for_backward(*variables)
+        return new_h
+
+    @staticmethod
+    def backward(ctx, grad_h):
+        outputs = fastgrnn_cuda.backward(
+            grad_h.contiguous(), *ctx.saved_variables)
+        d_old_h, d_input, d_w, d_u, d_bias_z, d_bias_h_prime_t, d_nu, d_zeta = outputs
+        return d_input, d_w, d_u, d_bias_z, d_bias_h_prime_t, d_old_h, d_zeta, d_nu
+
