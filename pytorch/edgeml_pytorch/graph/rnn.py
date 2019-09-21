@@ -9,7 +9,7 @@ import numpy as np
 
 import edgeml_pytorch.utils as utils
 
-if "CUDA_HOME" in os.environ:
+if utils.findCUDA() is not None:
     import fastgrnn_cuda
 
 def onnx_exportable_rnn(input, fargs, cell, output):
@@ -320,7 +320,7 @@ class FastGRNNCUDACell(RNNCell):
     '''
     def __init__(self, input_size, hidden_size, zetaInit=1.0, nuInit=-4.0, name="FastGRNNCUDACell"):
         super(FastGRNNCUDACell, self).__init__(input_size, hidden_size, "sigmoid", "tanh", 1, 1, 2)
-        if not "CUDA_HOME" in os.environ:
+        if utils.findCUDA() is None:
             raise Exception('FastGRNNCUDACell is supported only on GPU devices.')
         self._input_size = input_size
         self._hidden_size = hidden_size

@@ -1,8 +1,9 @@
 import setuptools #enables develop
 import os
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
+from edgeml_pytorch.utils import findCUDA
 
-if "CUDA_HOME" in os.environ:
+if findCUDA() is not None:
     setup(
         name='fastgrnn_cuda',
         ext_modules=[

@@ -1,11 +1,39 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
-
+import sys
+import os
 import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
+
+def findCUDA():
+    '''Finds the CUDA install path.'''
+    # Guess #1
+    IS_WINDOWS = sys.platform == 'win32'
+    cuda_home = os.environ.get('CUDA_HOME') or os.environ.get('CUDA_PATH')
+    if cuda_home is None:
+        # Guess #2
+        try:
+            which = 'where' if IS_WINDOWS else 'which'
+            nvcc = subprocess.check_output(
+                [which, 'nvcc']).decode().rstrip('\r\n')
+            cuda_home = os.path.dirname(os.path.dirname(nvcc))
+        except Exception:
+            # Guess #3
+            if IS_WINDOWS:
+                cuda_homes = glob.glob(
+                    'C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v*.*')
+                if len(cuda_homes) == 0:
+                    cuda_home = ''
+                else:
+                    cuda_home = cuda_homes[0]
+            else:
+                cuda_home = '/usr/local/cuda'
+            if not os.path.exists(cuda_home):
+                cuda_home = None
+    return cuda_home
 
 def multiClassHingeLoss(logits, labels):
     '''
