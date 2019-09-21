@@ -324,8 +324,6 @@ class FastGRNNCUDACell(RNNCell):
             raise Exception('FastGRNNCUDACell is supported only on GPU devices.')
         self._input_size = input_size
         self._hidden_size = hidden_size
-        self._gate_non_linearity = gate_non_linearity
-        self._update_non_linearity = update_non_linearity
         self._zetaInit = zetaInit
         self._nuInit = nuInit
         self._name = name

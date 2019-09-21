@@ -4,7 +4,7 @@ from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 from edgeml_pytorch.utils import findCUDA
 
 if findCUDA() is not None:
-    setup(
+    setuptools.setup(
         name='fastgrnn_cuda',
         ext_modules=[
             CUDAExtension('fastgrnn_cuda', [
