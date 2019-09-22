@@ -165,8 +165,8 @@ FP_TYPE EdgeML::batchEvaluate(
       assert(idx2 <= idx1 + (Eigen::Index)maxBatch);
 
       MatrixXuf D = gaussianKernel(B, WXval, gamma, idx1, idx2);
-      //LOG_TRACE("idx1, idx2, Y.cols() = " + std::to_string(idx1) + " " + std::to_string(idx2) + " " + std::to_string(Yval.cols()));
-      assert(idx2 <= Y.cols());
+      //LOG_TRACE("idx1, idx2, Yval.cols() = " + std::to_string(idx1) + " " + std::to_string(idx2) + " " + std::to_string(Yval.cols()));
+      assert(idx2 <= Yval.cols());
       LabelMatType YBatch = Yval.middleCols(idx1, idx2 - idx1);
       if (problemType == EdgeML::ProblemFormat::binary || problemType == EdgeML::ProblemFormat::multiclass)
         accuracyValidation += (idx2 - idx1) * accuracy(Z, YBatch, D, problemType);
