@@ -312,7 +312,7 @@ void Data::feedDenseData(const DenseDataPoint& point)
 void Data::feedSparseData(const SparseDataPoint& point)
 {
   assert(ingestType == InterfaceIngest);
-  assert(isDataLoaded == false);
+  assert(!isDataLoaded);
 
   for (featureCount_t id = 0; id < point.numIndices; id = id + 1) {
     assert(point.indices[id] < formatParams.dimension);
