@@ -25,7 +25,7 @@ void Data::loadDataFromFile(
   std::string infileValidation,
   std::string infileTest)
 {
-  assert(isDataLoaded == false);
+  assert(isDataLoaded);
   assert(ingestType == FileIngest);
 
   trainData = MatrixXuf(0, 0);
