@@ -351,7 +351,7 @@ class FastGRNNCUDACell(RNNCell):
 
     def forward(self, input, state):
         # Calls the custom autograd function while invokes the CUDA implementation
-        return FastGRNNFunction.apply(input, self.W, self.U, self.bias_gate, self.bias_update, state, self.zeta, self.nu)
+        return FastGRNNFunction.apply(input, self.W, self.U, self.bias_gate, self.bias_update, self.zeta, self.nu, state)
 
     def getVars(self):
         return [self.W, self.U, self.bias_gate, self.bias_update, self.zeta, self.nu]
@@ -1179,10 +1179,10 @@ class SRNN2(nn.Module):
 
 class FastGRNNFunction(Function):
     @staticmethod
-    def forward(ctx, input, w, u, bias_z, bias_h_prime, old_h, zeta, nu):
-        outputs = fastgrnn_cuda.forward(input, w, u, bias_z, bias_h_prime, old_h, zeta, nu)
+    def forward(ctx, input, w, u, bias_gate, bias_update, zeta, nu, old_h):
+        outputs = fastgrnn_cuda.forward(input, w, u, bias_gate, bias_update, zeta, nu, old_h)
         new_h = outputs[0]
-        variables = [input, old_h] + outputs[1:] + [w, u, bias_z, bias_h_prime, zeta, nu]
+        variables = [input, old_h, zeta, nu, w, u] + outputs[1:]
         ctx.save_for_backward(*variables)
         return new_h
 
@@ -1190,6 +1190,6 @@ class FastGRNNFunction(Function):
     def backward(ctx, grad_h):
         outputs = fastgrnn_cuda.backward(
             grad_h.contiguous(), *ctx.saved_variables)
-        d_old_h, d_input, d_w, d_u, d_bias_z, d_bias_h_prime_t, d_nu, d_zeta = outputs
-        return d_input, d_w, d_u, d_bias_z, d_bias_h_prime_t, d_old_h, d_zeta, d_nu
+        d_input, d_w, d_u, d_bias_gate, d_bias_update, d_zeta, d_nu, d_old_h = outputs
+        return d_input, d_w, d_u, d_bias_gate, d_bias_update, d_zeta, d_nu, d_old_h
 
