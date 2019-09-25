@@ -313,21 +313,22 @@ class FastGRNNCUDACell(RNNCell):
 
     Basic architecture is like:
 
-    z_t = sigmoid(Wx_t + Uh_{t-1} + B_g)
+    z_t = non_linearity(Wx_t + Uh_{t-1} + B_g)
     h_t^ = tanh(Wx_t + Uh_{t-1} + B_h)
     h_t = z_t*h_{t-1} + (sigmoid(zeta)(1-z_t) + sigmoid(nu))*h_t^
 
     '''
-    def __init__(self, input_size, hidden_size, zetaInit=1.0, nuInit=-4.0, name="FastGRNNCUDACell"):
-        super(FastGRNNCUDACell, self).__init__(input_size, hidden_size, "sigmoid", "tanh", 1, 1, 2)
+    def __init__(self, input_size, hidden_size, gate_non_linearity="sigmoid", zetaInit=1.0, nuInit=-4.0, name="FastGRNNCUDACell"):
+        super(FastGRNNCUDACell, self).__init__(input_size, hidden_size, gate_non_linearity, "tanh", 1, 1, 2)
         if utils.findCUDA() is None:
             raise Exception('FastGRNNCUDACell is supported only on GPU devices.')
+        NON_LINEARITY = {"sigmoid": 0, "relu": 1, "tanh": 2}
         self._input_size = input_size
         self._hidden_size = hidden_size
         self._zetaInit = zetaInit
         self._nuInit = nuInit
         self._name = name
-
+        self._gate_non_linearity = NON_LINEARITY[gate_non_linearity]
         self.W = nn.Parameter(0.1 * torch.randn([input_size, hidden_size]))
         self.U = nn.Parameter(0.1 * torch.randn([hidden_size, hidden_size]))
 
@@ -351,7 +352,7 @@ class FastGRNNCUDACell(RNNCell):
 
     def forward(self, input, state):
         # Calls the custom autograd function while invokes the CUDA implementation
-        return FastGRNNFunction.apply(input, self.W, self.U, self.bias_gate, self.bias_update, self.zeta, self.nu, state)
+        return FastGRNNFunction.apply(input, self.W, self.U, self.bias_gate, self.bias_update, self.zeta, self.nu, state, self._gate_non_linearity)
 
     def getVars(self):
         return [self.W, self.U, self.bias_gate, self.bias_update, self.zeta, self.nu]
@@ -1179,17 +1180,18 @@ class SRNN2(nn.Module):
 
 class FastGRNNFunction(Function):
     @staticmethod
-    def forward(ctx, input, w, u, bias_gate, bias_update, zeta, nu, old_h):
-        outputs = fastgrnn_cuda.forward(input, w, u, bias_gate, bias_update, zeta, nu, old_h)
+    def forward(ctx, input, w, u, bias_gate, bias_update, zeta, nu, old_h, gate_non_linearity):
+        outputs = fastgrnn_cuda.forward(input, w, u, bias_gate, bias_update, zeta, nu, old_h, gate_non_linearity)
         new_h = outputs[0]
         variables = [input, old_h, zeta, nu, w, u] + outputs[1:]
         ctx.save_for_backward(*variables)
+        ctx.non_linearity = gate_non_linearity
         return new_h
 
     @staticmethod
     def backward(ctx, grad_h):
         outputs = fastgrnn_cuda.backward(
-            grad_h.contiguous(), *ctx.saved_variables)
+            grad_h.contiguous(), *ctx.saved_variables, ctx.non_linearity)
         d_input, d_w, d_u, d_bias_gate, d_bias_update, d_zeta, d_nu, d_old_h = outputs
-        return d_input, d_w, d_u, d_bias_gate, d_bias_update, d_zeta, d_nu, d_old_h
+        return d_input, d_w, d_u, d_bias_gate, d_bias_update, d_zeta, d_nu, d_old_h, None
 
