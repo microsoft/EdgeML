@@ -1063,6 +1063,34 @@ class FastGRNN(nn.Module):
     def forward(self, input, hiddenState=None, cellState=None):
         return self.unrollRNN(input, hiddenState, cellState)
 
+class FastGRNNCUDA(nn.Module):
+    """Unrolled implementation of the FastGRNNCUDACell"""
+    def __init__(self, input_size, hidden_size, gate_non_linearity="sigmoid", zetaInit=1.0, nuInit=-4.0, name="FastGRNNCUDACell"):
+        super(FastGRNNCUDA, self).__init__()
+        if utils.findCUDA() is None:
+            raise Exception('FastGRNNCUDA is supported only on GPU devices.')
+        NON_LINEARITY = {"sigmoid": 0, "relu": 1, "tanh": 2}
+        self._input_size = input_size
+        self._hidden_size = hidden_size
+        self._zetaInit = zetaInit
+        self._nuInit = nuInit
+        self._name = name
+        self._gate_non_linearity = NON_LINEARITY[gate_non_linearity]
+        self.W = nn.Parameter(0.1 * torch.randn([input_size, hidden_size]))
+        self.U = nn.Parameter(0.1 * torch.randn([hidden_size, hidden_size]))
+
+        self.bias_gate = nn.Parameter(torch.ones([1, hidden_size]))
+        self.bias_update = nn.Parameter(torch.ones([1, hidden_size]))
+        self.zeta = nn.Parameter(self._zetaInit * torch.ones([1, 1]))
+        self.nu = nn.Parameter(self._nuInit * torch.ones([1, 1]))
+
+    def forward(self, input, h_state, cell_state=None):
+        # input: [timesteps, batch, features, state_size]
+        return FastGRNNUnrollFunction.apply(input, self.W, self.U, self.bias_gate, self.bias_update, self.zeta, self.nu, h_state, self._gate_non_linearity)
+
+    def getVars(self):
+        return [self.W, self.U, self.bias_gate, self.bias_update, self.zeta, self.nu]
+
 class SRNN2(nn.Module):
 
     def __init__(self, inputDim, outputDim, hiddenDim0, hiddenDim1, cellType,
@@ -1195,3 +1223,19 @@ class FastGRNNFunction(Function):
         d_input, d_w, d_u, d_bias_gate, d_bias_update, d_zeta, d_nu, d_old_h = outputs
         return d_input, d_w, d_u, d_bias_gate, d_bias_update, d_zeta, d_nu, d_old_h, None
 
+class FastGRNNUnrollFunction(Function):
+    @staticmethod
+    def forward(ctx,  input, w, u, bias_gate, bias_update, zeta, nu, old_h, gate_non_linearity):
+        outputs = fastgrnn_cuda.forward_unroll(input, w, u, bias_gate, bias_update, zeta, nu, old_h, gate_non_linearity)
+        hidden_states = outputs[0]
+        variables = [input, hidden_states, zeta, nu, w, u] + outputs[1:] + [old_h]
+        ctx.save_for_backward(*variables)
+        ctx.gate_non_linearity = gate_non_linearity
+        return hidden_states
+
+    @staticmethod
+    def backward(ctx, grad_h):
+        outputs = fastgrnn_cuda.backward_unroll(
+            grad_h.contiguous(), *ctx.saved_variables, ctx.gate_non_linearity)
+        d_input, d_w, d_u, d_bias_gate, d_bias_update, d_zeta, d_nu, d_old_h = outputs
+        return d_input, d_w, d_u, d_bias_gate, d_bias_update, d_zeta, d_nu, d_old_h
