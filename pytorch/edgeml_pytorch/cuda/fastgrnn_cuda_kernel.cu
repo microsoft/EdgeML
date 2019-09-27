@@ -287,7 +287,11 @@ std::vector<torch::Tensor> fastgrnn_unroll_cuda_forward(
   torch::Tensor zeta,
   torch::Tensor nu,
   torch::Tensor initial_h,
-  int z_non_linearity) {
+  int z_non_linearity,
+  torch::Tensor w1,
+  torch::Tensor w2,
+  torch::Tensor u1,
+  torch::Tensor u2) {
     auto options = torch::TensorOptions().dtype(input.dtype()).device(input.device().type());
     const auto timesteps = input.size(0);
     const auto batch_size = initial_h.size(0);
@@ -305,9 +309,19 @@ std::vector<torch::Tensor> fastgrnn_unroll_cuda_forward(
 
     const int threads = 1024;
     const dim3 blocks((state_size + threads - 1) / threads, batch_size);
+    bool w_low_rank = w1.size(0) != 0;
+    bool u_low_rank = u1.size(0) != 0;
+    if (w_low_rank){
+      w = torch::mm(w1.transpose(0, 1), w2.transpose(0, 1));
+    }  else {
+      w = w.transpose(0, 1);
+    }
+    if (u_low_rank){
+      u = torch::mm(u1.transpose(0, 1), u2.transpose(0, 1));
+    } else {
+      u = u.transpose(0, 1);
+    }
 
-    w = w.transpose(0, 1);
-    u = u.transpose(0, 1);
     zeta = torch::sigmoid(zeta);
     nu = torch::sigmoid(nu);
 
@@ -372,16 +386,29 @@ std::vector<torch::Tensor> fastgrnn_unroll_cuda_backward(
   torch::Tensor z,
   torch::Tensor h_prime,
   torch::Tensor initial_h,
-  int z_non_linearity) {
+  int z_non_linearity,
+  torch::Tensor w1,
+  torch::Tensor w2,
+  torch::Tensor u1,
+  torch::Tensor u2) {
   
   auto d_input = torch::zeros_like(input);
-  auto d_w = torch::zeros_like(w);
-  auto d_u = torch::zeros_like(u);
   auto d_zeta = torch::zeros_like(initial_h);
   auto d_nu = torch::zeros_like(initial_h);
   auto d_bias_z = torch::zeros_like(initial_h);
   auto d_bias_h_prime = torch::zeros_like(initial_h);
 
+  bool w_low_rank = w1.size(0) != 0;
+  bool u_low_rank = u1.size(0) != 0;
+  if(w_low_rank) {
+    w = torch::mm(w2, w1);
+  }
+  if (u_low_rank) {
+    u = torch::mm(u2, u1);
+  }
+  auto d_w = torch::zeros_like(w);
+  auto d_u = torch::zeros_like(u);
+  
   zeta = torch::sigmoid(zeta);
   nu = torch::sigmoid(nu);
   auto d_nu_sigmoid = d_sigmoid(nu);
@@ -468,11 +495,26 @@ std::vector<torch::Tensor> fastgrnn_unroll_cuda_backward(
     d_input[t] = torch::mm(d_precomp, w);
     d_w = torch::addmm(d_w, d_precomp.transpose(0, 1), input[t]);
     d_u = torch::addmm(d_u, d_precomp.transpose(0, 1), prev_h_);
-    // grad_curr_h = d_old_h;
   }
   d_bias_z = d_bias_z.sum(0, true);
   d_bias_h_prime = d_bias_h_prime.sum(0, true);
   d_zeta = (d_zeta.sum(0, true)).sum(1, true);
   d_nu = (d_nu.sum(0, true)).sum(1, true);
-  return {d_input, d_w, d_u, d_bias_z, d_bias_h_prime, d_zeta, d_nu, d_old_h};
+  if (w_low_rank) {
+    auto d_w1 = torch::mm(w2.transpose(0, 1), d_w);
+    auto d_w2 = torch::mm(d_w, w1.transpose(0, 1));
+    d_w = torch::empty(0);
+  } else {
+    auto d_w1 = torch::empty(0);
+    auto d_w2 = torch::empty(0);
+  }
+  if(u_low_rank) {
+    auto d_u1 = torch::mm(u2.transpose(0, 1), d_u);
+    auto d_u2 = torch::mm(d_u, u1.transpose(0, 1));
+    d_u = torch::empty(0);
+  } else {
+    auto d_u1 = torch::empty(0);
+    auto d_u2 = torch::empty(0);
+  }
+  return {d_input, d_bias_z, d_bias_h_prime, d_zeta, d_nu, d_old_h, d_w, d_u, d_w1, d_w2, d_u1, d_u2};
 }

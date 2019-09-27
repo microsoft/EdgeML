@@ -34,7 +34,11 @@ std::vector<torch::Tensor> fastgrnn_unroll_cuda_forward(
   torch::Tensor zeta,
   torch::Tensor nu,
   torch::Tensor initial_h,
-  int z_non_linearity);
+  int z_non_linearity,
+  torch::Tensor w1,
+  torch::Tensor w2,
+  torch::Tensor u1,
+  torch::Tensor u2);
 
 std::vector<torch::Tensor> fastgrnn_unroll_cuda_backward(
   torch::Tensor grad_h,
@@ -47,7 +51,11 @@ std::vector<torch::Tensor> fastgrnn_unroll_cuda_backward(
   torch::Tensor z,
   torch::Tensor h_prime,
   torch::Tensor initial_h,
-  int z_non_linearity);
+  int z_non_linearity,
+  torch::Tensor w1,
+  torch::Tensor w2,
+  torch::Tensor u1,
+  torch::Tensor u2);
 
 #define CHECK_CUDA(x) AT_ASSERTM(x.type().is_cuda(), #x " must be a CUDA tensor")
 #define CHECK_CONTIGUOUS(x) AT_ASSERTM(x.is_contiguous(), #x " must be contiguous")
@@ -108,16 +116,30 @@ std::vector<torch::Tensor> fastgrnn_unroll_forward(
   torch::Tensor zeta,
   torch::Tensor nu,
   torch::Tensor initial_h,
-  int z_non_linearity) {
+  int z_non_linearity,
+  torch::Tensor w1,
+  torch::Tensor w2,
+  torch::Tensor u1,
+  torch::Tensor u2) {
   CHECK_INPUT(input);
-  CHECK_INPUT(w);
-  CHECK_INPUT(u);
+  if(w1.size(0) == 0) {
+    CHECK_INPUT(w);
+  } else {
+    CHECK_INPUT(w1);
+    CHECK_INPUT(w2);
+  }
+  if (u1.size(0) == 0) {
+    CHECK_INPUT(u);
+  } else {
+    CHECK_INPUT(u1);
+    CHECK_INPUT(u2);
+  }
   CHECK_INPUT(bias_z);
   CHECK_INPUT(bias_h_prime);
   CHECK_INPUT(initial_h);
   CHECK_INPUT(zeta);
   CHECK_INPUT(nu);
-  return fastgrnn_unroll_cuda_forward(input, w, u, bias_z, bias_h_prime, zeta, nu, initial_h, z_non_linearity);
+  return fastgrnn_unroll_cuda_forward(input, w, u, bias_z, bias_h_prime, zeta, nu, initial_h, z_non_linearity, w1, w2, u1, u2);
 }
 
 std::vector<torch::Tensor> fastgrnn_unroll_backward(
@@ -131,14 +153,28 @@ std::vector<torch::Tensor> fastgrnn_unroll_backward(
   torch::Tensor z,
   torch::Tensor h_prime,
   torch::Tensor initial_h,
+  torch::Tensor w1,
+  torch::Tensor w2,
+  torch::Tensor u1,
+  torch::Tensor u2,
   int z_non_linearity) {
   CHECK_INPUT(grad_h);
   CHECK_INPUT(input);
   CHECK_INPUT(hidden_states);
   CHECK_INPUT(z);
   CHECK_INPUT(h_prime);
-  CHECK_INPUT(w);
-  CHECK_INPUT(u);
+  if(w1.size(0) == 0) {
+    CHECK_INPUT(w);
+  } else {
+    CHECK_INPUT(w1);
+    CHECK_INPUT(w2);
+  }
+  if (u1.size(0) == 0) {
+    CHECK_INPUT(u);
+  } else {
+    CHECK_INPUT(u1);
+    CHECK_INPUT(u2);
+  }
   CHECK_INPUT(zeta);
   CHECK_INPUT(nu);
   CHECK_INPUT(initial_h);
@@ -154,7 +190,8 @@ std::vector<torch::Tensor> fastgrnn_unroll_backward(
     z,
     h_prime,
     initial_h,
-    z_non_linearity);
+    z_non_linearity,
+    w1, w2, u1, u2);
 }
 
 

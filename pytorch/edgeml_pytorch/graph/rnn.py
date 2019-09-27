@@ -329,7 +329,7 @@ class FastGRNNCUDACell(RNNCell):
         self._nuInit = nuInit
         self._name = name
         self._gate_non_linearity = NON_LINEARITY[gate_non_linearity]
-        self.W = nn.Parameter(0.1 * torch.randn([input_size, hidden_size]))
+        self.W = nn.Parameter(0.1 * torch.randn([hidden_size, input_size]))
         self.U = nn.Parameter(0.1 * torch.randn([hidden_size, hidden_size]))
 
         self.bias_gate = nn.Parameter(torch.ones([1, hidden_size]))
@@ -1065,7 +1065,8 @@ class FastGRNN(nn.Module):
 
 class FastGRNNCUDA(nn.Module):
     """Unrolled implementation of the FastGRNNCUDACell"""
-    def __init__(self, input_size, hidden_size, gate_non_linearity="sigmoid", zetaInit=1.0, nuInit=-4.0, name="FastGRNNCUDACell"):
+    def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
+                 update_nonlinearity="tanh", wRank=None, uRank=None, zetaInit=1.0, nuInit=-4.0, name="FastGRNNCUDACell"):
         super(FastGRNNCUDA, self).__init__()
         if utils.findCUDA() is None:
             raise Exception('FastGRNNCUDA is supported only on GPU devices.')
@@ -1075,7 +1076,34 @@ class FastGRNNCUDA(nn.Module):
         self._zetaInit = zetaInit
         self._nuInit = nuInit
         self._name = name
-        self._gate_non_linearity = NON_LINEARITY[gate_non_linearity]
+    
+        if wRank is not None:
+            self._num_W_matrices += 1
+            self._num_weight_matrices[0] = self._num_W_matrices
+        if uRank is not None:
+            self._num_U_matrices += 1
+            self._num_weight_matrices[1] = self._num_U_matrices
+        self._name = name
+
+        if wRank is None:
+            self.W = nn.Parameter(0.1 * torch.randn([hidden_size, input_size]))
+            self.W1 = torch.empty(0)
+            self.W2 = torch.empty(0)
+        else:
+            self.W = torch.empty(0)
+            self.W1 = nn.Parameter(0.1 * torch.randn([wRank, input_size]))
+            self.W2 = nn.Parameter(0.1 * torch.randn([hidden_size, wRank]))
+
+        if uRank is None:
+            self.U = nn.Parameter(0.1 * torch.randn([hidden_size, hidden_size]))
+            self.U1 = torch.empty(0)
+            self.U2 = torch.empty(0)
+        else:
+            self.U = torch.empty(0)
+            self.U1 = nn.Parameter(0.1 * torch.randn([uRank, hidden_size]))
+            self.U2 = nn.Parameter(0.1 * torch.randn([hidden_size, uRank]))
+
+        self._gate_non_linearity = NON_LINEARITY[gate_nonlinearity]
         self.W = nn.Parameter(0.1 * torch.randn([input_size, hidden_size]))
         self.U = nn.Parameter(0.1 * torch.randn([hidden_size, hidden_size]))
 
@@ -1086,9 +1114,12 @@ class FastGRNNCUDA(nn.Module):
 
     def forward(self, input, h_state, cell_state=None):
         # input: [timesteps, batch, features, state_size]
-        return FastGRNNUnrollFunction.apply(input, self.W, self.U, self.bias_gate, self.bias_update, self.zeta, self.nu, h_state, self._gate_non_linearity)
+        return FastGRNNUnrollFunction.apply(input, self.bias_gate, self.bias_update, self.zeta, self.nu, h_state,
+            self.W, self.U, self.W1, self.W2, self.U1, self.U2, self._gate_non_linearity)
 
     def getVars(self):
+        if self._num_W_matrices != 1:
+           return [self.W1, self.W2, self.U1, self.U2, self.bias_gate, self.bias_update, self.zeta, self.nu]
         return [self.W, self.U, self.bias_gate, self.bias_update, self.zeta, self.nu]
 
 class SRNN2(nn.Module):
@@ -1225,10 +1256,10 @@ class FastGRNNFunction(Function):
 
 class FastGRNNUnrollFunction(Function):
     @staticmethod
-    def forward(ctx,  input, w, u, bias_gate, bias_update, zeta, nu, old_h, gate_non_linearity):
-        outputs = fastgrnn_cuda.forward_unroll(input, w, u, bias_gate, bias_update, zeta, nu, old_h, gate_non_linearity)
+    def forward(ctx, input, bias_gate, bias_update, zeta, nu, old_h, w, u, w1, w2, u1, u2, gate_non_linearity):
+        outputs = fastgrnn_cuda.forward_unroll(input, w, u, bias_gate, bias_update, zeta, nu, old_h, gate_non_linearity, w1, w2, u1, u2)
         hidden_states = outputs[0]
-        variables = [input, hidden_states, zeta, nu, w, u] + outputs[1:] + [old_h]
+        variables = [input, hidden_states, zeta, nu, w, u] + outputs[1:] + [old_h, w1, w2, u1, u2]
         ctx.save_for_backward(*variables)
         ctx.gate_non_linearity = gate_non_linearity
         return hidden_states
@@ -1237,5 +1268,4 @@ class FastGRNNUnrollFunction(Function):
     def backward(ctx, grad_h):
         outputs = fastgrnn_cuda.backward_unroll(
             grad_h.contiguous(), *ctx.saved_variables, ctx.gate_non_linearity)
-        d_input, d_w, d_u, d_bias_gate, d_bias_update, d_zeta, d_nu, d_old_h = outputs
-        return d_input, d_w, d_u, d_bias_gate, d_bias_update, d_zeta, d_nu, d_old_h
+        return tuple(outputs + [None])
