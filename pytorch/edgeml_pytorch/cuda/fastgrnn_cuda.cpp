@@ -3,27 +3,35 @@
 #include <vector>
 
 std::vector<torch::Tensor> fastgrnn_cuda_forward(
-    torch::Tensor input,
-    torch::Tensor W,
-    torch::Tensor U,
-    torch::Tensor bias_gate,
-    torch::Tensor bias_update,
-    torch::Tensor zeta,
-    torch::Tensor nu,
-    torch::Tensor old_h,
-    int z_non_linearity);
+  torch::Tensor input,
+  torch::Tensor w,
+  torch::Tensor u,
+  torch::Tensor bias_gate,
+  torch::Tensor bias_update,
+  torch::Tensor zeta,
+  torch::Tensor nu,
+  torch::Tensor old_h,
+  int z_non_linearity,
+  torch::Tensor w1,
+  torch::Tensor w2,
+  torch::Tensor u1,
+  torch::Tensor u2);
 
 std::vector<torch::Tensor> fastgrnn_cuda_backward(
-    torch::Tensor grad_h,
-    torch::Tensor input,
-    torch::Tensor old_h,
-    torch::Tensor zeta,
-    torch::Tensor nu,
-    torch::Tensor W,
-    torch::Tensor U,
-    int z_non_linearity,
-    torch::Tensor z,
-    torch::Tensor h_prime);
+  torch::Tensor grad_h,
+  torch::Tensor input,
+  torch::Tensor old_h,
+  torch::Tensor zeta,
+  torch::Tensor nu,
+  torch::Tensor w,
+  torch::Tensor u,
+  int z_non_linearity,
+  torch::Tensor z,
+  torch::Tensor h_prime,
+  torch::Tensor w1,
+  torch::Tensor w2,
+  torch::Tensor u1,
+  torch::Tensor u2);
 
 std::vector<torch::Tensor> fastgrnn_unroll_cuda_forward(
   torch::Tensor input,
@@ -62,38 +70,56 @@ std::vector<torch::Tensor> fastgrnn_unroll_cuda_backward(
 #define CHECK_INPUT(x) CHECK_CUDA(x); CHECK_CONTIGUOUS(x)
 
 std::vector<torch::Tensor> fastgrnn_forward(
-    torch::Tensor input,
-    torch::Tensor W,
-    torch::Tensor U,
-    torch::Tensor bias_gate,
-    torch::Tensor bias_update,
-    torch::Tensor zeta,
-    torch::Tensor nu,
-    torch::Tensor old_h,
-    int z_non_linearity) {
+  torch::Tensor input,
+  torch::Tensor w,
+  torch::Tensor u,
+  torch::Tensor bias_gate,
+  torch::Tensor bias_update,
+  torch::Tensor zeta,
+  torch::Tensor nu,
+  torch::Tensor old_h,
+  int z_non_linearity,
+  torch::Tensor w1,
+  torch::Tensor w2,
+  torch::Tensor u1,
+  torch::Tensor u2) {
   CHECK_INPUT(input);
-  CHECK_INPUT(W);
-  CHECK_INPUT(U);
+  if(w1.size(0) == 0) {
+    CHECK_INPUT(w);
+  } else {
+    CHECK_INPUT(w1);
+    CHECK_INPUT(w2);
+  }
+  if (u1.size(0) == 0) {
+    CHECK_INPUT(u);
+  } else {
+    CHECK_INPUT(u1);
+    CHECK_INPUT(u2);
+  }
   CHECK_INPUT(bias_gate);
   CHECK_INPUT(bias_update);
   CHECK_INPUT(zeta);
   CHECK_INPUT(nu);
   CHECK_INPUT(old_h);
 
-  return fastgrnn_cuda_forward(input, W, U, bias_gate, bias_update, zeta, nu, old_h, z_non_linearity);
+  return fastgrnn_cuda_forward(input, w, u, bias_gate, bias_update, zeta, nu, old_h, z_non_linearity, w1, w2, u1, u2);
 }
 
 std::vector<torch::Tensor> fastgrnn_backward(
-    torch::Tensor grad_h,
-    torch::Tensor input,
-    torch::Tensor old_h,
-    torch::Tensor zeta,
-    torch::Tensor nu,
-    torch::Tensor W,
-    torch::Tensor U,
-    torch::Tensor z,
-    torch::Tensor h_prime,
-    int z_non_linearity) {
+  torch::Tensor grad_h,
+  torch::Tensor input,
+  torch::Tensor old_h,
+  torch::Tensor zeta,
+  torch::Tensor nu,
+  torch::Tensor w,
+  torch::Tensor u,
+  torch::Tensor z,
+  torch::Tensor h_prime,
+  torch::Tensor w1,
+  torch::Tensor w2,
+  torch::Tensor u1,
+  torch::Tensor u2,
+  int z_non_linearity) {
   CHECK_INPUT(grad_h);
   CHECK_INPUT(input);
   CHECK_INPUT(old_h);
@@ -101,10 +127,20 @@ std::vector<torch::Tensor> fastgrnn_backward(
   CHECK_INPUT(nu);
   CHECK_INPUT(z);
   CHECK_INPUT(h_prime);
-  CHECK_INPUT(W);
-  CHECK_INPUT(U);
+  if(w1.size(0) == 0) {
+    CHECK_INPUT(w);
+  } else {
+    CHECK_INPUT(w1);
+    CHECK_INPUT(w2);
+  }
+  if (u1.size(0) == 0) {
+    CHECK_INPUT(u);
+  } else {
+    CHECK_INPUT(u1);
+    CHECK_INPUT(u2);
+  }
 
-  return fastgrnn_cuda_backward(grad_h, input, old_h, zeta, nu, W, U, z_non_linearity, z, h_prime);
+  return fastgrnn_cuda_backward(grad_h, input, old_h, zeta, nu, w, u, z_non_linearity, z, h_prime, w1, w2, u1, u2);
 }
 
 std::vector<torch::Tensor> fastgrnn_unroll_forward(
