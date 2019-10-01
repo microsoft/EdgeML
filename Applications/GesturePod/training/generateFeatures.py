@@ -25,14 +25,14 @@ labelledFileList = [
     # Should not contain files with only noise.
     # They are delt with separately - allNoiseFileList.
     
-    './data/labelled_data/outputFileName1_labelled.csv',
+    'foo_labelled.csv',
 ]
 
 allNoiseFileList = [
     # Files containing only noise - walking, climbing stairs, etc.
     # Note - This requires raw files, *NOT* labelled files
 
-    './data/raw_data/outputFileName2.csv',
+    
 ]
 
 NUM_THREADS = 1
@@ -305,7 +305,7 @@ def threadFeatureExtractor(df, hyperParams, isDebug,
     smaller chunks
     '''
     # split dataframe
-    print("Starting splitting of data frame")
+    print("\n Starting splitting of data frame")
     numDataFrames = NUM_THREADS
     dataFrames = np.array_split(df, numDataFrames)
     threads = [None for i in range(numDataFrames)]
@@ -369,7 +369,7 @@ def main(inputFolder, outputFolder, fileList,
             oldColOrder = ret.columns
         for i in range(0, len(oldColOrder)):
             assert(oldColOrder[i] == ret.columns[i])
-        outputName = outputFolder + '/' + __file[:-4] + '_thread_extracted.csv'
+        outputName = outputFolder + '/' + __file[:-4] + '_extracted.csv'
         print("Starting to write to csv")
         ret.to_csv(outputName, index=False)
     endTime = time.time()

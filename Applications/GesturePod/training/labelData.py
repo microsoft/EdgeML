@@ -58,7 +58,8 @@ def leftRightCB(event, eventHandlerObj):
 
 
 def quitCB(event, eventHandlerObj):
-    outfilename = 'x6z_labelled.csv'
+    global fileName
+    outfilename = "./data/labelled_data/" + fileName[:-4] + '_labelled.csv'
     print("Saving and exiting")
     print("Outputfile: %s" % outfilename)
     eventHandlerObj.dataFrame.to_csv(outfilename, index=False)
@@ -144,10 +145,8 @@ def run(dataFrame, length, stride):
     eventHandler.registerEvent(DTAP, labelCB)
     eventHandler.registerEvent(LEFT_TWIST, labelCB)
     eventHandler.registerEvent(RIGHT_TWIST, labelCB)
-    eventHandler.registerEvent(NOTA, labelCB)
+    eventHandler.registerEvent(NOISE, labelCB)
     eventHandler.registerEvent(SILENCE, labelCB)
-    eventHandler.registerEvent(LEFT_TWIST_SLOW, labelCB)
-    eventHandler.registerEvent(RIGHT_TWIST_SLOW, labelCB)
     eventHandler.registerEvent(DOUBLE_SWIPE, labelCB)
     labelCol = 'mlabel'
     if labelCol not in dataFrame:
@@ -199,9 +198,9 @@ def run(dataFrame, length, stride):
         eventHandler.statusMessage = ""
     return dataFrame
 
-
+fileName = fileName  = sys.argv[1]
 def main():
-    fileName  = sys.argv[1]
+    global fileName
     file      = "./data/raw_data/" + fileName 
     dataFrame = pd.read_csv(file)
     run(dataFrame, 400, 20)
