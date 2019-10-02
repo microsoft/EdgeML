@@ -1100,7 +1100,9 @@ class FastGRNN(nn.Module):
 class FastGRNNCUDA(nn.Module):
     """Unrolled implementation of the FastGRNNCUDACell"""
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
-                 update_nonlinearity="tanh", wRank=None, uRank=None, zetaInit=1.0, nuInit=-4.0, name="FastGRNNCUDACell"):
+                 update_nonlinearity="tanh", wRank=None, uRank=None, 
+                 wSparsity=1.0, uSparsity=1.0, zetaInit=1.0, nuInit=-4.0,
+                 name="FastGRNNCUDACell"):
         super(FastGRNNCUDA, self).__init__()
         if utils.findCUDA() is None:
             raise Exception('FastGRNNCUDA is supported only on GPU devices.')

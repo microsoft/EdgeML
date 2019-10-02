@@ -14,10 +14,10 @@ def get_model_class(inheritance_class=nn.Module):
            RNN-based classifier
         """
 
-        def __init__(self, input_dim, num_layers, hidden_units_list,
+        def __init__(self, rnn_name, input_dim, num_layers, hidden_units_list,
                      wRank_list, uRank_list, wSparsity_list, uSparsity_list,
-                     gate_nonlinearity, update_nonlinearity,
-                     num_classes=None, linear=True, batch_first=False, apply_softmax=True):
+                     gate_nonlinearity, update_nonlinearity, num_classes=None,
+                     linear=True, batch_first=False, apply_softmax=True):
             """
             Initialize the KeywordSpotter with the following parameters:
             input_dim - the size of the input audio frame in # samples.
@@ -45,8 +45,9 @@ def get_model_class(inheritance_class=nn.Module):
 
             super(RNNClassifierModel, self).__init__()
 
+            RNN = getattr(getattr(getattr(__import__('edgeml_pytorch'), 'graph'), 'rnn'), rnn_name)
             self.rnn_list = nn.ModuleList([
-                FastGRNN(self.input_dim if l==0 else self.hidden_units_list[l-1], 
+                RNN(self.input_dim if l==0 else self.hidden_units_list[l-1], 
                             self.hidden_units_list[l], 
                             gate_nonlinearity=self.gate_nonlinearity,
                             update_nonlinearity=self.update_nonlinearity,

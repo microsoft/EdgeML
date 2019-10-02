@@ -414,10 +414,10 @@ def create_model(model_config, input_size, num_keywords):
     wSparsity_list = [model_config.wSparsity, model_config.wSparsity, model_config.wSparsity]
     uSparsity_list = [model_config.uSparsity, model_config.uSparsity, model_config.uSparsity]
     print(model_config.gate_nonlinearity, model_config.update_nonlinearity)
-    return ModelClass(input_size, model_config.num_layers, hidden_units_list,
-                        wRank_list, uRank_list, wSparsity_list, uSparsity_list,
-                        model_config.gate_nonlinearity, model_config.update_nonlinearity,
-                        num_keywords)
+    return ModelClass(model_config.architecture, input_size, model_config.num_layers,
+                      hidden_units_list, wRank_list, uRank_list, wSparsity_list,
+                      uSparsity_list, model_config.gate_nonlinearity, 
+                      model_config.update_nonlinearity, num_keywords)
 
 def save_json(obj, filename):
     with open(filename, "w") as f:
