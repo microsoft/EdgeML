@@ -9,6 +9,7 @@ This script is used for collecting raw data.
 import serial
 import sys
 from threading import Thread
+import os
 
 TOGGLESTATUS = 'OFF'
 EXIT = False
@@ -59,6 +60,12 @@ def main():
     # Ignore what ever remains of the first line
     for x in range(0, 5):
         a = ser.readline()
+    # Create directory
+    if not os.path.exists('data'):
+        os.mkdir('data')
+    if not os.path.exists('data/raw_data'):
+        os.mkdir('data/raw_data')
+    outFile = './data/raw_data/' + outFile
     fout = open(outFile, 'w')
     fout.write("millis,ax,ay,az,gx,gy,gz,toggle\n")
     print("Starting fetch")

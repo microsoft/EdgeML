@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import sys
 import os
+
 module_path = os.path.abspath(os.path.join('../'))
 if module_path not in sys.path:
     sys.path.append(module_path)
@@ -59,6 +60,8 @@ def leftRightCB(event, eventHandlerObj):
 
 def quitCB(event, eventHandlerObj):
     global fileName
+    if not os.path.exists('data/labelled_data'):
+        os.mkdir('data/labelled_data')
     outfilename = "./data/labelled_data/" + fileName[:-4] + '_labelled.csv'
     print("Saving and exiting")
     print("Outputfile: %s" % outfilename)

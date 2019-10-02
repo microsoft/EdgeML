@@ -19,6 +19,7 @@ import time
 import numpy as np
 import re
 import threading
+import os
 
 
 labelledFileList = [
@@ -418,6 +419,8 @@ def processNoiseData():
     rawSource = './data/raw_data/'
     labeledOutput = './data/labelled_data/'
     extractedOutput = './data/extracted_data/'
+    if not os.path.exists('data/extracted_data'):
+        os.mkdir('data/extracted_data')
     labelAllAsNoise(rawSource,
                     labeledOutput, allNoiseFileList)
     labeledFileList = [x[:-4] + '_labelled.csv' for x in allNoiseFileList]
@@ -426,6 +429,8 @@ def processNoiseData():
 
 
 def processLabelledData():
+    if not os.path.exists('data/extracted_data'):
+        os.mkdir('data/extracted_data')
     main('./data/labelled_data/', './data/extracted_data/',
          labelledFileList, isDebug=False, collapse=True)
 

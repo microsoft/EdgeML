@@ -64,7 +64,7 @@ The labelled data file `foo_labelled.csv` will be written at `./data/labelled_da
 ## Feature Extraction
 
 1. Enlist the labelled files in *labelledFileList* List in
-   `featureExtraction.py`. Files that do not contain any gestures - for example,
+   `generateFeatures.py`. Files that do not contain any gestures - for example,
 data of climbing stairs, walking in park, etc should be listed in
 *allNoiseFileList*.
 
