@@ -17,8 +17,8 @@ from timestep.plotterobjects import LinePlotter, BarPlotter
 from timestep.plotterobjects import BooleanPlotter, StatusBox
 from timestep.eventhandler import BasicEventHandler
 
-NOISE = '0'
-SILENCE = '1'
+SILENCE = '0'
+NOISE = '1'
 DTAP = '3'
 RIGHT_TWIST = '4'
 LEFT_TWIST = '5'
@@ -150,6 +150,7 @@ def run(dataFrame, length, stride):
     eventHandler.registerEvent(RIGHT_TWIST, labelCB)
     eventHandler.registerEvent(NOISE, labelCB)
     eventHandler.registerEvent(SILENCE, labelCB)
+    eventHandler.registerEvent(TWIRL, labelCB)
     eventHandler.registerEvent(DOUBLE_SWIPE, labelCB)
     labelCol = 'mlabel'
     if labelCol not in dataFrame:
