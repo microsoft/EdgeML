@@ -1,4 +1,4 @@
-## Edge Machine Learning: Tensorflow Library 
+## Edge Machine Learning: Pytorch Library 
 
 This directory includes PyTorch implementations of various techniques and
 algorithms developed as part of EdgeML. Currently, the following algorithms are
