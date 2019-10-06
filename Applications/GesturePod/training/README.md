@@ -75,7 +75,7 @@ python generateFeatures.py
 This will generate a `train.csv` and `test.csv` files that should be used to generate a ML model.
 
 ## Training and Deploying
-Using the TensorFlow / PyTorch implementation of the ProtoNN algorithm, train a
+Using the TensorFlow / PyTorch / cpp implementation of the ProtoNN algorithm from the EdgeML repository, train a
 model on the ```train.csv``` file generated above.  Extract W, B, Z, and gamma
 values from the trained ProtoNN model. Update these values in
 ```EdgeML/Applications/GesturePod/onMKR1000/src/data.h``` to deploy the model on
