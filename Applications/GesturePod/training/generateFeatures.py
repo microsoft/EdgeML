@@ -36,6 +36,7 @@ allNoiseFileList = [
     
 ]
 
+# Not tested for more than 1 thread
 NUM_THREADS = 1
 
 def collapseLabel(dataFrame, hyperParams):
@@ -439,7 +440,7 @@ if __name__ == '__main__':
     print("Starting Feature Extraction")
     # The below 2 methods help in feature extraction.
     processLabelledData()
-    processNoiseData()
+    # processNoiseData()
     # The below method generates train and test split.
     filesForExport = labelledFileList
     filesForExport += [x[:-4] + '_labelled.csv' for x in allNoiseFileList]
