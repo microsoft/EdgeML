@@ -1159,6 +1159,11 @@ class FastGRNNCUDA(nn.Module):
 
     def forward(self, input, h_state, cell_state=None):
         # input: [timesteps, batch, features, state_size]
+        if not input.is_cuda:
+            input.to(self.device)
+        if not h_state.is_cuda:
+            h_state.to(self.device)
+        
         return FastGRNNUnrollFunction.apply(input, self.bias_gate, self.bias_update, self.zeta, self.nu, h_state,
             self.W, self.U, self.W1, self.W2, self.U1, self.U2, self._gate_non_linearity)
 
