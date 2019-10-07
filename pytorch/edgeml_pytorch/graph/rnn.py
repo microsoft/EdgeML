@@ -1103,7 +1103,7 @@ class FastGRNNCUDA(nn.Module):
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None, 
                  wSparsity=1.0, uSparsity=1.0, zetaInit=1.0, nuInit=-4.0,
-                 name="FastGRNNCUDACell"):
+                 name="FastGRNNCUDA"):
         super(FastGRNNCUDA, self).__init__()
         if utils.findCUDA() is None:
             raise Exception('FastGRNNCUDA is supported only on GPU devices.')
@@ -1113,7 +1113,17 @@ class FastGRNNCUDA(nn.Module):
         self._zetaInit = zetaInit
         self._nuInit = nuInit
         self._name = name
-    
+        self._num_W_matrices = 1
+        self._num_U_matrices = 1
+        self._num_biases = 2
+        self._num_weight_matrices = [self._num_W_matrices, self._num_U_matrices, self._num_biases]
+        self._wRank = wRank
+        self._uRank = uRank
+        self._wSparsity = wSparsity
+        self._uSparsity = uSparsity
+        self.oldmats = []
+        self.device = torch.device("cuda")
+
         if wRank is not None:
             self._num_W_matrices += 1
             self._num_weight_matrices[0] = self._num_W_matrices
@@ -1123,29 +1133,29 @@ class FastGRNNCUDA(nn.Module):
         self._name = name
 
         if wRank is None:
-            self.W = nn.Parameter(0.1 * torch.randn([hidden_size, input_size]))
+            self.W = nn.Parameter(0.1 * torch.randn([hidden_size, input_size], device=self.device))
             self.W1 = torch.empty(0)
             self.W2 = torch.empty(0)
         else:
             self.W = torch.empty(0)
-            self.W1 = nn.Parameter(0.1 * torch.randn([wRank, input_size]))
-            self.W2 = nn.Parameter(0.1 * torch.randn([hidden_size, wRank]))
+            self.W1 = nn.Parameter(0.1 * torch.randn([wRank, input_size], device=self.device))
+            self.W2 = nn.Parameter(0.1 * torch.randn([hidden_size, wRank], device=self.device))
 
         if uRank is None:
-            self.U = nn.Parameter(0.1 * torch.randn([hidden_size, hidden_size]))
+            self.U = nn.Parameter(0.1 * torch.randn([hidden_size, hidden_size], device=self.device))
             self.U1 = torch.empty(0)
             self.U2 = torch.empty(0)
         else:
             self.U = torch.empty(0)
-            self.U1 = nn.Parameter(0.1 * torch.randn([uRank, hidden_size]))
-            self.U2 = nn.Parameter(0.1 * torch.randn([hidden_size, uRank]))
+            self.U1 = nn.Parameter(0.1 * torch.randn([uRank, hidden_size], device=self.device))
+            self.U2 = nn.Parameter(0.1 * torch.randn([hidden_size, uRank], device=self.device))
 
         self._gate_non_linearity = NON_LINEARITY[gate_nonlinearity]
 
-        self.bias_gate = nn.Parameter(torch.ones([1, hidden_size]))
-        self.bias_update = nn.Parameter(torch.ones([1, hidden_size]))
-        self.zeta = nn.Parameter(self._zetaInit * torch.ones([1, 1]))
-        self.nu = nn.Parameter(self._nuInit * torch.ones([1, 1]))
+        self.bias_gate = nn.Parameter(torch.ones([1, hidden_size], device=self.device))
+        self.bias_update = nn.Parameter(torch.ones([1, hidden_size], device=self.device))
+        self.zeta = nn.Parameter(self._zetaInit * torch.ones([1, 1], device=self.device))
+        self.nu = nn.Parameter(self._nuInit * torch.ones([1, 1], device=self.device))
 
     def forward(self, input, h_state, cell_state=None):
         # input: [timesteps, batch, features, state_size]
