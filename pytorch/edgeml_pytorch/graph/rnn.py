@@ -1128,7 +1128,7 @@ class FastGRNNCUDA(nn.Module):
         self._uSparsity = uSparsity
         self.oldmats = []
         self.device = torch.device("cuda")
-
+        self.batch_first = batch_first
         if wRank is not None:
             self._num_W_matrices += 1
             self._num_weight_matrices[0] = self._num_W_matrices
@@ -1162,16 +1162,18 @@ class FastGRNNCUDA(nn.Module):
         self.zeta = nn.Parameter(self._zetaInit * torch.ones([1, 1], device=self.device))
         self.nu = nn.Parameter(self._nuInit * torch.ones([1, 1], device=self.device))
 
-    def forward(self, input, h_state, cell_state=None):
+    def forward(self, input, hiddenState, cell_state=None):
         # input: [timesteps, batch, features, state_size]
         if self.batch_first:
             input = input.transpose(0, 1)
         if not input.is_cuda:
-            input.to(self.device)
-        if not h_state.is_cuda:
-            h_state.to(self.device)
-        
-        return FastGRNNUnrollFunction.apply(input, self.bias_gate, self.bias_update, self.zeta, self.nu, h_state,
+            input = input.to(self.device)
+        if hiddenState is None:
+            hiddenState = torch.zeros(
+                [input.shape[1], self.hidden_size]).to(self.device)
+        if not hiddenState.is_cuda:
+            hiddenState = hiddenState.to(self.device)
+        return FastGRNNUnrollFunction.apply(input, self.bias_gate, self.bias_update, self.zeta, self.nu, hiddenState,
             self.W, self.U, self.W1, self.W2, self.U1, self.U2, self._gate_non_linearity)
 
     def getVars(self):
