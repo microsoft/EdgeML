@@ -1170,7 +1170,7 @@ class FastGRNNCUDA(nn.Module):
             input = input.to(self.device)
         if hiddenState is None:
             hiddenState = torch.zeros(
-                [input.shape[1], self.hidden_size]).to(self.device)
+                [input.shape[1], self._hidden_size]).to(self.device)
         if not hiddenState.is_cuda:
             hiddenState = hiddenState.to(self.device)
         return FastGRNNUnrollFunction.apply(input, self.bias_gate, self.bias_update, self.zeta, self.nu, hiddenState,
