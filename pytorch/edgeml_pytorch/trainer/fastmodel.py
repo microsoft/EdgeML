@@ -38,6 +38,7 @@ def get_model_class(inheritance_class=nn.Module):
             self.linear = linear
             self.batch_first = batch_first
             self.apply_softmax = apply_softmax
+            self.rnn_name = rnn_name
 
             if self.linear:
                 if not self.num_classes:
@@ -57,6 +58,18 @@ def get_model_class(inheritance_class=nn.Module):
                             batch_first = self.batch_first)
                 for l in range(self.num_layers)])
 
+            if rnn_name == "FastGRNNCUDA":
+                RNN_ = getattr(getattr(getattr(__import__('edgeml_pytorch'), 'graph'), 'rnn'), 'FastGRNN')
+                self.rnn_list_ = nn.ModuleList([
+                    RNN_(self.input_dim if l==0 else self.hidden_units_list[l-1],
+                        self.hidden_units_list[l],
+                        gate_nonlinearity=self.gate_nonlinearity,
+                        update_nonlinearity=self.update_nonlinearity,
+                        wRank=self.wRank_list[l], uRank=self.uRank_list[l],
+                        wSparsity=self.wSparsity_list[l],
+                        uSparsity=self.uSparsity_list[l],
+                        batch_first = self.batch_first)
+                    for l in range(self.num_layers)])
             # The linear layer is a fully connected layer that maps from hidden state space
             # to number of expected keywords
             if self.linear:
@@ -66,16 +79,30 @@ def get_model_class(inheritance_class=nn.Module):
 
         def sparsify(self):
             for rnn in self.rnn_list:
-                rnn.cell.sparsify()
+                if self.rnn_name is "FastGRNNCUDA":
+                    rnn.to(torch.device("cpu"))
+                    rnn.sparsify()
+                    rnn.to(torch.device("cuda"))
+                else:
+                    rnn.cell.sparsify()
 
         def sparsifyWithSupport(self):
             for rnn in self.rnn_list:
-                rnn.cell.sparsifyWithSupport()
+                if self.rnn_name is "FastGRNNCUDA":
+                    rnn.to(torch.device("cpu"))
+                    rnn.sparsifyWithSupport()
+                    rnn.to(torch.device("cuda"))
+                else:
+                    rnn.cell.sparsifyWithSupport()
 
         def get_model_size(self):
             total_size = 4 * self.hidden_units_list[self.num_layers-1] * self.num_classes
+            print(self.rnn_name)
             for rnn in self.rnn_list:
-                total_size += rnn.cell.get_model_size()
+                if self.rnn_name == "FastGRNNCUDA":
+                    total_size += rnn.get_model_size()
+                else:
+                    total_size += rnn.cell.get_model_size()
             return total_size
 
         def normalize(self, mean, std):
@@ -130,15 +157,32 @@ def get_model_class(inheritance_class=nn.Module):
                 input = (input - self.mean) / self.std
 
             rnn_in = input
-            for l in range(self.num_layers):
-                rnn = self.rnn_list[l]
-                model_output = rnn(rnn_in, hiddenState=self.hidden_states[l])
-                self.hidden_states[l] = model_output.detach()[-1, :, :]
+            if self.rnn_name == "FastGRNNCUDA":
                 if self.tracking:
-                    weights = rnn.getVars()
-                    model_output = onnx_exportable_rnn(rnn_in, weights,
-                                                       rnn.cell, output=model_output)
-                rnn_in = model_output
+                    for l in range(self.num_layers):
+                        print("Layer: ", l)
+                        rnn_ = self.rnn_list_[l]
+                        model_output = rnn_(rnn_in, hiddenState=self.hidden_states[l])
+                        self.hidden_states[l] = model_output.detach()[-1, :, :]
+                        weights = self.rnn_list[l].getVars()
+                        weights = [weight.clone() for weight in weights]
+                        model_output = onnx_exportable_rnn(rnn_in, weights, rnn_.cell, output=model_output)
+                        rnn_in = model_output
+                else:
+                    for l in range(self.num_layers):
+                        rnn = self.rnn_list[l]
+                        model_output = rnn(rnn_in, hiddenState=self.hidden_states[l])
+                        self.hidden_states[l] = model_output.detach()[-1, :, :]
+                        rnn_in = model_output
+            else:
+                for l in range(self.num_layers):
+                    rnn = self.rnn_list[l]
+                    model_output = rnn(rnn_in, hiddenState=self.hidden_states[l])
+                    self.hidden_states[l] = model_output.detach()[-1, :, :]
+                    if self.tracking:
+                        weights = rnn.getVars()
+                        model_output = onnx_exportable_rnn(rnn_in, weights, rnn.cell, output=model_output)
+                    rnn_in = model_output
 
             if self.linear:
                 model_output = self.hidden2keyword(model_output[-1, :, :])
