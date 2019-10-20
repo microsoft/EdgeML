@@ -1,6 +1,10 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
+
+# config file for train_classifier.py
+
 import json
 import os
-
 
 class ModelOptions:
     def __init__(self):

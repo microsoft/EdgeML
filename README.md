@@ -15,6 +15,7 @@ Algorithms that shine in this setting in terms of both model size and compute, n
  - **Bonsai**: Strong and shallow non-linear tree based classifier.
  - **ProtoNN**: **Proto**type based k-nearest neighbors (k**NN**) classifier. 
  - **EMI-RNN**: Training routine to recover the critical signature from time series data for faster and accurate RNN predictions.
+ - **S-RNN**: A meta-architecture for training RNNs that can be applied to streaming data.
  - **FastRNN & FastGRNN - FastCells**: **F**ast, **A**ccurate, **S**table and **T**iny (**G**ated) RNN cells.
 
 These algorithms can train models for classical supervised learning problems
@@ -75,13 +76,13 @@ Please [email us](mailto:edgeml@microsoft.com) your comments, criticism, and que
 If you use software from this library in your work, please use the BibTex entry below for citation.
 
 ```
-@software{edgeml01,
+@software{edgeml03,
    author = {{Dennis, Don Kurian and Gaurkar, Yash and Gopinath, Sridhar and Gupta, Chirag and
               Jain, Moksh and Kumar, Ashish and Kusupati, Aditya and Lovett, Chris 
               and Patil, Shishir G and Simhadri, Harsha Vardhan}},
    title = {{EdgeML: Machine Learning for resource-constrained edge devices}},
    url = {https://github.com/Microsoft/EdgeML},
-   version = {0.2},
+   version = {0.3},
 }
 ```
 
