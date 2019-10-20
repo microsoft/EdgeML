@@ -26,7 +26,7 @@ offline.
 A tool that adapts models trained by above algorithms to be inferred by fixed point arithmetic.
  - **SeeDot**: Floating-point to fixed-point quantization tool.
 
-Applications demonstrating usecases of these algorithms.
+Applications demonstrating usecases of these algorithms, such as [GesturePod](/docs/publications).
 
 ### Organization
  - The `tf` directory contains the `edgeml_tf` package which specifies these architectures in TensorFlow,
@@ -41,16 +41,18 @@ Please see install/run instructions in the README pages within these directories
 
 ### Details and project pages
 For details, please see our
- [project page](https://microsoft.github.io/EdgeML/) and
- [Microsoft Research page](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/).
-our ICML'17 publications on [Bonsai](docs/publications/Bonsai.pdf) and
-[ProtoNN](docs/publications/ProtoNN.pdf) algorithms, 
-NeurIPS'18 publications on [EMI-RNN](docs/publications/emi-rnn-nips18.pdf) and
-[FastGRNN](docs/publications/FastGRNN.pdf),
-and PLDI'19 publication on [SeeDot](docs/publications/SeeDot.pdf).
+ [project page](https://microsoft.github.io/EdgeML/), 
+ [Microsoft Research page](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/),
+the ICML'17 publications on [Bonsai](/docs/publications/Bonsai.pdf) and
+[ProtoNN](/docs/publications/ProtoNN.pdf) algorithms, 
+the NeurIPS'18 publications on [EMI-RNN](/docs/publications/emi-rnn-nips18.pdf) and
+[FastGRNN](/docs/publications/FastGRNN.pdf),
+the PLDI'19 publication on [SeeDot compiler](/docs/publications/SeeDot.pdf),
+the UIST'19 publication on [Gesturepod](/docs/publications/ICane-UIST19.pdf),
+and the NeurIPS'19 publication on [S-RNN](/docs/publications/SRNN.pdf).
 
 
-Checkout the [ELL](https://github.com/Microsoft/ELL) project which can
+Also checkout the [ELL](https://github.com/Microsoft/ELL) project which can
 provide optimized binaries for some of the ONNX models trained by this library.
 
 ### Contributors:
@@ -75,7 +77,8 @@ If you use software from this library in your work, please use the BibTex entry 
 ```
 @software{edgeml01,
    author = {{Dennis, Don Kurian and Gaurkar, Yash and Gopinath, Sridhar and Gupta, Chirag and
-      Kumar, Ashish and Kusupati, Aditya and Lovett, Chris and Patil, Shishir G and Simhadri, Harsha Vardhan}},
+              Jain, Moksh and Kumar, Ashish and Kusupati, Aditya and Lovett, Chris 
+              and Patil, Shishir G and Simhadri, Harsha Vardhan}},
    title = {{EdgeML: Machine Learning for resource-constrained edge devices}},
    url = {https://github.com/Microsoft/EdgeML},
    version = {0.2},

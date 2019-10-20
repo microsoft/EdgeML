@@ -9,12 +9,10 @@ available in Tensorflow:
 3. [FastRNN & FastGRNN](/docs/publications/FastGRNN.pdf)
 4. [ProtoNN](/docs/publications/ProtoNN.pdf)
 
-The TensorFlow compute graphs for these algoriths are packaged as
-`edgeml_tf.graph`. Trainers for these algorithms are in `edgeml_tf.trainer`.
-Usage directions and examples for these algorithms are provided in
- `$EDGEML_ROOT/examples/tf` directory. 
-To get started with any of the provided algorithms, please follow
-the notebooks in the `examples/tf` directory.
+The TensorFlow compute graphs for these algoriths are packaged as `edgeml_tf.graph`
+and trainers are in `edgeml_tf.trainer`. Usage directions and example notebook for
+these algorithms are provided in the [examples/tf directory](/examples/tf). 
+
 
 ## Installation
 

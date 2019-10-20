@@ -7,7 +7,8 @@ use-case on the USPS10 public dataset.
 `edgeml_pytorch.graph.bonsai` implements the Bonsai prediction graph in pytorch.
 The three-phase training routine for Bonsai is decoupled from the forward graph
 to facilitate a plug and play behaviour wherein Bonsai can be combined with or
-used as a final layer classifier for other architectures (RNNs, CNNs).
+used as a final layer classifier for other architectures (RNNs, CNNs). 
+See `edgeml_pytorch.trainer.bonsaiTrainer` for 3-phase training.
 
 Note that `bonsai_example.py` assumes that data is in a specific format.  It is
 assumed that train and test data is contained in two files, `train.npy` and
