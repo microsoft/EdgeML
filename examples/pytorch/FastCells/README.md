@@ -1,9 +1,12 @@
 # EdgeML FastCells on a sample public dataset
 
-This directory includes example notebooks and scripts of
+This directory includes example notebooks and scripts for training
 FastCells (FastRNN & FastGRNN) along with modified
 UGRNN, GRU and LSTM to support the LSQ training routine. 
 There is also a sample cleanup and train/test script for the USPS10 public dataset.
+The subfolder [`KWS-training`](KWS-training) contains code
+for training a keyword spotting model using a single- or multi-layer RNN.
+
 
 [`edgeml_pytorch.graph.rnn`](../../../pytorch/pytorch_edgeml/graph/rnn.py) 
 provides two RNN cells **FastRNNCell**  and **FastGRNNCell** with additional
