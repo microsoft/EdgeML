@@ -17,6 +17,7 @@ This repository contains algorithms that shine in this setting in terms of both 
  - **EMI-RNN**: Training routine to recover the critical signature from time series data for faster and accurate RNN predictions.
  - **FastRNN & FastGRNN - FastCells**: **F**ast, **A**ccurate, **S**table and **T**iny (**G**ated) RNN cells.
  - **SeeDot**: Floating-point to fixed-point quantization tool.
+ - **GesturePod**: Gesture recognition pipeline for microcontrollers.
  
 These algorithms can train models for classical supervised learning problems
 with memory requirements that are orders of magnitude lower than other modern
@@ -32,13 +33,16 @@ pages within these directories. The `applications` directory has code/demonstrat
 of applications of the EdgeML algorithms. The `Tools/SeeDot` directory has the
 quantization tool to generate fixed-point inference code.  
 
+We have also released the gesture recognition dataset, which can be accessed [here](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar.gz). 
+
 For details, please see our [wiki
 page](https://github.com/Microsoft/EdgeML/wiki/) and our ICML'17 publications
 on [Bonsai](docs/publications/Bonsai.pdf) and
 [ProtoNN](docs/publications/ProtoNN.pdf) algorithms, NeurIPS'18 publications on
 [EMI-RNN](docs/publications/emi-rnn-nips18.pdf) and
 [FastGRNN](docs/publications/FastGRNN.pdf), PLDI'19 publication on 
-[SeeDot](docs/publications/SeeDot.pdf).
+[SeeDot](docs/publications/SeeDot.pdf), UIST'19 publication on 
+[GesturePod](docs/publications/GesturePod-Uist19.pdf).
 
 
 Core Contributors:
