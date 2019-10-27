@@ -26,12 +26,14 @@ labelledFileList = [
     # Should not contain files with only noise.
     # They are delt with separately - allNoiseFileList.
     
-    'foo_labelled.csv',
+    'foo.csv',
 ]
 
 allNoiseFileList = [
     # Files containing only noise - walking, climbing stairs, etc.
     # Note - This requires raw files, *NOT* labelled files
+
+    'bar.csv',
 
     
 ]
@@ -412,26 +414,29 @@ def labelAllAsNoise(inputFolder, outputFolder, fileList):
         df.to_csv(outputFolder + '/' + outName, index=False)
 
 
-def processNoiseData():
+def processNoiseData(allNoiseFileList):
     '''
     WARNING: This takes RAW files and labels them. This does not take
     labeled files like the other methods
     '''
     rawSource = './data/raw_data/'
     labeledOutput = './data/labelled_data/'
+    if not os.path.exists('data/labelled_data'):
+        os.mkdir('data/labelled_data')
     extractedOutput = './data/extracted_data/'
     if not os.path.exists('data/extracted_data'):
         os.mkdir('data/extracted_data')
     labelAllAsNoise(rawSource,
                     labeledOutput, allNoiseFileList)
-    labeledFileList = [x[:-4] + '_labelled.csv' for x in allNoiseFileList]
+    labelledFileList = [x[:-4] + '_labelled.csv' for x in allNoiseFileList]
     main(labeledOutput, extractedOutput,
-         labeledFileList, isDebug=False, collapse=False)
+         labelledFileList, isDebug=False, collapse=False)
 
 
-def processLabelledData():
+def processLabelledData(labelledFileList):
     if not os.path.exists('data/extracted_data'):
         os.mkdir('data/extracted_data')
+    labelledFileList = [x[:-4] + '_labelled.csv' for x in labelledFileList]
     main('./data/labelled_data/', './data/extracted_data/',
          labelledFileList, isDebug=False, collapse=True)
 
@@ -439,10 +444,10 @@ def processLabelledData():
 if __name__ == '__main__':
     print("Starting Feature Extraction")
     # The below 2 methods help in feature extraction.
-    processLabelledData()
-    # processNoiseData()
+    processLabelledData(labelledFileList)
+    # processNoiseData(allNoiseFileList)
     # The below method generates train and test split.
-    filesForExport = labelledFileList
+    filesForExport = [x[:-4] + '_labelled.csv' for x in labelledFileList]
     filesForExport += [x[:-4] + '_labelled.csv' for x in allNoiseFileList]
     print("Generating training and test data from %d files" % 
                                     (len(filesForExport)))

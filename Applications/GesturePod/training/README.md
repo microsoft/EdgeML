@@ -21,6 +21,7 @@ Training a model to recognize gesture on the GesturePod consists of 5 parts:
 4. Training a ML model
 5. Deploying the model on the GesturePod to recognize gestures in real life.
 
+Note: In this directory we only train a new model for the GesturePod. To build the GeturePod hardware refer to the instructable [here](https://microsoft.github.io/EdgeML/Projects/GesturePod/instructable.html).
 
 ## Data Collection
 
@@ -42,12 +43,20 @@ to set up the required dependencies for the MKR1000 platform.
 ```
 python csvFromSerial.py [outputFileName] [COMPort]
 ``` 
+For example-
+```
+python csvFromSerial.py foo.csv COM6
+```
 The raw data file is stored at `./data/raw_data/`.
 
 
 ## Data Labelling
 
 1. The raw data in `./data/raw_data/foo.csv` must be labelled with the following command:
+```
+python labelData.py [outputFileName]
+```
+For example-
 ```
 python labelData.py foo.csv
 ```
@@ -89,7 +98,7 @@ Note the value of `gamma`.
 ```
 python genDataHeader.py [gamma]
 ```
-This will generate the `data.h`
+This will generate the `data.h` header file with the model.
 
 ## Dependencies
 To communicate with the MPU6050, we use [jrowberg's](https://github.com/jrowberg/i2cdevlib) ```i2cdevlib``` library.  Last tested with commit [900b8f9](https://github.com/jrowberg/i2cdevlib/tree/900b8f959e9fa5c3126e0301f8a61d45a4ea99cc).
