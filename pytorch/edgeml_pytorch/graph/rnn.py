@@ -1019,12 +1019,14 @@ class LSTM(nn.Module):
     """Equivalent to nn.LSTM using LSTMLRCell"""
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
-                 update_nonlinearity="tanh", wRank=None, uRank=None, batch_first=True):
+                 update_nonlinearity="tanh", wRank=None, uRank=None,
+                 wSparsity=1.0, uSparsity=1.0, batch_first=True):
         super(LSTM, self).__init__()
         self.cell = LSTMLRCell(input_size, hidden_size,
                                gate_nonlinearity=gate_nonlinearity,
                                update_nonlinearity=update_nonlinearity,
-                               wRank=wRank, uRank=uRank)
+                               wRank=wRank, uRank=uRank,
+                               wSparsity=wSparsity, uSparsity=uSparsity)
         self.unrollRNN = BaseRNN(self.cell, batch_first=batch_first)
 
     def forward(self, input, hiddenState=None, cellState=None):
@@ -1035,12 +1037,14 @@ class GRU(nn.Module):
     """Equivalent to nn.GRU using GRULRCell"""
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
-                 update_nonlinearity="tanh", wRank=None, uRank=None, batch_first=True):
+                 update_nonlinearity="tanh", wRank=None, uRank=None,
+                 wSparsity=1.0, uSparsity=1.0, batch_first=True):
         super(GRU, self).__init__()
         self.cell = GRULRCell(input_size, hidden_size,
                               gate_nonlinearity=gate_nonlinearity,
                               update_nonlinearity=update_nonlinearity,
-                              wRank=wRank, uRank=uRank)
+                              wRank=wRank, uRank=uRank,
+                              wSparsity=wSparsity, uSparsity=uSparsity)
         self.unrollRNN = BaseRNN(self.cell, batch_first=batch_first)
 
     def forward(self, input, hiddenState=None, cellState=None):
@@ -1051,12 +1055,14 @@ class UGRNN(nn.Module):
     """Equivalent to nn.UGRNN using UGRNNLRCell"""
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
-                 update_nonlinearity="tanh", wRank=None, uRank=None, batch_first=True):
+                 update_nonlinearity="tanh", wRank=None, uRank=None,
+                 wSparsity=1.0, uSparsity=1.0, batch_first=True):
         super(UGRNN, self).__init__()
         self.cell = UGRNNLRCell(input_size, hidden_size,
                                 gate_nonlinearity=gate_nonlinearity,
                                 update_nonlinearity=update_nonlinearity,
-                                wRank=wRank, uRank=uRank)
+                                wRank=wRank, uRank=uRank,
+                                wSparsity=wSparsity, uSparsity=uSparsity)
         self.unrollRNN = BaseRNN(self.cell, batch_first=batch_first)
 
     def forward(self, input, hiddenState=None, cellState=None):
@@ -1068,12 +1074,13 @@ class FastRNN(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 alphaInit=-3.0, betaInit=3.0, batch_first=True):
+                 wSparsity=1.0, uSparsity=1.0, alphaInit=-3.0, betaInit=3.0, batch_first=True):
         super(FastRNN, self).__init__()
         self.cell = FastRNNCell(input_size, hidden_size,
                                 gate_nonlinearity=gate_nonlinearity,
                                 update_nonlinearity=update_nonlinearity,
                                 wRank=wRank, uRank=uRank,
+                                wSparsity=wSparsity, uSparsity=uSparsity,
                                 alphaInit=alphaInit, betaInit=betaInit)
         self.unrollRNN = BaseRNN(self.cell, batch_first=batch_first)
 
