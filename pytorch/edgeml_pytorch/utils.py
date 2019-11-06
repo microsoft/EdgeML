@@ -6,7 +6,8 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
-
+import subprocess
+import glob
 
 def findCUDA():
     '''Finds the CUDA install path.'''
