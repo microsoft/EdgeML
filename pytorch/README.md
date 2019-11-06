@@ -5,17 +5,17 @@ techniques developed as part of EdgeML. The PyTorch graphs for the forward/backw
 pass of these algorithms are packaged as `edgeml_pytorch.graph` and the trainers
 for these algorithms are in `edgeml_pytorch.trainer`. 
 
-1. [Bonsai](/docs/publications/Bonsai.pdf): `edgeml_pytorch.graph.bonsai` implements
+1. [Bonsai](https://github.com/microsoft/EdgeML/docs/publications/Bonsai.pdf): `edgeml_pytorch.graph.bonsai` implements
    the Bonsai prediction graph. The three-phase training routine for Bonsai is decoupled
    from the forward graph to facilitate a plug and play behaviour wherein Bonsai can be
    combined with or used as a final layer classifier for other architectures (RNNs, CNNs).
    See `edgeml_pytorch.trainer.bonsaiTrainer` for 3-phase training.  
-2. [ProtoNN](/docs/publications/ProtoNN.pdf): `edgeml_pytorch.graph.protoNN` implements the
+2. [ProtoNN](https://github.com/microsoft/EdgeML/docs/publications/ProtoNN.pdf): `edgeml_pytorch.graph.protoNN` implements the
    ProtoNN prediction functions. The training routine for ProtoNN is decoupled from the forward
    graph to facilitate a plug and play behaviour wherein ProtoNN can be combined with or used
    as a final layer classifier for other architectures (RNNs, CNNs). The training routine is
    implemented in `edgeml_pytorch.trainer.protoNNTrainer`.
-3. [FastRNN & FastGRNN](/docs/publications/FastGRNN.pdf): `edgeml_pytorch.graph.rnn` provides
+3. [FastRNN & FastGRNN](https://github.com/microsoft/EdgeML/docs/publications/FastGRNN.pdf): `edgeml_pytorch.graph.rnn` provides
     various RNN cells --- including new cells `FastRNNCell` and `FastGRNNCell` as well as 
     `UGRNNCell`, `GRUCell`, and `LSTMCell` --- with features like low-rank parameterisation
     of weight matrices and custom non-linearities. Akin to Bonsai and ProtoNN, the three-phase
@@ -25,11 +25,11 @@ for these algorithms are in `edgeml_pytorch.trainer`.
     `FastGRNNCUDACell` are provided for faster training. `edgeml_pytorch.graph.rnn`.
     `edgeml_pytorch.graph.rnn.Fast(G)RNN(CUDA)` provides unrolled RNNs equivalent to `nn.LSTM` and `nn.GRU`.
     `edgeml_pytorch.trainer.fastmodel` presents a sample multi-layer RNN + multi-class classifier model.
-4. [S-RNN](/docs/publications/SRNN.pdf): `edgeml_pytorch.graph.rnn.SRNN2` implements a 
+4. [S-RNN](https://github.com/microsoft/EdgeML/docs/publications/SRNN.pdf): `edgeml_pytorch.graph.rnn.SRNN2` implements a 
     2 layer SRNN network which can be instantied with a choice of RNN cell. The training
     routine for SRNN is in `edgeml_pytorch.trainer.srnnTrainer`.
 
-Usage directions and examples notebooks for this package are provided [here](/examples/pytorch).
+Usage directions and examples notebooks for this package are provided [here](https://github.com/microsoft/EdgeML/examples/pytorch).
 
 
 ## Installation
