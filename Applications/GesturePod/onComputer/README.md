@@ -1,4 +1,4 @@
-GesturePod *(Gesture Recognition Pipeline)*
+GesturePod - Gesture Recognition Pipeline Simulation
 =========================
 
 ## Table of Contents
@@ -46,4 +46,3 @@ GesturePod data set is released as a part of our
 [TechReport](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar-5b058a4590168.gz)
 
 
-Checkout our Blog post *Coming Soon...*

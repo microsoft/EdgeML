@@ -11,10 +11,12 @@ In this directory, we provide resources for
   2. Running the gesture recognition pipeline on your computer in the `onComputer` directory.
   3. The pipeline to a) collect data, b) label the data, and c) extract features  is available in the `training` directory.
 
-The instructable for creating a GesturePod of your own can be found [here](http://13.66.205.178:4000/Projects/GesturePod/instructable.html). 
+To build your own GesturePod refer to the [instructable](http://13.66.205.178:4000/Projects/GesturePod/instructable.html). 
 
 To learn more about GesturePod, refer our [UIST'19 publication](https://github.com/microsoft/EdgeML/blob/master/docs/publications/GesturePod-UIST19.pdf).
 
-We have also released the gesture recognition dataset, which can be accessed [here](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar.gz). 
+## GesturePod Dataset
 
+The benchmark dataset for Gesture recognition can be downloaded [here](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar.gz) [MIT Open source license].
 
+_If you are using the dataset please [cite](https://dl.acm.org/downformats.cfm?id=3347881&parent_id=3332165&expformat=bibtex) GesturePod._

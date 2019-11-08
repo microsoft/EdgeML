@@ -6,7 +6,7 @@ GesturePod *(for MKR1000)*
 - [About](#about)
 - [Quick Start](#quick-start)
 - [Docs](#docs)
-- [Also](#also)
+- [Simulation](#simulation)
 - [Dependencies](#dependencies)
 
 ## About
@@ -30,10 +30,10 @@ GesturePod *(for MKR1000)*
 4. Launch the ```COM``` port and perform gestures on the cane to get the results of live predictions.
 
 ## Docs
-Blog post _Coming soon ..!_
+[Blog post](https://microsoft.github.io/EdgeML/Projects/GesturePod/instructable.html)
 
 ## Simulation
-Make your own GesturePod. Don't have time? No issues, checkout the simulation on your computer with preloaded sensor values _Coming Soon ..!_
+Make your own GesturePod. Don't have time? No issues, checkout the simulation on your computer - with preloaded sensor values - [here](https://github.com/microsoft/EdgeML/tree/master/Applications/GesturePod/onComputer) 
 
 ## Dependencies
 To communicate with the MPU6050, we use [jrowberg's](https://github.com/jrowberg/i2cdevlib) ```i2cdevlib``` library.  Last tested with commit [900b8f9](https://github.com/jrowberg/i2cdevlib/tree/900b8f959e9fa5c3126e0301f8a61d45a4ea99cc).
