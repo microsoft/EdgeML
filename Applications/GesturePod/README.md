@@ -13,8 +13,8 @@ In this directory, we provide resources for
 
 The instructable for creating a GesturePod of your own can be found [here](http://13.66.205.178:4000/Projects/GesturePod/instructable.html). 
 
-Read more about GesturePod and access the public dataset from our
-[Technical Report](https://www.microsoft.com/en-us/research/publication/gesturepod-programmable-gesture-recognition-augmenting-assistive-devices/).
-The dataset can be downloaded [here](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar.gz).
+To learn more about GesturePod, refer our [UIST'19 publication](docs/publications/GesturePod-Uist19.pdf).
+
+We have also released the gesture recognition dataset, which can be accessed [here](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar.gz). 
 
 

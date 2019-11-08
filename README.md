@@ -33,8 +33,6 @@ pages within these directories. The `applications` directory has code/demonstrat
 of applications of the EdgeML algorithms. The `Tools/SeeDot` directory has the
 quantization tool to generate fixed-point inference code.  
 
-We have also released the gesture recognition dataset, which can be accessed [here](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar.gz). 
-
 For details, please see our [wiki
 page](https://github.com/Microsoft/EdgeML/wiki/) and our ICML'17 publications
 on [Bonsai](docs/publications/Bonsai.pdf) and
