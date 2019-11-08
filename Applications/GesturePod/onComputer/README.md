@@ -42,7 +42,6 @@ used as a basis for porting GesturePod to other  platforms.
    sensor readings collected from GesturePod, while *Double Taps* gesture was
    performed.
 
-GesturePod data set is released as a part of our
-[TechReport](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar-5b058a4590168.gz)
+GesturePod data set can be downloaded [here](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar.gz) [MIT Open source license].
 
 

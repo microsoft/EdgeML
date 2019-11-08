@@ -21,7 +21,7 @@ GesturePod *(for MKR1000)*
 	git clone https://github.com/microsoft/EdgeML.git
 	cd Applications/GesturePod/onMKR1000
 	```
-2. Refer to this tutorial _(Coming Soon ..!)_ to build the Hardware and setup external dependencies - [Cortex M0+ Board support](https://www.hackster.io/charifmahmoudi/arduino-mkr1000-getting-started-08bb4a).
+2. Refer to this [tutorial](https://microsoft.github.io/EdgeML/Projects/GesturePod/instructable.html) to build the Hardware and setup external dependencies - [Cortex M0+ Board support](https://www.hackster.io/charifmahmoudi/arduino-mkr1000-getting-started-08bb4a).
 		
 3. Compile, Build and Upload
 	Select the ```COM``` port to which MKR1000 is connected.
@@ -30,7 +30,8 @@ GesturePod *(for MKR1000)*
 4. Launch the ```COM``` port and perform gestures on the cane to get the results of live predictions.
 
 ## Docs
-[Blog post](https://microsoft.github.io/EdgeML/Projects/GesturePod/instructable.html)
+1. [UIST'19 Publication](https://github.com/microsoft/EdgeML/blob/master/docs/publications/GesturePod-UIST19.pdf)
+2. [Instructable](https://microsoft.github.io/EdgeML/Projects/GesturePod/instructable.html)
 
 ## Simulation
 Make your own GesturePod. Don't have time? No issues, checkout the simulation on your computer - with preloaded sensor values - [here](https://github.com/microsoft/EdgeML/tree/master/Applications/GesturePod/onComputer) 
