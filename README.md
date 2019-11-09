@@ -39,8 +39,8 @@ on [Bonsai](docs/publications/Bonsai.pdf) and
 [ProtoNN](docs/publications/ProtoNN.pdf) algorithms, NeurIPS'18 publications on
 [EMI-RNN](docs/publications/emi-rnn-nips18.pdf) and
 [FastGRNN](docs/publications/FastGRNN.pdf), PLDI'19 publication on 
-[SeeDot](docs/publications/SeeDot.pdf), UIST'19 publication on 
-[GesturePod](docs/publications/GesturePod-Uist19.pdf).
+[SeeDot](docs/publications/SeeDot.pdf), and UIST'19 publication on 
+[GesturePod](docs/publications/GesturePod-UIST19.pdf).
 
 
 Core Contributors:

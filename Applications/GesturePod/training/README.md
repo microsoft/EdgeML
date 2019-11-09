@@ -92,7 +92,7 @@ the GesturePod. Alternately, update
 ```EdgeML/Applications/GesturePod/onComputer/src/data.h``` to simulate inference
 of the new model on your computer.
 
-To generate a `data.h`, you could follow the below: 
+Alternatively, to generate a `data.h`, you could: 
 Save the W, B, Z matrices as Tab Separated Values (tsv) after training a model, in the path of `genDataHeader.py`.
 Note the value of `gamma`.
 ```
