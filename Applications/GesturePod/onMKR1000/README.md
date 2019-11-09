@@ -1,4 +1,4 @@
-GesturePod *(for MKR1000)*
+GesturePod *(on MKR1000)*
 =========================
 
 ## Table of Contents
@@ -11,7 +11,7 @@ GesturePod *(for MKR1000)*
 
 ## About
 
-[GesturePod](https://1drv.ms/u/s!AjDloPaG_l0Et7Ikid1voOVFuI116Q) is a plug-and-play, gesture recognition device. GesturePod can be clamped onto any white-cane used by persons with Visually Impairment. Simple and natural gestures performed on the cane triggers corresponding activities on the phone. The gesture recognition system on the cane is powered by (real time and robust) Machine Learning (ML) based classifier [ProtoNN](https://github.com/Microsoft/EdgeML/blob/master/docs/publications/ProtoNN.pdf). This repository contains the code for recognizing the gestures and communicating the gesture over Bluetooth Low Energy (BLE). The pertrained model can recognize 5 gestures - Double Tap, Right Twist, Left Twist, Twirl and Double Swipe with an accuracy of 99.87.
+[GesturePod](https://1drv.ms/u/s!AjDloPaG_l0Et7Ikid1voOVFuI116Q) is a plug-and-play, gesture recognition device. GesturePod can be clamped onto any white-cane used by persons with Visually Impairment. Simple and natural gestures performed on the cane triggers corresponding activities on the phone. The gesture recognition system on the cane is powered by (real time and robust) Machine Learning (ML) based classifier [ProtoNN](https://github.com/Microsoft/EdgeML/blob/master/docs/publications/ProtoNN.pdf). This repository contains the code for recognizing the gestures and communicating the gesture over Bluetooth Low Energy (BLE). The pertrained model can recognize 5 gestures - Double Tap, Right Twist, Left Twist, Twirl and Double Swipe, with an accuracy of 99.87%.
 
 
 ## Quick Start
