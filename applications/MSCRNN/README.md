@@ -10,8 +10,8 @@ It comprises of an EMI-FastGRNN for clutter discrimination at a lower tier and a
 classifier for source classifcation at the upper-tier and is trained using a novel joint-training routine.
 
 MSC-RNN holistically improves the accuracy and per-class recalls over ML models suitable for radar inferencing. 
-Notably, MSC outperforms cross-domain handcrafted feature engineering with time-domain deep feature learning, 
-while also being up to ∼3× more efficient than a competitive SVM based solution.
+Notably, MSC-RNN outperforms cross-domain handcrafted feature engineering with time-domain deep feature learning, 
+while also being up to ∼3× more efficient than the competitive SVM based solutions.
 
 # Resources
 
