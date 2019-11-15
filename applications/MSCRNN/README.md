@@ -7,7 +7,8 @@ which won the **Best Paper Runner-Up** Award at *BuildSys 2019*.
 
 MSC-RNN is created using EMI-RNN and FastGRNN from the EdgeML repository. 
 It comprises of an EMI-FastGRNN for clutter discrimination at a lower tier and a more complex FastGRNN 
-classifier for source classifcation at the upper-tier and is trained using a novel joint-training routine
+classifier for source classifcation at the upper-tier and is trained using a novel joint-training routine.
+
 MSC-RNN holistically improves the accuracy and per-class recalls over ML models suitable for radar inferencing. 
 Notably, MSC outperforms cross-domain handcrafted feature engineering with time-domain deep feature learning, 
 while also being up to ∼3× more efficient than a competitive SVM based solution.
