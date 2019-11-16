@@ -27,7 +27,7 @@ offline.
 A tool that adapts models trained by above algorithms to be inferred by fixed point arithmetic.
  - **SeeDot**: Floating-point to fixed-point quantization tool.
 
-Applications demonstrating usecases of these algorithms, such as [GesturePod](/docs/publications).
+Applications demonstrating usecases of these algorithms, such as [GesturePod](/docs/publications/ICane-UIST19.pdf) and [MSC-RNN](/docs/publications/MSCRNN.pdf).
 
 ### Organization
  - The `tf` directory contains the `edgeml_tf` package which specifies these architectures in TensorFlow,
@@ -44,13 +44,14 @@ Please see install/run instructions in the README pages within these directories
 For details, please see our
  [project page](https://microsoft.github.io/EdgeML/), 
  [Microsoft Research page](https://www.microsoft.com/en-us/research/project/resource-efficient-ml-for-the-edge-and-endpoint-iot-devices/),
-the ICML'17 publications on [Bonsai](/docs/publications/Bonsai.pdf) and
+the ICML '17 publications on [Bonsai](/docs/publications/Bonsai.pdf) and
 [ProtoNN](/docs/publications/ProtoNN.pdf) algorithms, 
-the NeurIPS'18 publications on [EMI-RNN](/docs/publications/emi-rnn-nips18.pdf) and
+the NeurIPS '18 publications on [EMI-RNN](/docs/publications/emi-rnn-nips18.pdf) and
 [FastGRNN](/docs/publications/FastGRNN.pdf),
-the PLDI'19 publication on [SeeDot compiler](/docs/publications/SeeDot.pdf),
-the UIST'19 publication on [Gesturepod](/docs/publications/ICane-UIST19.pdf),
-and the NeurIPS'19 publication on [S-RNN](/docs/publications/SRNN.pdf).
+the PLDI '19 publication on [SeeDot compiler](/docs/publications/SeeDot.pdf),
+the UIST '19 publication on [Gesturepod](/docs/publications/ICane-UIST19.pdf), 
+the BuildSys '19 publication on [MSC-RNN](/docs/publications/MSCRNN.pdf),
+and the NeurIPS '19 publication on [S-RNN](/docs/publications/SRNN.pdf).
 
 
 Also checkout the [ELL](https://github.com/Microsoft/ELL) project which can
