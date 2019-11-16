@@ -1,7 +1,7 @@
 MSC-RNN - Multi-Scale, Cascaded RNN
 ==========
 
-MSC-RNN is a new RNN architecture discussed in the paper,
+MSC-RNN is a new RNN architecture proposed in the paper,
 [One Size Does Not Fit All: Multi-Scale, Cascaded RNNs for Radar Classification](https://arxiv.org/abs/1909.03082), 
 which won the **Best Paper Runner-Up** Award at *BuildSys 2019*.
 
@@ -15,7 +15,7 @@ while also being up to ∼3× more efficient than the competitive SVM based solu
 
 # Resources
 
-**Paper** - https://arxiv.org/pdf/1909.03082.pdf
+**Paper** - [pdf](/docs/publications/MSCRNN.pdf) | [arXiv](https://arxiv.org/pdf/1909.03082.pdf) | [ACM DL](https://dl.acm.org/citation.cfm?id=3360860)
 
 **Code** - https://github.com/dhruboroy29/MSCRNN
 
