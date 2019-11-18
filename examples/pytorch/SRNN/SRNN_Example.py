@@ -30,6 +30,8 @@ std[std[:] < 0.000001] = 1
 x_train_ = (x_train_ - mean) / std
 x_val_ = (x_val_ - mean) / std
 x_test_ = (x_test_ - mean) / std
+np.save('mean.npy', mean)
+np.save('std.npy', std)
 
 x_train = np.swapaxes(x_train_, 0, 1)
 x_val = np.swapaxes(x_val_, 0, 1)
@@ -73,3 +75,6 @@ trainer = SRNNTrainer(srnn2, learningRate, lossType='xentropy', device=device)
 
 trainer.train(brickSize, batchSize, epochs, x_train, x_val, y_train, y_val,
               printStep=printStep, valStep=valStep)
+
+print('Saving trained model:')
+torch.save(srnn2.state_dict(), 'model_srnn.pt')
