@@ -1273,7 +1273,11 @@ class SRNN2(nn.Module):
             assert 0 < dropoutProbability0 <= 1.0
         if dropoutProbability1 != None:
             assert 0 < dropoutProbability1 <= 1.0
-        self.cellArgs = {}
+        # Setting batch_first = False to ensure compatibility of parameters across nn.LSTM and the
+        # other low-rank implementations
+        self.cellArgs = {
+            'batch_first': False
+        }
         self.cellArgs.update(cellArgs)
         supportedCells = ['LSTM', 'FastRNNCell', 'FastGRNNCell', 'GRULRCell']
         assert cellType in supportedCells, 'Currently supported cells: %r' % supportedCells
