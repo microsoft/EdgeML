@@ -1,9 +1,9 @@
 from distutils.core import setup
 
 setup(
-    name='edgeml',
-    version='0.2',
-    packages=['edgeml', ],
+    name='edgeml_tf',
+    version='0.3.0',
+    packages=['edgeml_tf' ],
     license='MIT License',
-    long_description=open('../License.txt').read(),
+    long_description=open('README.md').read(),
 )
