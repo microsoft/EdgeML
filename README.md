@@ -17,7 +17,6 @@ Algorithms that shine in this setting in terms of both model size and compute, n
  - **EMI-RNN**: Training routine to recover the critical signature from time series data for faster and accurate RNN predictions.
  - **S-RNN**: A meta-architecture for training RNNs that can be applied to streaming data.
  - **FastRNN & FastGRNN - FastCells**: **F**ast, **A**ccurate, **S**table and **T**iny (**G**ated) RNN cells.
-
 These algorithms can train models for classical supervised learning problems
 with memory requirements that are orders of magnitude lower than other modern
 ML algorithms. The trained models can be loaded onto edge devices such as IoT
@@ -27,7 +26,9 @@ offline.
 A tool that adapts models trained by above algorithms to be inferred by fixed point arithmetic.
  - **SeeDot**: Floating-point to fixed-point quantization tool.
 
-Applications demonstrating usecases of these algorithms, such as [GesturePod](/docs/publications/ICane-UIST19.pdf) and [MSC-RNN](/docs/publications/MSCRNN.pdf).
+Applications demonstrating usecases of these algorithms:
+ - **GesturePod**: Gesture recognition pipeline for microcontrollers.
+ - **MSC-RNN**: Multi-scale cascaded RNN for analyzing Radar data.
 
 ### Organization
  - The `tf` directory contains the `edgeml_tf` package which specifies these architectures in TensorFlow,
