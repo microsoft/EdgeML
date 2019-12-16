@@ -1,0 +1,2 @@
+python-speech-features==0.6
+h5py==2.9.0
