@@ -15,7 +15,7 @@ Algorithms that shine in this setting in terms of both model size and compute, n
  - **Bonsai**: Strong and shallow non-linear tree based classifier.
  - **ProtoNN**: **Proto**type based k-nearest neighbors (k**NN**) classifier. 
  - **EMI-RNN**: Training routine to recover the critical signature from time series data for faster and accurate RNN predictions.
- - **Sha-RNN**: A meta-architecture for training RNNs that can be applied to streaming data.
+ - **Shallow RNN**: A meta-architecture for training RNNs that can be applied to streaming data.
  - **FastRNN & FastGRNN - FastCells**: **F**ast, **A**ccurate, **S**table and **T**iny (**G**ated) RNN cells.
 These algorithms can train models for classical supervised learning problems
 with memory requirements that are orders of magnitude lower than other modern
@@ -52,7 +52,7 @@ the NeurIPS '18 publications on [EMI-RNN](/docs/publications/emi-rnn-nips18.pdf)
 the PLDI '19 publication on [SeeDot compiler](/docs/publications/SeeDot.pdf),
 the UIST '19 publication on [Gesturepod](/docs/publications/ICane-UIST19.pdf), 
 the BuildSys '19 publication on [MSC-RNN](/docs/publications/MSCRNN.pdf),
-and the NeurIPS '19 publication on [Sha-RNN](/docs/publications/Sha-RNN.pdf).
+and the NeurIPS '19 publication on [Shallow RNNs](/docs/publications/Sha-RNN.pdf).
 
 
 Also checkout the [ELL](https://github.com/Microsoft/ELL) project which can
