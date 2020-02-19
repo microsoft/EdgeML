@@ -29,7 +29,7 @@ Accelorometer and gyroscope values from the MPU6050 sensor is collected.
 Connect the GesturePod to computer over Serial COM Port.
 
 1. Refer
-   [here](https://github.com/microsoft/EdgeML/blob/master/Applications/GesturePod/onMKR1000/README.md#quick-start)
+   [here](https://github.com/microsoft/EdgeML/blob/master/applications/GesturePod/onMKR1000/README.md#quick-start)
 to set up the required dependencies for the MKR1000 platform.
 		
 2. Compile, Build and Upload
