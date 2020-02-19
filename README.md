@@ -23,6 +23,7 @@ ML algorithms. The trained models can be loaded onto edge devices such as IoT
 devices/sensors, and used to make fast and accurate predictions completely
 offline.
 
+<<<<<<< HEAD
 A tool that adapts models trained by above algorithms to be inferred by fixed point arithmetic.
  - **SeeDot**: Floating-point to fixed-point quantization tool.
 
@@ -60,6 +61,7 @@ provide optimized binaries for some of the ONNX models trained by this library.
 
 ### Contributors:
 Code for algorithms, applications and tools contributed by:
+
   - [Don Dennis](https://dkdennis.xyz)
   - [Yash Gaurkar](https://github.com/mr-yamraj/)
   - [Sridhar Gopinath](http://www.sridhargopinath.in/)
