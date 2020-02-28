@@ -7,6 +7,7 @@ There is also a sample cleanup and train/test script for the USPS10 public datas
 The subfolder [`KWS-training`](KWS-training) contains code
 for training a keyword spotting model using a single- or multi-layer RNN.
 
+Please follow the instructions in [`EdgeML/pytorch`](../../../pytorch) before using this example.
 
 [`edgeml_pytorch.graph.rnn`](../../../pytorch/pytorch_edgeml/graph/rnn.py) 
 provides two RNN cells **FastRNNCell**  and **FastGRNNCell** with additional
