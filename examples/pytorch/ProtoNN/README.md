@@ -4,6 +4,8 @@ This directory includes an example [notebook](protoNN_example.ipynb)  and a
 command line execution script of ProtoNN developed as part of EdgeML. The
 example is based on the USPS dataset.
 
+Please follow the instructions in [`EdgeML/pytorch`](../../../pytorch) before using this example.
+
 `edgeml_pytorch.graph.protoNN` implements the ProtoNN prediction functions.
 The training routine for ProtoNN is decoupled from the forward graph to
 facilitate a plug and play behaviour wherein ProtoNN can be combined with or
