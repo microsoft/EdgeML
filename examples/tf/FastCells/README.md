@@ -5,6 +5,8 @@ FastCells (FastRNN & FastGRNN) developed as part of EdgeML along with modified
 UGRNN, GRU and LSTM to support the LSQ training routine. 
 Also, we include a sample cleanup and use-case on the USPS10 public dataset.
 
+Please follow the instructions in [`EdgeML/tf`](../../../tf) before using this example.
+
 `edgeml_tf.graph.rnn` implements the custom RNN cells of **FastRNN** ([`FastRNNCell`](../../edgeml/graph/rnn.py#L215)) and **FastGRNN** ([`FastGRNNCell`](../../edgeml/graph/rnn.py#L40)) with
 multiple additional features like Low-Rank parameterisation, custom
 non-linearities etc., Similar to Bonsai and ProtoNN, the three-phase training

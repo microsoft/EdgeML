@@ -17,6 +17,7 @@ Algorithms that shine in this setting in terms of both model size and compute, n
  - **EMI-RNN**: Training routine to recover the critical signature from time series data for faster and accurate RNN predictions.
  - **Shallow RNN**: A meta-architecture for training RNNs that can be applied to streaming data.
  - **FastRNN & FastGRNN - FastCells**: **F**ast, **A**ccurate, **S**table and **T**iny (**G**ated) RNN cells.
+
 These algorithms can train models for classical supervised learning problems
 with memory requirements that are orders of magnitude lower than other modern
 ML algorithms. The trained models can be loaded onto edge devices such as IoT

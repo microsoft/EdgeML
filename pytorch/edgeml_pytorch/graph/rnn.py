@@ -123,6 +123,10 @@ class RNNCell(nn.Module):
         return self._num_U_matrices
 
     @property
+    def num_weight_matrices(self):
+        return self._num_weight_matrices
+
+    @property
     def name(self):
         raise NotImplementedError()
 

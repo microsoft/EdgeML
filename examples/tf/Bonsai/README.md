@@ -4,6 +4,8 @@ This directory includes, example notebook and general execution script of
 Bonsai developed as part of EdgeML. Also, we include a sample cleanup and
 use-case on the USPS10 public dataset.
 
+Please follow the instructions in [`EdgeML/tf`](../../../tf) before using this example.
+
 `edgeml_tf.graph.bonsai` implements the Bonsai prediction graph in tensorflow.
 The three-phase training routine for Bonsai is decoupled from the forward graph
 to facilitate a plug and play behaviour wherein Bonsai can be combined with or
