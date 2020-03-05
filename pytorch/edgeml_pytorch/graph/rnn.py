@@ -138,8 +138,8 @@ class RNNCell(nn.Module):
 
     def get_model_size(self):
         '''
-		Function to get aimed model size
-		'''
+        Function to get aimed model size
+        '''
         mats = self.getVars()
         endW = self._num_W_matrices
         endU = endW + self._num_U_matrices
@@ -1024,8 +1024,12 @@ class LSTM(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 wSparsity=1.0, uSparsity=1.0, batch_first=True):
+                 wSparsity=1.0, uSparsity=1.0, batch_first=True, 
+                 bidirectional=False, is_shared_bidirectional=True):
         super(LSTM, self).__init__()
+        self._bidirectional = bidirectional
+        self._batch_first = batch_first
+        self._is_shared_bidirectional = is_shared_bidirectional
         self.cell = LSTMLRCell(input_size, hidden_size,
                                gate_nonlinearity=gate_nonlinearity,
                                update_nonlinearity=update_nonlinearity,
@@ -1033,7 +1037,29 @@ class LSTM(nn.Module):
                                wSparsity=wSparsity, uSparsity=uSparsity)
         self.unrollRNN = BaseRNN(self.cell, batch_first=batch_first)
 
+        if self._bidirectional is True and self._is_shared_bidirectional is False:
+            self.cell_reverse = LSTMLRCell(input_size, hidden_size,
+                               gate_nonlinearity=gate_nonlinearity,
+                               update_nonlinearity=update_nonlinearity,
+                               wRank=wRank, uRank=uRank,
+                               wSparsity=wSparsity, uSparsity=uSparsity)
+
+            self.unrollRNN_reverse = BaseRNN(self.cell_reverse, batch_first=batch_first)
+
     def forward(self, input, hiddenState=None, cellState=None):
+        if self._bidirectional:
+            if self._batch_first is True:
+                input_reverse = torch.flip(input, [1])
+            else:
+                input_reverse = torch.flip(input, [0])
+
+            if self._is_shared_bidirectional is True:
+                return [torch.cat([self.unrollRNN(input, hiddenState, cellState)[i],
+                        self.unrollRNN(input_reverse, hiddenState, cellState)[i]], -1) for i in range(2)]
+            else:
+                return [torch.cat([self.unrollRNN(input, hiddenState, cellState)[i],
+                        self.unrollRNN_reverse(input_reverse, hiddenState, cellState)[i]], -1) for i in range(2)]
+
         return self.unrollRNN(input, hiddenState, cellState)
 
 
@@ -1042,8 +1068,12 @@ class GRU(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 wSparsity=1.0, uSparsity=1.0, batch_first=True):
+                 wSparsity=1.0, uSparsity=1.0, batch_first=True, 
+                 bidirectional=False, is_shared_bidirectional=True):
         super(GRU, self).__init__()
+        self._bidirectional = bidirectional
+        self._batch_first = batch_first
+        self._is_shared_bidirectional = is_shared_bidirectional
         self.cell = GRULRCell(input_size, hidden_size,
                               gate_nonlinearity=gate_nonlinearity,
                               update_nonlinearity=update_nonlinearity,
@@ -1051,7 +1081,29 @@ class GRU(nn.Module):
                               wSparsity=wSparsity, uSparsity=uSparsity)
         self.unrollRNN = BaseRNN(self.cell, batch_first=batch_first)
 
+        if self._bidirectional is True and self._is_shared_bidirectional is False:
+            self.cell_reverse = GRULRCell(input_size, hidden_size,
+                              gate_nonlinearity=gate_nonlinearity,
+                              update_nonlinearity=update_nonlinearity,
+                              wRank=wRank, uRank=uRank,
+                              wSparsity=wSparsity, uSparsity=uSparsity)
+
+            self.unrollRNN_reverse = BaseRNN(self.cell_reverse, batch_first=batch_first)
+
     def forward(self, input, hiddenState=None, cellState=None):
+        if self._bidirectional:
+            if self._batch_first is True:
+                input_reverse = torch.flip(input, [1])
+            else:
+                input_reverse = torch.flip(input, [0])
+
+            if self._is_shared_bidirectional is True:
+                return torch.cat([self.unrollRNN(input, hiddenState, cellState),
+                                            self.unrollRNN(input_reverse, hiddenState, cellState)], -1)
+            else:
+                return torch.cat([self.unrollRNN(input, hiddenState, cellState),
+                                            self.unrollRNN_reverse(input_reverse, hiddenState, cellState)], -1)
+
         return self.unrollRNN(input, hiddenState, cellState)
 
 
@@ -1060,8 +1112,12 @@ class UGRNN(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 wSparsity=1.0, uSparsity=1.0, batch_first=True):
+                 wSparsity=1.0, uSparsity=1.0, batch_first=True, 
+                 bidirectional=False, is_shared_bidirectional=True):
         super(UGRNN, self).__init__()
+        self._bidirectional = bidirectional
+        self._batch_first = batch_first
+        self._is_shared_bidirectional = is_shared_bidirectional
         self.cell = UGRNNLRCell(input_size, hidden_size,
                                 gate_nonlinearity=gate_nonlinearity,
                                 update_nonlinearity=update_nonlinearity,
@@ -1069,7 +1125,29 @@ class UGRNN(nn.Module):
                                 wSparsity=wSparsity, uSparsity=uSparsity)
         self.unrollRNN = BaseRNN(self.cell, batch_first=batch_first)
 
+        if self._bidirectional is True and self._is_shared_bidirectional is False:
+            self.cell_reverse = UGRNNLRCell(input_size, hidden_size,
+                                gate_nonlinearity=gate_nonlinearity,
+                                update_nonlinearity=update_nonlinearity,
+                                wRank=wRank, uRank=uRank,
+                                wSparsity=wSparsity, uSparsity=uSparsity)
+
+            self.unrollRNN_reverse = BaseRNN(self.cell_reverse, batch_first=batch_first)
+
     def forward(self, input, hiddenState=None, cellState=None):
+        if self._bidirectional:
+            if self._batch_first is True:
+                input_reverse = torch.flip(input, [1])
+            else:
+                input_reverse = torch.flip(input, [0])
+
+            if self._is_shared_bidirectional is True:
+                return torch.cat([self.unrollRNN(input, hiddenState, cellState),
+                                            self.unrollRNN(input_reverse, hiddenState, cellState)], -1)
+            else:
+                return torch.cat([self.unrollRNN(input, hiddenState, cellState),
+                                            self.unrollRNN_reverse(input_reverse, hiddenState, cellState)], -1)
+
         return self.unrollRNN(input, hiddenState, cellState)
 
 
@@ -1078,8 +1156,12 @@ class FastRNN(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 wSparsity=1.0, uSparsity=1.0, alphaInit=-3.0, betaInit=3.0, batch_first=True):
+                 wSparsity=1.0, uSparsity=1.0, alphaInit=-3.0, betaInit=3.0,
+                 batch_first=True, bidirectional=False, is_shared_bidirectional=True):
         super(FastRNN, self).__init__()
+        self._bidirectional = bidirectional
+        self._batch_first = batch_first
+        self._is_shared_bidirectional = is_shared_bidirectional
         self.cell = FastRNNCell(input_size, hidden_size,
                                 gate_nonlinearity=gate_nonlinearity,
                                 update_nonlinearity=update_nonlinearity,
@@ -1088,7 +1170,31 @@ class FastRNN(nn.Module):
                                 alphaInit=alphaInit, betaInit=betaInit)
         self.unrollRNN = BaseRNN(self.cell, batch_first=batch_first)
 
+        if self._bidirectional is True and self._is_shared_bidirectional is False:
+            self.cell_reverse = FastRNNCell(input_size, hidden_size,
+                                gate_nonlinearity=gate_nonlinearity,
+                                update_nonlinearity=update_nonlinearity,
+                                wRank=wRank, uRank=uRank,
+                                wSparsity=wSparsity, uSparsity=uSparsity,
+                                alphaInit=alphaInit, betaInit=betaInit)
+
+            self.unrollRNN_reverse = BaseRNN(self.cell_reverse, batch_first=batch_first)
+
     def forward(self, input, hiddenState=None, cellState=None):
+
+        if self._bidirectional:
+            if self._batch_first is True:
+                input_reverse = torch.flip(input, [1])
+            else:
+                input_reverse = torch.flip(input, [0])
+
+            if self._is_shared_bidirectional is True:
+                return torch.cat([self.unrollRNN(input, hiddenState, cellState),
+                                            self.unrollRNN(input_reverse, hiddenState, cellState)], -1)
+            else:
+                return torch.cat([self.unrollRNN(input, hiddenState, cellState),
+                                            self.unrollRNN_reverse(input_reverse, hiddenState, cellState)], -1)
+
         return self.unrollRNN(input, hiddenState, cellState)
 
 
@@ -1098,20 +1204,48 @@ class FastGRNN(nn.Module):
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
                  wSparsity=1.0, uSparsity=1.0, zetaInit=1.0, nuInit=-4.0,
-                 batch_first=True):
+                 batch_first=True, bidirectional=False, is_shared_bidirectional=True):
         super(FastGRNN, self).__init__()
+        self._bidirectional = bidirectional
+        self._batch_first = batch_first
+        self._is_shared_bidirectional = is_shared_bidirectional
         self.cell = FastGRNNCell(input_size, hidden_size,
                                  gate_nonlinearity=gate_nonlinearity,
                                  update_nonlinearity=update_nonlinearity,
                                  wRank=wRank, uRank=uRank,
                                  wSparsity=wSparsity, uSparsity=uSparsity,
                                  zetaInit=zetaInit, nuInit=nuInit)
+        
         self.unrollRNN = BaseRNN(self.cell, batch_first=batch_first)
+
+        if self._bidirectional is True and self._is_shared_bidirectional is False:
+            self.cell_reverse = FastGRNNCell(input_size, hidden_size,
+                                 gate_nonlinearity=gate_nonlinearity,
+                                 update_nonlinearity=update_nonlinearity,
+                                 wRank=wRank, uRank=uRank,
+                                 wSparsity=wSparsity, uSparsity=uSparsity,
+                                 zetaInit=zetaInit, nuInit=nuInit)
+
+            self.unrollRNN_reverse = BaseRNN(self.cell_reverse, batch_first=batch_first)
 
     def getVars(self):
         return self.unrollRNN.getVars()
 
     def forward(self, input, hiddenState=None, cellState=None):
+
+        if self._bidirectional:
+            if self._batch_first is True:
+                input_reverse = torch.flip(input, [1])
+            else:
+                input_reverse = torch.flip(input, [0])
+
+            if self._is_shared_bidirectional is True:
+                return torch.cat([self.unrollRNN(input, hiddenState, cellState),
+                                            self.unrollRNN(input_reverse, hiddenState, cellState)], -1)
+            else:
+                return torch.cat([self.unrollRNN(input, hiddenState, cellState),
+                                            self.unrollRNN_reverse(input_reverse, hiddenState, cellState)], -1)
+
         return self.unrollRNN(input, hiddenState, cellState)
 
 class FastGRNNCUDA(nn.Module):
@@ -1204,8 +1338,8 @@ class FastGRNNCUDA(nn.Module):
 
     def get_model_size(self):
         '''
-		Function to get aimed model size
-		'''
+        Function to get aimed model size
+        '''
         mats = self.getVars()
         endW = self._num_W_matrices
         endU = endW + self._num_U_matrices
