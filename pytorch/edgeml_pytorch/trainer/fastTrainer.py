@@ -52,10 +52,10 @@ class FastTrainer:
 
         self.optimizer = self.optimizer()
 
-        self.RNN = BaseRNN(self.FastObj).to(self.device)
+        self.RNN = BaseRNN(self.FastObj, bidirectional=True).to(self.device)
 
         self.FC = nn.Parameter(torch.randn(
-            [self.FastObj.output_size, self.numClasses])).to(self.device)
+            [self.FastObj.output_size*2, self.numClasses])).to(self.device)
         self.FCbias = nn.Parameter(torch.randn(
             [self.numClasses])).to(self.device)
 
