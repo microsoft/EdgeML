@@ -1288,6 +1288,7 @@ class FastGRNNCUDA(nn.Module):
 
     def forward(self, input, hiddenState, cell_state=None):
         # input: [timesteps, batch, features, state_size]
+        # import pdb; pdb.set_trace()
         if self.batch_first:
             input = input.transpose(0, 1).contiguous()
         if not input.is_cuda:

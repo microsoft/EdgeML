@@ -22,13 +22,13 @@ class FastTrainer:
         batchSize is the batchSize
         learningRate is the initial learning rate
         '''
-        self.FastObj = FastObj
+        # self.FastObj = FastObj
 
         self.sW = sW
         self.sU = sU
 
         self.numClasses = numClasses
-        self.inputDims = self.FastObj.input_size
+        # self.inputDims = self.FastObj.input_size
         if device is None:
             self.device = torch.device("cpu")
         else:
@@ -47,19 +47,28 @@ class FastTrainer:
             self.isDenseTraining = False
 
         self.assertInit()
-        self.numMatrices = self.FastObj.num_weight_matrices
+        self.numMatrices = [1,1] #self.FastObj.num_weight_matrices
         self.totalMatrices = self.numMatrices[0] + self.numMatrices[1]
 
-        self.optimizer = self.optimizer()
+        
 
-        self.RNN = BaseRNN(self.FastObj, bidirectional=True).to(self.device)
+        self.RNN = FastGRNNCUDA(16, 32, gate_nonlinearity="sigmoid",
+                                update_nonlinearity="tanh", zetaInit=100.0, nuInit=-100.0, batch_first=False)
+
+        # 
+        # BaseRNN(self.FastObj, bidirectional=True).to(self.device)
 
         self.FC = nn.Parameter(torch.randn(
-            [self.FastObj.output_size*2, self.numClasses])).to(self.device)
+            [32, self.numClasses])).to(self.device)
         self.FCbias = nn.Parameter(torch.randn(
             [self.numClasses])).to(self.device)
 
-        self.FastParams = self.FastObj.getVars()
+        self.optimizer = self.optimizer()
+
+        # self.timeSteps = 
+        self.inputDims = 16
+
+        self.FastParams = self.RNN.getVars()
 
     def classifier(self, feats):
         '''
@@ -72,12 +81,12 @@ class FastTrainer:
         '''
         Compute graph to unroll and predict on the FastObj
         '''
-        if self.FastObj.cellType == "LSTMLR":
-            feats, _ = self.RNN(input)
-            logits = self.classifier(feats[:, -1])
-        else:
-            feats = self.RNN(input)
-            logits = self.classifier(feats[:, -1])
+        # if self.FastObj.cellType == "LSTMLR":
+        #     feats, _ = self.RNN(input)
+        #     logits = self.classifier(feats[:, -1])
+        # else:
+        feats = self.RNN(input, None)
+        logits = self.classifier(feats[:, -1])
 
         return logits, feats[:, -1]
 
@@ -86,7 +95,7 @@ class FastTrainer:
         Optimizer for FastObj Params
         '''
         optimizer = torch.optim.Adam(
-            self.FastObj.parameters(), lr=self.learningRate)
+            self.RNN.parameters(), lr=self.learningRate)
 
         return optimizer
 
@@ -349,7 +358,7 @@ class FastTrainer:
         '''
         The Dense - IHT - Sparse Retrain Routine for FastCell Training
         '''
-        fileName = str(self.FastObj.cellType) + 'Results_pytorch.txt'
+        fileName = str('FastGRNNCUDA') + 'Results_pytorch.txt'
         resultFile = open(os.path.join(dataDir, fileName), 'a+')
         numIters = int(np.ceil(float(Xtrain.shape[0]) / float(batchSize)))
         totalBatches = numIters * totalEpochs
@@ -442,7 +451,7 @@ class FastTrainer:
                 if maxTestAcc <= testAcc:
                     maxTestAccEpoch = i
                     maxTestAcc = testAcc
-                    self.saveParams(currDir)
+                    # self.saveParams(currDir)
 
             print("Test Loss: " + str(testLoss) +
                   " Test Accuracy: " + str(testAcc), file=self.outFile)
