@@ -1288,8 +1288,7 @@ class FastGRNNCUDA(nn.Module):
 
     def forward(self, input, hiddenState, cell_state=None):
         # input: [timesteps, batch, features, state_size]
-        # import pdb; pdb.set_trace()
-        if self.batch_first:
+        if self.batch_first is True:
             input = input.transpose(0, 1).contiguous()
         if not input.is_cuda:
             input = input.to(self.device)
@@ -1298,8 +1297,27 @@ class FastGRNNCUDA(nn.Module):
                 [input.shape[1], self._hidden_size]).to(self.device)
         if not hiddenState.is_cuda:
             hiddenState = hiddenState.to(self.device)
-        return FastGRNNUnrollFunction.apply(input, self.bias_gate, self.bias_update, self.zeta, self.nu, hiddenState,
+        result = FastGRNNUnrollFunction.apply(input, self.bias_gate, self.bias_update, self.zeta, self.nu, hiddenState,
             self.W, self.U, self.W1, self.W2, self.U1, self.U2, self._gate_non_linearity)
+        if self.batch_first is True:
+            return result.transpose(0, 1)
+        else:
+            return result
+
+    # def forward(self, input, hiddenState, cell_state=None):
+    #     # input: [timesteps, batch, features, state_size]
+    #     # import pdb; pdb.set_trace()
+    #     if self.batch_first:
+    #         input = input.transpose(0, 1).contiguous()
+    #     if not input.is_cuda:
+    #         input = input.to(self.device)
+    #     if hiddenState is None:
+    #         hiddenState = torch.zeros(
+    #             [input.shape[1], self._hidden_size]).to(self.device)
+    #     if not hiddenState.is_cuda:
+    #         hiddenState = hiddenState.to(self.device)
+    #     return FastGRNNUnrollFunction.apply(input, self.bias_gate, self.bias_update, self.zeta, self.nu, hiddenState,
+    #         self.W, self.U, self.W1, self.W2, self.U1, self.U2, self._gate_non_linearity)
 
     def getVars(self):
         Vars = []

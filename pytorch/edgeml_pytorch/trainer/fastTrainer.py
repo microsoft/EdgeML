@@ -53,7 +53,7 @@ class FastTrainer:
         
 
         self.RNN = FastGRNNCUDA(16, 32, gate_nonlinearity="sigmoid",
-                                update_nonlinearity="tanh", zetaInit=100.0, nuInit=-100.0, batch_first=False)
+                                update_nonlinearity="tanh", zetaInit=100.0, nuInit=-100.0, batch_first=True).cuda()
 
         # 
         # BaseRNN(self.FastObj, bidirectional=True).to(self.device)
@@ -85,7 +85,7 @@ class FastTrainer:
         #     feats, _ = self.RNN(input)
         #     logits = self.classifier(feats[:, -1])
         # else:
-        feats = self.RNN(input, None)
+        feats = self.RNN(input, hiddenState=None)
         logits = self.classifier(feats[:, -1])
 
         return logits, feats[:, -1]
