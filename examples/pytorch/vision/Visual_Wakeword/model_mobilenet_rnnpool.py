@@ -127,7 +127,6 @@ class MobileNetV2(nn.Module):
         self.rnn_model = RNNPool(6, 6, 8, 8, input_channel)#num_init_features)
         self.fold = nn.Fold(kernel_size=(1,1),output_size=(27,27))
 
-        self.rnn_model_end = RNNPool(7, 7, int(self.last_channel/4), int(self.last_channel/4), self.last_channel)
 
         features=[] #ConvBNReLU(32, 16, kernel_size=1)]
 
@@ -147,7 +146,7 @@ class MobileNetV2(nn.Module):
 
         # building classifier
         self.classifier = nn.Sequential(
-            #nn.Dropout(0.2),
+            nn.Dropout(0.2),
             nn.Linear(self.last_channel, num_classes),
         )
 

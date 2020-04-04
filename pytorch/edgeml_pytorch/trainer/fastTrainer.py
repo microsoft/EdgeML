@@ -53,7 +53,7 @@ class FastTrainer:
         
 
         self.RNN = FastGRNNCUDA(16, 32, gate_nonlinearity="sigmoid",
-                                update_nonlinearity="tanh", zetaInit=100.0, nuInit=-100.0, batch_first=True).cuda()
+                                update_nonlinearity="tanh", zetaInit=100.0, nuInit=-100.0, batch_first=False).cuda()
 
         # 
         # BaseRNN(self.FastObj, bidirectional=True).to(self.device)
@@ -86,9 +86,10 @@ class FastTrainer:
         #     logits = self.classifier(feats[:, -1])
         # else:
         feats = self.RNN(input, hiddenState=None)
-        logits = self.classifier(feats[:, -1])
+        # import pdb;pdb.set_trace()
+        logits = self.classifier(feats[-1])
 
-        return logits, feats[:, -1]
+        return logits, feats[-1]
 
     def optimizer(self):
         '''
@@ -398,6 +399,8 @@ class FastTrainer:
                 k = shuffled[j * batchSize:(j + 1) * batchSize]
                 batchX = Xtrain[k]
                 batchY = Ytrain[k]
+                # import pdb;pdb.set_trace()
+                batchX = batchX.transpose(0,1)
 
                 self.optimizer.zero_grad()
                 logits, _ = self.computeLogits(batchX.to(self.device))
@@ -440,7 +443,7 @@ class FastTrainer:
                   " Train Accuracy: " + str(trainAcc),
                   file=self.outFile)
 
-            logits, _ = self.computeLogits(Xtest.to(self.device))
+            logits, _ = self.computeLogits(Xtest.transpose(0,1).to(self.device))
             testLoss = self.loss(logits, Ytest.to(self.device)).item()
             testAcc = self.accuracy(logits, Ytest.to(self.device)).item()
 

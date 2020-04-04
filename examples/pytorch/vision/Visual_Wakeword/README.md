@@ -28,7 +28,7 @@ DIR="path-to-mscoco-dataset/annotations/"
 python scripts/create_coco_train_minival_split.py \
   --train_annotations_file="${TRAIN_ANNOTATIONS_FILE}" \
   --val_annotations_file="${VAL_ANNOTATIONS_FILE}" \
---output_dir="${DIR}"
+  --output_dir="${DIR}"
 ```
 (2014 can be replaced by 2017 if you downloaded the 2017 dataset)
 
@@ -47,7 +47,7 @@ python scripts/create_visualwakewords_annotations.py \
 ```
 
 
-# Usage
+# Training
 
 ```shell
 python train_visualwakewords.py \

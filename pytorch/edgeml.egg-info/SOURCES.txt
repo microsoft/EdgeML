@@ -10,6 +10,7 @@ edgeml_pytorch/graph/__init__.py
 edgeml_pytorch/graph/bonsai.py
 edgeml_pytorch/graph/protoNN.py
 edgeml_pytorch/graph/rnn.py
+edgeml_pytorch/graph/rnnpool.py
 edgeml_pytorch/trainer/__init__.py
 edgeml_pytorch/trainer/bonsaiTrainer.py
 edgeml_pytorch/trainer/fastTrainer.py

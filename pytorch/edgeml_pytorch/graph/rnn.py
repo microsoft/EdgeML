@@ -962,16 +962,16 @@ class BaseRNN(nn.Module):
 
     def __init__(self, cell: RNNCell, cell_reverse: RNNCell=None, batch_first=True, bidirectional=False):
         super(BaseRNN, self).__init__()
-        self._RNNCell = cell 
+        self.RNNCell = cell 
         self._batch_first = batch_first
         self._bidirectional = bidirectional
         if cell_reverse is not None:
-            self._RNNCell_reverse = cell_reverse
+            self.RNNCell_reverse = cell_reverse
         elif self._bidirectional:
-            self._RNNCell_reverse = cell
+            self.RNNCell_reverse = cell
 
     def getVars(self):
-        return self._RNNCell.getVars()
+        return self.RNNCell.getVars()
 
     def forward(self, input, hiddenState=None,
                 cellState=None):
@@ -981,37 +981,37 @@ class BaseRNN(nn.Module):
         # for i in range(num_directions):
         hiddenStates = torch.zeros(
                 [input.shape[0], input.shape[1],
-                 self._RNNCell.output_size]).to(self.device)
+                 self.RNNCell.output_size]).to(self.device)
 
         if self._bidirectional:
                 hiddenStates_reverse = torch.zeros(
                     [input.shape[0], input.shape[1],
-                     self._RNNCell_reverse.output_size]).to(self.device)
+                     self.RNNCell_reverse.output_size]).to(self.device)
 
         if hiddenState is None:
                 hiddenState = torch.zeros(
                     [self.num_directions, input.shape[0] if self._batch_first else input.shape[1],
-                    self._RNNCell.output_size]).to(self.device)
+                    self.RNNCell.output_size]).to(self.device)
 
         if self._batch_first is True:
-            if self._RNNCell.cellType == "LSTMLR":
+            if self.RNNCell.cellType == "LSTMLR":
                 cellStates = torch.zeros(
                     [input.shape[0], input.shape[1],
-                     self._RNNCell.output_size]).to(self.device)
+                     self.RNNCell.output_size]).to(self.device)
                 if self._bidirectional:
                     cellStates_reverse = torch.zeros(
                     [input.shape[0], input.shape[1],
-                     self._RNNCell_reverse.output_size]).to(self.device)
+                     self.RNNCell_reverse.output_size]).to(self.device)
                 if cellState is None:
                     cellState = torch.zeros(
-                        [self.num_directions, input.shape[0], self._RNNCell.output_size]).to(self.device)
+                        [self.num_directions, input.shape[0], self.RNNCell.output_size]).to(self.device)
                 for i in range(0, input.shape[1]):
-                    hiddenState[0], cellState[0] = self._RNNCell(
+                    hiddenState[0], cellState[0] = self.RNNCell(
                         input[:, i, :], (hiddenState[0].clone(), cellState[0].clone()))
                     hiddenStates[:, i, :] = hiddenState[0]
                     cellStates[:, i, :] = cellState[0]
                     if self._bidirectional:
-                        hiddenState[1], cellState[1] = self._RNNCell_reverse(
+                        hiddenState[1], cellState[1] = self.RNNCell_reverse(
                             input[:, input.shape[1]-i-1, :], (hiddenState[1].clone(), cellState[1].clone()))
                         hiddenStates_reverse[:, i, :] = hiddenState[1]
                         cellStates_reverse[:, i, :] = cellState[1]
@@ -1021,10 +1021,10 @@ class BaseRNN(nn.Module):
                     return torch.cat([hiddenStates,hiddenStates_reverse],-1), torch.cat([cellStates,cellStates_reverse],-1)  
             else:
                 for i in range(0, input.shape[1]):
-                    hiddenState[0] = self._RNNCell(input[:, i, :], hiddenState[0].clone())
+                    hiddenState[0] = self.RNNCell(input[:, i, :], hiddenState[0].clone())
                     hiddenStates[:, i, :] = hiddenState[0]
                     if self._bidirectional:
-                        hiddenState[1] = self._RNNCell_reverse(
+                        hiddenState[1] = self.RNNCell_reverse(
                             input[:, input.shape[1]-i-1, :], hiddenState[1].clone())
                         hiddenStates_reverse[:, i, :] = hiddenState[1]
                 if not self._bidirectional:
@@ -1032,24 +1032,24 @@ class BaseRNN(nn.Module):
                 else:
                     return torch.cat([hiddenStates,hiddenStates_reverse],-1)
         else:
-            if self._RNNCell.cellType == "LSTMLR":
+            if self.RNNCell.cellType == "LSTMLR":
                 cellStates = torch.zeros(
                     [input.shape[0], input.shape[1],
-                     self._RNNCell.output_size]).to(self.device)
+                     self.RNNCell.output_size]).to(self.device)
                 if self._bidirectional:
                     cellStates_reverse = torch.zeros(
                     [input.shape[0], input.shape[1],
-                     self._RNNCell_reverse.output_size]).to(self.device)
+                     self.RNNCell_reverse.output_size]).to(self.device)
                 if cellState is None:
                     cellState = torch.zeros(
-                        [self.num_directions, input.shape[1], self._RNNCell.output_size]).to(self.device)
+                        [self.num_directions, input.shape[1], self.RNNCell.output_size]).to(self.device)
                 for i in range(0, input.shape[0]):
-                    hiddenState[0], cellState[0] = self._RNNCell(
+                    hiddenState[0], cellState[0] = self.RNNCell(
                         input[i, :, :], (hiddenState[0].clone(), cellState[0].clone()))
                     hiddenStates[i, :, :] = hiddenState[0]
                     cellStates[i, :, :] = cellState[0]
                     if self._bidirectional:
-                        hiddenState[1], cellState[1] = self._RNNCell_reverse(
+                        hiddenState[1], cellState[1] = self.RNNCell_reverse(
                             input[input.shape[0]-i-1, :, :], (hiddenState[1].clone(), cellState[1].clone()))
                         hiddenStates_reverse[i, :, :] = hiddenState[1]
                         cellStates_reverse[i, :, :] = cellState[1]
@@ -1059,10 +1059,10 @@ class BaseRNN(nn.Module):
                     return torch.cat([hiddenStates,hiddenStates_reverse],-1), torch.cat([cellStates,cellStates_reverse],-1)
             else:
                 for i in range(0, input.shape[0]):
-                    hiddenState[0] = self._RNNCell(input[i, :, :], hiddenState[0].clone())
+                    hiddenState[0] = self.RNNCell(input[i, :, :], hiddenState[0].clone())
                     hiddenStates[i, :, :] = hiddenState[0]
                     if self._bidirectional:
-                        hiddenState[1] = self._RNNCell_reverse(
+                        hiddenState[1] = self.RNNCell_reverse(
                             input[input.shape[0]-i-1, :, :], hiddenState[1].clone())
                         hiddenStates_reverse[i, :, :] = hiddenState[1]
                 if not self._bidirectional:

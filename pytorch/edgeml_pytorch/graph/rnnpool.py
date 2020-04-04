@@ -17,18 +17,18 @@ class RNNPool(nn.Module):
 
     def _build(self):
 
-        self.cell_rnn = FastGRNN(self.inputDims, self.nHiddenDims, gate_non_linearity="sigmoid",
-                                update_non_linearity="tanh", zetaInit=100.0, nuInit=-100.0,
+        self.cell_rnn = FastGRNN(self.inputDims, self.nHiddenDims, gate_nonlinearity="sigmoid",
+                                update_nonlinearity="tanh", zetaInit=100.0, nuInit=-100.0,
                                 batch_first=False, bidirectional=False)
 
-        self.cell_bidirrnn = FastGRNN(self.nHiddenDims, self.nHiddenDimsBiDir, gate_non_linearity="sigmoid",
-                                update_non_linearity="tanh", zetaInit=100.0, nuInit=-100.0,
+        self.cell_bidirrnn = FastGRNN(self.nHiddenDims, self.nHiddenDimsBiDir, gate_nonlinearity="sigmoid",
+                                update_nonlinearity="tanh", zetaInit=100.0, nuInit=-100.0,
                                 batch_first=False, bidirectional=True, is_shared_bidirectional=True)
 
 
     def static_single(self,inputs, hidden, batch_size):
 
-        outputs = self.cell_rnn(inputs, hidden)
+        outputs = self.cell_rnn(inputs, hidden[0], hidden[1])
         return torch.split(outputs[-1], split_size_or_sections=batch_size, dim=0)
 
     def forward(self,inputs,batch_size):
@@ -41,8 +41,8 @@ class RNNPool(nn.Module):
                         torch.randn(1, batch_size * self.nRows, self.nHiddenDims).to(torch.device("cuda"))),batch_size)       
 
         outputs_rows = self.cell_bidirrnn(torch.stack(stateList),
-                        (torch.randn(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")),
-                        torch.randn(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda"))))
+                        torch.randn(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")),
+                        torch.randn(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")))
 
         # stateList_reverse = tuple(reversed(stateList))
 
@@ -61,8 +61,8 @@ class RNNPool(nn.Module):
                         torch.randn(1, batch_size * self.nRows, self.nHiddenDims).to(torch.device("cuda"))),batch_size)
 
         outputs_cols = self.cell_bidirrnn(torch.stack(stateList),
-                        (torch.randn(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")),
-                        torch.randn(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda"))))
+                        torch.randn(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")),
+                        torch.randn(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")))
 
         # stateList_reverse = tuple(reversed(stateList))
 
