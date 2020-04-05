@@ -64,7 +64,6 @@ if __name__ == '__main__':
     model_dict.update(checkpoint_dict) 
     model.load_state_dict(model_dict)
 
-    # import pdb;pdb.set_trace()
 
     # model.module.rnn_model.cell_rnn.unrollRNN.RNNCell.W = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_rnn.unrollRNN.RNNCell.W, 0, 1))
     # model.module.rnn_model.cell_rnn.unrollRNN.RNNCell.U = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_rnn.unrollRNN.RNNCell.U, 0, 1))

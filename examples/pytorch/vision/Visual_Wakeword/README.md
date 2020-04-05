@@ -49,11 +49,22 @@ python scripts/create_visualwakewords_annotations.py \
 
 # Training
 
-```shell
+```bash
 python train_visualwakewords.py \
-    -model_arch model_mobilenet_rnnpool \
+    --model_arch model_mobilenet_rnnpool \
     --lr 0.05 \
 ```
+
+# Evaluation
+
+```bash
+python eval.py \
+    --weights vww_rnnpool.pth \
+    --model_arch model_mobilenet_rnnpool \
+    --image_folder images \
+```
+
+The weights argument is the saved checkpoint of the model trained with architecture which is passed in model_arch argument. The folder with images for evaluation has to be passed in image_folder argument
 
 
 Dataset creation code is from https://github.com/Mxbonn/visualwakewords/
