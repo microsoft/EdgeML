@@ -17,6 +17,7 @@ from skimage import filters
 
 
 
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 torch.backends.cudnn.benchmark = True
@@ -25,7 +26,7 @@ torch.backends.cudnn.enabled = True
 
 #Arg parser
 parser = argparse.ArgumentParser(description='PyTorch VisualWakeWords evaluation')
-parser.add_argument('--weights', default='./Himax_images', type=str, help='load from checkpoint')
+parser.add_argument('--weights', default=None, type=str, help='load from checkpoint')
 parser.add_argument('--model_arch',
                     default='model_mobilenet_rnnpool', type=str,
                     choices=['model_mobilenet_rnnpool', 'model_mobilenet_2rnnpool'],
@@ -55,20 +56,41 @@ if __name__ == '__main__':
     model = model.to(device)
     model = torch.nn.DataParallel(model)
 
+    
+
     checkpoint = torch.load(args.weights)
-    model.load_state_dict(checkpoint['model'])
+    checkpoint_dict = checkpoint['model']
+    model_dict = model.state_dict()
+    model_dict.update(checkpoint_dict) 
+    model.load_state_dict(model_dict)
+
+    # import pdb;pdb.set_trace()
+
+    # model.module.rnn_model.cell_rnn.unrollRNN.RNNCell.W = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_rnn.unrollRNN.RNNCell.W, 0, 1))
+    # model.module.rnn_model.cell_rnn.unrollRNN.RNNCell.U = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_rnn.unrollRNN.RNNCell.U, 0, 1))
+
+
+    # model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell_reverse.W = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell_reverse.W, 0, 1))
+    # model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell_reverse.U = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell_reverse.U, 0, 1))
+    # model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W, 0, 1))
+    # model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U, 0, 1))
+
+
+
+    
 
     model.eval()
     img_path = args.image_folder
     img_list = [os.path.join(img_path, x)
                 for x in os.listdir(img_path) if x.endswith('bmp')]
     
-    for path in img_list:
-        img = skimage.io.imread(path)
-        img = skimage.transform.rescale(img, scale=0.5)
-        img = skimage.transform.rescale(img, scale=2.0)
-        img = filters.unsharp_mask(img,amount=5.0, radius=2.0, multichannel=True)
-        img  = Image.fromarray(img.astype('uint8'), mode='RGB')
+    for path in sorted(img_list):
+        # img = skimage.io.imread(path)
+        # img = skimage.transform.rescale(img, scale=0.5)
+        # img = skimage.transform.rescale(img, scale=2.0)
+        # img = filters.unsharp_mask(img,amount=5.0, radius=2.0, multichannel=True)
+        # img  = Image.fromarray(img.astype('uint8'), mode='RGB')
+        img = Image.open(path).convert('RGB')
         img = transform_test(img)
         img = (img.cuda())
         img = img.unsqueeze(0)

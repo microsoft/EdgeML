@@ -17,12 +17,12 @@ class RNNPool(nn.Module):
 
     def _build(self):
 
-        self.cell_rnn = FastGRNN(self.inputDims, self.nHiddenDims, gate_nonlinearity="sigmoid",
-                                update_nonlinearity="tanh", zetaInit=100.0, nuInit=-100.0,
+        self.cell_rnn = FastGRNN(self.inputDims, self.nHiddenDims, gate_nonlinearity="quantSigm",
+                                update_nonlinearity="quantTanh", zetaInit=100.0, nuInit=-100.0,
                                 batch_first=False, bidirectional=False)
 
-        self.cell_bidirrnn = FastGRNN(self.nHiddenDims, self.nHiddenDimsBiDir, gate_nonlinearity="sigmoid",
-                                update_nonlinearity="tanh", zetaInit=100.0, nuInit=-100.0,
+        self.cell_bidirrnn = FastGRNN(self.nHiddenDims, self.nHiddenDimsBiDir, gate_nonlinearity="quantSigm",
+                                update_nonlinearity="quantTanh", zetaInit=100.0, nuInit=-100.0,
                                 batch_first=False, bidirectional=True, is_shared_bidirectional=True)
 
 

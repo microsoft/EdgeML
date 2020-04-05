@@ -267,13 +267,13 @@ class FastGRNNCell(RNNCell):
 
     def forward(self, input, state):
         if self._wRank is None:
-            wComp = torch.matmul(input, torch.transpose(self.W, 0, 1))
+            wComp = torch.matmul(input,self.W)
         else:
             wComp = torch.matmul(
                 torch.matmul(input, torch.transpose(self.W1, 0, 1)), torch.transpose(self.W2, 0, 1))
 
         if self._uRank is None:
-            uComp = torch.matmul(state, torch.transpose(self.U, 0, 1))
+            uComp = torch.matmul(state, self.U)
         else:
             uComp = torch.matmul(
                 torch.matmul(state, torch.transpose(self.U1, 0, 1)), torch.transpose(self.U2, 0, 1))
