@@ -317,6 +317,10 @@ void BonsaiPredictor::batchEvaluate(
   std::ofstream allDumper(dataDir + "/BonsaiResults" + "/resultDump", std::ofstream::out | std::ofstream::app);
   allDumper << totalNonZeros() << " " << accuracy << " " << currResultsPath << "\n";
   allDumper.close();
+
+  delete[] scoreArray;
+  delete[] trainvals;
+  delete[] label;
 }
 
 size_t BonsaiPredictor::totalNonZeros()
