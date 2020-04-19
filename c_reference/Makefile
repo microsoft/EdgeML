@@ -13,6 +13,9 @@ all: test_fastgrnn_lr
 test_fastgrnn_lr: $(TEST_DIR)/test_fastgrnn_lr.c
 	$(CC) -o $(TEST_DIR)/$@ $(IFLAGS) $(CFLAGS) $^ -lm
 
+test_fastgrnn: $(TEST_DIR)/test_fastgrnn.c
+	$(CC) -o $(TEST_DIR)/$@ $(IFLAGS) $(CFLAGS) $^ -lm
+
 .PHONY: clean cleanest
 
 clean: 
