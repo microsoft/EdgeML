@@ -47,15 +47,15 @@ void v_sigmoid(const float* const vec, const unsigned len, float* const ret) {
 }
 
 void v_tanh(const float* const vec, const unsigned len, float* const ret) {
-  for (unsigned i = 0; i < len; i++) ret[i] = tanhyperbolic(vec[i]);
+  for (unsigned i = 0; i < len; i++) ret[i] = tanh(vec[i]);
 }
 
 void v_quantSigmoid(const float* const vec, const unsigned len, float* const ret) {
-  for (unsigned i = 0; i < len; i++) ret[i] = sigmoid(vec[i]);
+  for (unsigned i = 0; i < len; i++) ret[i] = quantSigmoid(vec[i]);
 }
 
 void v_quantTanh(const float* const vec, const unsigned len, float* const ret) {
-  for (unsigned i = 0; i < len; i++) ret[i] = tanh(vec[i]);
+  for (unsigned i = 0; i < len; i++) ret[i] = quantTanh(vec[i]);
 }
 
 /* Scaled matrix-vector multiplication:  ret = alpha * ret + beta * mat * vec
