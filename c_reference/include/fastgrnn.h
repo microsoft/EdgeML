@@ -70,8 +70,8 @@ typedef struct FastGRNN_LR_Buffers {
  *             <code>ERR_TEMPLRU_NOT_INIT</code> if tempLRU not allocated
  *             <code>ERR_NORMFEAT_NOT_INIT</code> if normFeatures not allocated
 */
-int fastgrnn_lr (float* const hiddenState, const unsigned hiddenDims,
-  const float* const input, const int inputDims, const unsigned steps,
+int fastgrnn_lr (float* const hiddenState, unsigned hiddenDims,
+  const float* const input, unsigned inputDims, unsigned steps,
   const FastGRNN_LR_Params* params, FastGRNN_LR_Buffers * buffers) {
 
   if (buffers->preComp == 0) return ERR_PRECOMP_NOT_INIT;
@@ -152,8 +152,8 @@ typedef struct FastGRNN_Buffers {
  *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp not allocated
  *             <code>ERR_NORMFEAT_NOT_INIT</code> if normFeatures not allocated
 */
-int fatgrnn(float* const hiddenState, const unsigned hiddenDims,
-  const float* const input, const int inputDims, const unsigned steps,
+int fastgrnn(float* const hiddenState, unsigned hiddenDims,
+  const float* const input, unsigned inputDims, unsigned steps,
   const FastGRNN_Params* params, FastGRNN_Buffers* buffers) {
 
   if (buffers->preComp == 0) return ERR_PRECOMP_NOT_INIT;
