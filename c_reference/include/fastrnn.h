@@ -48,11 +48,11 @@ int FastRNN(const float* const W, const float* const U,
     // Process the new input and previous hidden state
     matVec(W, normFeatures, hiddenDims, inputDims, 0.0f, 1.0f, preComp);
     matVec(U, hiddenState, hiddenDims, hiddenDims, 1.0f, 1.0f, preComp);
-    v_add(1.0f, preComp, 1.0f, B, hiddenDims, preComp)
+    v_add(1.0f, preComp, 1.0f, B, hiddenDims, preComp);
 
     // Apply the gate to generate the new hidden state
-    v_tanh(preComp, hiddenDims, preComp)
-    v_add(alpha, preComp, beta, hiddenState, hiddenDims, hiddenState)
+    v_tanh(preComp, hiddenDims, preComp);
+    v_add(alpha, preComp, beta, hiddenState, hiddenDims, hiddenState);
   }
   return 0;
 }

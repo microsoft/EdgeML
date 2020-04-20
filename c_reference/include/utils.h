@@ -124,4 +124,11 @@ void softmax(const float* const input, const unsigned len, float* const ret) {
     ret[i] = expf(input[i] - offset);
 }
 
+// Print a vector of length len
+void printVec(const float* const vec, const unsigned len) {
+  for (unsigned i = 0; i < len; i++)
+    printf("%f, ", vec[i]);
+  printf("\n");
+}
+
 #endif
