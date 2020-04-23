@@ -4,7 +4,8 @@
 ## Dataset
 1. download WIDER face dataset images and annotations from http://shuoyang1213.me/WIDERFACE/ and place them all in one folder with name 'WIDER_FACE'
 2. in data/config.py modify HOME to where the above folder is placed to and subsequently FACE.WIDER_DIR as the folder path 
-3. ``` python prepare_wider_data.py ```
+
+``` python prepare_wider_data.py ```
 
 
 
@@ -24,6 +25,8 @@ python wider_test.py --model_arch RPool_Face_C --model ./weights/rpool_face_c.pt
 ```
 
 ## Evaluation
+1. download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/ and unzip in a folder of same name inside this folder
+
 ```shell
 python eval.py --model_arch RPool_Face_C --model ./weights/rpool_face_c.pth --image_folder ./Himax_images
 ```
