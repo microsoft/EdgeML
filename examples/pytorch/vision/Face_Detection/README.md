@@ -1,5 +1,6 @@
 # Codes for Face Detection experiments with RNNPool
-
+## Requirements
+1. ``` pip3 install -r requirements.txt ```
 
 ## Dataset
 1. Download WIDER face dataset images and annotations from http://shuoyang1213.me/WIDERFACE/ and place them all in one folder with name 'WIDER_FACE'
