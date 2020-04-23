@@ -65,14 +65,14 @@ if __name__ == '__main__':
     model.load_state_dict(model_dict)
 
 
-    # model.module.rnn_model.cell_rnn.unrollRNN.RNNCell.W = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_rnn.unrollRNN.RNNCell.W, 0, 1))
-    # model.module.rnn_model.cell_rnn.unrollRNN.RNNCell.U = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_rnn.unrollRNN.RNNCell.U, 0, 1))
+    model.module.rnn_model.cell_rnn.cell.W = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_rnn.cell.W, 0, 1))
+    model.module.rnn_model.cell_rnn.cell.U = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_rnn.cell.U, 0, 1))
 
 
-    # model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell_reverse.W = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell_reverse.W, 0, 1))
-    # model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell_reverse.U = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell_reverse.U, 0, 1))
-    # model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W, 0, 1))
-    # model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U, 0, 1))
+    # model.module.rnn_model.cell_bidirrnn.cell_reverse.W = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.cell_reverse.W, 0, 1))
+    # model.module.rnn_model.cell_bidirrnn.cell_reverse.U = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.cell_reverse.U, 0, 1))
+    model.module.rnn_model.cell_bidirrnn.cell.W = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.cell.W, 0, 1))
+    model.module.rnn_model.cell_bidirrnn.cell.U = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.cell.U, 0, 1))
 
 
 
