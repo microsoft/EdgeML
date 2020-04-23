@@ -255,7 +255,7 @@ class FastGRNNCell(RNNCell):
         self.zeta = nn.Parameter(self._zetaInit * torch.ones([1, 1]))
         self.nu = nn.Parameter(self._nuInit * torch.ones([1, 1]))
 
-        self.copy_previous_UW()
+        # self.copy_previous_UW()
 
     @property
     def name(self):
