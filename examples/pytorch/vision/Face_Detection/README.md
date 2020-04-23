@@ -16,7 +16,7 @@
 python train.py --batch_size 32 --model_arch RPool_Face_C --cuda True --multigpu True
 
 ```
-
+Change --model_arch to RPool_Face_Quant for using the smallest architecture
 
 ## Test
 ```shell
