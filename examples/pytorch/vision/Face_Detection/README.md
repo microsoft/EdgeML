@@ -14,21 +14,20 @@
 
 ```shell
 
-python train.py --batch_size 32 --model_arch RPool_Face_C --cuda True --multigpu True
+python train.py --batch_size 32 --model_arch RPool_Face_Quant --cuda True --multigpu True
 
 ```
-Change --model_arch to RPool_Face_Quant for using the smallest architecture
 
 ## Test
 ```shell
-python wider_test.py --model_arch RPool_Face_C --model ./weights/rpool_face_c.pth
+python wider_test.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_quant.pth
 ```
 
 ## Evaluation
 1. Download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/ and unzip in a folder of same name inside this folder
 
 ```shell
-python eval.py --model_arch RPool_Face_C --model ./weights/rpool_face_c.pth --image_folder ./Himax_images
+python eval.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_quant.pth --image_folder ./Himax_images
 ```
 
 Code has been built upon https://github.com/yxlijun/S3FD.pytorch
