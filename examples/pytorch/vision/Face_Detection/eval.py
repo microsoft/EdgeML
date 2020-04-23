@@ -22,7 +22,6 @@ from torch.autograd import Variable
 from utils.augmentations import to_chw_bgr
 
 from importlib import import_module
-import faulthandler;faulthandler.enable()
 
 
 
@@ -57,7 +56,6 @@ else:
 def detect(net, img_path, thresh):
     #img = cv2.imread(img_path, cv2.IMREAD_COLOR)
     img = Image.open(img_path)
-    #import pdb;pdb.set_trace()
     
     #if img.mode == 'L':
     img = img.convert('RGB')
@@ -65,11 +63,11 @@ def detect(net, img_path, thresh):
     img = np.array(img)
     height, width, _ = img.shape
     max_im_shrink = np.sqrt(
-        1700 * 1200 / (img.shape[0] * img.shape[1]))
-    #image = cv2.resize(img, None, None, fx=max_im_shrink,
-     #                  fy=max_im_shrink, interpolation=cv2.INTER_LINEAR)
-    #image = cv2.resize(img, (640, 640))
-    x = to_chw_bgr(img)
+        640 * 480 / (img.shape[0] * img.shape[1]))
+    image = cv2.resize(img, None, None, fx=max_im_shrink,
+                      fy=max_im_shrink, interpolation=cv2.INTER_LINEAR)
+    # img = cv2.resize(img, (640, 640))
+    x = to_chw_bgr(image)
     x = x.astype('float32')
     x -= cfg.img_mean
     x = x[[2, 1, 0], :, :]
@@ -105,28 +103,34 @@ def detect(net, img_path, thresh):
 
 
 if __name__ == '__main__':
-    # import pdb;pdb.set_trace()
 
     module = import_module('models.' + args.model_arch)
     net = module.build_s3fd('test', cfg.NUM_CLASSES)
-    
-    net = torch.nn.DataParallel(net)
-
-    
 
     checkpoint_dict = torch.load(args.model)
-    # checkpoint_dict = checkpoint['model']
+
     model_dict = net.state_dict()
+
+
+    checkpoint_dict['rnn_model.cell_rnn.cell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.cell.W'], 0, 1))
+    checkpoint_dict['rnn_model.cell_rnn.cell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.cell.U'], 0, 1))
+
+    checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.W'], 0, 1))
+    checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.U'], 0, 1))
+
+
+
+    checkpoint_dict['rnn_model.cell_bidirrnn.cell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.cell.W'], 0, 1))
+    checkpoint_dict['rnn_model.cell_bidirrnn.cell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.cell.U'], 0, 1))
+
+    checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W'], 0, 1))
+    checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U'], 0, 1))
+
+
+
     model_dict.update(checkpoint_dict) 
     net.load_state_dict(model_dict)
 
-
-    net.module.rnn_model.cell_rnn.cell.W = torch.nn.Parameter(torch.transpose(net.module.rnn_model.cell_rnn.cell.W, 0, 1))
-    net.module.rnn_model.cell_rnn.cell.U = torch.nn.Parameter(torch.transpose(net.module.rnn_model.cell_rnn.cell.U, 0, 1))
-
-
-    net.module.rnn_model.cell_bidirrnn.cell.W = torch.nn.Parameter(torch.transpose(net.module.rnn_model.cell_bidirrnn.cell.W, 0, 1))
-    net.module.rnn_model.cell_bidirrnn.cell.U = torch.nn.Parameter(torch.transpose(net.module.rnn_model.cell_bidirrnn.cell.U, 0, 1))
 
 
     net.eval()
@@ -137,6 +141,6 @@ if __name__ == '__main__':
 
     img_path = args.image_folder
     img_list = [os.path.join(img_path, x)
-                for x in os.listdir(img_path) if x.endswith('png')]
+                for x in os.listdir(img_path) if x.endswith('bmp')]
     for path in img_list:
         detect(net, path, args.thresh)

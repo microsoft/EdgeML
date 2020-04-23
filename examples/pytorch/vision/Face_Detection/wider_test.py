@@ -24,6 +24,9 @@ from data.config import cfg
 from torch.autograd import Variable
 from utils.augmentations import to_chw_bgr
 
+from importlib import import_module
+
+
 
 parser = argparse.ArgumentParser(description='s3fd evaluatuon wider')
 parser.add_argument('--model', type=str,
@@ -187,25 +190,35 @@ if __name__ == '__main__':
     module = import_module('models.' + args.model_arch)
     net = module.build_s3fd('test', cfg.NUM_CLASSES)
     
-    net = torch.nn.DataParallel(net)
-
+    # net = torch.nn.DataParallel(net)
     
 
     checkpoint_dict = torch.load(args.model)
     # checkpoint_dict = checkpoint['model']
+    # net = net.module
     model_dict = net.state_dict()
+
+
+    checkpoint_dict['rnn_model.cell_rnn.cell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.cell.W'], 0, 1))
+    checkpoint_dict['rnn_model.cell_rnn.cell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.cell.U'], 0, 1))
+
+    checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.W'], 0, 1))
+    checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.U'], 0, 1))
+
+
+
+    checkpoint_dict['rnn_model.cell_bidirrnn.cell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.cell.W'], 0, 1))
+    checkpoint_dict['rnn_model.cell_bidirrnn.cell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.cell.U'], 0, 1))
+
+    checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W'], 0, 1))
+    checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U'], 0, 1))
+
+
+
     model_dict.update(checkpoint_dict) 
     net.load_state_dict(model_dict)
 
-
-    net.module.rnn_model.cell_rnn.cell.W = torch.nn.Parameter(torch.transpose(net.module.rnn_model.cell_rnn.cell.W, 0, 1))
-    net.module.rnn_model.cell_rnn.cell.U = torch.nn.Parameter(torch.transpose(net.module.rnn_model.cell_rnn.cell.U, 0, 1))
-
-
-    net.module.rnn_model.cell_bidirrnn.cell.W = torch.nn.Parameter(torch.transpose(net.module.rnn_model.cell_bidirrnn.cell.W, 0, 1))
-    net.module.rnn_model.cell_bidirrnn.cell.U = torch.nn.Parameter(torch.transpose(net.module.rnn_model.cell_bidirrnn.cell.U, 0, 1))
-
-
+    
     net.eval()
     
 
