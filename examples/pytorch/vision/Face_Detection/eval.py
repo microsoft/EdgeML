@@ -22,6 +22,7 @@ from torch.autograd import Variable
 from utils.augmentations import to_chw_bgr
 
 from importlib import import_module
+import faulthandler;faulthandler.enable()
 
 
 
@@ -104,7 +105,7 @@ def detect(net, img_path, thresh):
 
 
 if __name__ == '__main__':
-    import pdb;pdb.set_trace()
+    # import pdb;pdb.set_trace()
 
     module = import_module('models.' + args.model_arch)
     net = module.build_s3fd('test', cfg.NUM_CLASSES)

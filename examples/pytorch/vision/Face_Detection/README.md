@@ -23,4 +23,9 @@ python train.py --batch_size 32 --model_arch RPool_Face_C --cuda True --multigpu
 python wider_test.py --model_arch RPool_Face_C --model ./weights/rpool_face_c.pth
 ```
 
+## Evaluation
+```shell
+python eval.py --model_arch RPool_Face_C --model ./weights/rpool_face_c.pth --image_folder ./Himax_images
+```
+
 Code has been built upon https://github.com/yxlijun/S3FD.pytorch
