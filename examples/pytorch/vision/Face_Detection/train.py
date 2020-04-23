@@ -120,7 +120,7 @@ if args.resume:
 
 if args.cuda:
     if args.multigpu:
-        net = torch.nn.DataParallel(s3fd_net)
+        net = torch.nn.DataParallel(net)
     net = net.cuda()
     cudnn.benckmark = True
 
