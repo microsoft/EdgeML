@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
     
 
-    checkpoint_dict = torch.load(args.weights)
+    checkpoint_dict = torch.load(args.model)
     # checkpoint_dict = checkpoint['model']
     model_dict = net.state_dict()
     model_dict.update(checkpoint_dict) 

@@ -183,12 +183,31 @@ def get_data():
 if __name__ == '__main__':
     event_list, file_list, imgs_path, save_path = get_data()
     cfg.USE_NMS = False
+
     module = import_module('models.' + args.model_arch)
     net = module.build_s3fd('test', cfg.NUM_CLASSES)
-
-    net.load_state_dict(torch.load(args.model))
+    
     net = torch.nn.DataParallel(net)
+
+    
+
+    checkpoint_dict = torch.load(args.model)
+    # checkpoint_dict = checkpoint['model']
+    model_dict = net.state_dict()
+    model_dict.update(checkpoint_dict) 
+    net.load_state_dict(model_dict)
+
+
+    net.module.rnn_model.cell_rnn.cell.W = torch.nn.Parameter(torch.transpose(net.module.rnn_model.cell_rnn.cell.W, 0, 1))
+    net.module.rnn_model.cell_rnn.cell.U = torch.nn.Parameter(torch.transpose(net.module.rnn_model.cell_rnn.cell.U, 0, 1))
+
+
+    net.module.rnn_model.cell_bidirrnn.cell.W = torch.nn.Parameter(torch.transpose(net.module.rnn_model.cell_bidirrnn.cell.W, 0, 1))
+    net.module.rnn_model.cell_bidirrnn.cell.U = torch.nn.Parameter(torch.transpose(net.module.rnn_model.cell_bidirrnn.cell.U, 0, 1))
+
+
     net.eval()
+    
 
     if use_cuda:
         net.cuda()
