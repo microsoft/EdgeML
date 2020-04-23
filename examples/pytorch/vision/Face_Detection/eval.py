@@ -15,7 +15,7 @@ import torchvision.transforms as transforms
 import cv2
 import time
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 
 from data.config import cfg
 from torch.autograd import Variable
@@ -60,10 +60,12 @@ def detect(net, img_path, thresh):
     #if img.mode == 'L':
     img = img.convert('RGB')
 
+    img = img.filter(ImageFilter.UnsharpMask(radius=2, percent=150, threshold=3))
+
     img = np.array(img)
     height, width, _ = img.shape
     max_im_shrink = np.sqrt(
-        640 * 480 / (img.shape[0] * img.shape[1]))
+        1700 * 1200 / (img.shape[0] * img.shape[1]))
     image = cv2.resize(img, None, None, fx=max_im_shrink,
                       fy=max_im_shrink, interpolation=cv2.INTER_LINEAR)
     # img = cv2.resize(img, (640, 640))
@@ -134,6 +136,8 @@ if __name__ == '__main__':
 
 
     net.eval()
+
+    # import pdb;pdb.set_trace()
 
     if use_cuda:
         net.cuda()

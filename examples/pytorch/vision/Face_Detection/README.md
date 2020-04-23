@@ -2,8 +2,8 @@
 
 
 ## Dataset
-1. download WIDER face dataset from http://shuoyang1213.me/WIDERFACE/
-2. modify data/config.py 
+1. download WIDER face dataset images and annotations from http://shuoyang1213.me/WIDERFACE/ and place them all in one folder with name 'WIDER_FACE'
+2. in data/config.py modify HOME to where the above folder is placed to and subsequently FACE.WIDER_DIR as the folder path 
 3. ``` python prepare_wider_data.py ```
 
 
