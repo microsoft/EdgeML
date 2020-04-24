@@ -120,7 +120,7 @@ if args.resume:
 
 if args.cuda:
     if args.multigpu:
-        net = torch.nn.DataParallel(net)
+        net = torch.nn.DataParallel(s3fd_net)
     net = net.cuda()
     cudnn.benckmark = True
 
@@ -146,11 +146,11 @@ def train():
 
             if args.cuda:
                 images = Variable(images.cuda())
-                targets = [Variable(ann.cuda(), volatile=True)
+                targets = [Variable(ann.cuda())
                            for ann in targets]
             else:
                 images = Variable(images)
-                targets = [Variable(ann, volatile=True) for ann in targets]
+                targets = [Variable(ann) for ann in targets]
 
               
             t0 = time.time()
@@ -176,7 +176,7 @@ def train():
             if iteration != 0 and iteration % 5000 == 0:
                 print('Saving state, iter:', iteration)
                 file = 'sfd_' + args.dataset + '_' + repr(iteration) + '.pth'
-                torch.save(net.state_dict(),
+                torch.save(s3fd_net.state_dict(),
                            os.path.join(args.save_folder, file))
             iteration += 1
 
@@ -195,11 +195,11 @@ def val(epoch):
         for batch_idx, (images, targets) in enumerate(val_loader):
             if args.cuda:
                 images = Variable(images.cuda())
-                targets = [Variable(ann.cuda(), volatile=True)
+                targets = [Variable(ann.cuda())
                            for ann in targets]
             else:
                 images = Variable(images)
-                targets = [Variable(ann, volatile=True) for ann in targets]
+                targets = [Variable(ann) for ann in targets]
 
             out = net(images)
             loss_l, loss_c = criterion(out, targets)
@@ -217,13 +217,13 @@ def val(epoch):
     if tloss < min_loss:
         print('Saving best state,epoch', epoch)
         file = 'rpool_{}_.pth'.format(args.dataset)
-        torch.save(net.state_dict(), os.path.join(
+        torch.save(s3fd_net.state_dict(), os.path.join(
             args.save_folder, file))
         min_loss = tloss
 
     states = {
         'epoch': epoch,
-        'weight': net.state_dict(),
+        'weight': s3fd_net.state_dict(),
     }
     file = 'rpool_{}_checkpoint.pth'.format(args.dataset)
     torch.save(states, os.path.join(
