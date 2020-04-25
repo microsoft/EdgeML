@@ -17,7 +17,7 @@
 python train.py --batch_size 32 --model_arch RPool_Face_Quant --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 
 
 ```
-This will save the checkpoints after every '--save_frequency' number of iterations in a weight file with 'checkpoint.pth' at the end and will save the best state weight in a file with best_state.pth at the end. These will be save in '--save_folder'. For resuming training from a checkpoint, use '--resume checkpoint_name.pth' with the above command.
+This will save the checkpoints after every '--save_frequency' number of iterations in a weight file with 'checkpoint.pth' at the end and the best state weight in a file with 'best_state.pth' at the end. These will be saved in '--save_folder'. For resuming training from a checkpoint, use '--resume checkpoint_name.pth' with the above command.
 
 
 ## Test
@@ -33,7 +33,7 @@ This will save test predictions of the model in eval_tools folder with name '--s
 ```shell
 python eval.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_quant.pth --image_folder ./Himax_images  --checkpoint_type old
 ```
-Specify whether you are using a checkpoint already provided or if you trained your own in --checkpoint_type
+Specify whether you are using a checkpoint already provided or if you trained your own in '--checkpoint_type'
 
 
 Code has been built upon https://github.com/yxlijun/S3FD.pytorch
