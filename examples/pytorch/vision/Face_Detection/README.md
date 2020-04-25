@@ -21,12 +21,14 @@ This will save the checkpoints after every '--save_frequency' number of iteratio
 
 
 ## Test
+Download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/ and unzip in a folder of same name inside this folder
+
 ```shell
-python wider_test.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_quant.pth
+python wider_test.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_quant.pth --save_folder rpool_face_quant_val --subset val
 ```
+This will save test predictions of the model in eval_tools folder with name '--save_folder'
 
 ## Evaluation
-1. Download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/ and unzip in a folder of same name inside this folder
 
 ```shell
 python eval.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_quant.pth --image_folder ./Himax_images

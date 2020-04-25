@@ -37,6 +37,12 @@ parser.add_argument('--model_arch',
                     default='RPool_Face_C', type=str,
                     choices=['RPool_Face_C', 'RPool_Face_B', 'RPool_Face_A', 'RPool_Face_Quant'],
                     help='choose architecture among rpool variants')
+parser.add_argument('--save_folder', type=str,
+                    default='rpool_face_predictions', help='folder for saving predictions')
+parser.add_argument('--subset', type=str,
+                    default='val',
+                    choices=['val', 'test'],
+                    help='choose which set to run testing on')
 
 args = parser.parse_args()
 
@@ -166,7 +172,7 @@ def bbox_vote(det):
 
 
 def get_data():
-    subset = 'val'
+    subset = args.subset
     if subset is 'val':
         wider_face = sio.loadmat(
             './eval_tools/wider_face_val.mat')
@@ -179,7 +185,7 @@ def get_data():
 
     imgs_path = os.path.join(
         cfg.FACE.WIDER_DIR, 'WIDER_{}'.format(subset), 'images')
-    save_path = 'eval_tools/s3fd_{}_small_fgrnn_smallramsd'.format(subset)
+    save_path = 'eval_tools/{}'.format(args.save_folder)
 
     return event_list, file_list, imgs_path, save_path
 
