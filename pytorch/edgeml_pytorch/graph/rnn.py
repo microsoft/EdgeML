@@ -58,7 +58,7 @@ def gen_nonlinearity(A, nonlinearity):
         # nonlinearity is a user specified function
         if not callable(nonlinearity):
             raise ValueError("nonlinearity is either a callable or a value " +
-                             + "['tanh', 'sigmoid', 'relu', 'quantTanh', " +
+                             "['tanh', 'sigmoid', 'relu', 'quantTanh', " +
                              "'quantSigm'")
         return nonlinearity(A)
 
@@ -955,12 +955,13 @@ class BaseRNN(nn.Module):
     '''
     Generic equivalent of static_rnn in tf
     Used to unroll all the cell written in this file
-    We assume input to be batch_first by default ie.,
-    [batchSize, timeSteps, inputDims] else
-    [timeSteps, batchSize, inputDims]
+    We assume batch_first to be False by default 
+    (following the convention in pytorch) ie.,
+    [timeSteps, batchSize, inputDims] else
+    [batchSize, timeSteps, inputDims]
     '''
 
-    def __init__(self, cell: RNNCell, batch_first=True):
+    def __init__(self, cell: RNNCell, batch_first=False):
         super(BaseRNN, self).__init__()
         self._RNNCell = cell
         self._batch_first = batch_first
@@ -1024,7 +1025,7 @@ class LSTM(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 wSparsity=1.0, uSparsity=1.0, batch_first=True):
+                 wSparsity=1.0, uSparsity=1.0, batch_first=False):
         super(LSTM, self).__init__()
         self.cell = LSTMLRCell(input_size, hidden_size,
                                gate_nonlinearity=gate_nonlinearity,
@@ -1042,7 +1043,7 @@ class GRU(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 wSparsity=1.0, uSparsity=1.0, batch_first=True):
+                 wSparsity=1.0, uSparsity=1.0, batch_first=False):
         super(GRU, self).__init__()
         self.cell = GRULRCell(input_size, hidden_size,
                               gate_nonlinearity=gate_nonlinearity,
@@ -1060,7 +1061,7 @@ class UGRNN(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 wSparsity=1.0, uSparsity=1.0, batch_first=True):
+                 wSparsity=1.0, uSparsity=1.0, batch_first=False):
         super(UGRNN, self).__init__()
         self.cell = UGRNNLRCell(input_size, hidden_size,
                                 gate_nonlinearity=gate_nonlinearity,
@@ -1078,7 +1079,7 @@ class FastRNN(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 wSparsity=1.0, uSparsity=1.0, alphaInit=-3.0, betaInit=3.0, batch_first=True):
+                 wSparsity=1.0, uSparsity=1.0, alphaInit=-3.0, betaInit=3.0, batch_first=False):
         super(FastRNN, self).__init__()
         self.cell = FastRNNCell(input_size, hidden_size,
                                 gate_nonlinearity=gate_nonlinearity,
@@ -1098,7 +1099,7 @@ class FastGRNN(nn.Module):
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
                  wSparsity=1.0, uSparsity=1.0, zetaInit=1.0, nuInit=-4.0,
-                 batch_first=True):
+                 batch_first=False):
         super(FastGRNN, self).__init__()
         self.cell = FastGRNNCell(input_size, hidden_size,
                                  gate_nonlinearity=gate_nonlinearity,
