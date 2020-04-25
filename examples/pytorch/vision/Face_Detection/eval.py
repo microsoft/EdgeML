@@ -39,6 +39,11 @@ parser.add_argument('--model_arch',
                     help='choose architecture among rpool variants')
 parser.add_argument('--image_folder', default=None, type=str, help='folder containing images')
 
+parser.add_argument('--checkpoint_type', type=str,
+                    default='old', 
+                    choices=['old','new'],
+                    help='specify the type of checkpoint being used : 'old' for the ones provided and 'new' if you trained your own model to test')
+
 args = parser.parse_args()
 
 
@@ -113,20 +118,20 @@ if __name__ == '__main__':
 
     model_dict = net.state_dict()
 
+    if args.checkpoint_type == 'old':
+        checkpoint_dict['rnn_model.cell_rnn.cell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.cell.W'], 0, 1))
+        checkpoint_dict['rnn_model.cell_rnn.cell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.cell.U'], 0, 1))
 
-    checkpoint_dict['rnn_model.cell_rnn.cell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.cell.W'], 0, 1))
-    checkpoint_dict['rnn_model.cell_rnn.cell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.cell.U'], 0, 1))
-
-    checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.W'], 0, 1))
-    checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.U'], 0, 1))
+        checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.W'], 0, 1))
+        checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.U'], 0, 1))
 
 
 
-    checkpoint_dict['rnn_model.cell_bidirrnn.cell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.cell.W'], 0, 1))
-    checkpoint_dict['rnn_model.cell_bidirrnn.cell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.cell.U'], 0, 1))
+        checkpoint_dict['rnn_model.cell_bidirrnn.cell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.cell.W'], 0, 1))
+        checkpoint_dict['rnn_model.cell_bidirrnn.cell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.cell.U'], 0, 1))
 
-    checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W'], 0, 1))
-    checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U'], 0, 1))
+        checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W'], 0, 1))
+        checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U'], 0, 1))
 
 
 
