@@ -14,9 +14,11 @@
 
 ```shell
 
-python train.py --batch_size 32 --model_arch RPool_Face_Quant --cuda True --multigpu True
+python train.py --batch_size 32 --model_arch RPool_Face_Quant --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 
 
 ```
+This will save the checkpoints after every '--save_frequency' number of iterations in a weight file with 'checkpoint.pth' at the end and will save the best state weight in a file with best_state.pth at the end. These will be save in '--save_folder'. For resuming training from a checkpoint, use '--resume checkpoint_name.pth' with the above command.
+
 
 ## Test
 ```shell
