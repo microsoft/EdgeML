@@ -1115,7 +1115,11 @@ class FastGRNN(nn.Module):
         return self.unrollRNN(input, hiddenState, cellState)
 
 class FastGRNNCUDA(nn.Module):
-    """Unrolled implementation of the FastGRNNCUDACell"""
+    """
+        Unrolled implementation of the FastGRNNCUDACell
+        Note: update_nonlinearity is fixed to tanh, only gate_nonlinearity
+        is configurable.
+    """
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None, 
                  wSparsity=1.0, uSparsity=1.0, zetaInit=1.0, nuInit=-4.0,
@@ -1173,9 +1177,12 @@ class FastGRNNCUDA(nn.Module):
         self.zeta = nn.Parameter(self._zetaInit * torch.ones([1, 1], device=self.device))
         self.nu = nn.Parameter(self._nuInit * torch.ones([1, 1], device=self.device))
 
-    def forward(self, input, hiddenState, cell_state=None):
-        # input: [timesteps, batch, features, state_size]
-        if self.batch_first:
+    def forward(self, input, hiddenState=None, cell_state=None):
+        '''
+            input: [timesteps, batch, features]; hiddenState: [state_size]
+            hiddenState is set to zeros if not provided. 
+        '''
+        if self.batch_first is True:
             input = input.transpose(0, 1).contiguous()
         if not input.is_cuda:
             input = input.to(self.device)
@@ -1184,8 +1191,12 @@ class FastGRNNCUDA(nn.Module):
                 [input.shape[1], self._hidden_size]).to(self.device)
         if not hiddenState.is_cuda:
             hiddenState = hiddenState.to(self.device)
-        return FastGRNNUnrollFunction.apply(input, self.bias_gate, self.bias_update, self.zeta, self.nu, hiddenState,
+        result = FastGRNNUnrollFunction.apply(input, self.bias_gate, self.bias_update, self.zeta, self.nu, hiddenState,
             self.W, self.U, self.W1, self.W2, self.U1, self.U2, self._gate_non_linearity)
+        if self.batch_first is True:
+            return result.transpose(0, 1)
+        else:
+            return result
 
     def getVars(self):
         Vars = []
