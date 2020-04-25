@@ -43,11 +43,6 @@ parser.add_argument('--subset', type=str,
                     default='val',
                     choices=['val', 'test'],
                     help='choose which set to run testing on')
-parser.add_argument('--checkpoint_type', type=str,
-                    default='old', 
-                    choices=['old','new'],
-                    help='specify the type of checkpoint being used : 'old' for the ones provided and 'new' if you trained your own model to test')
-
 
 args = parser.parse_args()
 
@@ -178,7 +173,7 @@ def bbox_vote(det):
 
 def get_data():
     subset = args.subset
-    if subset is 'val':
+    if subset == 'val':
         wider_face = sio.loadmat(
             './eval_tools/wider_face_val.mat')
     else:
@@ -201,29 +196,12 @@ if __name__ == '__main__':
     module = import_module('models.' + args.model_arch)
     net = module.build_s3fd('test', cfg.NUM_CLASSES)
     
-    # net = torch.nn.DataParallel(net)
+    net = torch.nn.DataParallel(net)
     
 
     checkpoint_dict = torch.load(args.model)
-    # checkpoint_dict = checkpoint['model']
-    # net = net.module
+
     model_dict = net.state_dict()
-
-    if args.checkpoint_type == 'old':
-        checkpoint_dict['rnn_model.cell_rnn.cell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.cell.W'], 0, 1))
-        checkpoint_dict['rnn_model.cell_rnn.cell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.cell.U'], 0, 1))
-
-        checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.W'], 0, 1))
-        checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.U'], 0, 1))
-
-
-
-        checkpoint_dict['rnn_model.cell_bidirrnn.cell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.cell.W'], 0, 1))
-        checkpoint_dict['rnn_model.cell_bidirrnn.cell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.cell.U'], 0, 1))
-
-        checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W'], 0, 1))
-        checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U'], 0, 1))
-
 
 
     model_dict.update(checkpoint_dict) 
@@ -237,7 +215,6 @@ if __name__ == '__main__':
         net.cuda()
         cudnn.benckmark = True
 
-    #transform = S3FDBasicTransform(cfg.INPUT_SIZE, cfg.MEANS)
 
     counter = 0
 
@@ -250,14 +227,11 @@ if __name__ == '__main__':
         for num, file in enumerate(filelist):
             im_name = str(file[0][0])#.encode('utf-8')
             in_file = os.path.join(imgs_path, event[0][0], im_name[:] + '.jpg')
-            #img = cv2.imread(in_file)
             img = Image.open(in_file)
             if img.mode == 'L':
                 img = img.convert('RGB')
             img = np.array(img)
 
-            # max_im_shrink = (0x7fffffff / 577.0 /
-            #                 (img.shape[0] * img.shape[1])) ** 0.5
 
             max_im_shrink = np.sqrt(
                 1700 * 1200 / (img.shape[0] * img.shape[1]))

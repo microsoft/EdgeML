@@ -24,16 +24,14 @@ This will save the checkpoints after every '--save_frequency' number of iteratio
 Download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/ and unzip in a folder of same name inside this folder
 
 ```shell
-python wider_test.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_quant.pth --save_folder rpool_face_quant_val --subset val --checkpoint_type old
+python wider_test.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --save_folder rpool_face_quant_val --subset val
 ```
-This will save test predictions of the model in eval_tools folder with name '--save_folder'. Specify whether you are using a checkpoint already provided or if you trained your own in --checkpoint_type.
+This will save test predictions of the model in eval_tools folder with name '--save_folder'.
 
 ## Evaluation
 
 ```shell
-python eval.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_quant.pth --image_folder ./Himax_images  --checkpoint_type old
+python eval.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --image_folder ./Himax_images
 ```
-Specify whether you are using a checkpoint already provided or if you trained your own in '--checkpoint_type'
-
 
 Code has been built upon https://github.com/yxlijun/S3FD.pytorch

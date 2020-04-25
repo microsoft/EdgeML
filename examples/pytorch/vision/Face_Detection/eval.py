@@ -31,18 +31,13 @@ parser.add_argument('--save_dir', type=str, default='results/',
 parser.add_argument('--model', type=str,
                     default='weights/rpool_face_c.pth', help='trained model')
                     #small_fgrnn_smallram_sd.pth', help='trained model')
-parser.add_argument('--thresh', default=0.2, type=float,
+parser.add_argument('--thresh', default=0.3, type=float,
                     help='Final confidence threshold')
 parser.add_argument('--model_arch',
                     default='RPool_Face_C', type=str,
                     choices=['RPool_Face_C', 'RPool_Face_B', 'RPool_Face_A', 'RPool_Face_Quant'],
                     help='choose architecture among rpool variants')
 parser.add_argument('--image_folder', default=None, type=str, help='folder containing images')
-
-parser.add_argument('--checkpoint_type', type=str,
-                    default='old', 
-                    choices=['old','new'],
-                    help='specify the type of checkpoint being used : 'old' for the ones provided and 'new' if you trained your own model to test')
 
 args = parser.parse_args()
 
@@ -114,25 +109,11 @@ if __name__ == '__main__':
     module = import_module('models.' + args.model_arch)
     net = module.build_s3fd('test', cfg.NUM_CLASSES)
 
+    net = torch.nn.DataParallel(net)
+
     checkpoint_dict = torch.load(args.model)
 
     model_dict = net.state_dict()
-
-    if args.checkpoint_type == 'old':
-        checkpoint_dict['rnn_model.cell_rnn.cell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.cell.W'], 0, 1))
-        checkpoint_dict['rnn_model.cell_rnn.cell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.cell.U'], 0, 1))
-
-        checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.W'], 0, 1))
-        checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_rnn.unrollRNN.RNNCell.U'], 0, 1))
-
-
-
-        checkpoint_dict['rnn_model.cell_bidirrnn.cell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.cell.W'], 0, 1))
-        checkpoint_dict['rnn_model.cell_bidirrnn.cell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.cell.U'], 0, 1))
-
-        checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.W'], 0, 1))
-        checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U'] = torch.nn.Parameter(torch.transpose(checkpoint_dict['rnn_model.cell_bidirrnn.unrollRNN.RNNCell.U'], 0, 1))
-
 
 
     model_dict.update(checkpoint_dict) 
@@ -141,8 +122,6 @@ if __name__ == '__main__':
 
 
     net.eval()
-
-    # import pdb;pdb.set_trace()
 
     if use_cuda:
         net.cuda()
