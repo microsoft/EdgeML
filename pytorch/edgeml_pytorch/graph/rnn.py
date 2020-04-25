@@ -1179,7 +1179,7 @@ class FastGRNNCUDA(nn.Module):
 
     def forward(self, input, hiddenState=None, cell_state=None):
         '''
-            input: [timesteps, batch, features]; hiddenState: [state_size]
+            input: [timesteps, batch, features]; hiddenState: [batch, state_size]
             hiddenState is set to zeros if not provided. 
         '''
         if self.batch_first is True:
