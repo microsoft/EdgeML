@@ -78,7 +78,7 @@ def main():
 
     FastCellTrainer = FastTrainer(FastCell, numClasses, sW=sW, sU=sU,
                                   learningRate=learningRate, outFile=outFile,
-                                  device=device, batchFirst=batch_first)
+                                  device=device, batch_first=batch_first)
 
     FastCellTrainer.train(batchSize, totalEpochs,
                           torch.from_numpy(Xtrain.astype(np.float32)),

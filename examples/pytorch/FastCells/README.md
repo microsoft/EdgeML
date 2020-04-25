@@ -62,8 +62,8 @@ This command should give you a final output that reads roughly similar to
 (might not be exact numbers due to various version mismatches):
 
 ```
-Maximum Test accuracy at compressed model size(including early stopping): 0.9407075 at Epoch: 262
-Final Test Accuracy: 0.93721974
+Maximum Test accuracy at compressed model size(including early stopping): 0.9422 at Epoch: 100
+Final Test Accuracy: 0.9347
 
 Non-Zeros: 1932 Model Size: 7.546875 KB hasSparse: False
 ```
