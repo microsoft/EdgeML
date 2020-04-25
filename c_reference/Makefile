@@ -3,20 +3,21 @@
 
 include config.mk
 
-INCLUDE_DIR=include
+SRC_DIR=src
 TEST_DIR=tests
 
-IFLAGS = -I $(INCLUDE_DIR)
-
-all: test_fastgrnn_lr
-
-test_fastgrnn_lr: $(TEST_DIR)/test_fastgrnn_lr.c
-	$(CC) -o $(TEST_DIR)/$@ $(IFLAGS) $(CFLAGS) $^ -lm
+all:  
+	$(MAKE) -C $(SRC_DIR)
+	$(MAKE) -C $(TEST_DIR)
 
 .PHONY: clean cleanest
 
 clean: 
 	rm -f *.o *.gch
+	$(MAKE) -C $(SRC_DIR) clean
+	$(MAKE) -C $(TEST_DIR) clean
 
 cleanest: clean
 	rm *~
+	$(MAKE) -C $(SRC_DIR) cleanest
+	$(MAKE) -C $(TEST_DIR) cleanest
