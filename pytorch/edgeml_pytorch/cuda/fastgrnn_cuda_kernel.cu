@@ -406,7 +406,7 @@ std::vector<torch::Tensor> fastgrnn_unroll_cuda_forward(
             zeta.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>(),
             prev_h.packed_accessor<scalar_t,2,torch::RestrictPtrTraits,size_t>());
         }));
-      hidden_states[t] = new_h;
+      hidden_states[t].copy_(new_h);
       z_s[t] = z;
       h_prime_s[t] = h_prime;
       prev_h = new_h;
