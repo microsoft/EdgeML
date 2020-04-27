@@ -40,7 +40,7 @@ class RNNPool(nn.Module):
                         (torch.randn(1, batch_size * self.nRows, self.nHiddenDims).to(torch.device("cuda")),
                         torch.randn(1, batch_size * self.nRows, self.nHiddenDims).to(torch.device("cuda"))),batch_size)       
 
-        outputs_rows = self.cell_bidirrnn(torch.stack(stateList),
+        outputs_cols = self.cell_bidirrnn(torch.stack(stateList),
                         torch.randn(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")),
                         torch.randn(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")))
 
@@ -60,7 +60,7 @@ class RNNPool(nn.Module):
                         (torch.randn(1, batch_size * self.nRows, self.nHiddenDims).to(torch.device("cuda")),
                         torch.randn(1, batch_size * self.nRows, self.nHiddenDims).to(torch.device("cuda"))),batch_size)
 
-        outputs_cols = self.cell_bidirrnn(torch.stack(stateList),
+        outputs_rows = self.cell_bidirrnn(torch.stack(stateList),
                         torch.randn(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")),
                         torch.randn(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")))
 
