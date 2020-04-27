@@ -39,14 +39,14 @@ int main() {
 
   float preComp1[HIDDEN_DIMS1] = { 0.0f };
   float normFeatures1[INPUT_DIMS] = { 0.0f };
-  FastGRNN_LR_Buffers rnn1_buffers = {
+  FastGRNN_Buffers rnn1_buffers = {
     .preComp = preComp1,
     .normFeatures = normFeatures1
   };
 
   float preComp2[HIDDEN_DIMS2] = { 0.0f };
   float normFeatures2[HIDDEN_DIMS1] = { 0.0f };
-  FastGRNN_LR_Buffers rnn2_buffers = {
+  FastGRNN_Buffers rnn2_buffers = {
     .preComp = preComp2,
     .normFeatures = normFeatures2
   };

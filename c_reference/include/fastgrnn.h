@@ -63,6 +63,7 @@ typedef struct FastGRNN_LR_Buffers {
  * @param[in]       params       pointer to model parameter
  * @param[in]       buffers      pointer to buffer spaces
  * @param[in]       backward     direction of the pass, 0 for forward, 1 for backward
+ * @param[in]       normalize    apply mean-var normalization, 0 for no, 1 for yes
  * @return     The function returns <code>0</code> on success
  *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp not allocated
  *             <code>ERR_TEMPLRW_NOT_INIT</code> if tempLRW not allocated
@@ -71,7 +72,7 @@ typedef struct FastGRNN_LR_Buffers {
 */
 int fastgrnn_lr(float* const hiddenState, unsigned hiddenDims,
   const float* const input, unsigned inputDims, unsigned steps,
-  const void* params, void* buffers, int backward);
+  const void* params, void* buffers, int backward, int normalize);
 
 /**
  * @brief Model paramters for low-rank FastGRNN
@@ -115,12 +116,13 @@ typedef struct FastGRNN_Buffers {
  * @param[in]       params       pointer to model parameter
  * @param[in]       buffers      pointer to buffer spaces
  * @param[in]       backward     direction of the pass, 0 for forward, 1 for backward
+ * @param[in]       normalize    apply mean-var normalization, 0 for no, 1 for yes
  * @return     The function returns <code>0</code> on success
  *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp not allocated
  *             <code>ERR_NORMFEAT_NOT_INIT</code> if normFeatures not allocated
 */
 int fastgrnn(float* const hiddenState, unsigned hiddenDims,
   const float* const input, unsigned inputDims, unsigned steps,
-  const void* params, void* buffers, int backward);
+  const void* params, void* buffers, int backward, int normalize);
 
 #endif

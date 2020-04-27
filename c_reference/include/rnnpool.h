@@ -4,12 +4,12 @@
 #ifndef __RNNPOOL_H__
 #define __RNNPOOL_H__
 
-typedef int (*rnn_t)(float* const, unsigned, const float* const, unsigned, unsigned, const void*, void*, int);
+typedef int (*rnn_t)(float* const, unsigned, const float* const, unsigned, unsigned, const void*, void*, int, int);
 
 /**
- * @param[in]        patch          pointer to the activation of the first pixel in the patch
+ * @param[in]        patch          pointer to activation of patch (row, col, channel)
  * @param[in]        inputDims      dimemsion of each input pixel
- * @param[in]        patchDim      number of rows and columns in a square patch
+ * @param[in]        patchDim       number of rows and columns in a square patch
  * @param[in]        stride         stride lenghth in the larger image to get to next row
  * @param[in]        rnn1           function pointer to RNN1
  * @param[in]        hiddenDims1    dimension of the hidden state of RNN1

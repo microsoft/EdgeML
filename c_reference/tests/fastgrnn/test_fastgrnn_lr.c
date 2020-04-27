@@ -90,7 +90,7 @@ int main() {
     memset(hiddenState, 0, sizeof(float) * HIDDEN_DIMS);
     fastgrnn_lr(hiddenState, HIDDEN_DIMS, 
       input + n * INPUT_DIMS * TIME_STEPS, INPUT_DIMS, TIME_STEPS, 
-      &USPS_params, &buffers, 0);
+      &USPS_params, &buffers, 0, 1);
     FC(FC_weights, FCbias, hiddenState, HIDDEN_DIMS, classScores, NUM_CLASSES);
 
     printf("Example: %d  Predicted class: %d  Actual class:  %d\n",

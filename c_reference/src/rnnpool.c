@@ -16,25 +16,25 @@ int rnnpool_block(const float* const patch, unsigned inputDims,
   // Horizontal pass over each row with RNN1
   memset(buffer, 0, sizeof(float) * hiddenDims1 * patchDim);
   for (unsigned r = 0; r < patchDim; ++r)
-    rnn1(buffer + r * patchDim, hiddenDims1,
+    rnn1(buffer + r * hiddenDims1, hiddenDims1,
       patch + stride * r * inputDims, inputDims, patchDim,
-      rnn1_params, rnn1_buffers, 0);
+      rnn1_params, rnn1_buffers, 0, 0);
 
   // Bidirectional vertical pass over the row summaries
-  rnn2(output, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params, rnn2_buffers, 0);
-  rnn2(output + hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params, rnn2_buffers, 1);
+  rnn2(output, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params, rnn2_buffers, 0, 0);
+  rnn2(output + hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params, rnn2_buffers, 1, 0);
 
   // Vertical pass over each column with RNN1
   memset(buffer, 0, sizeof(float) * hiddenDims1 * patchDim);
   for (unsigned c = 0; c < patchDim; ++c)
     for (unsigned r = 0; r < patchDim; ++r)
-      rnn1(buffer + c * patchDim, hiddenDims1,
+      rnn1(buffer + c * hiddenDims1, hiddenDims1,
         patch + (stride * r + c) * inputDims, inputDims, 1,
-        rnn1_params, rnn1_buffers, 0);
+        rnn1_params, rnn1_buffers, 0, 0);
 
   // Bidirectional horizantal pass over the columns summaries
-  rnn2(output + 2 * hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params, rnn2_buffers, 0);
-  rnn2(output + 3 * hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params, rnn2_buffers, 1);
+  rnn2(output + 2 * hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params, rnn2_buffers, 0, 0);
+  rnn2(output + 3 * hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params, rnn2_buffers, 1, 0);
 
   return 0;
 }

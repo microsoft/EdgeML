@@ -6,7 +6,7 @@
 
 int fastgrnn_lr(float* const hiddenState, unsigned hiddenDims,
   const float* const input, unsigned inputDims, unsigned steps,
-  const void* params, void* buffers, int backward) {
+  const void* params, void* buffers, int backward, int normalize) {
 
   const FastGRNN_LR_Params* tparams = (const FastGRNN_LR_Params*)params;
   FastGRNN_LR_Buffers* tbuffers = (FastGRNN_LR_Buffers*)buffers;
@@ -20,10 +20,16 @@ int fastgrnn_lr(float* const hiddenState, unsigned hiddenDims,
   for (unsigned t = 0; t < steps; t++) {
     // Normalize the features
     unsigned offset = backward ? steps - t : t;
-    v_add(1.0f, input + offset * inputDims, -1.0f, tparams->mean + t * inputDims,
-      inputDims, tbuffers->normFeatures);
-    v_div(tparams->stdDev + t * inputDims, tbuffers->normFeatures, inputDims,
-      tbuffers->normFeatures);
+    if (normalize) {
+      v_add(1.0f, input + offset * inputDims, -1.0f, tparams->mean + t * inputDims,
+        inputDims, tbuffers->normFeatures);
+      v_div(tparams->stdDev + t * inputDims, tbuffers->normFeatures, inputDims,
+        tbuffers->normFeatures);
+    }
+    else {
+      for (unsigned d=0; d< inputDims; ++d)
+      tbuffers->normFeatures[d] = input[offset * inputDims + d];
+    }
 
     // Process the new input and previous hidden state
     matVec(tparams->W1, tbuffers->normFeatures, tparams->wRank, inputDims,
@@ -47,7 +53,7 @@ int fastgrnn_lr(float* const hiddenState, unsigned hiddenDims,
 
 int fastgrnn(float* const hiddenState, unsigned hiddenDims,
   const float* const input, unsigned inputDims, unsigned steps,
-  const void* params, void* buffers, int backward) {
+  const void* params, void* buffers, int backward, int normalize) {
 
   const FastGRNN_Params* tparams = (const FastGRNN_Params*)params;
   FastGRNN_Buffers* tbuffers = (FastGRNN_Buffers*)buffers;
@@ -58,16 +64,23 @@ int fastgrnn(float* const hiddenState, unsigned hiddenDims,
   for (unsigned t = 0; t < steps; t++) {
     // Normalize the features
     unsigned offset = backward ? steps - t : t;
-    v_add(1.0f, input + offset * inputDims, -1.0f, tparams->mean + t * inputDims,
-      inputDims, tbuffers->normFeatures);
-    v_div(tparams->stdDev + t * inputDims, tbuffers->normFeatures, inputDims,
-      tbuffers->normFeatures);
+    if (normalize) {
+      v_add(1.0f, input + offset * inputDims, -1.0f, tparams->mean + t * inputDims,
+        inputDims, tbuffers->normFeatures);
+      v_div(tparams->stdDev + t * inputDims, tbuffers->normFeatures, inputDims,
+        tbuffers->normFeatures);
+    }
+    else {
+      for (unsigned d = 0; d < inputDims; ++d)
+        tbuffers->normFeatures[d] = input[offset * inputDims + d];
+    }
 
     // Process the new input and previous hidden state
     matVec(tparams->W, tbuffers->normFeatures, hiddenDims, inputDims,
       0.0f, 1.0f, tbuffers->preComp);
     matVec(tparams->U, hiddenState, hiddenDims, hiddenDims,
       1.0f, 1.0f, tbuffers->preComp);
+
 
     // Apply the gate to generate the new hidden state
     for (unsigned i = 0; i < hiddenDims; i++) {
