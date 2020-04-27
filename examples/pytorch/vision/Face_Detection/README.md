@@ -1,6 +1,7 @@
 # Codes for Face Detection experiments with RNNPool
 ## Requirements
-1. ``` pip3 install -r requirements.txt ```
+1. Follow instructions for installation in EdgeML/pytorch/README.md
+1. ``` pip install -r requirements.txt ``` in EdgeML/examples/pytorch/vision/Face_Detection/
 
 ## Dataset
 1. Download WIDER face dataset images and annotations from http://shuoyang1213.me/WIDERFACE/ and place them all in one folder with name 'WIDER_FACE'
