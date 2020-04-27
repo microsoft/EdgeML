@@ -21,7 +21,7 @@ This will save the checkpoints after every '--save_frequency' number of iteratio
 
 
 ## Test
-Download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/ and unzip in a folder of same name inside EdgeML/examples/pytorch/vision/Face_Detection/
+Download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip and unzip in a folder of same name inside EdgeML/examples/pytorch/vision/Face_Detection/
 
 ```shell
 python wider_test.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --save_folder rpool_face_quant_val --subset val
