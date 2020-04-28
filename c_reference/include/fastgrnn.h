@@ -21,8 +21,8 @@
  * @var       uRank        rank of U matrix
  * @var       Bg           pointer to bias for sigmoid
  * @var       Bh           pointer to bias for tanh
- * @var       zeta         first weight parameter for update from input from next step
- * @var       nu           second weight parameter for update from input from next step
+ * @var       sigmoid_zeta first weight parameter for update from input from next step
+ * @var       sigmoid_nu   second weight parameter for update from input from next step
  */
 typedef struct FastGRNN_LR_Params {
   float* mean;
@@ -35,8 +35,8 @@ typedef struct FastGRNN_LR_Params {
   unsigned uRank;
   float* Bg; 
   float* Bh;
-  float zeta;
-  float nu;
+  float sigmoid_zeta;
+  float sigmoid_nu;
 } FastGRNN_LR_Params;
 
 /**
@@ -82,8 +82,8 @@ int fastgrnn_lr(float* const hiddenState, unsigned hiddenDims,
  * @var       U            pointer U matrix
  * @var       Bg           pointer to bias for sigmoid
  * @var       Bh           pointer to bias for tanh
- * @var       zeta         first weight parameter for update from input from next step
- * @var       nu           second weight parameter for update from input from next step
+ * @var       sigmoid_zeta first weight parameter for update from input from next step
+ * @var       sigmoid_nu   second weight parameter for update from input from next step
  */
 typedef struct FastGRNN_Params {
   float* mean;
@@ -92,8 +92,8 @@ typedef struct FastGRNN_Params {
   float* U;
   float* Bg;
   float* Bh;
-  float zeta;
-  float nu;
+  float sigmoid_zeta;
+  float sigmoid_nu;
 } FastGRNN_Params;
 
 /**

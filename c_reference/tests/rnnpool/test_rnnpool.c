@@ -22,8 +22,8 @@ int main() {
     .U = U1,
     .Bg = Bg1,
     .Bh = Bh1,
-    .zeta = zeta1,
-    .nu = nu1
+    .sigmoid_zeta = sigmoid_zeta1,
+    .sigmoid_nu = sigmoid_nu1
   };
 
   FastGRNN_Params rnn2_params = {
@@ -33,8 +33,8 @@ int main() {
     .U = U2,
     .Bg = Bg2,
     .Bh = Bh2,
-    .zeta = zeta2,
-    .nu = nu2
+    .sigmoid_zeta = sigmoid_zeta2,
+    .sigmoid_nu = sigmoid_nu2
   };
 
   float preComp1[HIDDEN_DIMS1];
