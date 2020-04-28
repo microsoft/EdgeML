@@ -98,7 +98,6 @@ float l2squared(const float* const vec1,
   return sum;
 }
 
-
 unsigned argmax(const float* const vec, unsigned len) {
   unsigned maxId = 0;
   float maxScore = FLT_MIN;

@@ -59,7 +59,6 @@ int main() {
   float buffer[HIDDEN_DIMS1 * PATCH_DIM];
   memset(output_test, 0, sizeof(float) * 4 * HIDDEN_DIMS2);
   memset(buffer, 0, sizeof(float) * HIDDEN_DIMS1 * PATCH_DIM);
-
   rnnpool_block(input, INPUT_DIMS, PATCH_DIM, PATCH_DIM,
     fastgrnn, HIDDEN_DIMS1, (const void*)(&rnn1_params), (void*)(&rnn1_buffers),
     fastgrnn, HIDDEN_DIMS2, (const void*)(&rnn2_params), (void*)(&rnn2_buffers),

@@ -22,6 +22,7 @@ def main():
     dataDir = args.data_dir
     cell = args.cell
     inputDims = args.input_dim
+    batch_first = args.batch_first
     hiddenDims = args.hidden_dim
 
     totalEpochs = args.epochs
@@ -77,7 +78,7 @@ def main():
 
     FastCellTrainer = FastTrainer(FastCell, numClasses, sW=sW, sU=sU,
                                   learningRate=learningRate, outFile=outFile,
-                                  device=device)
+                                  device=device, batch_first=batch_first)
 
     FastCellTrainer.train(batchSize, totalEpochs,
                           torch.from_numpy(Xtrain.astype(np.float32)),
