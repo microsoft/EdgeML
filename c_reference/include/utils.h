@@ -36,13 +36,17 @@ void v_add(float scalar1, const float* const vec1,
   float scalar2, const float* const vec2,
   unsigned len, float* const ret);
 
-// point-wise vector division ret = vec2 / vec1 
+// point-wise vector multiplication ret = vec2 * vec1 
 void v_mult(const float* const vec1, const float* const vec2,
   unsigned len, float* const ret);
 
 // point-wise vector division ret = vec2 / vec1 
 void v_div(const float* const vec1, const float* const vec2,
   unsigned len, float* const ret);
+
+// Return squared Euclidean distance between vec1 and vec2
+float l2squared(const float* const vec1,
+  const float* const vec2, unsigned dim);
 
 // Return index with max value, if tied, return first tied index.
 unsigned argmax(const float* const vec, unsigned len);

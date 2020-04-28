@@ -16,8 +16,8 @@
 
 int main() {
   FastGRNN_Params rnn1_params = {
-    .mean = mean1,
-    .stdDev = stdDev1,
+    .mean = NULL,
+    .stdDev = NULL,
     .W = W1,
     .U = U1,
     .Bg = Bg1,
@@ -27,8 +27,8 @@ int main() {
   };
 
   FastGRNN_Params rnn2_params = {
-    .mean = mean2,
-    .stdDev = stdDev2,
+    .mean = NULL,
+    .stdDev = NULL,
     .W = W2,
     .U = U2,
     .Bg = Bg2,
@@ -37,30 +37,33 @@ int main() {
     .nu = nu2
   };
 
-  float preComp1[HIDDEN_DIMS1] = { 0.0f };
-  float normFeatures1[INPUT_DIMS] = { 0.0f };
+  float preComp1[HIDDEN_DIMS1];
+  float normFeatures1[INPUT_DIMS];
+  memset(preComp1, 0, sizeof(float) * HIDDEN_DIMS1);
+  memset(normFeatures1, 0, sizeof(float) * INPUT_DIMS);
   FastGRNN_Buffers rnn1_buffers = {
     .preComp = preComp1,
     .normFeatures = normFeatures1
   };
 
-  float preComp2[HIDDEN_DIMS2] = { 0.0f };
-  float normFeatures2[HIDDEN_DIMS1] = { 0.0f };
+  float preComp2[HIDDEN_DIMS2];
+  float normFeatures2[HIDDEN_DIMS1];
+  memset(preComp2, 0, sizeof(float) * HIDDEN_DIMS2);
+  memset(normFeatures2, 0, sizeof(float) * HIDDEN_DIMS1);
   FastGRNN_Buffers rnn2_buffers = {
     .preComp = preComp2,
     .normFeatures = normFeatures2
   };
 
-  float output_test[4 * HIDDEN_DIMS2] = { 0.0f };
+  float output_test[4 * HIDDEN_DIMS2];
   float buffer[HIDDEN_DIMS1 * PATCH_DIM];
+  memset(output_test, 0, sizeof(float) * 4 * HIDDEN_DIMS2);
+  memset(buffer, 0, sizeof(float) * HIDDEN_DIMS1 * PATCH_DIM);
 
   rnnpool_block(input, INPUT_DIMS, PATCH_DIM, PATCH_DIM,
     fastgrnn, HIDDEN_DIMS1, (const void*)(&rnn1_params), (void*)(&rnn1_buffers),
     fastgrnn, HIDDEN_DIMS2, (const void*)(&rnn2_params), (void*)(&rnn2_buffers),
     output_test, buffer);
 
-  float error = 0.0f;
-  for (unsigned d = 0; d < 4 * HIDDEN_DIMS2; ++d)
-    error += (output[d] - output_test[d]) * (output[d] - output_test[d]);
-  printf("Error: %f\n", error);
+  printf("Error: %f\n", l2squared(output, output_test, 4 * HIDDEN_DIMS2));
 }
