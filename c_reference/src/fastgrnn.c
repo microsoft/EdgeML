@@ -19,7 +19,7 @@ int fastgrnn_lr(float* const hiddenState, unsigned hiddenDims,
   // #steps iterations of the RNN cell starting from hiddenState
   for (unsigned t = 0; t < steps; t++) {
     // Normalize the features
-    unsigned offset = backward ? steps - t : t;
+    unsigned offset = backward ? steps - 1 - t : t;
     if (normalize) {
       v_add(1.0f, input + offset * inputDims, -1.0f, tparams->mean + t * inputDims,
         inputDims, tbuffers->normFeatures);
@@ -45,7 +45,7 @@ int fastgrnn_lr(float* const hiddenState, unsigned hiddenDims,
     for (unsigned i = 0; i < hiddenDims; i++) {
       float gate = sigmoid(tbuffers->preComp[i] + tparams->Bg[i]);
       float update = tanh(tbuffers->preComp[i] + tparams->Bh[i]);
-      hiddenState[i] = gate * hiddenState[i] + (tparams->zeta * (1.0 - gate) + tparams->nu) * update;
+      hiddenState[i] = gate * hiddenState[i] + (tparams->sigmoid_zeta * (1.0 - gate) + tparams->sigmoid_nu) * update;
     }
   }
   return 0;
@@ -63,7 +63,7 @@ int fastgrnn(float* const hiddenState, unsigned hiddenDims,
 
   for (unsigned t = 0; t < steps; t++) {
     // Normalize the features
-    unsigned offset = backward ? steps - t : t;
+    unsigned offset = backward ? steps - 1 - t : t;
     if (normalize) {
       v_add(1.0f, input + offset * inputDims, -1.0f, tparams->mean + t * inputDims,
         inputDims, tbuffers->normFeatures);
@@ -86,7 +86,7 @@ int fastgrnn(float* const hiddenState, unsigned hiddenDims,
     for (unsigned i = 0; i < hiddenDims; i++) {
       float gate = sigmoid(tbuffers->preComp[i] + tparams->Bg[i]);
       float update = tanh(tbuffers->preComp[i] + tparams->Bh[i]);
-      hiddenState[i] = gate * hiddenState[i] + (tparams->zeta * (1.0 - gate) + tparams->nu) * update;
+      hiddenState[i] = gate * hiddenState[i] + (tparams->sigmoid_zeta * (1.0 - gate) + tparams->sigmoid_nu) * update;
     }
   }
   return 0;

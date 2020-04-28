@@ -90,6 +90,14 @@ void v_div(const float* const vec1, const float* const vec2,
     ret[i] = vec2[i] / vec1[i];
 }
 
+float l2squared(const float* const vec1,
+  const float* const vec2, unsigned dim) {
+  float sum = 0.0f;
+  for (unsigned i = 0; i < dim; i++)
+    sum += (vec1[i] - vec2[i]) * (vec1[i] - vec2[i]);
+  return sum;
+}
+
 unsigned argmax(const float* const vec, unsigned len) {
   unsigned maxId = 0;
   float maxScore = FLT_MIN;
