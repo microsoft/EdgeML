@@ -21,11 +21,9 @@ and FastGRNNCuda are provided for faster training.
 **GRUCell**, and **LSTMCell**, which can be substituted for Fast(G)RNN,
 as well as untrolled RNNs which are equivalent to `nn.LSTM` and `nn.GRU`. 
 
-Note that all the cells and wrappers, when used independently from `fastcell_example.py`
-or `edgeml_pytorch.trainer.fastTrainer`, take in data in a batch first format, i.e.,
-[batchSize, timeSteps, inputDims] by default, but can also support [timeSteps,
-batchSize, inputDims] format if  `batch_first` argument is set to False.
-`fast_example.py` automatically adjusts to the correct format across tf, c++ and pytorch.
+Note that all the cells and wrappers have `batch_first` argument set to False by default i.e. 
+data is asumed to be in the format [timeSteps, batchSize, inputDims] by default, but can also 
+support [batchSize, timeSteps, inputDims] format if batch_first argument is set to True. 
 
 For training FastCells, `edgeml_pytorch.trainer.fastTrainer` implements the three-phase
 FastCell training routine in PyTorch. A simple example `fastcell_example.py` is provided
@@ -58,14 +56,14 @@ dataset where time step sees a new row. So the number of timesteps = 16 and inpu
 The following is a sample run on usps10 :
 
 ```bash
-python fastcell_example.py -dir usps10/ -id 16 -hd 32
+python fastcell_example.py -dir usps10/ -id 16 -hd 32 -bf True
 ```
 This command should give you a final output that reads roughly similar to
 (might not be exact numbers due to various version mismatches):
 
 ```
-Maximum Test accuracy at compressed model size(including early stopping): 0.9407075 at Epoch: 262
-Final Test Accuracy: 0.93721974
+Maximum Test accuracy at compressed model size(including early stopping): 0.9422 at Epoch: 100
+Final Test Accuracy: 0.9347
 
 Non-Zeros: 1932 Model Size: 7.546875 KB hasSparse: False
 ```

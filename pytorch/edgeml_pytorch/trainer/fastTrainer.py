@@ -13,7 +13,7 @@ import numpy as np
 class FastTrainer:
 
     def __init__(self, FastObj, numClasses, sW=1.0, sU=1.0,
-                 learningRate=0.01, outFile=None, device=None):
+                 learningRate=0.01, outFile=None, device=None, batch_first=False):
         '''
         FastObj - Can be either FastRNN or FastGRNN or any of the RNN cells 
         in graph.rnn with proper initialisations
@@ -23,7 +23,7 @@ class FastTrainer:
         learningRate is the initial learning rate
         '''
         self.FastObj = FastObj
-
+        self.batch_first = batch_first
         self.sW = sW
         self.sU = sU
 
@@ -52,7 +52,7 @@ class FastTrainer:
 
         self.optimizer = self.optimizer()
 
-        self.RNN = BaseRNN(self.FastObj).to(self.device)
+        self.RNN = BaseRNN(self.FastObj, batch_first=self.batch_first).to(self.device)
 
         self.FC = nn.Parameter(torch.randn(
             [self.FastObj.output_size, self.numClasses])).to(self.device)
