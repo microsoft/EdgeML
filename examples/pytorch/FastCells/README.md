@@ -56,7 +56,7 @@ dataset where time step sees a new row. So the number of timesteps = 16 and inpu
 The following is a sample run on usps10 :
 
 ```bash
-python fastcell_example.py -dir usps10/ -id 16 -hd 32 -bf True
+python fastcell_example.py -dir usps10/ -id 16 -hd 32
 ```
 This command should give you a final output that reads roughly similar to
 (might not be exact numbers due to various version mismatches):
