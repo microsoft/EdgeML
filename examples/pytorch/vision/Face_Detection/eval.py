@@ -129,6 +129,6 @@ if __name__ == '__main__':
 
     img_path = args.image_folder
     img_list = [os.path.join(img_path, x)
-                for x in os.listdir(img_path) if x.endswith('bmp')]
+                for x in os.listdir(img_path)]
     for path in img_list:
         detect(net, path, args.thresh)
