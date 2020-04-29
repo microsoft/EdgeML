@@ -119,16 +119,16 @@ module = import_module('models.' + args.model_arch)
 net = module.build_s3fd('train', cfg.NUM_CLASSES)
 
 
-if args.resume:
-    print('Resuming training, loading {}...'.format(args.resume))
-    net.load_state_dict(torch.load(args.resume))
-
 
 if args.cuda:
     if args.multigpu:
         net = torch.nn.DataParallel(net)
     net = net.cuda()
     cudnn.benckmark = True
+
+if args.resume:
+    print('Resuming training, loading {}...'.format(args.resume))
+    net.load_state_dict(torch.load(args.resume))
 
 optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=args.momentum,
                       weight_decay=args.weight_decay)

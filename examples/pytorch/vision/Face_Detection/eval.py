@@ -65,7 +65,7 @@ def detect(net, img_path, thresh):
     img = np.array(img)
     height, width, _ = img.shape
     max_im_shrink = np.sqrt(
-        1700 * 1200 / (img.shape[0] * img.shape[1]))
+        640 * 480 / (img.shape[0] * img.shape[1]))
     image = cv2.resize(img, None, None, fx=max_im_shrink,
                       fy=max_im_shrink, interpolation=cv2.INTER_LINEAR)
     # img = cv2.resize(img, (640, 640))

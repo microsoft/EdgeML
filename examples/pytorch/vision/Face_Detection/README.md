@@ -18,7 +18,7 @@
 python train.py --batch_size 32 --model_arch RPool_Face_Quant --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 
 
 ```
-This will save the checkpoints after every '--save_frequency' number of iterations in a weight file with 'checkpoint.pth' at the end and the best state weight in a file with 'best_state.pth' at the end. These will be saved in '--save_folder'. For resuming training from a checkpoint, use '--resume checkpoint_name.pth' with the above command.
+This will save the checkpoints after every '--save_frequency' number of iterations in a weight file with 'checkpoint.pth' at the end and the best state weight in a file with 'best_state.pth' at the end. These will be saved in '--save_folder'. For resuming training from a checkpoint, use '--resume <checkpoint_name>.pth' with the above command.
 
 
 ## Test
@@ -32,7 +32,9 @@ For calculating MAP scores:
 
 1. Download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip and unzip in a folder of same name inside EdgeML/examples/pytorch/vision/Face_Detection/
 
-2. ``` git clone https://github.com/wondervictor/WiderFace-Evaluation.git && cd WiderFace-Evaluation && python3 setup.py build_ext --inplace && python3 evaluation.py -p <your prediction dir> -g <groud truth dir>```
+2. ``` git clone https://github.com/wondervictor/WiderFace-Evaluation.git && cd WiderFace-Evaluation && python3 setup.py build_ext --inplace```
+
+3. ```python3 evaluation.py -p <your prediction dir> -g <groud truth dir>``` in WiderFace-Evaluation folder
 
 where <your prediction dir> is the path to the '--save_folder' in the command above this and <groud truth dir> is EdgeML/examples/pytorch/vision/Face_Detection/eval_tools/ground_truth
 
@@ -42,5 +44,6 @@ where <your prediction dir> is the path to the '--save_folder' in the command ab
 ```shell
 python eval.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --image_folder ./Himax_images
 ```
+The evaluation code accepts any size of image and resizes it to have area = 640x480 while preserving original image aspect ratio.
 
 Code has been built upon https://github.com/yxlijun/S3FD.pytorch
