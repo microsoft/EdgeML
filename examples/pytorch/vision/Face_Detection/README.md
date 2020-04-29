@@ -22,12 +22,20 @@ This will save the checkpoints after every '--save_frequency' number of iteratio
 
 
 ## Test
-Download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip and unzip in a folder of same name inside EdgeML/examples/pytorch/vision/Face_Detection/
 
 ```shell
 python wider_test.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --save_folder rpool_face_quant_val --subset val
 ```
-This will save test predictions of the model in eval_tools folder with name '--save_folder'.
+This will save test predictions of the model in eval_tools folder with name '--save_folder'. 
+
+For calculating MAP scores:
+
+1. Download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip and unzip in a folder of same name inside EdgeML/examples/pytorch/vision/Face_Detection/
+
+2. ``` git clone https://github.com/wondervictor/WiderFace-Evaluation.git && cd WiderFace-Evaluation && python3 setup.py build_ext --inplace && python3 evaluation.py -p <your prediction dir> -g <groud truth dir>```
+
+where <your prediction dir> is the path to the '--save_folder' in the command above this and <groud truth dir> is EdgeML/examples/pytorch/vision/Face_Detection/eval_tools/ground_truth
+
 
 ## Evaluation
 

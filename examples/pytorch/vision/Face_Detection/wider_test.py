@@ -173,19 +173,23 @@ def bbox_vote(det):
 
 def get_data():
     subset = args.subset
+
+    WIDER_ROOT = os.path.join(cfg.HOME, 'WIDER_FACE')
     if subset == 'val':
         wider_face = sio.loadmat(
-            './eval_tools/wider_face_val.mat')
+            os.path.join(WIDER_ROOT, 'wider_face_split',
+                               'wider_face_val.mat'))
     else:
         wider_face = sio.loadmat(
-            './eval_tools/wider_face_test.mat')
+            os.path.join(WIDER_ROOT, 'wider_face_split',
+                               'wider_face_test.mat'))
     event_list = wider_face['event_list']
     file_list = wider_face['file_list']
     del wider_face
 
     imgs_path = os.path.join(
         cfg.FACE.WIDER_DIR, 'WIDER_{}'.format(subset), 'images')
-    save_path = 'eval_tools/{}'.format(args.save_folder)
+    save_path = './{}'.format(args.save_folder)
 
     return event_list, file_list, imgs_path, save_path
 
