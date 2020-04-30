@@ -12,6 +12,12 @@ import edgeml_pytorch.utils as utils
 if utils.findCUDA() is not None:
     import fastgrnn_cuda
 
+
+# All the matrix vector computations of the form Wx are done 
+# in the form of xW (with appropriate changes in shapes) to 
+# be consistent with tesnorflow and pytorch internal implementations
+
+
 def onnx_exportable_rnn(input, fargs, cell, output):
     class RNNSymbolic(Function):
         @staticmethod
@@ -58,7 +64,7 @@ def gen_nonlinearity(A, nonlinearity):
         # nonlinearity is a user specified function
         if not callable(nonlinearity):
             raise ValueError("nonlinearity is either a callable or a value " +
-                             + "['tanh', 'sigmoid', 'relu', 'quantTanh', " +
+                             "['tanh', 'sigmoid', 'relu', 'quantTanh', " +
                              "'quantSigm'")
         return nonlinearity(A)
 
@@ -239,16 +245,16 @@ class FastGRNNCell(RNNCell):
         self._name = name
 
         if wRank is None:
-            self.W = nn.Parameter(0.1 * torch.randn([hidden_size, input_size]))
+            self.W = nn.Parameter(0.1 * torch.randn([input_size, hidden_size]))
         else:
-            self.W1 = nn.Parameter(0.1 * torch.randn([wRank, input_size]))
-            self.W2 = nn.Parameter(0.1 * torch.randn([hidden_size, wRank]))
+            self.W1 = nn.Parameter(0.1 * torch.randn([input_size, wRank]))
+            self.W2 = nn.Parameter(0.1 * torch.randn([wRank, hidden_size]))
 
         if uRank is None:
             self.U = nn.Parameter(0.1 * torch.randn([hidden_size, hidden_size]))
         else:
-            self.U1 = nn.Parameter(0.1 * torch.randn([uRank, hidden_size]))
-            self.U2 = nn.Parameter(0.1 * torch.randn([hidden_size, uRank]))
+            self.U1 = nn.Parameter(0.1 * torch.randn([hidden_size, uRank]))
+            self.U2 = nn.Parameter(0.1 * torch.randn([uRank, hidden_size]))
 
         self.bias_gate = nn.Parameter(torch.ones([1, hidden_size]))
         self.bias_update = nn.Parameter(torch.ones([1, hidden_size]))
@@ -267,16 +273,16 @@ class FastGRNNCell(RNNCell):
 
     def forward(self, input, state):
         if self._wRank is None:
-            wComp = torch.matmul(input, torch.transpose(self.W, 0, 1))
+            wComp = torch.matmul(input, self.W)
         else:
             wComp = torch.matmul(
-                torch.matmul(input, torch.transpose(self.W1, 0, 1)), torch.transpose(self.W2, 0, 1))
+                torch.matmul(input, self.W1), self.W2)
 
         if self._uRank is None:
-            uComp = torch.matmul(state, torch.transpose(self.U, 0, 1))
+            uComp = torch.matmul(state, self.U)
         else:
             uComp = torch.matmul(
-                torch.matmul(state, torch.transpose(self.U1, 0, 1)), torch.transpose(self.U2, 0, 1))
+                torch.matmul(state, self.U1), self.U2)
 
         pre_comp = wComp + uComp
         z = gen_nonlinearity(pre_comp + self.bias_gate,
@@ -955,12 +961,13 @@ class BaseRNN(nn.Module):
     '''
     Generic equivalent of static_rnn in tf
     Used to unroll all the cell written in this file
-    We assume input to be batch_first by default ie.,
-    [batchSize, timeSteps, inputDims] else
-    [timeSteps, batchSize, inputDims]
+    We assume batch_first to be False by default 
+    (following the convention in pytorch) ie.,
+    [timeSteps, batchSize, inputDims] else
+    [batchSize, timeSteps, inputDims]
     '''
 
-    def __init__(self, cell: RNNCell, batch_first=True):
+    def __init__(self, cell: RNNCell, batch_first=False):
         super(BaseRNN, self).__init__()
         self._RNNCell = cell
         self._batch_first = batch_first
@@ -1024,7 +1031,7 @@ class LSTM(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 wSparsity=1.0, uSparsity=1.0, batch_first=True):
+                 wSparsity=1.0, uSparsity=1.0, batch_first=False):
         super(LSTM, self).__init__()
         self.cell = LSTMLRCell(input_size, hidden_size,
                                gate_nonlinearity=gate_nonlinearity,
@@ -1042,7 +1049,7 @@ class GRU(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 wSparsity=1.0, uSparsity=1.0, batch_first=True):
+                 wSparsity=1.0, uSparsity=1.0, batch_first=False):
         super(GRU, self).__init__()
         self.cell = GRULRCell(input_size, hidden_size,
                               gate_nonlinearity=gate_nonlinearity,
@@ -1060,7 +1067,7 @@ class UGRNN(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 wSparsity=1.0, uSparsity=1.0, batch_first=True):
+                 wSparsity=1.0, uSparsity=1.0, batch_first=False):
         super(UGRNN, self).__init__()
         self.cell = UGRNNLRCell(input_size, hidden_size,
                                 gate_nonlinearity=gate_nonlinearity,
@@ -1078,7 +1085,7 @@ class FastRNN(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 wSparsity=1.0, uSparsity=1.0, alphaInit=-3.0, betaInit=3.0, batch_first=True):
+                 wSparsity=1.0, uSparsity=1.0, alphaInit=-3.0, betaInit=3.0, batch_first=False):
         super(FastRNN, self).__init__()
         self.cell = FastRNNCell(input_size, hidden_size,
                                 gate_nonlinearity=gate_nonlinearity,
@@ -1098,7 +1105,7 @@ class FastGRNN(nn.Module):
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
                  wSparsity=1.0, uSparsity=1.0, zetaInit=1.0, nuInit=-4.0,
-                 batch_first=True):
+                 batch_first=False):
         super(FastGRNN, self).__init__()
         self.cell = FastGRNNCell(input_size, hidden_size,
                                  gate_nonlinearity=gate_nonlinearity,
