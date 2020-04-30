@@ -32,7 +32,7 @@ For calculating MAP scores:
 
 1. Download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip and unzip in a folder of same name in this directory.
 
-2. Set up scripts to use the Matlab '.mat' data files in eval_tools/ground_truth folder for MAP calculation. The following installs python files that provide the same functionality as the '.m' matlab scripts in eval_tools folder:
+2. Set up scripts to use the Matlab '.mat' data files in eval_tools/ground_truth folder for MAP calculation: The following installs python files that provide the same functionality as the '.m' matlab scripts in eval_tools folder:
 ``` 
 git clone https://github.com/wondervictor/WiderFace-Evaluation.git
 cd WiderFace-Evaluation 
