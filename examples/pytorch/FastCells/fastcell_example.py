@@ -47,6 +47,14 @@ def main():
     assert dataDimension % inputDims == 0, "Infeasible per step input, " + \
         "Timesteps have to be integer"
 
+    timeSteps = int(dataDimension / inputDims)
+    Xtrain = Xtrain.reshape((-1, timeSteps, inputDims))
+    Xtest = Xtest.reshape((-1, timeSteps, inputDims))
+    
+    if not batch_first:
+        Xtrain = np.swapaxes(Xtrain, 0, 1)
+        Xtest = np.swapaxes(Xtest, 0, 1)
+
     currDir = helpermethods.createTimeStampDir(dataDir, cell)
 
     helpermethods.dumpCommand(sys.argv, currDir)
