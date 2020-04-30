@@ -45,7 +45,7 @@ where `prediction_dir` is the '--save_folder' used for `wider_test.py` above and
 
 
 ## Evaluation
-Place images you wish to evaluate in a folder and run the following script:
+Place images you wish to evaluate in a folder and run the following script inside Face_Detection directory:
 ```shell
 python eval.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --image_folder <your_image_folder>
 ```
