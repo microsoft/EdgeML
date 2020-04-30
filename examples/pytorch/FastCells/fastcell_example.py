@@ -11,7 +11,7 @@ from edgeml_pytorch.trainer.fastTrainer import FastTrainer
 
 def main():
     # change cuda:0 to cuda:gpuid for specific allocation
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
     # Fixing seeds for reproducibility
     torch.manual_seed(42)
     np.random.seed(42)
@@ -43,9 +43,15 @@ def main():
 
     (dataDimension, numClasses, Xtrain, Ytrain, Xtest, Ytest,
      mean, std) = helpermethods.preProcessData(dataDir)
-
     assert dataDimension % inputDims == 0, "Infeasible per step input, " + \
         "Timesteps have to be integer"
+
+    timeSteps = int(Xtest.shape[1] / inputDims)
+    Xtest = np.reshape(Xtest, (-1, timeSteps, inputDims))
+    Xtrain = Xtrain.reshape((-1, timeSteps, inputDims))
+    if not args.batch_first:
+        Xtest = np.swapaxes(Xtest, 0, 1)
+        Xtrain = np.swapaxes(Xtrain, 0, 1)
 
     currDir = helpermethods.createTimeStampDir(dataDir, cell)
 
