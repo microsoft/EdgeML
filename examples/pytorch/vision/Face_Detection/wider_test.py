@@ -26,7 +26,8 @@ from utils.augmentations import to_chw_bgr
 
 from importlib import import_module
 
-
+import warnings
+warnings.filterwarnings("ignore")
 
 parser = argparse.ArgumentParser(description='s3fd evaluatuon wider')
 parser.add_argument('--model', type=str,
@@ -35,7 +36,7 @@ parser.add_argument('--thresh', default=0.05, type=float,
                     help='Final confidence threshold')
 parser.add_argument('--model_arch',
                     default='RPool_Face_C', type=str,
-                    choices=['RPool_Face_C', 'RPool_Face_B', 'RPool_Face_A', 'RPool_Face_Quant'],
+                    choices=['RPoolf variFace_C', 'RPool_Face_B', 'RPool_Face_A', 'RPool_Face_Quant'],
                     help='choose architecture among rpool variants')
 parser.add_argument('--save_folder', type=str,
                     default='rpool_face_predictions', help='folder for saving predictions')
@@ -70,6 +71,7 @@ def detect_face(net, img, shrink):
     if use_cuda:
         x = x.cuda()
     # print(x.size())
+
     y = net(x)
     detections = y.data
     detections = detections.cpu().numpy()
