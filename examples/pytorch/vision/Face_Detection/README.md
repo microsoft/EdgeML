@@ -1,13 +1,14 @@
-# Codes for Face Detection experiments with RNNPool
+# Code for Face Detection experiments with RNNPool
 ## Requirements
-1. Follow instructions for installation in EdgeML/pytorch/README.md
-1. ``` pip install -r requirements.txt ``` in EdgeML/examples/pytorch/vision/Face_Detection/
+1. Follow instructions to install requirements for EdgeML operators and the EdgeML operators [here](pytorch/README.md).
+2. Install requirements for face detection model in this directory using
+``` pip install -r requirements.txt ``` 
 
 ## Dataset
-1. Download WIDER face dataset images and annotations from http://shuoyang1213.me/WIDERFACE/ and place them all in one folder with name 'WIDER_FACE'
-2. In data/config.py modify _C.HOME to the parent directory of above folder and subsequently _C.FACE.WIDER_DIR as the folder path 
-3. ``` python prepare_wider_data.py ```
-
+1. Download WIDER face dataset images and annotations from http://shuoyang1213.me/WIDERFACE/ and place them all in a folder with name 'WIDER_FACE'
+2. In `data/config.py`, set _C.HOME to the parent directory of the above folder, and set the _C.FACE.WIDER_DIR to the folder path 
+3. Run
+``` python prepare_wider_data.py ```
 
 
 # Usage
@@ -18,32 +19,37 @@
 python train.py --batch_size 32 --model_arch RPool_Face_Quant --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 
 
 ```
-This will save the checkpoints after every '--save_frequency' number of iterations in a weight file with 'checkpoint.pth' at the end and the best state weight in a file with 'best_state.pth' at the end. These will be saved in '--save_folder'. For resuming training from a checkpoint, use '--resume <checkpoint_name>.pth' with the above command.
+This will save checkpoints after every '--save_frequency' number of iterations in a weight file with 'checkpoint.pth' at the end and weights for the best state in a file with 'best_state.pth' at the end. These will be saved in '--save_folder'. For resuming training from a checkpoint, use '--resume <checkpoint_name>.pth' with the above command.
 
 
 ## Test
-
+Run the following to generate predictions of the model and store output in the '--save_folder' folder.
 ```shell
 python wider_test.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --save_folder rpool_face_quant_val --subset val
 ```
-This will save test predictions of the model in eval_tools folder with name '--save_folder'. 
-
+ 
 For calculating MAP scores:
 
-1. Download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip and unzip in a folder of same name inside EdgeML/examples/pytorch/vision/Face_Detection/
+1. Download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip and unzip in a folder of same name in this directory.
 
-2. ``` git clone https://github.com/wondervictor/WiderFace-Evaluation.git && cd WiderFace-Evaluation && python3 setup.py build_ext --inplace```
+2. Set up scripts to run the Matlab files in eval_tools folder:
+``` 
+git clone https://github.com/wondervictor/WiderFace-Evaluation.git
+cd WiderFace-Evaluation 
+python3 setup.py build_ext --inplace
+cd ..
+```
 
-3. ```python3 evaluation.py -p <your prediction dir> -g <groud truth dir>``` in WiderFace-Evaluation folder
+3. Run ```python3 evaluation.py -p <prediction_dir> -g <groud truth dir>``` in WiderFace-Evaluation folder
 
-where <your prediction dir> is the path to the '--save_folder' in the command above this and <groud truth dir> is EdgeML/examples/pytorch/vision/Face_Detection/eval_tools/ground_truth
+where `prediction_dir` is the '--save_folder' used for `wider_test.py` above and <groud truth dir> is the subfolder `eval_tools/ground_truth`
 
 
 ## Evaluation
-
+Place images you wish to evaluate in a folder and run the following script:
 ```shell
-python eval.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --image_folder ./Himax_images
+python eval.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --image_folder <your_image_folder>
 ```
-The evaluation code accepts any size of image and resizes it to have area = 640x480 while preserving original image aspect ratio.
+The evaluation code accepts an image of any size and resizes it to 640x480 while preserving original image aspect ratio. The output consists of images with bounding boxes around faces.
 
 Code has been built upon https://github.com/yxlijun/S3FD.pytorch
