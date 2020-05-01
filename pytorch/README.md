@@ -61,5 +61,7 @@ pip install -r requirements-gpu.txt
 pip install -e .
 ```
 
+**Note**: For using the optimized FastGRNNCUDA implementation, it is recommended to use CUDA v10.1, gcc 7.5 and cuDNN v7.6 and torch==1.4.0. Also, there are some known issues when compiling custom CUDA kernels on Windows [pytorch/#11004](https://github.com/pytorch/pytorch/issues/11004).
+
 Copyright (c) Microsoft Corporation. All rights reserved.
 Licensed under the MIT license.

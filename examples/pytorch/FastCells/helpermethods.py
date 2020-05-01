@@ -95,6 +95,10 @@ def getArgs():
                         help='Input Dimension of RNN, each timestep will ' +
                         'feed input-dim features to RNN. ' +
                         'Total Feature length = Input Dim * Total Timestep')
+
+    parser.add_argument('-bf', '--batch_first', type=bool, default=False,
+                        help='Whether batch is first dim or the second dim')
+
     parser.add_argument('-hd', '--hidden-dim', type=checkIntNneg,
                         required=True, help='Hidden Dimension of RNN')
 

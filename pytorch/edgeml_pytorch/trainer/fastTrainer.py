@@ -13,7 +13,7 @@ import numpy as np
 class FastTrainer:
 
     def __init__(self, FastObj, numClasses, sW=1.0, sU=1.0,
-                 learningRate=0.01, outFile=None, device=None):
+                 learningRate=0.01, outFile=None, device=None, batch_first=False):
         '''
         FastObj - Can be either FastRNN or FastGRNN or any of the RNN cells 
         in graph.rnn with proper initialisations
@@ -22,8 +22,8 @@ class FastTrainer:
         batchSize is the batchSize
         learningRate is the initial learning rate
         '''
-        # self.FastObj = FastObj
-
+        self.FastObj = FastObj
+        self.batch_first = batch_first
         self.sW = sW
         self.sU = sU
 
@@ -49,14 +49,7 @@ class FastTrainer:
         self.assertInit()
         self.numMatrices = [1,1] #self.FastObj.num_weight_matrices
         self.totalMatrices = self.numMatrices[0] + self.numMatrices[1]
-
-        
-
-        self.RNN = FastGRNNCUDA(16, 32, gate_nonlinearity="sigmoid",
-                                update_nonlinearity="tanh", zetaInit=100.0, nuInit=-100.0, batch_first=False).cuda()
-
-        # 
-        # BaseRNN(self.FastObj, bidirectional=True).to(self.device)
+        self.RNN = BaseRNN(self.FastObj, batch_first=self.batch_first).to(self.device)
 
         self.FC = nn.Parameter(torch.randn(
             [32, self.numClasses])).to(self.device)
@@ -81,13 +74,12 @@ class FastTrainer:
         '''
         Compute graph to unroll and predict on the FastObj
         '''
-        # if self.FastObj.cellType == "LSTMLR":
-        #     feats, _ = self.RNN(input)
-        #     logits = self.classifier(feats[:, -1])
-        # else:
-        feats = self.RNN(input, hiddenState=None)
-        # import pdb;pdb.set_trace()
-        logits = self.classifier(feats[-1])
+        if self.FastObj.cellType == "LSTMLR":
+            feats, _ = self.RNN(input)
+            logits = self.classifier(feats[-1, :])
+        else:
+            feats = self.RNN(input)
+            logits = self.classifier(feats[-1, :])
 
         return logits, feats[-1]
 
@@ -139,7 +131,7 @@ class FastTrainer:
                 thrsdParams[i]).to(self.device)
         for i in range(0, self.totalMatrices):
             self.thrsdParams.append(torch.FloatTensor(
-                np.copy(thrsdParams[i])).to(self.device))
+                np.copy(thrsdParams[i].detach())).to(self.device))
 
     def runSparseTraining(self):
         '''
@@ -374,7 +366,9 @@ class FastTrainer:
         header = '*' * 20
         self.timeSteps = int(Xtest.shape[1] / self.inputDims)
         Xtest = Xtest.reshape((-1, self.timeSteps, self.inputDims))
+        Xtest = np.swapaxes(Xtest, 0, 1)
         Xtrain = Xtrain.reshape((-1, self.timeSteps, self.inputDims))
+        Xtrain = np.swapaxes(Xtrain, 0, 1)
 
         for i in range(0, totalEpochs):
             print("\nEpoch Number: " + str(i), file=self.outFile)
@@ -384,7 +378,7 @@ class FastTrainer:
                 for param_group in self.optimizer.param_groups:
                     param_group['lr'] = self.learningRate
 
-            shuffled = list(range(Xtrain.shape[0]))
+            shuffled = list(range(Xtrain.shape[1]))
             np.random.shuffle(shuffled)
             trainAcc = 0.0
             trainLoss = 0.0
@@ -397,7 +391,7 @@ class FastTrainer:
                           (header, msg, header), file=self.outFile)
 
                 k = shuffled[j * batchSize:(j + 1) * batchSize]
-                batchX = Xtrain[k]
+                batchX = Xtrain[:, k, :]
                 batchY = Ytrain[k]
                 # import pdb;pdb.set_trace()
                 batchX = batchX.transpose(0,1)
@@ -480,10 +474,6 @@ class FastTrainer:
                          str(os.path.abspath(currDir)) + "\n")
 
         print("The Model Directory: " + currDir + "\n")
-
-        # output the tensorflow model
-        # model_dir = os.path.join(currDir, "model")
-        # os.makedirs(model_dir, exist_ok=True)
 
         resultFile.close()
         self.outFile.flush()

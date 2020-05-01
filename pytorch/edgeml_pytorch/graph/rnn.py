@@ -12,6 +12,12 @@ import edgeml_pytorch.utils as utils
 if utils.findCUDA() is not None:
     import fastgrnn_cuda
 
+
+# All the matrix vector computations of the form Wx are done 
+# in the form of xW (with appropriate changes in shapes) to 
+# be consistent with tesnorflow and pytorch internal implementations
+
+
 def onnx_exportable_rnn(input, fargs, cell, output):
     class RNNSymbolic(Function):
         @staticmethod
@@ -58,7 +64,7 @@ def gen_nonlinearity(A, nonlinearity):
         # nonlinearity is a user specified function
         if not callable(nonlinearity):
             raise ValueError("nonlinearity is either a callable or a value " +
-                             + "['tanh', 'sigmoid', 'relu', 'quantTanh', " +
+                             "['tanh', 'sigmoid', 'relu', 'quantTanh', " +
                              "'quantSigm'")
         return nonlinearity(A)
 
@@ -239,16 +245,16 @@ class FastGRNNCell(RNNCell):
         self._name = name
 
         if wRank is None:
-            self.W = nn.Parameter(0.1 * torch.randn([hidden_size, input_size]))
+            self.W = nn.Parameter(0.1 * torch.randn([input_size, hidden_size]))
         else:
-            self.W1 = nn.Parameter(0.1 * torch.randn([wRank, input_size]))
-            self.W2 = nn.Parameter(0.1 * torch.randn([hidden_size, wRank]))
+            self.W1 = nn.Parameter(0.1 * torch.randn([input_size, wRank]))
+            self.W2 = nn.Parameter(0.1 * torch.randn([wRank, hidden_size]))
 
         if uRank is None:
             self.U = nn.Parameter(0.1 * torch.randn([hidden_size, hidden_size]))
         else:
-            self.U1 = nn.Parameter(0.1 * torch.randn([uRank, hidden_size]))
-            self.U2 = nn.Parameter(0.1 * torch.randn([hidden_size, uRank]))
+            self.U1 = nn.Parameter(0.1 * torch.randn([hidden_size, uRank]))
+            self.U2 = nn.Parameter(0.1 * torch.randn([uRank, hidden_size]))
 
         self.bias_gate = nn.Parameter(torch.ones([1, hidden_size]))
         self.bias_update = nn.Parameter(torch.ones([1, hidden_size]))
@@ -267,16 +273,16 @@ class FastGRNNCell(RNNCell):
 
     def forward(self, input, state):
         if self._wRank is None:
-            wComp = torch.matmul(input, torch.transpose(self.W,0,1))
+            wComp = torch.matmul(input, self.W)
         else:
             wComp = torch.matmul(
-                torch.matmul(input, torch.transpose(self.W1, 0, 1)), torch.transpose(self.W2, 0, 1))
+                torch.matmul(input, self.W1), self.W2)
 
         if self._uRank is None:
-            uComp = torch.matmul(state, torch.transpose(self.U,0,1))
+            uComp = torch.matmul(state, self.U)
         else:
             uComp = torch.matmul(
-                torch.matmul(state, torch.transpose(self.U1, 0, 1)), torch.transpose(self.U2, 0, 1))
+                torch.matmul(state, self.U1), self.U2)
 
         pre_comp = wComp + uComp
         z = gen_nonlinearity(pre_comp + self.bias_gate,
@@ -955,12 +961,13 @@ class BaseRNN(nn.Module):
     '''
     Generic equivalent of static_rnn in tf
     Used to unroll all the cell written in this file
-    We assume input to be batch_first by default ie.,
-    [batchSize, timeSteps, inputDims] else
-    [timeSteps, batchSize, inputDims]
+    We assume batch_first to be False by default 
+    (following the convention in pytorch) ie.,
+    [timeSteps, batchSize, inputDims] else
+    [batchSize, timeSteps, inputDims]
     '''
 
-    def __init__(self, cell: RNNCell, cell_reverse: RNNCell=None, batch_first=True, bidirectional=False):
+    def __init__(self, cell: RNNCell, batch_first=False, cell_reverse: RNNCell=None, bidirectional=False):
         super(BaseRNN, self).__init__()
         self.RNNCell = cell 
         self._batch_first = batch_first
@@ -1076,7 +1083,7 @@ class LSTM(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 wSparsity=1.0, uSparsity=1.0, batch_first=True, 
+                 wSparsity=1.0, uSparsity=1.0, batch_first=False, 
                  bidirectional=False, is_shared_bidirectional=True):
         super(LSTM, self).__init__()
         self._bidirectional = bidirectional
@@ -1106,7 +1113,7 @@ class GRU(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 wSparsity=1.0, uSparsity=1.0, batch_first=True, 
+                 wSparsity=1.0, uSparsity=1.0, batch_first=False, 
                  bidirectional=False, is_shared_bidirectional=True):
         super(GRU, self).__init__()
         self._bidirectional = bidirectional
@@ -1136,7 +1143,7 @@ class UGRNN(nn.Module):
 
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
-                 wSparsity=1.0, uSparsity=1.0, batch_first=True, 
+                 wSparsity=1.0, uSparsity=1.0, batch_first=False, 
                  bidirectional=False, is_shared_bidirectional=True):
         super(UGRNN, self).__init__()
         self._bidirectional = bidirectional
@@ -1167,7 +1174,7 @@ class FastRNN(nn.Module):
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
                  wSparsity=1.0, uSparsity=1.0, alphaInit=-3.0, betaInit=3.0,
-                 batch_first=True, bidirectional=False, is_shared_bidirectional=True):
+                 batch_first=False, bidirectional=False, is_shared_bidirectional=True):
         super(FastRNN, self).__init__()
         self._bidirectional = bidirectional
         self._batch_first = batch_first
@@ -1199,7 +1206,7 @@ class FastGRNN(nn.Module):
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None,
                  wSparsity=1.0, uSparsity=1.0, zetaInit=1.0, nuInit=-4.0,
-                 batch_first=True, bidirectional=False, is_shared_bidirectional=True):
+                 batch_first=False, bidirectional=False, is_shared_bidirectional=True):
         super(FastGRNN, self).__init__()
         self._bidirectional = bidirectional
         self._batch_first = batch_first
@@ -1228,7 +1235,11 @@ class FastGRNN(nn.Module):
         return self.unrollRNN(input, hiddenState, cellState)
 
 class FastGRNNCUDA(nn.Module):
-    """Unrolled implementation of the FastGRNNCUDACell"""
+    """
+        Unrolled implementation of the FastGRNNCUDACell
+        Note: update_nonlinearity is fixed to tanh, only gate_nonlinearity
+        is configurable.
+    """
     def __init__(self, input_size, hidden_size, gate_nonlinearity="sigmoid",
                  update_nonlinearity="tanh", wRank=None, uRank=None, 
                  wSparsity=1.0, uSparsity=1.0, zetaInit=1.0, nuInit=-4.0,
@@ -1286,8 +1297,11 @@ class FastGRNNCUDA(nn.Module):
         self.zeta = nn.Parameter(self._zetaInit * torch.ones([1, 1], device=self.device))
         self.nu = nn.Parameter(self._nuInit * torch.ones([1, 1], device=self.device))
 
-    def forward(self, input, hiddenState, cell_state=None):
-        # input: [timesteps, batch, features, state_size]
+    def forward(self, input, hiddenState=None, cell_state=None):
+        '''
+            input: [timesteps, batch, features]; hiddenState: [batch, state_size]
+            hiddenState is set to zeros if not provided. 
+        '''
         if self.batch_first is True:
             input = input.transpose(0, 1).contiguous()
         if not input.is_cuda:
@@ -1303,21 +1317,6 @@ class FastGRNNCUDA(nn.Module):
             return result.transpose(0, 1)
         else:
             return result
-
-    # def forward(self, input, hiddenState, cell_state=None):
-    #     # input: [timesteps, batch, features, state_size]
-    #     # import pdb; pdb.set_trace()
-    #     if self.batch_first:
-    #         input = input.transpose(0, 1).contiguous()
-    #     if not input.is_cuda:
-    #         input = input.to(self.device)
-    #     if hiddenState is None:
-    #         hiddenState = torch.zeros(
-    #             [input.shape[1], self._hidden_size]).to(self.device)
-    #     if not hiddenState.is_cuda:
-    #         hiddenState = hiddenState.to(self.device)
-    #     return FastGRNNUnrollFunction.apply(input, self.bias_gate, self.bias_update, self.zeta, self.nu, hiddenState,
-    #         self.W, self.U, self.W1, self.W2, self.U1, self.U2, self._gate_non_linearity)
 
     def getVars(self):
         Vars = []
