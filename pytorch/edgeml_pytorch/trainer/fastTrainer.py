@@ -82,10 +82,10 @@ class FastTrainer:
 
         if self.batch_first:
                 logits = self.classifier(feats[:, -1])
+                return logits, feats[:, -1]
         else:
                 logits = self.classifier(feats[-1, :])
-
-        return logits, feats[:, -1]
+                return logits, feats[-1, :]
 
     def optimizer(self):
         '''
