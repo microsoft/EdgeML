@@ -100,7 +100,7 @@ That is in, WiderFace-Evaluation directory, run:
 ```shell
 python3 evaluation.py -p <your_save_folder> -g ../ground_truth
 ```
-This script should output the MAP for the WIDER-easy, WIDER-medium, and WIDER-hard subsets of the dataset. Our best performance using RPool_Face_Quant model is: XX (WIDER-easy), XX(WIDER-medium), XX (WIDER-hard). 
+This script should output the MAP for the WIDER-easy, WIDER-medium, and WIDER-hard subsets of the dataset. Our best performance using RPool_Face_Quant model is: 0.80 (WIDER-easy), 0.78 (WIDER-medium), 0.53 (WIDER-hard). 
 
 
 
