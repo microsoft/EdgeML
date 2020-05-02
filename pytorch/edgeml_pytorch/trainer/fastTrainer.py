@@ -74,16 +74,15 @@ class FastTrainer:
         '''
         if self.FastObj.cellType == "LSTMLR":
             feats, _ = self.RNN(input)
-            logits = self.classifier(feats[-1, :])
         else:
             feats = self.RNN(input)
-            if self.batch_first:
+
+        if self.batch_first:
                 logits = self.classifier(feats[:, -1])
-                feats_n = feats[:,-1]
-            else:
-                logits = self.classifier(feats[-1,:])
-                feats_n = feats[-1,:]
-        return logits, feats_n
+                return logits, feats[:, -1]
+        else:
+                logits = self.classifier(feats[-1, :])
+                return logits, feats[-1, :]
 
     def optimizer(self):
         '''
