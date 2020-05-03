@@ -103,6 +103,13 @@ python3 evaluation.py -p <your_save_folder> -g ../ground_truth
 This script should output the MAP for the WIDER-easy, WIDER-medium, and WIDER-hard subsets of the dataset. Our best performance using RPool_Face_Quant model is: 0.80 (WIDER-easy), 0.78 (WIDER-medium), 0.53 (WIDER-hard). 
 
 
+##### Dump RNNPool Input Output Traces and Weights
+
+To save model weights and/or input output pairs for each patch through RNNPool in numpy format use the command below. Put images which you want to save traces for in <your_image_folder> . Specify output folder for saving model weights in numpy format in <your_save_model_numpy_folder>. Specify output folder for saving input output traces of RNNPool in numpy format in <your_save_traces_numpy_folder>. Note that input traces will be saved in a folder named 'inputs' and output traces in a folder named 'outputs' inside <your_save_traces_numpy_folder>.
+
+```shell
+python3 dump_model.py --model ./weights/rpool_face_best_state.pth --model_arch RPool_Face_Quant --image_folder <your_image_folder> --save_model_npy_dir <your_save_model_numpy_folder> --save_traces_npy_dir <your_save_traces_numpy_folder>
+```
 
 
 Code has been built upon https://github.com/yxlijun/S3FD.pytorch
