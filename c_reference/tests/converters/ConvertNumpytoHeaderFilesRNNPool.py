@@ -9,10 +9,37 @@ import sys
 def sigmoid(x):
     return 1.0 / (1.0 + np.exp(-x))
 
-def loadTestData(dataDir):
-    test_input = np.load(dataDir + "/test_input.npy")
-    test_output = np.load(dataDir + "/test_output.npy")
-    return test_input, test_output
+def saveTraces(tracesInputDir, tracesOutputDir):
+    if os.path.isdir(tracesOutputDir) is False:
+        try:
+            os.mkdir(tracesOutputDir)
+        except OSError:
+            print("Creation of the directory %s failed" % tracesOutputDir)
+            return
+    input_files = os.listdir(tracesInputDir+'/inputs/')
+    
+    for file in input_files:
+        trace_input = np.load(tracesInputDir + "/inputs/" + file)
+        trace_output = np.load(tracesInputDir + "/outputs/" + file)
+
+        inputDims = trace_input.shape[-1]
+        patchDim = trace_input.shape[-2]
+        hiddenDims2 = int(trace_output.shape[0]/4)
+
+        f_input = open(tracesOutputDir+'/'+str(file)[:-4]+'_input.h','w')
+        f_output = open(tracesOutputDir+'/'+str(file)[:-4]+'_output.h','w')
+        f_input.write('#define INPUT_DIMS '+str(inputDims)+'\n#define PATCH_DIM '+ str(patchDim)+'\n\n')
+        f_output.write('#define HIDDEN_DIMS2'+str(hiddenDims2)+'\n\n')
+
+        f_input.write('static float input[INPUT_DIMS * PATCH_DIM * PATCH_DIM] = ' + convertMatrixToVecString(trace_input) + ';')
+        f_output.write('static float output[4 * HIDDEN_DIMS2] = ' + convertMatrixToVecString(trace_output) + ';')
+
+        f_input.flush()
+        f_input.close()
+        f_output.flush()
+        f_output.close()
+
+
 
 
 def loadModel(modelDir):
@@ -34,29 +61,31 @@ def loadModel(modelDir):
     return model
 
 
-
 def getArgs():
     '''
     Function to parse arguments for FastCells
     '''
     parser = argparse.ArgumentParser(
-        description='HyperParams for Fast(G)RNN inference')
+        description='HyperParams for RNNPool inference')
     
-    parser.add_argument('-mdir', '--model-dir', required=True,
+    parser.add_argument('-mdir', '--model-dir', required=False, default=None,
                         help='Model directory containing' +
-                        'FastRNN or FastGRNN model')
+                        'RNNPool model')
 
-    parser.add_argument('-rnn1oF', '--rnn1-out-file', default="None",
-                        help='Give a output file for the model to dump' +
+    parser.add_argument('-tidir', '--trace-input-dir', required=False, default=None,
+                        help='Directory containing RnnPool input output numpy traces')
+
+    parser.add_argument('-todir', '--trace-output-dir', required=False, default=None,
+                        help='Output Directory for saving RnnPool input output .h traces')
+
+    parser.add_argument('-rnn1oF', '--rnn1-out-file', default=None,
+                        help='Give a output header file name for the model to dump rnn1 weights' +
                         'default: stdout')
 
-    parser.add_argument('-rnn2oF', '--rnn2-out-file', default="None",
-                        help='Give a output file for the model to dump' +
+    parser.add_argument('-rnn2oF', '--rnn2-out-file', default=None,
+                        help='Give a output header file name for the model to dump rnn2 weights' +
                         'default: stdout')
 
-    parser.add_argument('-doF', '--data-out-file', default="None",
-                        help='Give a output file for the data to dump' +
-                        'default: stdout')
     
     return parser.parse_args()
 
@@ -104,24 +133,10 @@ def convertMatrixToVecString(mat):
     return mat
 
 
-def main():
-    args = getArgs()
-    rnn1OutFile = args.rnn1_out_file
-    rnn2OutFile = args.rnn2_out_file
-    
+def saveModelHeader(rnn1OutFile, rnn2OutFile, model):
     rnn1OutFile = open(rnn1OutFile, 'w')
     rnn2OutFile = open(rnn2OutFile, 'w')
 
-    model = loadModel(args.model_dir)
-
-
-    inputDims = model["W1"].shape[1]
-    hiddenDims1 = model["W2"].shape[1]
-    hiddenDims2 = model["U2"].shape[1]
-    
-
-    currDir = saveReadableModel(args.model_dir, model)
-    
     print ("#define HIDDEN_DIMS1 8\n", file=rnn1OutFile)
 
     print("static float W1[INPUT_DIMS * HIDDEN_DIMS1] = " + convertMatrixToVecString(model['W1']) + ";", file=rnn1OutFile)
@@ -148,11 +163,27 @@ def main():
     print("static float sigmoid_nu2 = " + str(model['nu2'][0][0]) + ";\n", file=rnn2OutFile)    
 
 
-    
-
     rnn1OutFile.flush()
     rnn1OutFile.close()
     rnn2OutFile.flush()
     rnn2OutFile.close()
+
+
+def main():
+    args = getArgs()
+        
+    if args.model_dir is not None:
+        model = loadModel(args.model_dir)
+        currDir = saveReadableModel(args.model_dir, model)
+        if args.rnn1_out_file is not None and args.rnn2_out_file is not None:
+            saveModelHeader(args.rnn1_out_file, args.rnn2_out_file, model)
+        else:
+            print('Not saving output header files as names are not specified')
+
+
+    if args.trace_input_dir is not None and args.trace_output_dir is not None:
+        saveTraces(args.trace_input_dir, args.trace_output_dir)
+         
+    
  
 main()
