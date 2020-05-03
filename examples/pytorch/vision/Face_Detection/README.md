@@ -110,6 +110,6 @@ To save model weights and/or input output pairs for each patch through RNNPool i
 ```shell
 python3 dump_model.py --model ./weights/rpool_face_best_state.pth --model_arch RPool_Face_Quant --image_folder <your_image_folder> --save_model_npy_dir <your_save_model_numpy_folder> --save_traces_npy_dir <your_save_traces_numpy_folder>
 ```
-
+If you wish to save only model weights, do not specify --save_traces_npy_dir. If you wish to save only traces do not specify --save_model_npy_dir.
 
 Code has been built upon https://github.com/yxlijun/S3FD.pytorch
