@@ -11,7 +11,7 @@ from edgeml_pytorch.trainer.fastTrainer import FastTrainer
 
 def main():
     # change cuda:0 to cuda:gpuid for specific allocation
-    device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # Fixing seeds for reproducibility
     torch.manual_seed(42)
     np.random.seed(42)
