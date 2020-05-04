@@ -29,7 +29,7 @@ def saveTraces(tracesInputDir, tracesOutputDir):
         f_input = open(tracesOutputDir+'/'+str(file)[:-4]+'_input.h','w')
         f_output = open(tracesOutputDir+'/'+str(file)[:-4]+'_output.h','w')
         f_input.write('#define INPUT_DIMS '+str(inputDims)+'\n#define PATCH_DIM '+ str(patchDim)+'\n\n')
-        f_output.write('#define HIDDEN_DIMS2'+str(hiddenDims2)+'\n\n')
+        f_output.write('#define HIDDEN_DIMS2 '+str(hiddenDims2)+'\n\n')
 
         f_input.write('static float input[INPUT_DIMS * PATCH_DIM * PATCH_DIM] = ' + convertMatrixToVecString(trace_input) + ';')
         f_output.write('static float output[4 * HIDDEN_DIMS2] = ' + convertMatrixToVecString(trace_output) + ';')
