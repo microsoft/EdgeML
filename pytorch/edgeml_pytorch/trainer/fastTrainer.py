@@ -9,6 +9,14 @@ import edgeml_pytorch.utils as utils
 from edgeml_pytorch.graph.rnn import *
 import numpy as np
 
+class SimpleFC(nn.Module):
+    def __init__(self, input_size, num_classes, name="SimpleFC"):
+        super(SimpleFC, self).__init__()
+        self.FC = nn.Parameter(torch.randn([input_size, num_classes]))
+        self.FCbias = nn.Parameter(torch.randn([num_classes]))
+
+    def forward(self, input):
+        return torch.matmul(input, self.FC) + self.FCbias
 
 class FastTrainer:
 
@@ -50,23 +58,17 @@ class FastTrainer:
         self.numMatrices = self.FastObj.num_weight_matrices
         self.totalMatrices = self.numMatrices[0] + self.numMatrices[1]
 
-        self.optimizer = self.optimizer()
-
         self.RNN = BaseRNN(self.FastObj, batch_first=self.batch_first).to(self.device)
-
-        self.FC = nn.Parameter(torch.randn(
-            [self.FastObj.output_size, self.numClasses])).to(self.device)
-        self.FCbias = nn.Parameter(torch.randn(
-            [self.numClasses])).to(self.device)
-
+        self.simpleFC = SimpleFC(self.FastObj.output_size, self.numClasses).to(self.device)
         self.FastParams = self.FastObj.getVars()
+        self.optimizer = self.optimizer()
 
     def classifier(self, feats):
         '''
         Can be raplaced by any classifier
         TODO: Make this a separate class if needed
         '''
-        return torch.matmul(feats, self.FC) + self.FCbias
+        return self.simpleFC(feats)
 
     def computeLogits(self, input):
         '''
@@ -88,8 +90,9 @@ class FastTrainer:
         '''
         Optimizer for FastObj Params
         '''
+        paramList = list(self.FastObj.parameters()) + list(self.simpleFC.parameters())
         optimizer = torch.optim.Adam(
-            self.FastObj.parameters(), lr=self.learningRate)
+            paramList, lr=self.learningRate)
 
         return optimizer
 
@@ -171,12 +174,12 @@ class FastTrainer:
             hasSparse = hasSparse or sparseFlag
 
         # Replace this with classifier class call
-        nnz, size, sparseFlag = utils.estimateNNZ(self.FC, 1.0)
+        nnz, size, sparseFlag = utils.estimateNNZ(self.simpleFC.FC, 1.0)
         totalnnZ += nnz
         totalSize += size
         hasSparse = hasSparse or sparseFlag
 
-        nnz, size, sparseFlag = utils.estimateNNZ(self.FCbias, 1.0)
+        nnz, size, sparseFlag = utils.estimateNNZ(self.simpleFC.FCbias, 1.0)
         totalnnZ += nnz
         totalSize += size
         hasSparse = hasSparse or sparseFlag
@@ -344,8 +347,8 @@ class FastTrainer:
             np.save(os.path.join(currDir, "Bo.npy"),
                     self.FastParams[self.totalMatrices + 3].data.cpu())
 
-        np.save(os.path.join(currDir, "FC.npy"), self.FC.data.cpu())
-        np.save(os.path.join(currDir, "FCbias.npy"), self.FCbias.data.cpu())
+        np.save(os.path.join(currDir, "FC.npy"), self.simpleFC.FC.data.cpu())
+        np.save(os.path.join(currDir, "FCbias.npy"), self.simpleFC.FCbias.data.cpu())
 
     def train(self, batchSize, totalEpochs, Xtrain, Xtest, Ytrain, Ytest,
               decayStep, decayRate, dataDir, currDir):
