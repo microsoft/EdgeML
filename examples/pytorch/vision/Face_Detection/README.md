@@ -54,8 +54,7 @@ That is, assuming that the goal is to evaluate the rpool_face_best_state.pth mod
 ```shell
 python eval.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
 ```
-This will save images in <your_save_folder> with bounding boxes around faces (where the confidence is high). Here is an example image: 
-![PC: Sam Chang, Camera: Himax0360](imrgb20ft.png)
+This will save images in <your_save_folder> with bounding boxes around faces (where the confidence is high). 
 
 The evaluation code accepts an image of any size and resizes it to 640x480 while preserving original image aspect ratio. 
 
