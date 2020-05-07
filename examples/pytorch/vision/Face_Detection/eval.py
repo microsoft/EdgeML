@@ -18,13 +18,9 @@ import numpy as np
 from PIL import Image, ImageFilter
 
 from data.config import cfg
-from torch.autograd import Variable
 from utils.augmentations import to_chw_bgr
 
 from importlib import import_module
-
-import warnings
-warnings.filterwarnings("ignore")
 
 
 parser = argparse.ArgumentParser(description='face detection demo')
@@ -76,7 +72,7 @@ def detect(net, img_path, thresh):
     x -= cfg.img_mean
     x = x[[2, 1, 0], :, :]
 
-    x = Variable(torch.from_numpy(x).unsqueeze(0))
+    x = torch.from_numpy(x).unsqueeze(0)
     if use_cuda:
         x = x.cuda()
     t1 = time.time()

@@ -1,5 +1,5 @@
 from .prior_box import PriorBox, PriorBoxReal
-from .detection import Detect
+from .detection import detect_function
 
-__all__=['Detect','PriorBox', 'PriorBoxReal']
+__all__=['detect_function','PriorBox', 'PriorBoxReal']
 

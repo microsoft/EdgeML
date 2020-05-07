@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.init as init
 import torch.nn.functional as F
-from torch.autograd import Variable
+
 
 from layers import *
 from data.config import cfg
@@ -62,7 +62,7 @@ class S3FD(nn.Module):
 
         if self.phase == 'test':
             self.softmax = nn.Softmax(dim=-1)
-            self.detect = Detect(cfg)
+            # self.detect = Detect(cfg)
  
 
 
@@ -171,14 +171,14 @@ class S3FD(nn.Module):
             features_maps += [feat]
 
         self.priorbox = PriorBox(size, features_maps, cfg)
-        self.priors = Variable(self.priorbox.forward(), volatile=True)
+        self.priors = self.priorbox.forward()
 
         loc = torch.cat([o.view(o.size(0), -1) for o in loc], 1)
         conf = torch.cat([o.view(o.size(0), -1) for o in conf], 1)
 
        
         if self.phase == 'test':
-            output = self.detect(
+            output = detect_function(
                 loc.view(loc.size(0), -1, 4),                   # loc preds
                 self.softmax(conf.view(conf.size(0), -1,
                                        self.num_classes)),                # conf preds
