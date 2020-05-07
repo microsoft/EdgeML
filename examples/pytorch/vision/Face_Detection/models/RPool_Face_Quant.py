@@ -10,7 +10,6 @@ import torch
 import torch.nn as nn
 import torch.nn.init as init
 import torch.nn.functional as F
-from torch.autograd import Variable
 
 
 from layers import *
@@ -28,7 +27,6 @@ class S3FD(nn.Module):
         3) associated priorbox layer to produce default bounding
            boxes specific to the layer's feature map size.
     See: https://arxiv.org/pdf/1512.02325.pdf for more details.
-
     Args:
         phase: (string) Can be "test" or "train"
         size: input image size
@@ -65,23 +63,20 @@ class S3FD(nn.Module):
 
         if self.phase == 'test':
             self.softmax = nn.Softmax(dim=-1)
-            self.detect = Detect(cfg)
+            # self.detect = Detect(cfg)
  
 
 
     def forward(self, x):
         """Applies network layers and ops on input image(s) x.
-
         Args:
             x: input image or batch of images. Shape: [batch,3,300,300].
-
         Return:
             Depending on phase:
             test:
                 Variable(tensor) of output class label predictions,
                 confidence score, and corresponding location predictions for
                 each object detected. Shape: [batch,topk,7]
-
             train:
                 list of concat outputs from:
                     1: confidence layers, Shape: [batch*num_priors,num_classes]
@@ -114,7 +109,6 @@ class S3FD(nn.Module):
 
         x = F.pad(x, (0,1,0,1), mode='replicate')
 
-        # import pdb;pdb.set_trace()
 
 
         # apply vgg up to conv4_3 relu
@@ -182,14 +176,14 @@ class S3FD(nn.Module):
             features_maps += [feat]
 
         self.priorbox = PriorBox(size, features_maps, cfg)
-        self.priors = Variable(self.priorbox.forward(), volatile=True)
+        self.priors = self.priorbox.forward()
 
         loc = torch.cat([o.view(o.size(0), -1) for o in loc], 1)
         conf = torch.cat([o.view(o.size(0), -1) for o in conf], 1)
 
        
         if self.phase == 'test':
-            output = self.detect(
+            output = detect_function(cfg,
                 loc.view(loc.size(0), -1, 4),                   # loc preds
                 self.softmax(conf.view(conf.size(0), -1,
                                        self.num_classes)),                # conf preds
@@ -410,4 +404,3 @@ if __name__ == '__main__':
     net = build_s3fd('train', num_classes=2)
     inputs = Variable(torch.randn(4, 3, 640, 640))
     output = net(inputs)
-
