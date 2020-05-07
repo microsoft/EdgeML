@@ -22,9 +22,6 @@ from utils.augmentations import to_chw_bgr
 
 from importlib import import_module
 
-import warnings
-warnings.filterwarnings("ignore")
-
 
 parser = argparse.ArgumentParser(description='face detection demo')
 parser.add_argument('--save_dir', type=str, default='results/',
