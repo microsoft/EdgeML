@@ -17,9 +17,10 @@ from utils.augmentations import preprocess
 class WIDERDetection(data.Dataset):
     """docstring for WIDERDetection"""
 
-    def __init__(self, list_file, mode='train'):
+    def __init__(self, list_file, mode='train', mono_mode=False):
         super(WIDERDetection, self).__init__()
         self.mode = mode
+        self.mono_mode = mono_mode
         self.fnames = []
         self.boxes = []
         self.labels = []
@@ -92,6 +93,11 @@ class WIDERDetection(data.Dataset):
             draw.rectangle(bbox,outline='red')
         img.save('image.jpg')
         '''
+
+        if self.mono_mode==True:
+            im = 0.299 * img[0] + 0.587 * img[1] + 0.114 * img[2]
+            return torch.from_numpy(np.expand_dims(im,axis=0)), target, im_height, im_width
+
         return torch.from_numpy(img), target, im_height, im_width
         
 

@@ -17,14 +17,13 @@ import numpy as np
 from torch.autograd import Variable
 import torch.backends.cudnn as cudnn
 
-from data.config import cfg
+from data.choose_config import cfg
+cfg = cfg.cfg
 
 from importlib import import_module
 
 from layers.modules import MultiBoxLoss
 from data.factory import dataset_factory, detection_collate
-
-#os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 
 
 def str2bool(v):
@@ -48,7 +47,7 @@ parser.add_argument('--resume',
                     help='Checkpoint state_dict file to resume training from')
 parser.add_argument('--model_arch',
                     default='RPool_Face_C', type=str,
-                    choices=['RPool_Face_C', 'RPool_Face_B', 'RPool_Face_A', 'RPool_Face_Quant'],
+                    choices=['RPool_Face_C', 'RPool_Face_Quant', 'RPool_Face_QVGA_monochrome'],
                     help='choose architecture among rpool variants')
 parser.add_argument('--num_workers',
                     default=128, type=int,

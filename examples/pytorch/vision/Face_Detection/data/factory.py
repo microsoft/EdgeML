@@ -8,15 +8,18 @@ from __future__ import print_function
 
 
 from .widerface import WIDERDetection
-from .config import cfg
+
+from data.choose_config import cfg
+cfg = cfg.cfg
+
 
 import torch
 
 
 def dataset_factory(dataset):
     if dataset == 'face':
-        train_dataset = WIDERDetection(cfg.FACE.TRAIN_FILE, mode='train')
-        val_dataset = WIDERDetection(cfg.FACE.VAL_FILE, mode='val')
+        train_dataset = WIDERDetection(cfg.FACE.TRAIN_FILE, mode='train', mono_mode=cfg.IS_MONOCHROME)
+        val_dataset = WIDERDetection(cfg.FACE.VAL_FILE, mode='val', mono_mode=cfg.IS_MONOCHROME)
     if dataset == 'hand':
         train_dataset = WIDERDetection(cfg.HAND.TRAIN_FILE, mode='train')
         val_dataset = WIDERDetection(cfg.HAND.VAL_FILE, mode='val')

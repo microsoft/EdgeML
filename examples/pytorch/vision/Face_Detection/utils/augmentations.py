@@ -16,7 +16,8 @@ import math
 import six
 
 import sys; sys.path.append('../')
-from data.config import cfg
+from data.choose_config import cfg
+cfg = cfg.cfg
 import random
 
 
@@ -618,7 +619,7 @@ def anchor_crop_image_sampling(img,
     bw = (boxes[rand_idx, 2] - boxes[rand_idx, 0] + 1)
     bh = (boxes[rand_idx, 3] - boxes[rand_idx, 1] + 1)
 
-    w = h = 640
+    w = h = cfg.INPUT_SIZE
 
     for _ in range(50):
         if w < max(height, width):
@@ -788,7 +789,7 @@ def preprocess(img, bbox_labels, mode, image_path):
         batch_sampler = []
         prob = np.random.uniform(0., 1.)
         if prob > cfg.data_anchor_sampling_prob and cfg.anchor_sampling:
-            scale_array = np.array([16, 32, 64, 128, 256, 512])
+            scale_array = np.array(cfg.ANCHOR_SIZES)#[16, 32, 64, 128, 256, 512])
             '''
             batch_sampler.append(
                 sampler(1, 50, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.6, 0.0, True))

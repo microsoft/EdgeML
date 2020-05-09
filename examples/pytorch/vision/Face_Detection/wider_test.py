@@ -20,7 +20,9 @@ import numpy as np
 from PIL import Image
 import scipy.io as sio
 
-from data.config import cfg
+from data.choose_config import cfg
+cfg = cfg.cfg
+
 from torch.autograd import Variable
 from utils.augmentations import to_chw_bgr
 
@@ -36,7 +38,7 @@ parser.add_argument('--thresh', default=0.05, type=float,
                     help='Final confidence threshold')
 parser.add_argument('--model_arch',
                     default='RPool_Face_C', type=str,
-                    choices=['RPoolf variFace_C', 'RPool_Face_B', 'RPool_Face_A', 'RPool_Face_Quant'],
+                    choices=['RPool_Face_C', 'RPool_Face_Quant', 'RPool_Face_QVGA_monochrome'],
                     help='choose architecture among rpool variants')
 parser.add_argument('--save_folder', type=str,
                     default='rpool_face_predictions', help='folder for saving predictions')
@@ -66,11 +68,14 @@ def detect_face(net, img, shrink):
     x -= cfg.img_mean
     x = x[[2, 1, 0], :, :]
 
-    x = Variable(torch.from_numpy(x).unsqueeze(0))
+    if cfg.IS_MONOCHROME == True:
+        x = 0.299 * x[0] + 0.587 * x[1] + 0.114 * x[2]
+        x = torch.from_numpy(x).unsqueeze(0).unsqueeze(0)
+    else:
+        x = torch.from_numpy(x).unsqueeze(0)
 
     if use_cuda:
         x = x.cuda()
-    # print(x.size())
 
     y = net(x)
     detections = y.data

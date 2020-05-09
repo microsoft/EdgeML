@@ -17,7 +17,9 @@ import time
 import numpy as np
 from PIL import Image, ImageFilter
 
-from data.config import cfg
+from data.choose_config import cfg
+cfg = cfg.cfg
+
 from utils.augmentations import to_chw_bgr
 
 from importlib import import_module
@@ -29,16 +31,16 @@ parser.add_argument('--save_dir', type=str, default='results/',
 parser.add_argument('--model', type=str,
                     default='weights/rpool_face_c.pth', help='trained model')
                     #small_fgrnn_smallram_sd.pth', help='trained model')
-parser.add_argument('--thresh', default=0.3, type=float,
+parser.add_argument('--thresh', default=0.2, type=float,
                     help='Final confidence threshold')
 parser.add_argument('--model_arch',
                     default='RPool_Face_C', type=str,
-                    choices=['RPool_Face_C', 'RPool_Face_B', 'RPool_Face_A', 'RPool_Face_Quant'],
+                    choices=['RPool_Face_C', 'RPool_Face_Quant', 'RPool_Face_QVGA_monochrome'],
                     help='choose architecture among rpool variants')
 parser.add_argument('--image_folder', default=None, type=str, help='folder containing images')
 
-args = parser.parse_args()
 
+args = parser.parse_args()
 
 if not os.path.exists(args.save_dir):
     os.makedirs(args.save_dir)
@@ -58,12 +60,18 @@ def detect(net, img_path, thresh):
     #if img.mode == 'L':
     img = img.convert('RGB')
 
-    img = img.filter(ImageFilter.UnsharpMask(radius=2, percent=150, threshold=3))
+    # img = img.filter(ImageFilter.UnsharpMask(radius=2, percent=150, threshold=3))
 
     img = np.array(img)
     height, width, _ = img.shape
-    max_im_shrink = np.sqrt(
-        640 * 480 / (img.shape[0] * img.shape[1]))
+
+    if os.environ['IS_QVGA'] == '1':
+        max_im_shrink = np.sqrt(
+            320 * 240 / (img.shape[0] * img.shape[1]))
+    else:
+        max_im_shrink = np.sqrt(
+            640 * 480 / (img.shape[0] * img.shape[1]))
+
     image = cv2.resize(img, None, None, fx=max_im_shrink,
                       fy=max_im_shrink, interpolation=cv2.INTER_LINEAR)
     # img = cv2.resize(img, (640, 640))
@@ -72,7 +80,13 @@ def detect(net, img_path, thresh):
     x -= cfg.img_mean
     x = x[[2, 1, 0], :, :]
 
-    x = torch.from_numpy(x).unsqueeze(0)
+    # import pdb;pdb.set_trace()
+
+    if cfg.IS_MONOCHROME == True:
+        x = 0.299 * x[0] + 0.587 * x[1] + 0.114 * x[2]
+        x = torch.from_numpy(x).unsqueeze(0).unsqueeze(0)
+    else:
+        x = torch.from_numpy(x).unsqueeze(0)
     if use_cuda:
         x = x.cuda()
     t1 = time.time()
