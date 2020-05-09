@@ -28,51 +28,62 @@ _C.FACE.WIDER_DIR='/mnt/WIDER_FACE'
 
 
 # Usage
+
 ## Training
 
 ```shell
 
-python train.py --batch_size 32 --model_arch RPool_Face_Quant --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 
+IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_QVGA_monochrome --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 
 
 ```
 This will save checkpoints after every '--save_frequency' number of iterations in a weight file with 'checkpoint.pth' at the end and weights for the best state in a file with 'best_state.pth' at the end. These will be saved in '--save_folder'. For resuming training from a checkpoint, use '--resume <checkpoint_name>.pth' with the above command. For example, 
 ```shell
 
-python train.py --batch_size 32 --model_arch RPool_Face_Quant --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 --resume <checkpoint_name>.pth
+IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_QVGA_monochrome --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 --resume <checkpoint_name>.pth
 
 ```
 
+If IS_QVGA_MONO is 0 then training input images will be 640x640 and RGB. 
+If IS_QVGA_MONO is 1 then training input images will be 320x320 and converted to monochrome. 
 
+The architecture RPool_Face_QVGA_monochrome is for QVGA monochrome format while RPool_Face_C and RPool_Face_Quant are for VGA RGB format.
 
 ## Test
 We provide two modes of testing the trained model:
 
 ##### Evaluation Mode
+
 Given a set of images in <your_image_folder>, the code generates bounding boxes around faces (where the confidence is higher than certain threshold) and write the images in <your_save_folder>. 
 
 That is, assuming that the goal is to evaluate the rpool_face_best_state.pth model (stored in ./weights), execute the following command: 
 ```shell
-python eval.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
+IS_QVGA_MONO=1 python eval.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/rpool_face_best_qvgamono_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
 ```
-This will save images in <your_save_folder> with bounding boxes around faces (where the confidence is high).
+This will save images in <your_save_folder> with bounding boxes around faces (where the confidence is high). Here is an example image: 
+![PC: Sam Chang, Camera: Himax0360](imrgb20ft.png)
 
-The evaluation code accepts an image of any size and resizes it to 640x480 while preserving original image aspect ratio. 
+If IS_QVGA_MONO=0 the evaluation code accepts an image of any size and resizes it to 640x480x3 while preserving original image aspect ratio.
 
+If IS_QVGA_MONO=1 the evaluation code accepts an image of any size and resizes and converts it to monochrome to make it 320x240x1 while preserving original image aspect ratio.
+
+The architecture RPool_Face_QVGA_monochrome is for QVGA monochrome format while RPool_Face_C and RPool_Face_Quant are for VGA RGB format.
 
 ##### WIDER Set Test
 In this mode, we test the generated model against the provided WIDER_FACE validation and test dataset. 
 
 For this, first run the following to generate predictions of the model and store output in the '--save_folder' folder. 
 ```shell
-python wider_test.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --save_folder rpool_face_quant_val --subset val
+IS_QVGA_MONO=1 python wider_test.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/rpool_face_best_qvgamono_state.pth --save_folder rpool_face_qvgamono_val --subset val
 ```
 The above command generates predictions for each image in the "validation" dataset. For each image, a separate prediction file is provided (image_name.txt file in appropriate folder). The first line of the prediction file contains the total number of boxes identified. 
 Then each line in the file corresponds to an identified box. For each box, five numbers are generated: length of the box, height of the box, x-axis offset, y-axis offset, confidence value for presence of a face in the box. 
 
+If IS_QVGA_MONO=1 then testing is done by converting images to monochrome and QVGA, else if IS_QVGA_MONO=0 then testing is done on VGA RGB images.
 
-Now using these boxes, we can compute the standard MAP score that is widely used in this literature (see [here](https://medium.com/@jonathan_hui/map-mean-average-precision-for-object-detection-45c121a31173) for more details). 
+The architecture RPool_Face_QVGA_monochrome is for QVGA monochrome format while RPool_Face_C and RPool_Face_Quant are for VGA RGB format.
 
-For calculating MAP scores:
+###### For calculating MAP scores:
+Now using these boxes, we can compute the standard MAP score that is widely used in this literature (see [here](https://medium.com/@jonathan_hui/map-mean-average-precision-for-object-detection-45c121a31173) for more details) as follows:
 
 1. Download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip and unzip in a folder of same name in this directory.
 
