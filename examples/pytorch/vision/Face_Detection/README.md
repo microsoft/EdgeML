@@ -6,9 +6,7 @@
 We have tested the installation and the code on Ubuntu 18.04 with Cuda 10.2 and CuDNN 7.6
 
 ## Dataset
-1. Download WIDER face dataset images and annotations from http://shuoyang1213.me/WIDERFACE/ and place them all in a folder with name 'WIDER_FACE'. 
-
-That is, download WIDER_train.zip, WIDER_test.zip, WIDER_val.zip, wider_face_split.zip and place it in WIDER_FACE folder, and unzip files using: 
+1. Download WIDER face dataset images and annotations from http://shuoyang1213.me/WIDERFACE/ and place them all in a folder with name 'WIDER_FACE'. That is, download WIDER_train.zip, WIDER_test.zip, WIDER_val.zip, wider_face_split.zip and place it in WIDER_FACE folder, and unzip files using: 
 
 ```shell
 cd WIDER_FACE
@@ -49,26 +47,24 @@ If IS_QVGA_MONO is 1 then training input images will be 320x320 and converted to
 The architecture RPool_Face_QVGA_monochrome is for QVGA monochrome format while RPool_Face_C and RPool_Face_Quant are for VGA RGB format.
 
 ## Test
-We provide two modes of testing the trained model:
+There are two modes of testing the trained model -- the evaluation mode to generate bounding boxes for a set of sample images, and the test mode to compute statistics like mAP scores.
 
-##### Evaluation Mode
+#### Evaluation Mode
 
-Given a set of images in <your_image_folder>, the code generates bounding boxes around faces (where the confidence is higher than certain threshold) and write the images in <your_save_folder>. 
+Given a set of images in <your_image_folder>, `eval/py` generates bounding boxes around faces (where the confidence is higher than certain threshold) and write the images in <your_save_folder>. To evaluate the `rpool_face_best_state.pth` model (stored in ./weights), execute the following command: 
 
-That is, assuming that the goal is to evaluate the rpool_face_best_state.pth model (stored in ./weights), execute the following command: 
 ```shell
 IS_QVGA_MONO=1 python eval.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/rpool_face_best_qvgamono_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
 ```
-This will save images in <your_save_folder> with bounding boxes around faces (where the confidence is high). Here is an example image: 
+This will save images in <your_save_folder> with bounding boxes around faces, where the confidence is high. Here is an example image with a single bounding box.
+
 ![PC: Sam Chang, Camera: Himax0360](imrgb20ft.png)
 
 If IS_QVGA_MONO=0 the evaluation code accepts an image of any size and resizes it to 640x480x3 while preserving original image aspect ratio.
 
 If IS_QVGA_MONO=1 the evaluation code accepts an image of any size and resizes and converts it to monochrome to make it 320x240x1 while preserving original image aspect ratio.
 
-The architecture RPool_Face_QVGA_monochrome is for QVGA monochrome format while RPool_Face_C and RPool_Face_Quant are for VGA RGB format.
-
-##### WIDER Set Test
+#### WIDER Set Test
 In this mode, we test the generated model against the provided WIDER_FACE validation and test dataset. 
 
 For this, first run the following to generate predictions of the model and store output in the '--save_folder' folder. 
@@ -104,8 +100,7 @@ python3 setup.py build_ext --inplace
 
 3. Run ```python3 evaluation.py -p <your_save_folder> -g <groud truth dir>``` in WiderFace-Evaluation folder
 
-where `prediction_dir` is the '--save_folder' used for `wider_test.py` above and <groud truth dir> is the subfolder `eval_tools/ground_truth`.
-That is in, WiderFace-Evaluation directory, run: 
+where `prediction_dir` is the '--save_folder' used for `wider_test.py` above and <groud truth dir> is the subfolder `eval_tools/ground_truth`. That is in, WiderFace-Evaluation directory, run: 
 
 ```shell
 python3 evaluation.py -p <your_save_folder> -g ../ground_truth
