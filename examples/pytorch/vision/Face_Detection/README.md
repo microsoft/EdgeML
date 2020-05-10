@@ -31,10 +31,19 @@ _C.FACE.WIDER_DIR='/mnt/WIDER_FACE'
 
 ```shell
 
+IS_QVGA_MONO=0 python train.py --batch_size 32 --model_arch RPool_Face_Quant --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 
+
+```
+
+For QVGA:
+```shell
+
 IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_QVGA_monochrome --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 
 
 ```
 This will save checkpoints after every '--save_frequency' number of iterations in a weight file with 'checkpoint.pth' at the end and weights for the best state in a file with 'best_state.pth' at the end. These will be saved in '--save_folder'. For resuming training from a checkpoint, use '--resume <checkpoint_name>.pth' with the above command. For example, 
+
+
 ```shell
 
 IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_QVGA_monochrome --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 --resume <checkpoint_name>.pth
@@ -44,7 +53,10 @@ IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_QVGA_mono
 If IS_QVGA_MONO is 0 then training input images will be 640x640 and RGB. 
 If IS_QVGA_MONO is 1 then training input images will be 320x320 and converted to monochrome. 
 
+Input images for training models are cropped and reshaped to square to maintain consistency with [S3FD](https://arxiv.org/abs/1708.05237). However testing can be done on any size of images, thus we resize testing input image size to have area equal to VGA (640x480)/QVGA (320x240), so that aspect ratio is not changed.
+
 The architecture RPool_Face_QVGA_monochrome is for QVGA monochrome format while RPool_Face_C and RPool_Face_Quant are for VGA RGB format.
+
 
 ## Test
 There are two modes of testing the trained model -- the evaluation mode to generate bounding boxes for a set of sample images, and the test mode to compute statistics like mAP scores.
@@ -54,11 +66,17 @@ There are two modes of testing the trained model -- the evaluation mode to gener
 Given a set of images in <your_image_folder>, `eval/py` generates bounding boxes around faces (where the confidence is higher than certain threshold) and write the images in <your_save_folder>. To evaluate the `rpool_face_best_state.pth` model (stored in ./weights), execute the following command: 
 
 ```shell
+IS_QVGA_MONO=0 python eval.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
+```
+
+For QVGA:
+```shell
 IS_QVGA_MONO=1 python eval.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/rpool_face_best_qvgamono_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
 ```
+
 This will save images in <your_save_folder> with bounding boxes around faces, where the confidence is high. Here is an example image with a single bounding box.
 
-![PC: Sam Chang, Camera: Himax0360](imrgb20ft.png)
+![Camera: Himax0360](imrgb20ft.png)
 
 If IS_QVGA_MONO=0 the evaluation code accepts an image of any size and resizes it to 640x480x3 while preserving original image aspect ratio.
 
@@ -68,9 +86,16 @@ If IS_QVGA_MONO=1 the evaluation code accepts an image of any size and resizes a
 In this mode, we test the generated model against the provided WIDER_FACE validation and test dataset. 
 
 For this, first run the following to generate predictions of the model and store output in the '--save_folder' folder. 
+
+```shell
+IS_QVGA_MONO=0 python wider_test.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --save_folder rpool_face_quant_val --subset val
+```
+
+For QVGA:
 ```shell
 IS_QVGA_MONO=1 python wider_test.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/rpool_face_best_qvgamono_state.pth --save_folder rpool_face_qvgamono_val --subset val
 ```
+
 The above command generates predictions for each image in the "validation" dataset. For each image, a separate prediction file is provided (image_name.txt file in appropriate folder). The first line of the prediction file contains the total number of boxes identified. 
 Then each line in the file corresponds to an identified box. For each box, five numbers are generated: length of the box, height of the box, x-axis offset, y-axis offset, confidence value for presence of a face in the box. 
 
