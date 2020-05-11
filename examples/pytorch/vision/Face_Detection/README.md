@@ -18,9 +18,10 @@ cd ..
 
 ```
 
-2. In `data/config.py`, set _C.HOME to the parent directory of the above folder, and set the _C.FACE.WIDER_DIR to the folder path. 
+2. In `data/config.py` , set _C.HOME to the parent directory of the above folder, and set the _C.FACE.WIDER_DIR to the folder path. 
 That is, if the WIDER_FACE folder is created in /mnt folder, then _C.HOME='/mnt'
-_C.FACE.WIDER_DIR='/mnt/WIDER_FACE' 
+_C.FACE.WIDER_DIR='/mnt/WIDER_FACE'.
+Similarly, change `data/config_qvga.py` to set _C.HOME and _C.FACE.WIDER_DIR.
 3. Run
 ``` python prepare_wider_data.py ```
 
