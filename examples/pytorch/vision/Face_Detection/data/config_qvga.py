@@ -63,24 +63,9 @@ _C.USE_NMS = True
 # dataset config
 _C.HOME = '/mnt/'
 
-# hand config
-_C.HAND = EasyDict()
-_C.HAND.TRAIN_FILE = './data/hand_train.txt'
-_C.HAND.VAL_FILE = './data/hand_val.txt'
-_C.HAND.DIR = '/home/data/lj/egohands/'
-_C.HAND.OVERLAP_THRESH = 0.35
-
 # face config
 _C.FACE = EasyDict()
 _C.FACE.TRAIN_FILE = './data/face_train.txt'
 _C.FACE.VAL_FILE = './data/face_val.txt'
-_C.FACE.FDDB_DIR = '/home/data/lj/FDDB'
 _C.FACE.WIDER_DIR = '/mnt/WIDER_FACE'
-_C.FACE.AFW_DIR = '/home/data/lj/AFW'
-_C.FACE.PASCAL_DIR = '/home/data/lj/PASCAL_FACE'
 _C.FACE.OVERLAP_THRESH = [0.1, 0.35, 0.5]
-
-# head config
-_C.HEAD = EasyDict()
-_C.HEAD.DIR = '/home/data/lj/VOCHead/'
-_C.HEAD.OVERLAP_THRESH = [0.1, 0.35, 0.5]
