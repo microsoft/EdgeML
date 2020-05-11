@@ -67,12 +67,12 @@ There are two modes of testing the trained model -- the evaluation mode to gener
 Given a set of images in <your_image_folder>, `eval/py` generates bounding boxes around faces (where the confidence is higher than certain threshold) and write the images in <your_save_folder>. To evaluate the `rpool_face_best_state.pth` model (stored in ./weights), execute the following command: 
 
 ```shell
-IS_QVGA_MONO=0 python eval.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
+IS_QVGA_MONO=0 python eval.py --model_arch RPool_Face_Quant --model ./weights/RPool_Face_Quant_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
 ```
 
 For QVGA:
 ```shell
-IS_QVGA_MONO=1 python eval.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/rpool_face_best_qvgamono_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
+IS_QVGA_MONO=1 python eval.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
 ```
 
 This will save images in <your_save_folder> with bounding boxes around faces, where the confidence is high. Here is an example image with a single bounding box.
@@ -89,12 +89,12 @@ In this mode, we test the generated model against the provided WIDER_FACE valida
 For this, first run the following to generate predictions of the model and store output in the '--save_folder' folder. 
 
 ```shell
-IS_QVGA_MONO=0 python wider_test.py --model_arch RPool_Face_Quant --model ./weights/rpool_face_best_state.pth --save_folder rpool_face_quant_val --subset val
+IS_QVGA_MONO=0 python wider_test.py --model_arch RPool_Face_Quant --model ./weights/RPool_Face_Quant_best_state.pth --save_folder rpool_face_quant_val --subset val
 ```
 
 For QVGA:
 ```shell
-IS_QVGA_MONO=1 python wider_test.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/rpool_face_best_qvgamono_state.pth --save_folder rpool_face_qvgamono_val --subset val
+IS_QVGA_MONO=1 python wider_test.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --save_folder rpool_face_qvgamono_val --subset val
 ```
 
 The above command generates predictions for each image in the "validation" dataset. For each image, a separate prediction file is provided (image_name.txt file in appropriate folder). The first line of the prediction file contains the total number of boxes identified. 
@@ -139,7 +139,7 @@ This script should output the MAP for the WIDER-easy, WIDER-medium, and WIDER-ha
 To save model weights and/or input output pairs for each patch through RNNPool in numpy format use the command below. Put images which you want to save traces for in <your_image_folder> . Specify output folder for saving model weights in numpy format in <your_save_model_numpy_folder>. Specify output folder for saving input output traces of RNNPool in numpy format in <your_save_traces_numpy_folder>. Note that input traces will be saved in a folder named 'inputs' and output traces in a folder named 'outputs' inside <your_save_traces_numpy_folder>.
 
 ```shell
-python3 dump_model.py --model ./weights/rpool_face_best_state.pth --model_arch RPool_Face_Quant --image_folder <your_image_folder> --save_model_npy_dir <your_save_model_numpy_folder> --save_traces_npy_dir <your_save_traces_numpy_folder>
+python3 dump_model.py --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --model_arch RPool_Face_Quant --image_folder <your_image_folder> --save_model_npy_dir <your_save_model_numpy_folder> --save_traces_npy_dir <your_save_traces_numpy_folder>
 ```
 If you wish to save only model weights, do not specify --save_traces_npy_dir. If you wish to save only traces do not specify --save_model_npy_dir.
 
