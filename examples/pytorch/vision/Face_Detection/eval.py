@@ -65,7 +65,7 @@ def detect(net, img_path, thresh):
     img = np.array(img)
     height, width, _ = img.shape
 
-    if os.environ['IS_QVGA'] == '1':
+    if os.environ['IS_QVGA_MONO'] == '1':
         max_im_shrink = np.sqrt(
             320 * 240 / (img.shape[0] * img.shape[1]))
     else:
