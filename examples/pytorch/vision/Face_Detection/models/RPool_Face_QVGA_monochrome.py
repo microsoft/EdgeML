@@ -98,7 +98,7 @@ class S3FD(nn.Module):
 
         rnnX = self.rnn_model(patches, int(batch_size)*output_x*output_y)
 
-        rnnX = torch.cat((rnnX[:,2*self.rnn_model.nHiddenDimsBiDir:], rnnX[:,:2*self.rnn_model.nHiddenDimsBiDir]), 1)
+        # rnnX = torch.cat((rnnX[:,2*self.rnn_model.nHiddenDimsBiDir:], rnnX[:,:2*self.rnn_model.nHiddenDimsBiDir]), 1)
 
         x = torch.stack(torch.split(rnnX, split_size_or_sections=int(batch_size), dim=0),dim=2)
 
@@ -107,26 +107,26 @@ class S3FD(nn.Module):
         x = F.pad(x, (0,1,0,1), mode='replicate')
 
         # apply vgg up to conv4_3 relu
-        for k in range(1):
+        for k in range(3):
             x = self.mob[k](x)
 
         s = self.L2Norm3_3(x)
         sources.append(s)
 
         # apply vgg up to fc7
-        for k in range(1, 4):
+        for k in range(3, 6):
             x = self.mob[k](x)
 
         s = self.L2Norm4_3(x)
         sources.append(s)
 
-        for k in range(4, 7):
+        for k in range(6, 9):
             x = self.mob[k](x)
 
         s = self.L2Norm5_3(x)
         sources.append(s)
 
-        for k in range(7, 10):
+        for k in range(9, 12):
             x = self.mob[k](x)
         sources.append(x)
 
@@ -281,7 +281,7 @@ class MobileNetV2(nn.Module):
         if inverted_residual_setting is None:
             inverted_residual_setting = [
                 # t, c, n, s               
-                [6, 32, 1, 1],
+                [6, 32, 3, 1],
                 [6, 64, 3, 1],
                 [6, 96, 3, 2],
                 [6, 128, 3, 1],              

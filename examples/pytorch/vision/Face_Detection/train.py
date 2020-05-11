@@ -20,6 +20,7 @@ import torch.backends.cudnn as cudnn
 from data.choose_config import cfg
 cfg = cfg.cfg
 
+# import pdb; pdb.set_trace()
 from importlib import import_module
 
 from layers.modules import MultiBoxLoss
@@ -221,7 +222,7 @@ def val(epoch):
     global min_loss
     if tloss < min_loss:
         print('Saving best state,epoch', epoch)
-        file = 'rpool_{}_best_state.pth'.format(args.dataset)
+        file = '{}_best_state.pth'.format(args.model_arch)
         torch.save(net.state_dict(), os.path.join(
             args.save_folder, file))
         min_loss = tloss

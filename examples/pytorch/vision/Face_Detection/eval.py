@@ -31,7 +31,7 @@ parser.add_argument('--save_dir', type=str, default='results/',
 parser.add_argument('--model', type=str,
                     default='weights/rpool_face_c.pth', help='trained model')
                     #small_fgrnn_smallram_sd.pth', help='trained model')
-parser.add_argument('--thresh', default=0.2, type=float,
+parser.add_argument('--thresh', default=0.17, type=float,
                     help='Final confidence threshold')
 parser.add_argument('--model_arch',
                     default='RPool_Face_C', type=str,
