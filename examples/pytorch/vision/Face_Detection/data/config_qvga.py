@@ -42,9 +42,9 @@ _C.EPOCHES = 900
 _C.IS_MONOCHROME = True
 
 # anchor config
-_C.FEATURE_MAPS = [80, 80, 40, 40]
+_C.FEATURE_MAPS = [40, 40, 20, 20]
 _C.INPUT_SIZE = 320
-_C.STEPS = [4, 4, 8, 8]
+_C.STEPS = [8, 8, 16, 16]
 _C.ANCHOR_SIZES = [8, 16, 32, 48]
 _C.CLIP = False
 _C.VARIANCE = [0.1, 0.2]

@@ -44,10 +44,11 @@ class S3FD(nn.Module):
         self.priors = Variable(self.priorbox.forward(), volatile=True)
         '''
         # SSD network
+        self.conv = ConvBNReLU(1, 8, stride=2)
 
         self.unfold = nn.Unfold(kernel_size=(8,8),stride=(4,4))
 
-        self.rnn_model = RNNPool(8, 8, 16, 16, 1)#num_init_features)
+        self.rnn_model = RNNPool(8, 8, 16, 16, 8)#num_init_features)
         # self.fold = nn.Fold(kernel_size=(1,1),output_size=(159,159))
 
         self.mob = nn.ModuleList(base)
@@ -89,9 +90,11 @@ class S3FD(nn.Module):
         loc = list()
         conf = list()
 
+        x = self.conv(x)
+
         patches = self.unfold(x)
         patches = torch.cat(torch.unbind(patches,dim=2),dim=0)
-        patches = torch.reshape(patches,(-1,1,8,8))
+        patches = torch.reshape(patches,(-1,8,8,8))
 
         output_x = int((x.shape[2]-8)/4 + 1)
         output_y = int((x.shape[3]-8)/4 + 1)
@@ -281,10 +284,10 @@ class MobileNetV2(nn.Module):
         if inverted_residual_setting is None:
             inverted_residual_setting = [
                 # t, c, n, s               
-                [6, 32, 3, 1],
-                [6, 64, 3, 1],
-                [6, 96, 3, 2],
-                [6, 128, 3, 1],              
+                [2, 32, 3, 1],
+                [2, 64, 3, 1],
+                [2, 96, 3, 2],
+                [2, 128, 3, 1],              
             ]
 
         # only check the first element, assuming user knows t,c,n,s are required
