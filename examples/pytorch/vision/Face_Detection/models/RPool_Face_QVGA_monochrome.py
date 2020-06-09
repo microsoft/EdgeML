@@ -284,8 +284,8 @@ class MobileNetV2(nn.Module):
         if inverted_residual_setting is None:
             inverted_residual_setting = [
                 # t, c, n, s               
-                [2, 32, 3, 1],
-                [2, 64, 3, 1],
+                [2, 32, 4, 1],
+                [2, 64, 4, 1],
                 [2, 96, 3, 2],
                 [2, 128, 3, 1],              
             ]
