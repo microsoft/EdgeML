@@ -17,7 +17,7 @@
 // Macro for input type.
 #define MYINT int16_t
 // Macro for iterator type.
-#define MYITE int16_t
+#define MYITE uint16_t
 // Macro for intermediate buffer type.
 #define MYINM int32_t
 
@@ -59,7 +59,7 @@ void m_q_add(const MYINT* const A, const MYINT* const B, MYINT* const C,
              MYITE nrows, MYITE ncols, MYSCL scA, MYSCL scB, MYSCL scC);
 // Function for computing the matrix multiplication of two matrices.
 void m_q_mul(const MYINT* const A, const MYINT* const B, MYINT* const C,
-             MYITE nrows, MYITE ncols, MYITE nmid, MYSCL scA, MYSCL scB,
+             MYITE nrows, MYITE nmid, MYITE ncols, MYSCL scA, MYSCL scB,
              MYSCL scC);
 
 #endif

@@ -165,17 +165,17 @@ void m_q_add(const MYINT* const A, const MYINT* const B, MYINT* const C,
 }
 
 void m_q_mul(const MYINT* const A, const MYINT* const B, MYINT* const C,
-             MYITE nrows, MYITE ncols, MYITE nmid, MYSCL scA, MYSCL scB,
+             MYITE nrows, MYITE nmid, MYITE ncols, MYSCL scA, MYSCL scB,
              MYSCL scC) {
   #ifdef SHIFT
     MYSCL addshrP = 1, addshr = 0;
-    while (addshrP < ncols) {
+    while (addshrP < nmid) {
       addshrP <<= 2;
       addshr += 1;
     }
   #else
     MYSCL addshr = 1;
-    while (addshr < ncols) {
+    while (addshr < nmid) {
       addshr <<= 2;
     }
   #endif
@@ -187,19 +187,19 @@ void m_q_mul(const MYINT* const A, const MYINT* const B, MYINT* const C,
   #endif
 
   for (MYITE i = 0; i < nrows; i++) {
-    for (MYITE k = 0; k < nmid; k++) {
+    for (MYITE k = 0; k < ncols; k++) {
       MYINM s = 0;
-      for(MYITE j = 0; j < ncols; j++) {
+      for(MYITE j = 0; j < nmid; j++) {
         #ifdef SHIFT
-          s += ((MYINM)A[i * ncols + j] * (MYINM)B[j * nmid + k]) >> addshr;
+          s += ((MYINM)A[i * nmid + j] * (MYINM)B[j * ncols + k]) >> addshr;
         #else
-          s += ((MYINM)A[i * ncols + j] * (MYINM)B[j * nmid + k]) / addshr;
+          s += ((MYINM)A[i * nmid + j] * (MYINM)B[j * ncols + k]) / addshr;
         #endif
       }
       #ifdef SHIFT
-        C[i * nmid + k] = s >> shr;
+        C[i * ncols + k] = s >> shr;
       #else
-        C[i * nmid + k] = s / shr;
+        C[i * ncols + k] = s / shr;
       #endif
     }
   }

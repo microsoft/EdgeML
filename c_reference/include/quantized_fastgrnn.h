@@ -1,13 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-#ifndef __FASTGRNN_H__
-#define __FASRGRNN_H__
+#ifndef __QUANTIZED_FASTGRNN_H__
+#define __QUANTIZED_FASRGRNN_H__
 
 #define ERR_PRECOMP_NOT_INIT -1
 #define ERR_TEMPLRW_NOT_INIT -2
 #define ERR_TEMPLRU_NOT_INIT -3
 #define ERR_NORMFEATURES_NOT_INIT -4
+
+#include "quantized_utils.h"
 
 /**
  * @brief Model paramters for low-rank FastGRNN
@@ -24,20 +26,20 @@
  * @var       sigmoid_zeta first weight parameter for update from input from next step
  * @var       sigmoid_nu   second weight parameter for update from input from next step
  */
-typedef struct FastGRNN_LR_Params {
-  float* mean;
-  float* stdDev;
-  float* W1; 
-  float* W2;
-  unsigned wRank;
-  float* U1;
-  float* U2; 
-  unsigned uRank;
-  float* Bg; 
-  float* Bh;
-  float sigmoid_zeta;
-  float sigmoid_nu;
-} FastGRNN_LR_Params;
+typedef struct Q_FastGRNN_LR_Params {
+  MYINT* mean;
+  MYINT* stdDev;
+  MYINT* W1; 
+  MYINT* W2;
+  MYITE wRank;
+  MYINT* U1;
+  MYINT* U2; 
+  MYITE uRank;
+  MYINT* Bg; 
+  MYINT* Bh;
+  MYINT sigmoid_zeta;
+  MYINT sigmoid_nu;
+} Q_FastGRNN_LR_Params;
 
 /**
 * @brief Buffers required for computation of low-rank FastGRNN
@@ -46,12 +48,12 @@ typedef struct FastGRNN_LR_Params {
 * @var   tempLRU      pointer to buffer space, must be initalized to atleast uRank size
 * @var   normFeatures pointer to buffer space, must be initalized to atleast inputDims size
 */
-typedef struct FastGRNN_LR_Buffers {
-  float* preComp;
-  float* tempLRW;
-  float* tempLRU;
-  float* normFeatures;
-} FastGRNN_LR_Buffers;
+typedef struct Q_FastGRNN_LR_Buffers {
+  MYINT* preComp;
+  MYINT* tempLRW;
+  MYINT* tempLRU;
+  MYINT* normFeatures;
+} Q_FastGRNN_LR_Buffers;
 
 /**
  * @brief Multi-step updates of a FastGRNN cell with low rank W, U(W=W1*W2; U=U1*U2)
@@ -70,9 +72,9 @@ typedef struct FastGRNN_LR_Buffers {
  *             <code>ERR_TEMPLRU_NOT_INIT</code> if tempLRU not allocated
  *             <code>ERR_NORMFEAT_NOT_INIT</code> if normFeatures not allocated
 */
-int fastgrnn_lr(float* const hiddenState, unsigned hiddenDims,
-  const float* const input, unsigned inputDims, unsigned steps,
-  const void* params, void* buffers, int backward, int normalize);
+int q_fastgrnn_lr(MYINT* const hiddenState, MYITE hiddenDims,
+                  const MYINT* const input, MYITE inputDims, MYITE steps,
+                  const void* params, void* buffers, int backward, int normalize);
 
 /**
  * @brief Model paramters for low-rank FastGRNN
@@ -85,26 +87,26 @@ int fastgrnn_lr(float* const hiddenState, unsigned hiddenDims,
  * @var       sigmoid_zeta first weight parameter for update from input from next step
  * @var       sigmoid_nu   second weight parameter for update from input from next step
  */
-typedef struct FastGRNN_Params {
-  float* mean;
-  float* stdDev;
-  float* W;
-  float* U;
-  float* Bg;
-  float* Bh;
-  float sigmoid_zeta;
-  float sigmoid_nu;
-} FastGRNN_Params;
+typedef struct Q_FastGRNN_Params {
+  MYINT* mean;
+  MYINT* stdDev;
+  MYINT* W;
+  MYINT* U;
+  MYINT* Bg;
+  MYINT* Bh;
+  MYINT sigmoid_zeta;
+  MYINT sigmoid_nu;
+} Q_FastGRNN_Params;
 
 /**
 * @brief Buffers required for computation of FastGRNN
 * @var   preComp      pointer to buffer space, must be initalized to atleast hiddenDims size
 * @var   normFeatures pointer to buffer space, must be initalized to atleast inputDims size
 */
-typedef struct FastGRNN_Buffers {
-  float* preComp;
-  float* normFeatures;
-} FastGRNN_Buffers;
+typedef struct Q_FastGRNN_Buffers {
+  MYINT* preComp;
+  MYINT* normFeatures;
+} Q_FastGRNN_Buffers;
 
 /**
  * @brief Multi-step updates of a FastGRNN cell
@@ -121,8 +123,8 @@ typedef struct FastGRNN_Buffers {
  *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp not allocated
  *             <code>ERR_NORMFEAT_NOT_INIT</code> if normFeatures not allocated
 */
-int fastgrnn(float* const hiddenState, unsigned hiddenDims,
-  const float* const input, unsigned inputDims, unsigned steps,
-  const void* params, void* buffers, int backward, int normalize);
+int q_fastgrnn(MYINT* const hiddenState, MYITE hiddenDims,
+               const MYINT* const input, MYITE inputDims, MYITE steps,
+               const void* params, void* buffers, int backward, int normalize);
 
 #endif
