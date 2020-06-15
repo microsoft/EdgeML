@@ -1,122 +1,206 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-#include <math.h>
-#include <float.h>
 #include "quantized_utils.h"
 
-float min(float a, float b) {
+MYINT min(MYINT a, MYINT b) {
   return (a < b) ? a : b;
 }
 
-float max(float a, float b) {
+MYINT max(MYINT a, MYINT b) {
   return (a > b) ? a : b;
 }
 
-float relu(float x) {
-  if (x < 0.0) return 0.0;
-  else return x;
+MYINT q16_sigmoid(MYINT x) {
+  return 8 * max(min((x + 2048) / 2, 2048), 0);
 }
 
-float sigmoid(float x) {
-  return 1.0f / (1.0f + expf(-1.0f * x));
+MYINT q16_tanh(MYINT x) {
+  return 8 * max(min(x, 2048), -2048);
 }
 
-float tanhyperbolic(float x) {
-  float ex = expf(x);
-  float enx = expf(-1.0f * x);
-  return (ex - enx) / (ex + enx);
-}
-
-float quantTanh(float x) {
-  return max(min(x, 1.0f), -1.0f);
-}
-
-float quantSigmoid(float x) {
-  return max(min((x + 1.0f) / 2.0f, 1.0f), 0.0f);
-}
-
-void v_relu(const float* const vec, unsigned len, float* const ret) {
-  for (unsigned i = 0; i < len; i++) ret[i] = relu(vec[i]);
-}
-
-void v_sigmoid(const float* const vec, unsigned len, float* const ret) {
-  for (unsigned i = 0; i < len; i++) ret[i] = sigmoid(vec[i]);
-}
-
-void v_tanh(const float* const vec, unsigned len, float* const ret) {
-  for (unsigned i = 0; i < len; i++) ret[i] = tanhyperbolic(vec[i]);
-}
-
-void v_quantSigmoid(const float* const vec, unsigned len, float* const ret) {
-  for (unsigned i = 0; i < len; i++) ret[i] = sigmoid(vec[i]);
-}
-
-void v_quantTanh(const float* const vec, unsigned len, float* const ret) {
-  for (unsigned i = 0; i < len; i++) ret[i] = tanh(vec[i]);
-}
-
-void matVec(const float* const mat, const float* const vec,
-  unsigned nrows, unsigned ncols,
-  float alpha, float beta,
-  float* const ret) {
-
-  for (unsigned row = 0; row < nrows; row++) {
-    float sum = 0.0f;
-    float* mat_offset = (float*)mat + row * ncols;
-    for (unsigned col = 0; col < ncols; col++) {
-      sum += *mat_offset++ * vec[col];
+void m_reverse(const MYINT* const A, MYINT* const B, MYITE nrows, MYITE ncols) {
+  for (MYITE i = 0; i < nrows; i++) {
+    for (MYITE j = 0; j < ncols; j++) {
+      B[i * ncols + j] = A[(nrows - i - 1) * ncols + j];
     }
-    ret[row] = alpha * ret[row] + beta * sum;
+  }
+}
+
+void m_q_sigmoid(const MYINT* const A, MYITE nrows, MYITE ncols,
+                      MYINT* const B) {
+  for (MYITE i = 0; i < nrows; i++) {
+    for (MYITE j = 0; j < ncols; j++) {
+      B[i * ncols + j] = q16_sigmoid(A[i * ncols + j]);
+    }
+  }
+}
+
+// Currently this uses variable pertaining to int16_t quantization.
+void m_q_tanh(const MYINT* const A, MYITE nrows, MYITE ncols,
+                   MYINT* const B) {
+  for (MYITE i = 0; i < nrows; i++) {
+    for (MYITE j = 0; j < ncols; j++) {
+      B[i * ncols + j] = q16_tanh(A[i * ncols + j]);
+    }
+  }
+}
+
+void m_q_scalar_add(MYINT A, const MYINT* const B, MYINT* const C,
+                    MYITE nrows, MYITE ncols, MYSCL scA, MYSCL scB, MYSCL scC) {
+  MYSCL shrmin = min(scA, scB);
+  #ifdef SHIFT
+    MYSCL shra = scA - shrmin;
+    MYSCL shrb = scB - shrmin;
+    MYSCL shrc = shrmin - scC;
+  #else
+    MYSCL shra = scA / shrmin;
+    MYSCL shrb = scB / shrmin;
+    MYSCL shrc = shrmin / scC;
+  #endif
+
+  for (MYITE i = 0; i < nrows; i++) {
+    for (MYITE j = 0; j < ncols; j++) {
+      #ifdef SHIFT
+        C[i * ncols + j] = ((A >> (shra + shrc)) +
+                            (B[i * ncols + j] >> (shrb + shrc)));
+      #else
+        C[i * ncols + j] = ((A / (shra * shrc)) +
+                            (B[i * ncols + j] / (shrb * shrc)));
+      #endif
+    }
+  }
+}
+
+void m_q_scalar_sub(MYINT A, const MYINT* const B, MYINT* const C, MYITE nrows,
+                    MYITE ncols, MYSCL scA, MYSCL scB, MYSCL scC) {
+  MYSCL shrmin = min(scA, scB);
+  #ifdef SHIFT
+    MYSCL shra = scA - shrmin;
+    MYSCL shrb = scB - shrmin;
+    MYSCL shrc = shrmin - scC;
+  #else
+    MYSCL shra = scA / shrmin;
+    MYSCL shrb = scB / shrmin;
+    MYSCL shrc = shrmin / scC;
+  #endif
+
+  for (MYITE i = 0; i < nrows; i++) {
+    for (MYITE j = 0; j < ncols; j++) {
+      #ifdef SHIFT
+        C[i * ncols + j] = ((A >> (shra + shrc)) -
+                            (B[i * ncols + j] >> (shrb + shrc)));
+      #else
+        C[i * ncols + j] = ((A / (shra * shrc)) -
+                            (B[i * ncols + j] / (shrb * shrc)));
+      #endif
+    }
+  }
+}
+
+void m_q_scalar_mul(MYINT A, const MYINT* const B, MYINT* const C, MYITE nrows,
+                    MYITE ncols, MYSCL scA, MYSCL scB, MYSCL scC) {
+  #ifdef SHIFT
+    MYSCL shr = (scA + scB) - scC;
+  #else
+    MYSCL shr = (scA * scB) / scC;
+  #endif
+
+  for (MYITE i = 0; i < nrows; i++) {
+    for (MYITE j = 0; j < ncols; j++) {
+      #ifdef SHIFT
+        C[i * ncols + j] = ((MYINM)A * (MYINM)B[i * ncols + j]) >> shr;
+      #else
+        C[i * ncols + j] = ((MYINM)A * (MYINM)B[i * ncols + j]) / shr;
+      #endif
+    }
   }
 }
 
-void v_add(float scalar1, const float* const vec1,
-  float scalar2, const float* const vec2,
-  unsigned len, float* const ret) {
-  for (unsigned i = 0; i < len; i++)
-    ret[i] = scalar1 * vec1[i] + scalar2 * vec2[i];
-}
+void m_q_hadamard(const MYINT* const A, const MYINT* const B, MYINT* const C,
+                  MYITE nrows, MYITE ncols, MYSCL scA, MYSCL scB, MYSCL scC) {
+  #ifdef SHIFT
+    MYSCL shr = (scA + scB) - scC;
+  #else
+    MYSCL shr = (scA * scB) / scC;
+  #endif
 
-void v_mult(const float* const vec1, const float* const vec2,
-  unsigned len, float* const ret) {
-  for (unsigned i = 0; i < len; i++)
-    ret[i] = vec1[i] * vec2[i];
-}
-
-void v_div(const float* const vec1, const float* const vec2,
-  unsigned len, float* const ret) {
-  for (unsigned i = 0; i < len; i++)
-    ret[i] = vec2[i] / vec1[i];
-}
-
-float l2squared(const float* const vec1,
-  const float* const vec2, unsigned dim) {
-  float sum = 0.0f;
-  for (unsigned i = 0; i < dim; i++)
-    sum += (vec1[i] - vec2[i]) * (vec1[i] - vec2[i]);
-  return sum;
-}
-
-unsigned argmax(const float* const vec, unsigned len) {
-  unsigned maxId = 0;
-  float maxScore = FLT_MIN;
-  for (unsigned i = 0; i < len; i++) {
-    if (vec[i] > maxScore) {
-      maxScore = vec[i];
-      maxId = i;
+  for (MYITE i = 0; i < nrows; i++) {
+    for (MYITE j = 0; j < ncols; j++) {
+      #ifdef SHIFT
+        C[i * ncols + j] = ((MYINM)A[i * ncols + j] *
+                            (MYINM)B[i * ncols + j]) >> shr;
+      #else
+        C[i * ncols + j] = ((MYINM)A[i * ncols + j] *
+                            (MYINM)B[i * ncols + j]) / shr;
+      #endif
     }
   }
-  return maxId;
 }
 
-void softmax(const float* const input, unsigned len, float* const ret) {
-  float m = input[argmax(input, len)];
-  float sum = 0.0f;
-  for (unsigned i = 0; i < len; i++)
-    sum += expf(input[i] - m);
+void m_q_add(const MYINT* const A, const MYINT* const B, MYINT* const C,
+             MYITE nrows, MYITE ncols, MYSCL scA, MYSCL scB, MYSCL scC) {
+  MYSCL shrmin = min(scA, scB);
+  #ifdef SHIFT
+    MYSCL shra = scA - shrmin;
+    MYSCL shrb = scB - shrmin;
+    MYSCL shrc = shrmin - scC;
+  #else
+    MYSCL shra = scA / shrmin;
+    MYSCL shrb = scB / shrmin;
+    MYSCL shrc = shrmin / scC;
+  #endif
 
-  float offset = m + logf(sum);
-  for (unsigned i = 0; i < len; i++)
-    ret[i] = expf(input[i] - offset);
+  for (MYITE i = 0; i < nrows; i++) {
+    for (MYITE j = 0; j < ncols; j++) {
+      #ifdef SHIFT
+        C[i * ncols + j] = ((A[i * ncols + j] >> (shra + shrc)) +
+                        (B[i * ncols + j] >> (shrb + shrc)));
+      #else
+        C[i * ncols + j] = ((A[i * ncols + j] / (shra * shrc)) +
+                        (B[i * ncols + j] / (shrb * shrc)));
+      #endif
+    }
+  }
+}
+
+void m_q_mul(const MYINT* const A, const MYINT* const B, MYINT* const C,
+             MYITE nrows, MYITE ncols, MYITE nmid, MYSCL scA, MYSCL scB,
+             MYSCL scC) {
+  #ifdef SHIFT
+    MYSCL addshrP = 1, addshr = 0;
+    while (addshrP < ncols) {
+      addshrP <<= 2;
+      addshr += 1;
+    }
+  #else
+    MYSCL addshr = 1;
+    while (addshr < ncols) {
+      addshr <<= 2;
+    }
+  #endif
+  
+  #ifdef SHIFT
+    MYSCL shr = scA + scB - scC - addshr;
+  #else
+    MYSCL shr = (scA * scB) / (scC * addshr);
+  #endif
+
+  for (MYITE i = 0; i < nrows; i++) {
+    for (MYITE k = 0; k < nmid; k++) {
+      MYINM s = 0;
+      for(MYITE j = 0; j < ncols; j++) {
+        #ifdef SHIFT
+          s += ((MYINM)A[i * ncols + j] * (MYINM)B[j * nmid + k]) >> addshr;
+        #else
+          s += ((MYINM)A[i * ncols + j] * (MYINM)B[j * nmid + k]) / addshr;
+        #endif
+      }
+      #ifdef SHIFT
+        C[i * nmid + k] = s >> shr;
+      #else
+        C[i * nmid + k] = s / shr;
+      #endif
+    }
+  }
 }

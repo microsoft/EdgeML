@@ -1,57 +1,65 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-#ifndef __UTILS_H__
-#define __UTILS_H__
+#ifndef __QUANTIZED_UTILS_H__
+#define __QUANTIZED_UTILS_H__
 
 #include <math.h>
-#include <float.h>
+#include <stdint.h>
 
-float min(float a, float b);
-float max(float a, float b);
+// Macro for scale variable type.
+#ifdef SHIFT
+  #define MYSCL int16_t
+#else
+  #define MYSCL int32_t
+#endif
 
-float relu(float x);
-float sigmoid(float x);
-float tanhyperbolic(float x);
-float quantTanh(float x);
-float quantSigmoid(float x);
+// Macro for input type.
+#define MYINT int16_t
+// Macro for iterator type.
+#define MYITE int16_t
+// Macro for intermediate buffer type.
+#define MYINM int32_t
 
-void v_relu(const float* const vec, unsigned len, float* const ret);
-void v_sigmoid(const float* const vec, unsigned len, float* const ret);
-void v_tanh(const float* const vec, unsigned len, float* const ret);
-void v_quantSigmoid(const float* const vec, unsigned len, float* const ret);
-void v_quantTanh(const float* const vec, unsigned len, float* const ret);
+// Functions for input type relational comparison.
+MYINT min(MYINT a, MYINT b);
+MYINT max(MYINT a, MYINT b);
 
-/* Scaled matrix-vector multiplication:  ret = alpha * ret + beta * mat * vec
-   alpha and beta are scalars
-   ret is of size nrows, vec is of size ncols
-   mat is of size nrows * ncols, stored in row major */
-void matVec(const float* const mat, const float* const vec,
-  unsigned nrows, unsigned ncols,
-  float alpha, float beta,
-  float* const ret);
+// Functions for input type relational comparison.
+// Here q16 denotes quantization to int16_t.
+MYINT q16_sigmoid(MYINT x);
+MYINT q16_tanh(MYINT x);
 
-// scaled vector addition: ret = scalar1 * vec1 + scalar2 * vector2
-void v_add(float scalar1, const float* const vec1,
-  float scalar2, const float* const vec2,
-  unsigned len, float* const ret);
+// Functions for calculating quantized activations.
+// Currently these makes use of 16-bit quantization only.
+void m_q_sigmoid(const MYINT* const A, MYITE nrows, MYITE ncols,
+                 MYINT* const B);
+void m_q_tanh(const MYINT* const A, MYITE nrows, MYITE ncols,
+                   MYINT* const B);
 
-// point-wise vector multiplication ret = vec2 * vec1 
-void v_mult(const float* const vec1, const float* const vec2,
-  unsigned len, float* const ret);
+// Function for reversing the order of rows in an input matrix.
+void m_reverse(const MYINT* const A, MYINT* const B, MYITE nrows, MYITE ncols);
 
-// point-wise vector division ret = vec2 / vec1 
-void v_div(const float* const vec1, const float* const vec2,
-  unsigned len, float* const ret);
+// Function for adding a scalar to every element of a matrix.
+void m_q_scalar_add(MYINT A, const MYINT* const B, MYINT* const C,
+                    MYITE nrows, MYITE ncols, MYSCL scA, MYSCL scB, MYSCL scC);
+// Function for subtracting every element of a matrix from a scalar.
+// The resultant matrix has elements C_{i, j} = A - B_{i, j}.
+void m_q_scalar_sub(MYINT A, const MYINT* const B, MYINT* const C, MYITE nrows,
+                    MYITE ncols, MYSCL scA, MYSCL scB, MYSCL scC);
+// Function for multiplying a scalar to every element of a matrix.
+void m_q_scalar_mul(MYINT A, const MYINT* const B, MYINT* const C, MYITE nrows,
+                    MYITE ncols, MYSCL scA, MYSCL scB, MYSCL scC);
+// Function for computing the Hadamard product of two matrices.
+void m_q_hadamard(const MYINT* const A, const MYINT* const B, MYINT* const C,
+                  MYITE nrows, MYITE ncols, MYSCL scA, MYSCL scB, MYSCL scC);
 
-// Return squared Euclidean distance between vec1 and vec2
-float l2squared(const float* const vec1,
-  const float* const vec2, unsigned dim);
-
-// Return index with max value, if tied, return first tied index.
-unsigned argmax(const float* const vec, unsigned len);
-
-// ret[i] = exp(input[i]) / \sum_i exp(input[i])
-void softmax(const float* const input, unsigned len, float* const ret);
+// Function for computing the element-wise sum of two matrices.
+void m_q_add(const MYINT* const A, const MYINT* const B, MYINT* const C,
+             MYITE nrows, MYITE ncols, MYSCL scA, MYSCL scB, MYSCL scC);
+// Function for computing the matrix multiplication of two matrices.
+void m_q_mul(const MYINT* const A, const MYINT* const B, MYINT* const C,
+             MYITE nrows, MYITE ncols, MYITE nmid, MYSCL scA, MYSCL scB,
+             MYSCL scC);
 
 #endif
