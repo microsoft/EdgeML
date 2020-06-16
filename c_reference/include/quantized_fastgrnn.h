@@ -41,6 +41,19 @@ typedef struct Q_FastGRNN_LR_Params {
   MYINT sigmoid_nu;
 } Q_FastGRNN_LR_Params;
 
+typedef struct Q_FastGRNN_LR_Param_Scales {
+  MYSCL* mean;
+  MYSCL* stdDev;
+  MYSCL* W1;
+  MYSCL* W2;
+  MYSCL* U1;
+  MYSCL* U2;
+  MYSCL* Bg;
+  MYSCL* Bh;
+  MYSCL sigmoid_zeta;
+  MYSCL sigmoid_nu;
+} Q_FastGRNN_LR_Param_Scales;
+
 /**
 * @brief Buffers required for computation of low-rank FastGRNN
 * @var   preComp      pointer to buffer space, must be initalized to atleast hiddenDims size
@@ -54,6 +67,13 @@ typedef struct Q_FastGRNN_LR_Buffers {
   MYINT* tempLRU;
   MYINT* normFeatures;
 } Q_FastGRNN_LR_Buffers;
+
+typedef struct Q_FastGRNN_LR_Buffer_Scales {
+  MYSCL* preComp;
+  MYSCL* tempLRW;
+  MYSCL* tempLRU;
+  MYSCL* normFeatures;
+} Q_FastGRNN_LR_Buffer_Scales;
 
 /**
  * @brief Multi-step updates of a FastGRNN cell with low rank W, U(W=W1*W2; U=U1*U2)
@@ -98,6 +118,17 @@ typedef struct Q_FastGRNN_Params {
   MYINT sigmoid_nu;
 } Q_FastGRNN_Params;
 
+typedef struct Q_FastGRNN_Param_Scales {
+  MYSCL* mean;
+  MYSCL* stdDev;
+  MYSCL* W;
+  MYSCL* U;
+  MYSCL* Bg;
+  MYSCL* Bh;
+  MYSCL sigmoid_zeta;
+  MYSCL sigmoid_nu;
+} Q_FastGRNN_Param_Scales;
+
 /**
 * @brief Buffers required for computation of FastGRNN
 * @var   preComp      pointer to buffer space, must be initalized to atleast hiddenDims size
@@ -107,6 +138,11 @@ typedef struct Q_FastGRNN_Buffers {
   MYINT* preComp;
   MYINT* normFeatures;
 } Q_FastGRNN_Buffers;
+
+typedef struct Q_FastGRNN_Buffer_Scales {
+  MYSCL* preComp;
+  MYSCL* normFeatures;
+} Q_FastGRNN_Buffer_Scales;
 
 /**
  * @brief Multi-step updates of a FastGRNN cell

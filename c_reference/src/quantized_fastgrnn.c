@@ -20,10 +20,15 @@ int q_fastgrnn_lr(MYINT* const hiddenState, MYITE hiddenDims,
     // Normalize the features
     MYITE offset = backward ? steps - 1 - t : t;
     if (normalize) {
-      v_add(1.0f, input + offset * inputDims, -1.0f,
-            tparams->mean + t * inputDims, inputDims, tbuffers->normFeatures);
-      v_div(tparams->stdDev + t * inputDims, tbuffers->normFeatures, inputDims,
-            tbuffers->normFeatures);
+      // This diverges from the original implementation because of
+      // impracticality of scaled addition beyond 0, 1, and -1 multipliers
+      v_q_sub(input + offset * inputDims, tparams->mean + t * inputDims,
+              inputDims, tbuffers->normFeatures, scale.input[offset],
+              scale.mean[t], scale.normFeatures[t]);
+      // Assuming the stdDev values are stored in inverse form
+      v_q_hadamard(tparams->stdDev + t * inputDims, tbuffers->normFeatures,
+                   inputDims, tbuffers->normFeatures, scale.input[offset],
+                   scale.mean[t], scale.normFeatures[t]);
     }
     else {
       for (MYITE d = 0; d < inputDims; ++d)
@@ -31,21 +36,21 @@ int q_fastgrnn_lr(MYINT* const hiddenState, MYITE hiddenDims,
     }
 
     // Process the new input and previous hidden state
-    matVec(tparams->W1, tbuffers->normFeatures, tparams->wRank, inputDims,
-           0.0f, 1.0f, tbuffers->tempLRW);
-    matVec(tparams->W2, tbuffers->tempLRW, hiddenDims, tparams->wRank,
-           0.0f, 1.0f, tbuffers->preComp);
-    matVec(tparams->U1, hiddenState, tparams->uRank, hiddenDims,
-           0.0f, 1.0f, tbuffers->tempLRU);
-    matVec(tparams->U2, tbuffers->tempLRU, hiddenDims, tparams->uRank,
-           1.0f, 1.0f, tbuffers->preComp);
+    m_q_mulvec(tparams->W1, tbuffers->normFeatures, tparams->wRank, inputDims,
+               0, 1, tbuffers->tempLRW);
+    m_q_mulvec(tparams->W2, tbuffers->tempLRW, hiddenDims, tparams->wRank,
+               0, 1, tbuffers->preComp);
+    m_q_mulvec(tparams->U1, hiddenState, tparams->uRank, hiddenDims,
+               0, 1, tbuffers->tempLRU);
+    m_q_mulvec(tparams->U2, tbuffers->tempLRU, hiddenDims, tparams->uRank,
+               1, 1, tbuffers->preComp);
 
     // Apply the gate to generate the new hidden state
     for (MYITE i = 0; i < hiddenDims; i++) {
       MYINT gate = sigmoid(tbuffers->preComp[i] + tparams->Bg[i]);
       MYINT update = tanh(tbuffers->preComp[i] + tparams->Bh[i]);
       hiddenState[i] = gate * hiddenState[i] +
-                       (tparams->sigmoid_zeta * (1.0 - gate) + tparams->sigmoid_nu)
+                       (tparams->sigmoid_zeta * (1 - gate) + tparams->sigmoid_nu)
                        * update;
     }
   }
@@ -66,10 +71,15 @@ int q_fastgrnn(MYINT* const hiddenState, MYITE hiddenDims,
     // Normalize the features
     MYITE offset = backward ? steps - 1 - t : t;
     if (normalize) {
-      v_add(1.0f, input + offset * inputDims, -1.0f,
-            tparams->mean + t * inputDims, inputDims, tbuffers->normFeatures);
-      v_div(tparams->stdDev + t * inputDims, tbuffers->normFeatures, inputDims,
-        tbuffers->normFeatures);
+      // This diverges from the original implementation because of
+      // impracticality of scaled addition beyond 0, 1, and -1 multipliers
+      v_q_sub(input + offset * inputDims, tparams->mean + t * inputDims,
+              inputDims, tbuffers->normFeatures, scales->input[offset],
+              scales->mean[t], scales->normFeatures[t]);
+      // Assuming stdDev values are stored in inverse form
+      v_q_hadamard(tparams->stdDev + t * inputDims, tbuffers->normFeatures,
+                   inputDims, tbuffers->normFeatures, scales->input[offset],
+                   scales->mean[t], scales->normFeatures[t]);
     }
     else {
       for (MYITE d = 0; d < inputDims; ++d)
@@ -77,17 +87,17 @@ int q_fastgrnn(MYINT* const hiddenState, MYITE hiddenDims,
     }
 
     // Process the new input and previous hidden state
-    matVec(tparams->W, tbuffers->normFeatures, hiddenDims, inputDims,
-           0.0f, 1.0f, tbuffers->preComp);
-    matVec(tparams->U, hiddenState, hiddenDims, hiddenDims,
-           1.0f, 1.0f, tbuffers->preComp);
+    m_q_mulvec(tparams->W, tbuffers->normFeatures, hiddenDims, inputDims,
+               0, 1, tbuffers->preComp);
+    m_q_mulvec(tparams->U, hiddenState, hiddenDims, hiddenDims,
+               1, 1, tbuffers->preComp);
 
     // Apply the gate to generate the new hidden state
     for (MYITE i = 0; i < hiddenDims; i++) {
       MYINT gate = sigmoid(tbuffers->preComp[i] + tparams->Bg[i]);
       MYINT update = tanh(tbuffers->preComp[i] + tparams->Bh[i]);
       hiddenState[i] = gate * hiddenState[i] +
-                       (tparams->sigmoid_zeta * (1.0 - gate) + tparams->sigmoid_nu)
+                       (tparams->sigmoid_zeta * (1 - gate) + tparams->sigmoid_nu)
                        * update;
     }
   }

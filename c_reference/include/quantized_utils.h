@@ -32,9 +32,20 @@ MYINT q16_tanh(MYINT x);
 
 // Functions for calculating quantized activations.
 // Currently these makes use of 16-bit quantization only.
-void m_q_sigmoid(const MYINT* const A, MYITE nrows, MYITE ncols,
+void v_q_add(const MYINT* const vec1, const MYINT* const vec2, MYITE len,
+             MYINT* const ret, MYSCL scvec1, MYSCL scvec2, MYSCL scret);
+void v_q_sub(const MYINT* const vec1, const MYINT* const vec2, MYITE len,
+             MYINT* const ret, MYSCL scvec1, MYSCL scvec2, MYSCL scret);
+void v_q_hadamard(const MYINT* const vec1, const MYINT* const vec2, MYITE len,
+                  MYINT* const ret, MYSCL scvec1, MYSCL scvec2, MYSCL scret);
+
+void m_q_mulvec(const MYINT* const mat, const MYINT* const vec, MYITE nrows,
+                MYITE ncols, int alpha, int beta, MYINT* const ret, MYSCL scmat,
+                MYSCL scvec, MYITE H1, MYITE H2);
+
+void v_q_sigmoid(const MYINT* const A, MYITE nrows, MYITE ncols,
                  MYINT* const B);
-void m_q_tanh(const MYINT* const A, MYITE nrows, MYITE ncols,
+void v_q_tanh(const MYINT* const A, MYITE nrows, MYITE ncols,
                    MYINT* const B);
 
 // Function for reversing the order of rows in an input matrix.
@@ -50,16 +61,5 @@ void m_q_scalar_sub(MYINT A, const MYINT* const B, MYINT* const C, MYITE nrows,
 // Function for multiplying a scalar to every element of a matrix.
 void m_q_scalar_mul(MYINT A, const MYINT* const B, MYINT* const C, MYITE nrows,
                     MYITE ncols, MYSCL scA, MYSCL scB, MYSCL scC);
-// Function for computing the Hadamard product of two matrices.
-void m_q_hadamard(const MYINT* const A, const MYINT* const B, MYINT* const C,
-                  MYITE nrows, MYITE ncols, MYSCL scA, MYSCL scB, MYSCL scC);
-
-// Function for computing the element-wise sum of two matrices.
-void m_q_add(const MYINT* const A, const MYINT* const B, MYINT* const C,
-             MYITE nrows, MYITE ncols, MYSCL scA, MYSCL scB, MYSCL scC);
-// Function for computing the matrix multiplication of two matrices.
-void m_q_mul(const MYINT* const A, const MYINT* const B, MYINT* const C,
-             MYITE nrows, MYITE nmid, MYITE ncols, MYSCL scA, MYSCL scB,
-             MYSCL scC);
 
 #endif

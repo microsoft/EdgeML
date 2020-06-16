@@ -27,8 +27,8 @@ int fastgrnn_lr(float* const hiddenState, unsigned hiddenDims,
         tbuffers->normFeatures);
     }
     else {
-      for (unsigned d=0; d< inputDims; ++d)
-      tbuffers->normFeatures[d] = input[offset * inputDims + d];
+      for (unsigned d = 0; d < inputDims; ++d)
+        tbuffers->normFeatures[d] = input[offset * inputDims + d];
     }
 
     // Process the new input and previous hidden state
