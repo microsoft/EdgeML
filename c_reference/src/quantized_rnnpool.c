@@ -6,10 +6,11 @@
 
 int q_rnnpool_block(const MYINT* const patch, MYITE inputDims, MYITE patchDim,
                     MYITE stride, rnn_t rnn1, MYITE hiddenDims1,
-                    const void* rnn1_params, void* rnn1_buffers, rnn_t rnn2,
+                    const void* rnn1_params, void* rnn1_buffers,
+                    const void* rnn1_scales, rnn_t rnn2,
                     MYITE hiddenDims2, const void* rnn2_params,
-                    void* rnn2_buffers, MYINT* const output,
-                    MYINT* const buffer) {
+                    void* rnn2_buffers, const void* rnn2_scales,
+                    MYINT* const output, MYINT* const buffer) {
   // Clear the output
   memset(output, 0, sizeof(MYINT) * 4 * hiddenDims2);
 
@@ -17,14 +18,14 @@ int q_rnnpool_block(const MYINT* const patch, MYITE inputDims, MYITE patchDim,
   memset(buffer, 0, sizeof(MYINT) * hiddenDims1 * patchDim);
   for (MYITE r = 0; r < patchDim; ++r) {
     rnn1(buffer + r * hiddenDims1, hiddenDims1, patch + stride * r * inputDims,
-         inputDims, patchDim, rnn1_params, rnn1_buffers, 0, 0);
+         inputDims, patchDim, rnn1_params, rnn1_buffers, rnn1_scales, 0, 0);
   }
 
   // Bidirectional vertical pass over the row summaries
   rnn2(output, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params,
-       rnn2_buffers, 0, 0);
+       rnn2_buffers, rnn2_scales, 0, 0);
   rnn2(output + hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim,
-       rnn2_params, rnn2_buffers, 1, 0);
+       rnn2_params, rnn2_buffers, rnn2_scales, 1, 0);
 
   // Vertical pass over each column with RNN1
   memset(buffer, 0, sizeof(MYINT) * hiddenDims1 * patchDim);
@@ -32,15 +33,15 @@ int q_rnnpool_block(const MYINT* const patch, MYITE inputDims, MYITE patchDim,
     for (MYITE r = 0; r < patchDim; ++r) {
       rnn1(buffer + c * hiddenDims1, hiddenDims1,
            patch + (stride * r + c) * inputDims, inputDims, 1, rnn1_params,
-           rnn1_buffers, 0, 0);
+           rnn1_buffers, rnn1_scales, 0, 0);
     }
   }
 
   // Bidirectional horizantal pass over the columns summaries
   rnn2(output + 2 * hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim,
-       rnn2_params, rnn2_buffers, 0, 0);
+       rnn2_params, rnn2_buffers, rnn2_scales, 0, 0);
   rnn2(output + 3 * hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim,
-       rnn2_params, rnn2_buffers, 1, 0);
+       rnn2_params, rnn2_buffers, rnn2_scales, 1, 0);
 
   return 0;
 }

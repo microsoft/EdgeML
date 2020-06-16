@@ -25,6 +25,9 @@
  * @var       Bh           pointer to bias for tanh
  * @var       sigmoid_zeta first weight parameter for update from input from next step
  * @var       sigmoid_nu   second weight parameter for update from input from next step
+ * @var       div          scale parameter for computing sigmoid activation
+ * @var       add          scale parameter for computing sigmoid activation
+ * @var       qOne         quantized value of 1, according to some pre-defined scale
  */
 typedef struct Q_FastGRNN_LR_Params {
   MYINT* mean;
@@ -39,41 +42,90 @@ typedef struct Q_FastGRNN_LR_Params {
   MYINT* Bh;
   MYINT sigmoid_zeta;
   MYINT sigmoid_nu;
+  MYINT div;
+  MYINT add;
+  MYINT qOne;
 } Q_FastGRNN_LR_Params;
 
+/**
+ * @brief Model scales for different inputs. The naming convention follows
+ * two basic rules:
+ * 1) If the matrix for which the scale is associated is used only once, name
+ * the scale after the matrix.
+ * 2) If the matrix for which the scale is associated is used only once, name
+ * the scale after the matrix, the operation it is being used under and the
+ * matrix it is being operated with.
+ */
 typedef struct Q_FastGRNN_LR_Param_Scales {
-  MYSCL* mean;
-  MYSCL* stdDev;
-  MYSCL* W1;
-  MYSCL* W2;
-  MYSCL* U1;
-  MYSCL* U2;
-  MYSCL* Bg;
-  MYSCL* Bh;
+  MYSCL input;
+  MYSCL mean;
+  MYSCL mean_sub;
+  MYSCL stdDev;
+  MYSCL normFeaturesHDStdDev;
+  MYSCL W1;
+  MYSCL normFeaturesMVW1;
+  MYSCL H1W1;
+  MYSCL H2W1;
+  MYSCL W2;
+  MYSCL tempLRW;
+  MYSCL H1W2;
+  MYSCL H2W2;
+  MYSCL U1;
+  MYSCL hiddenStateMVU1;
+  MYSCL H1U1;
+  MYSCL H2U1;
+  MYSCL U2;
+  MYSCL tempLRU;
+  MYSCL H1U2;
+  MYSCL H2U2;
+  MYSCL mV2AddMV4;
+  MYSCL mV4AddMV2;
+  MYSCL mV2AddMV4Out;
+  MYSCL pC1AddBg;
+  MYSCL Bg;
+  MYSCL pC1AddBgOut;
+  MYSCL sigmoid_limit;
+  MYSCL sigmoid_scale_in;
+  MYSCL sigmoid_scale_out;
+  MYSCL pC1AddBh;
+  MYSCL Bh;
+  MYSCL pC1AddBhOut;
+  MYSCL tanh_scale_in;
+  MYSCL tanh_scale_out;
+  MYSCL gateHDHiddenState;
+  MYSCL hiddenStateHDGate;
+  MYSCL qOne;
+  MYSCL qOneSubGate;
+  MYSCL qOneSubGateOut;
   MYSCL sigmoid_zeta;
+  MYSCL sigmoidZetaMulQOneSubGate;
   MYSCL sigmoid_nu;
-} Q_FastGRNN_LR_Param_Scales;
+  MYSCL sigmoidNuAddQOneSubGate;
+  MYSCL sigmoidNuAddQOneSubGateOut;
+  MYSCL sigmoidNuAddQOneSubGateHDUpdate;
+  MYSCL updateHDSigmoidNuAddQOneSubGate;
+  MYSCL pC3AddPC1;
+  MYSCL pC1AddPC3;
+  MYSCL hiddenStateOut;
+} Q_FastGRNN_LR_Scales;
 
 /**
 * @brief Buffers required for computation of low-rank FastGRNN
-* @var   preComp      pointer to buffer space, must be initalized to atleast hiddenDims size
+* @var   preComp1     pointer to buffer space, must be initalized to atleast hiddenDims size
+* @var   preComp2     pointer to buffer space, must be initalized to atleast hiddenDims size
+* @var   preComp3     pointer to buffer space, must be initalized to atleast hiddenDims size
 * @var   tempLRW      pointer to buffer space, must be initalized to atleast wRank size
 * @var   tempLRU      pointer to buffer space, must be initalized to atleast uRank size
 * @var   normFeatures pointer to buffer space, must be initalized to atleast inputDims size
 */
 typedef struct Q_FastGRNN_LR_Buffers {
-  MYINT* preComp;
+  MYINT* preComp1;
+  MYINT* preComp2;
+  MYINT* preComp3;
   MYINT* tempLRW;
   MYINT* tempLRU;
   MYINT* normFeatures;
 } Q_FastGRNN_LR_Buffers;
-
-typedef struct Q_FastGRNN_LR_Buffer_Scales {
-  MYSCL* preComp;
-  MYSCL* tempLRW;
-  MYSCL* tempLRU;
-  MYSCL* normFeatures;
-} Q_FastGRNN_LR_Buffer_Scales;
 
 /**
  * @brief Multi-step updates of a FastGRNN cell with low rank W, U(W=W1*W2; U=U1*U2)
@@ -84,17 +136,21 @@ typedef struct Q_FastGRNN_LR_Buffer_Scales {
  * @param[in]       steps        number of steps of FastGRNN cell
  * @param[in]       params       pointer to model parameter
  * @param[in]       buffers      pointer to buffer spaces
+ * @param[in]       scales       pointer to model scales
  * @param[in]       backward     direction of the pass, 0 for forward, 1 for backward
  * @param[in]       normalize    apply mean-var normalization, 0 for no, 1 for yes
  * @return     The function returns <code>0</code> on success
- *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp not allocated
+ *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp1 not allocated
+ *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp2 not allocated
+ *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp3 not allocated
  *             <code>ERR_TEMPLRW_NOT_INIT</code> if tempLRW not allocated
  *             <code>ERR_TEMPLRU_NOT_INIT</code> if tempLRU not allocated
  *             <code>ERR_NORMFEAT_NOT_INIT</code> if normFeatures not allocated
 */
 int q_fastgrnn_lr(MYINT* const hiddenState, MYITE hiddenDims,
                   const MYINT* const input, MYITE inputDims, MYITE steps,
-                  const void* params, void* buffers, int backward, int normalize);
+                  const void* params, void* buffers, const void* scales,
+                  int backward, int normalize);
 
 /**
  * @brief Model paramters for low-rank FastGRNN
@@ -106,6 +162,9 @@ int q_fastgrnn_lr(MYINT* const hiddenState, MYITE hiddenDims,
  * @var       Bh           pointer to bias for tanh
  * @var       sigmoid_zeta first weight parameter for update from input from next step
  * @var       sigmoid_nu   second weight parameter for update from input from next step
+ * @var       div          scale parameter for computing sigmoid activation
+ * @var       add          scale parameter for computing sigmoid activation
+ * @var       qOne         quantized value of 1, according to some pre-defined scale
  */
 typedef struct Q_FastGRNN_Params {
   MYINT* mean;
@@ -116,33 +175,78 @@ typedef struct Q_FastGRNN_Params {
   MYINT* Bh;
   MYINT sigmoid_zeta;
   MYINT sigmoid_nu;
+  MYINT div;
+  MYINT add;
+  MYINT qOne;
 } Q_FastGRNN_Params;
 
+/**
+ * @brief Model scales for different inputs. The naming convention follows
+ * two basic rules:
+ * 1) If the matrix for which the scale is associated is used only once, name
+ * the scale after the matrix.
+ * 2) If the matrix for which the scale is associated is used only once, name
+ * the scale after the matrix, the operation it is being used under and the
+ * matrix it is being operated with.
+ */
 typedef struct Q_FastGRNN_Param_Scales {
-  MYSCL* mean;
-  MYSCL* stdDev;
-  MYSCL* W;
-  MYSCL* U;
-  MYSCL* Bg;
-  MYSCL* Bh;
+  MYSCL input;
+  MYSCL mean;
+  MYSCL mean_sub;
+  MYSCL stdDev;
+  MYSCL normFeaturesHDStdDev;
+  MYSCL W;
+  MYSCL normFeaturesMVW;
+  MYSCL H1W;
+  MYSCL H2W;
+  MYSCL U;
+  MYSCL hiddenStateMVU;
+  MYSCL H1U;
+  MYSCL H2U;
+  MYSCL mV1AddMV2;
+  MYSCL mV2AddMV1;
+  MYSCL mV1AddMV2Out;
+  MYSCL pC1AddBg;
+  MYSCL Bg;
+  MYSCL pC1AddBgOut;
+  MYSCL sigmoid_limit;
+  MYSCL sigmoid_scale_in;
+  MYSCL sigmoid_scale_out;
+  MYSCL pC1AddBh;
+  MYSCL Bh;
+  MYSCL pC1AddBhOut;
+  MYSCL tanh_scale_in;
+  MYSCL tanh_scale_out;
+  MYSCL gateHDHiddenState;
+  MYSCL hiddenStateHDGate;
+  MYSCL qOne;
+  MYSCL qOneSubGate;
+  MYSCL qOneSubGateOut;
   MYSCL sigmoid_zeta;
+  MYSCL sigmoidZetaMulQOneSubGate;
   MYSCL sigmoid_nu;
-} Q_FastGRNN_Param_Scales;
+  MYSCL sigmoidNuAddQOneSubGate;
+  MYSCL sigmoidNuAddQOneSubGateOut;
+  MYSCL sigmoidNuAddQOneSubGateHDUpdate;
+  MYSCL updateHDSigmoidNuAddQOneSubGate;
+  MYSCL pC3AddPC1;
+  MYSCL pC1AddPC3;
+  MYSCL hiddenStateOut;
+} Q_FastGRNN_Scales;
 
 /**
 * @brief Buffers required for computation of FastGRNN
-* @var   preComp      pointer to buffer space, must be initalized to atleast hiddenDims size
+* @var   preComp1     pointer to buffer space, must be initalized to atleast hiddenDims size
+* @var   preComp2     pointer to buffer space, must be initalized to atleast hiddenDims size
+* @var   preComp3     pointer to buffer space, must be initalized to atleast hiddenDims size
 * @var   normFeatures pointer to buffer space, must be initalized to atleast inputDims size
 */
 typedef struct Q_FastGRNN_Buffers {
-  MYINT* preComp;
+  MYINT* preComp1;
+  MYINT* preComp2;
+  MYINT* preComp3;
   MYINT* normFeatures;
 } Q_FastGRNN_Buffers;
-
-typedef struct Q_FastGRNN_Buffer_Scales {
-  MYSCL* preComp;
-  MYSCL* normFeatures;
-} Q_FastGRNN_Buffer_Scales;
 
 /**
  * @brief Multi-step updates of a FastGRNN cell
@@ -153,14 +257,18 @@ typedef struct Q_FastGRNN_Buffer_Scales {
  * @param[in]       steps        number of steps of FastGRNN cell
  * @param[in]       params       pointer to model parameter
  * @param[in]       buffers      pointer to buffer spaces
+ * @param[in]       scales       pointer to model scales
  * @param[in]       backward     direction of the pass, 0 for forward, 1 for backward
  * @param[in]       normalize    apply mean-var normalization, 0 for no, 1 for yes
  * @return     The function returns <code>0</code> on success
- *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp not allocated
+ *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp1 not allocated
+ *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp2 not allocated
+ *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp3 not allocated
  *             <code>ERR_NORMFEAT_NOT_INIT</code> if normFeatures not allocated
 */
 int q_fastgrnn(MYINT* const hiddenState, MYITE hiddenDims,
                const MYINT* const input, MYITE inputDims, MYITE steps,
-               const void* params, void* buffers, int backward, int normalize);
+               const void* params, void* buffers, const void* scales,
+               int backward, int normalize);
 
 #endif
