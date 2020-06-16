@@ -1,30 +1,19 @@
-## This code is built on https://github.com/yxlijun/S3FD.pytorch
-#-*- coding:utf-8 -*-
-
-from __future__ import division
-from __future__ import absolute_import
-from __future__ import print_function
-
+from data import *
+from layers.modules import MultiBoxLoss
 import os
 import time
 import torch
-import argparse
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.init as init
 import torch.utils.data as data
 import numpy as np
-from torch.autograd import Variable
+import argparse
 import torch.backends.cudnn as cudnn
 
 from data.choose_config import cfg
 cfg = cfg.cfg
-
-# import pdb; pdb.set_trace()
 from importlib import import_module
-
-from layers.modules import MultiBoxLoss
-from data.factory import dataset_factory, detection_collate
 
 
 def str2bool(v):
@@ -97,7 +86,8 @@ if not os.path.exists(args.save_folder):
     os.makedirs(args.save_folder)
 
 
-train_dataset, val_dataset = dataset_factory(args.dataset)
+train_dataset = WIDERDetection(cfg.FACE.TRAIN_FILE, mode='train', mono_mode=cfg.IS_MONOCHROME)
+val_dataset = WIDERDetection(cfg.FACE.VAL_FILE, mode='val', mono_mode=cfg.IS_MONOCHROME)
 
 train_loader = data.DataLoader(train_dataset, args.batch_size,
                                num_workers=args.num_workers,
@@ -151,12 +141,12 @@ def train():
             adjust_learning_rate(optimizer, epoch, batch_idx, train_loader_len)
 
             if args.cuda:
-                images = Variable(images.cuda())
-                targets = [Variable(ann.cuda())
+                images = images.cuda()
+                targets = [ann.cuda()
                            for ann in targets]
             else:
-                images = Variable(images)
-                targets = [Variable(ann) for ann in targets]
+                images = images
+                targets = [ann for ann in targets]
 
               
             t0 = time.time()
@@ -200,12 +190,12 @@ def val(epoch):
     with torch.no_grad():
         for batch_idx, (images, targets) in enumerate(val_loader):
             if args.cuda:
-                images = Variable(images.cuda())
-                targets = [Variable(ann.cuda())
+                images = images.cuda()
+                targets = [ann.cuda()
                            for ann in targets]
             else:
-                images = Variable(images)
-                targets = [Variable(ann) for ann in targets]
+                images = images
+                targets = [ann for ann in targets]
 
             out = net(images)
             loss_l, loss_c = criterion(out, targets)

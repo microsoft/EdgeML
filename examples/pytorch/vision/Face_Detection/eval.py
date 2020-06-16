@@ -1,21 +1,15 @@
-#-*- coding:utf-8 -*-
-
-from __future__ import division
-from __future__ import absolute_import
-from __future__ import print_function
-
-import os
 import torch
-import argparse
 import torch.nn as nn
 import torch.utils.data as data
 import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
 
-import cv2
+import os
 import time
+import argparse
 import numpy as np
-from PIL import Image, ImageFilter
+from PIL import Image
+import cv2
 
 from data.choose_config import cfg
 cfg = cfg.cfg
@@ -30,7 +24,6 @@ parser.add_argument('--save_dir', type=str, default='results/',
                     help='Directory for detect result')
 parser.add_argument('--model', type=str,
                     default='weights/rpool_face_c.pth', help='trained model')
-                    #small_fgrnn_smallram_sd.pth', help='trained model')
 parser.add_argument('--thresh', default=0.17, type=float,
                     help='Final confidence threshold')
 parser.add_argument('--model_arch',
@@ -54,14 +47,8 @@ else:
 
 
 def detect(net, img_path, thresh):
-    #img = cv2.imread(img_path, cv2.IMREAD_COLOR)
     img = Image.open(img_path)
-    
-    #if img.mode == 'L':
     img = img.convert('RGB')
-
-    # img = img.filter(ImageFilter.UnsharpMask(radius=2, percent=150, threshold=3))
-
     img = np.array(img)
     height, width, _ = img.shape
 
@@ -80,7 +67,6 @@ def detect(net, img_path, thresh):
     x -= cfg.img_mean
     x = x[[2, 1, 0], :, :]
 
-    # import pdb;pdb.set_trace()
 
     if cfg.IS_MONOCHROME == True:
         x = 0.299 * x[0] + 0.587 * x[1] + 0.114 * x[2]
@@ -130,8 +116,6 @@ if __name__ == '__main__':
 
     model_dict.update(checkpoint_dict) 
     net.load_state_dict(model_dict)
-
-
 
     net.eval()
 

@@ -1,13 +1,6 @@
-## This code is built on https://github.com/yxlijun/S3FD.pytorch
-#-*- coding:utf-8 -*-
-
-from __future__ import division
-from __future__ import absolute_import
-from __future__ import print_function
-
 import os
-import torch
 import argparse
+import torch
 import torch.nn as nn
 import torch.utils.data as data
 import torch.backends.cudnn as cudnn
@@ -94,19 +87,6 @@ def detect_face(net, img, shrink):
     return det
 
 
-def flip_test(net, image, shrink):
-    image_f = cv2.flip(image, 1)
-    det_f = detect_face(net, image_f, shrink)
-
-    det_t = np.zeros(det_f.shape)
-    det_t[:, 0] = image.shape[1] - det_f[:, 2]
-    det_t[:, 1] = det_f[:, 1]
-    det_t[:, 2] = image.shape[1] - det_f[:, 0]
-    det_t[:, 3] = det_f[:, 3]
-    det_t[:, 4] = det_f[:, 4]
-    return det_t
-
-
 def multi_scale_test(net, image, max_im_shrink):
     # shrink detecting and shrink only detect big face
     st = 0.5 if max_im_shrink >= 0.75 else 0.5 * max_im_shrink
@@ -139,6 +119,19 @@ def multi_scale_test(net, image, max_im_shrink):
         det_b = det_b[index, :]
 
     return det_s, det_b
+
+
+def flip_test(net, image, shrink):
+    image_f = cv2.flip(image, 1)
+    det_f = detect_face(net, image_f, shrink)
+
+    det_t = np.zeros(det_f.shape)
+    det_t[:, 0] = image.shape[1] - det_f[:, 2]
+    det_t[:, 1] = det_f[:, 1]
+    det_t[:, 2] = image.shape[1] - det_f[:, 0]
+    det_t[:, 3] = det_f[:, 3]
+    det_t[:, 4] = det_f[:, 4]
+    return det_t
 
 
 def bbox_vote(det):

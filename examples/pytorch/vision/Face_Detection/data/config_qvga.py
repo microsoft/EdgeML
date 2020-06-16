@@ -1,9 +1,3 @@
-#-*- coding:utf-8 -*-
-
-from __future__ import division
-from __future__ import absolute_import
-from __future__ import print_function
-
 import os
 from easydict import EasyDict
 import numpy as np
@@ -34,11 +28,7 @@ _C.scale = 1 / 127.0
 _C.anchor_sampling = True
 _C.filter_min_face = True
 
-# train config
-#_C.LR_STEPS = (120, 198, 250)
-_C.MAX_STEPS = 200000
-_C.LR_STEPS = (80000,100000,120000)
-_C.EPOCHES = 900
+
 _C.IS_MONOCHROME = True
 
 # anchor config

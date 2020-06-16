@@ -1,11 +1,3 @@
-## This code is built on https://github.com/yxlijun/S3FD.pytorch
-#-*- coding:utf-8 -*-
-
-from __future__ import division
-from __future__ import absolute_import
-from __future__ import print_function
-
-
 import torch
 
 
@@ -97,7 +89,6 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx):
         truths,
         point_form(priors)
     )
-    #import pdb; pdb.set_trace()
     # (Bipartite Matching)
     # [1,num_objects] best prior for each ground truth
     best_prior_overlap, best_prior_idx = overlaps.max(1, keepdim=True)
