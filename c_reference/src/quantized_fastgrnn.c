@@ -25,11 +25,11 @@ int q_fastgrnn_lr(MYINT* const hiddenState, MYITE hiddenDims,
     if (normalize) {
       // This diverges from the original implementation because of
       // impracticality of scaled addition beyond 0, 1, and -1 multipliers
-      v_q_sub(input + offset * inputDims, tparams->mean + t * inputDims,
+      v_q_sub(input + offset * inputDims, tparams->mean + offset * inputDims,
               inputDims, tbuffers->normFeatures, tscales->input,
-              tscales->mean, tscales->mean_sub);
+              tscales->mean, tscales->meanSub);
       // Assuming the stdDev values are stored in inverse form
-      v_q_hadamard(tparams->stdDev + t * inputDims, tbuffers->normFeatures,
+      v_q_hadamard(tparams->stdDev + offset * inputDims, tbuffers->normFeatures,
                    inputDims, tbuffers->normFeatures, tscales->stdDev,
                    tscales->normFeaturesHDStdDev);
     }
@@ -58,23 +58,23 @@ int q_fastgrnn_lr(MYINT* const hiddenState, MYITE hiddenDims,
     // Apply the gate to generate the new hidden state
     v_q_add(tbuffers->preComp1, tparams->Bg, hiddenDims, tbuffers->preComp2,
             tscales->pC1AddBg, tscales->Bg, tscales->pC1AddBgOut);
-    v_q_sigmoid(tbuffers->preComp2, hiddenDims, tbuffers->preComp2, tparams->div,
-                tparams->add, tscales->sigmoid_limit, tscales->sigmoid_scale_in,
-                tscales->sigmoid_scale_out);
+    v_q_sigmoid(tbuffers->preComp2, hiddenDims, tbuffers->preComp2, tscales->div,
+                tscales->add, tscales->sigmoidLimit, tscales->sigmoidScaleIn,
+                tscales->sigmoidScaleOut);
     v_q_add(tbuffers->preComp1, tparams->Bh, hiddenDims, tbuffers->preComp1,
             tscales->pC1AddBh, tscales->Bh, tscales->pC1AddBhOut);
     v_q_tanh(tbuffers->preComp1, hiddenDims, tbuffers->preComp1,
-             tscales->tanh_scale_in, tscales->tanh_scale_out);
+             tscales->tanhScaleIn, tscales->tanhScaleOut);
     v_q_hadamard(tbuffers->preComp2, hiddenState, hiddenDims, tbuffers->preComp3,
                  tscales->gateHDHiddenState, tscales->hiddenStateHDGate);
-    v_q_scalar_sub(tparams->qOne, tbuffers->preComp2, hiddenDims,
-                   tbuffers->preComp2, tscales->qOne, tscales->qOneSubGate,
+    v_q_scalar_sub(tscales->qOne, tbuffers->preComp2, hiddenDims,
+                   tbuffers->preComp2, tscales->qOneScale, tscales->qOneSubGate,
                    tscales->qOneSubGateOut);
     v_q_scalar_mul(tparams->sigmoid_zeta, tbuffers->preComp2, hiddenDims,
-                   tbuffers->preComp2, tscales->sigmoid_zeta,
+                   tbuffers->preComp2, tscales->sigmoidZeta,
                    tscales->sigmoidZetaMulQOneSubGate);
     v_q_scalar_add(tparams->sigmoid_nu, tbuffers->preComp2, hiddenDims,
-                   tbuffers->preComp2, tscales->sigmoid_nu,
+                   tbuffers->preComp2, tscales->sigmoidNu,
                    tscales->sigmoidNuAddQOneSubGate,
                    tscales->sigmoidNuAddQOneSubGateOut);
     v_q_hadamard(tbuffers->preComp2, tbuffers->preComp1, hiddenDims,
@@ -106,11 +106,11 @@ int q_fastgrnn(MYINT* const hiddenState, MYITE hiddenDims,
     if (normalize) {
       // This diverges from the original implementation because of
       // impracticality of scaled addition beyond 0, 1, and -1 multipliers
-      v_q_sub(input + offset * inputDims, tparams->mean + t * inputDims,
+      v_q_sub(input + offset * inputDims, tparams->mean + offset * inputDims,
               inputDims, tbuffers->normFeatures, tscales->input,
-              tscales->mean, tscales->mean_sub);
+              tscales->mean, tscales->meanSub);
       // Assuming stdDev values are stored in inverse form
-      v_q_hadamard(tparams->stdDev + t * inputDims, tbuffers->normFeatures,
+      v_q_hadamard(tparams->stdDev + offset * inputDims, tbuffers->normFeatures,
                    inputDims, tbuffers->normFeatures, tscales->stdDev,
                    tscales->normFeaturesHDStdDev);
     }
@@ -133,23 +133,23 @@ int q_fastgrnn(MYINT* const hiddenState, MYITE hiddenDims,
     // Apply the gate to generate the new hidden state
     v_q_add(tbuffers->preComp1, tparams->Bg, hiddenDims, tbuffers->preComp2,
             tscales->pC1AddBg, tscales->Bg, tscales->pC1AddBgOut);
-    v_q_sigmoid(tbuffers->preComp2, hiddenDims, tbuffers->preComp2, tparams->div,
-                tparams->add, tscales->sigmoid_limit, tscales->sigmoid_scale_in,
-                tscales->sigmoid_scale_out);
+    v_q_sigmoid(tbuffers->preComp2, hiddenDims, tbuffers->preComp2, tscales->div,
+                tscales->add, tscales->sigmoidLimit, tscales->sigmoidScaleIn,
+                tscales->sigmoidScaleOut);
     v_q_add(tbuffers->preComp1, tparams->Bh, hiddenDims, tbuffers->preComp1,
             tscales->pC1AddBh, tscales->Bh, tscales->pC1AddBhOut);
     v_q_tanh(tbuffers->preComp1, hiddenDims, tbuffers->preComp1,
-             tscales->tanh_scale_in, tscales->tanh_scale_out);
+             tscales->tanhScaleIn, tscales->tanhScaleOut);
     v_q_hadamard(tbuffers->preComp2, hiddenState, hiddenDims, tbuffers->preComp3,
                  tscales->gateHDHiddenState, tscales->hiddenStateHDGate);
-    v_q_scalar_sub(tparams->qOne, tbuffers->preComp2, hiddenDims,
-                   tbuffers->preComp2, tscales->qOne, tscales->qOneSubGate,
+    v_q_scalar_sub(tscales->qOne, tbuffers->preComp2, hiddenDims,
+                   tbuffers->preComp2, tscales->qOneScale, tscales->qOneSubGate,
                    tscales->qOneSubGateOut);
     v_q_scalar_mul(tparams->sigmoid_zeta, tbuffers->preComp2, hiddenDims,
-                   tbuffers->preComp2, tscales->sigmoid_zeta,
+                   tbuffers->preComp2, tscales->sigmoidZeta,
                    tscales->sigmoidZetaMulQOneSubGate);
     v_q_scalar_add(tparams->sigmoid_nu, tbuffers->preComp2, hiddenDims,
-                   tbuffers->preComp2, tscales->sigmoid_nu,
+                   tbuffers->preComp2, tscales->sigmoidNu,
                    tscales->sigmoidNuAddQOneSubGate,
                    tscales->sigmoidNuAddQOneSubGateOut);
     v_q_hadamard(tbuffers->preComp2, tbuffers->preComp1, hiddenDims,

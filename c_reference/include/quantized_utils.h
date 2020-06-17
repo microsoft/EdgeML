@@ -5,35 +5,35 @@
 #define __QUANTIZED_UTILS_H__
 
 #include <math.h>
-#include <stdint.h>
+#include "quantized_datatypes.h"
 
-// Macro for scale variable type.
-#ifdef SHIFT
-  #define MYSCL int16_t
-#else
-  #define MYSCL int32_t
-#endif
-
-// Macro for input type.
-#define MYINT int16_t
-// Macro for iterator type.
-#define MYITE uint16_t
-// Macro for intermediate buffer type.
-#define MYINM int32_t
-
-// Functions for input type relational comparison.
-MYINT min(MYINT a, MYINT b);
-MYINT max(MYINT a, MYINT b);
+// Function for saturating the input to the required format.
+// This function isn't used currently because of SeeDot generated scales
+// ensuring the overflows aren't a possibility.
+inline MYINT saturate(MYINM inp) {
+    if (inp > MYINTMAX){
+        return (MYINT)MYINTMAX;
+    } else if (inp < MYINTMIN) {
+        return (MYINT)MYINTMIN;
+    } else {
+        return (MYINT)inp;
+    }
+}
 
 // Functions for calculating quantized operations and activations.
+// Function for computing the element-wise addition between two vectors.
 void v_q_add(const MYINT* const vec1, const MYINT* const vec2, MYITE len,
              MYINT* const ret, MYSCL scvec1, MYSCL scvec2, MYSCL scret);
+// Function for computing the element-wise difference between two vectors.
 void v_q_sub(const MYINT* const vec1, const MYINT* const vec2, MYITE len,
              MYINT* const ret, MYSCL scvec1, MYSCL scvec2, MYSCL scret);
+// Function for computing the Hadamard product between two vectors.
 void v_q_hadamard(const MYINT* const vec1, const MYINT* const vec2, MYITE len,
                   MYINT* const ret, MYSCL scvec1, MYSCL scvec2);
+// Function for computing the Sigmoid activation on the input vector.
 void v_q_sigmoid(const MYINT* const vec, MYITE len, MYINT* const ret, MYINT div, MYINT add,
                  MYINT sigmoid_limit, MYSCL scale_in, MYSCL scale_out);
+// Function for computing the TanHyperbolic activation on the input vector.
 void v_q_tanh(const MYINT* const vec, MYITE len, MYINT* const ret,
               MYSCL scale_in, MYSCL scale_out);
 // Function for adding a scalar to every element of a vector.
@@ -50,5 +50,4 @@ void v_q_scalar_mul(MYINT scalar, const MYINT* const vec, MYITE len,
 void m_q_mulvec(const MYINT* const mat, const MYINT* const vec, MYITE nrows,
                 MYITE ncols, MYINT* const ret, MYSCL scmat, MYSCL scvec,
                 MYITE H1, MYITE H2);
-
 #endif

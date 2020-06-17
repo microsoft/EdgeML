@@ -4,9 +4,9 @@
 #ifndef __QUANTIZED_RNNPOOL_H__
 #define __QUANTIZED_RNNPOOL_H__
 
-#include "quantized_utils.h"
+#include "quantized_datatypes.h"
 
-typedef int (*rnn_t)(MYINT* const, MYITE, const MYINT* const, MYITE, MYITE, const void*, void*, const void*, int, int);
+typedef int (*q_rnn_t)(MYINT* const, MYITE, const MYINT* const, MYITE, MYITE, const void*, void*, const void*, int, int);
 
 /**
  * @param[in]        patch          pointer to activation of patch (row, col, channel)
@@ -27,11 +27,11 @@ typedef int (*rnn_t)(MYINT* const, MYITE, const MYINT* const, MYITE, MYITE, cons
  * @param[in,out]    buffer         pointer to buffer, intialized to size hiddenDims1 * max{nrows, cols}
  */
 int q_rnnpool_block(const MYINT* const patch, MYITE inputDims, MYITE patchDim,
-					MYITE stride, rnn_t rnn1, MYITE hiddenDims1,
-					const void* rnn1_params, void* rnn1_buffers,
-					const void* rnn1_scales, rnn_t rnn2,
-					MYITE hiddenDims2, const void* rnn2_params,
-					void* rnn2_buffers, const void* rnn2_scales,
-					MYINT* const output, MYINT* const buffer);
+                    MYITE stride, q_rnn_t rnn1, MYITE hiddenDims1,
+                    const void* rnn1_params, void* rnn1_buffers,
+                    const void* rnn1_scales, q_rnn_t rnn2,
+                    MYITE hiddenDims2, const void* rnn2_params,
+                    void* rnn2_buffers, const void* rnn2_scales,
+                    MYINT* const output, MYINT* const buffer);
 
 #endif

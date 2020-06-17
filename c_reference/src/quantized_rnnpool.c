@@ -5,9 +5,9 @@
 #include "quantized_rnnpool.h"
 
 int q_rnnpool_block(const MYINT* const patch, MYITE inputDims, MYITE patchDim,
-                    MYITE stride, rnn_t rnn1, MYITE hiddenDims1,
+                    MYITE stride, q_rnn_t rnn1, MYITE hiddenDims1,
                     const void* rnn1_params, void* rnn1_buffers,
-                    const void* rnn1_scales, rnn_t rnn2,
+                    const void* rnn1_scales, q_rnn_t rnn2,
                     MYITE hiddenDims2, const void* rnn2_params,
                     void* rnn2_buffers, const void* rnn2_scales,
                     MYINT* const output, MYINT* const buffer) {
@@ -21,7 +21,7 @@ int q_rnnpool_block(const MYINT* const patch, MYITE inputDims, MYITE patchDim,
          inputDims, patchDim, rnn1_params, rnn1_buffers, rnn1_scales, 0, 0);
   }
 
-  // Bidirectional vertical pass over the row summaries
+  // Bi-directional vertical pass over the row summaries
   rnn2(output, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params,
        rnn2_buffers, rnn2_scales, 0, 0);
   rnn2(output + hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim,
@@ -37,7 +37,7 @@ int q_rnnpool_block(const MYINT* const patch, MYITE inputDims, MYITE patchDim,
     }
   }
 
-  // Bidirectional horizantal pass over the columns summaries
+  // Bi-directional horizontal pass over the columns summaries
   rnn2(output + 2 * hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim,
        rnn2_params, rnn2_buffers, rnn2_scales, 0, 0);
   rnn2(output + 3 * hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim,

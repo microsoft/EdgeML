@@ -25,9 +25,6 @@
  * @var       Bh           pointer to bias for tanh
  * @var       sigmoid_zeta first weight parameter for update from input from next step
  * @var       sigmoid_nu   second weight parameter for update from input from next step
- * @var       div          scale parameter for computing sigmoid activation
- * @var       add          scale parameter for computing sigmoid activation
- * @var       qOne         quantized value of 1, according to some pre-defined scale
  */
 typedef struct Q_FastGRNN_LR_Params {
   MYINT* mean;
@@ -42,9 +39,6 @@ typedef struct Q_FastGRNN_LR_Params {
   MYINT* Bh;
   MYINT sigmoid_zeta;
   MYINT sigmoid_nu;
-  MYINT div;
-  MYINT add;
-  MYINT qOne;
 } Q_FastGRNN_LR_Params;
 
 /**
@@ -56,10 +50,10 @@ typedef struct Q_FastGRNN_LR_Params {
  * the scale after the matrix, the operation it is being used under and the
  * matrix it is being operated with.
  */
-typedef struct Q_FastGRNN_LR_Param_Scales {
+typedef struct Q_FastGRNN_LR_Scales {
   MYSCL input;
   MYSCL mean;
-  MYSCL mean_sub;
+  MYSCL meanSub;
   MYSCL stdDev;
   MYSCL normFeaturesHDStdDev;
   MYSCL W1;
@@ -84,22 +78,21 @@ typedef struct Q_FastGRNN_LR_Param_Scales {
   MYSCL pC1AddBg;
   MYSCL Bg;
   MYSCL pC1AddBgOut;
-  MYSCL sigmoid_limit;
-  MYSCL sigmoid_scale_in;
-  MYSCL sigmoid_scale_out;
+  MYSCL sigmoidScaleIn;
+  MYSCL sigmoidScaleOut;
   MYSCL pC1AddBh;
   MYSCL Bh;
   MYSCL pC1AddBhOut;
-  MYSCL tanh_scale_in;
-  MYSCL tanh_scale_out;
+  MYSCL tanhScaleIn;
+  MYSCL tanhScaleOut;
   MYSCL gateHDHiddenState;
   MYSCL hiddenStateHDGate;
-  MYSCL qOne;
+  MYSCL qOneScale;
   MYSCL qOneSubGate;
   MYSCL qOneSubGateOut;
-  MYSCL sigmoid_zeta;
+  MYSCL sigmoidZeta;
   MYSCL sigmoidZetaMulQOneSubGate;
-  MYSCL sigmoid_nu;
+  MYSCL sigmoidNu;
   MYSCL sigmoidNuAddQOneSubGate;
   MYSCL sigmoidNuAddQOneSubGateOut;
   MYSCL sigmoidNuAddQOneSubGateHDUpdate;
@@ -107,6 +100,10 @@ typedef struct Q_FastGRNN_LR_Param_Scales {
   MYSCL pC3AddPC1;
   MYSCL pC1AddPC3;
   MYSCL hiddenStateOut;
+  MYINT sigmoidLimit;
+  MYINT div;
+  MYINT add;
+  MYINT qOne;
 } Q_FastGRNN_LR_Scales;
 
 /**
@@ -162,9 +159,6 @@ int q_fastgrnn_lr(MYINT* const hiddenState, MYITE hiddenDims,
  * @var       Bh           pointer to bias for tanh
  * @var       sigmoid_zeta first weight parameter for update from input from next step
  * @var       sigmoid_nu   second weight parameter for update from input from next step
- * @var       div          scale parameter for computing sigmoid activation
- * @var       add          scale parameter for computing sigmoid activation
- * @var       qOne         quantized value of 1, according to some pre-defined scale
  */
 typedef struct Q_FastGRNN_Params {
   MYINT* mean;
@@ -175,9 +169,6 @@ typedef struct Q_FastGRNN_Params {
   MYINT* Bh;
   MYINT sigmoid_zeta;
   MYINT sigmoid_nu;
-  MYINT div;
-  MYINT add;
-  MYINT qOne;
 } Q_FastGRNN_Params;
 
 /**
@@ -189,10 +180,10 @@ typedef struct Q_FastGRNN_Params {
  * the scale after the matrix, the operation it is being used under and the
  * matrix it is being operated with.
  */
-typedef struct Q_FastGRNN_Param_Scales {
+typedef struct Q_FastGRNN_Scales {
   MYSCL input;
   MYSCL mean;
-  MYSCL mean_sub;
+  MYSCL meanSub;
   MYSCL stdDev;
   MYSCL normFeaturesHDStdDev;
   MYSCL W;
@@ -209,22 +200,21 @@ typedef struct Q_FastGRNN_Param_Scales {
   MYSCL pC1AddBg;
   MYSCL Bg;
   MYSCL pC1AddBgOut;
-  MYSCL sigmoid_limit;
-  MYSCL sigmoid_scale_in;
-  MYSCL sigmoid_scale_out;
+  MYSCL sigmoidScaleIn;
+  MYSCL sigmoidScaleOut;
   MYSCL pC1AddBh;
   MYSCL Bh;
   MYSCL pC1AddBhOut;
-  MYSCL tanh_scale_in;
-  MYSCL tanh_scale_out;
+  MYSCL tanhScaleIn;
+  MYSCL tanhScaleOut;
   MYSCL gateHDHiddenState;
   MYSCL hiddenStateHDGate;
-  MYSCL qOne;
+  MYSCL qOneScale;
   MYSCL qOneSubGate;
   MYSCL qOneSubGateOut;
-  MYSCL sigmoid_zeta;
+  MYSCL sigmoidZeta;
   MYSCL sigmoidZetaMulQOneSubGate;
-  MYSCL sigmoid_nu;
+  MYSCL sigmoidNu;
   MYSCL sigmoidNuAddQOneSubGate;
   MYSCL sigmoidNuAddQOneSubGateOut;
   MYSCL sigmoidNuAddQOneSubGateHDUpdate;
@@ -232,6 +222,10 @@ typedef struct Q_FastGRNN_Param_Scales {
   MYSCL pC3AddPC1;
   MYSCL pC1AddPC3;
   MYSCL hiddenStateOut;
+  MYINT div;
+  MYINT add;
+  MYINT sigmoidLimit;
+  MYINT qOne;
 } Q_FastGRNN_Scales;
 
 /**
