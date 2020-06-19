@@ -98,8 +98,13 @@ def detect_function(cfg, loc_data, conf_data, prior_data):
                 # output[i, cl, :count] = tf.compat.v1.concat( [tf.expand_dims( scores[ids[:count]], 1 ),
                 #                                               boxes_[ids[:count]]], 1 )
                 idx = ids[:count]
-                output_img.append( tf.compat.v1.concat( [tf.expand_dims( tf.compat.v1.gather( scores, idx ), 1 ),
-                                                         tf.compat.v1.gather( boxes_, idx, axis=0 )], 1 ) )
+                pad = cfg.TOP_K - count
+                pad_zeros = tf.compat.v1.zeros( [pad, 5] )
+                output_temp = tf.compat.v1.concat( [tf.expand_dims( tf.compat.v1.gather( scores, idx ), 1 ),
+                                                         tf.compat.v1.gather( boxes_, idx, axis=0 )], 1 )
+                output_img.append(tf.compat.v1.concat([output_temp,pad_zeros], 0))
+            # print(i)
+            # import pdb;pdb.set_trace()
             output.append( tf.compat.v1.stack(output_img) )
         output = tf.compat.v1.stack( output )
 
