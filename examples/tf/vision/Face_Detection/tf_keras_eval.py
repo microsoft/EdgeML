@@ -96,7 +96,7 @@ def detect(sess, detectOp, img_path, thresh, debugPrint):
     #     x = x.cuda()
     t1 = time.time()
     y, xxx = sess.run( [detectOp, debugPrint], feed_dict={inputs_placeholder: x} )
-    import pdb;pdb.set_trace()
+    
     # print( np.shape(xxx) )  # DEBUG
     # print( xxx.flatten() )  # DEBUG
 
