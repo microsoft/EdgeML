@@ -9,9 +9,10 @@
 #include "quantized_fastgrnn.h"
 #include "quantized_rnnpool.h"
 
-#include "q_wider_faces_model/rnn1.h"
-#include "q_wider_faces_model/rnn2.h"
+#include "q_wider_regression_model/rnn1.h"
+#include "q_wider_regression_model/rnn2.h"
 
+// Comparator function for sorting floats.
 int compare_floats(const void *a, const void *b) {
   const float *da = (const float *) a;
   const float *db = (const float *) b;
@@ -19,6 +20,8 @@ int compare_floats(const void *a, const void *b) {
   return (*da > *db) - (*da < *db);
 }
 
+// Function for computing the deviation from the expected floating point
+// result and returning the largest such deviation found.
 float compute_error(MYINT pred[4 * HIDDEN_DIM2], float label[4 * HIDDEN_DIM2],
                    float* const errors, MYSCL scl) {
   float epsilon = 0.01;
@@ -34,12 +37,17 @@ float compute_error(MYINT pred[4 * HIDDEN_DIM2], float label[4 * HIDDEN_DIM2],
   return agg_diff;
 }
 
+// Function for computing the 95th percentile deviation among all the outputs.
 float aggregate_error(float* errors, unsigned len) {
   qsort(errors, len, sizeof(float), compare_floats);
   unsigned index = round(fmax((0.95 * len - 1), 0));
   return errors[index];
 }
 
+/** Run this test using the following command:
+ * $: ./test_quantized_rnnpool <num_patches> <input.npy> <output.npy>
+ *    <expected_output.npy> <log.txt>
+ */
 int main(int argc, char **argv) {
   unsigned patches;
   int XScale = 12, YScale = 14;
@@ -47,7 +55,7 @@ int main(int argc, char **argv) {
   FILE *xFile, *yFile, *floatResFile, *outputLog;
 
   if (argc != 6) {
-    printf("Improper Number of Arguments Provided!");
+    printf("Improper Number of Arguments Provided!\n");
     return -1;
   } else {
     patches = atoi(argv[1]);
@@ -58,19 +66,19 @@ int main(int argc, char **argv) {
   }
 
   if (xFile == NULL) {
-    printf("An error occured while opening the input file.");
+    printf("An error occured while opening the input file.\n");
     return -1;
   }
   if (yFile == NULL) {
-    printf("An error occured while opening the predicted output file.");
+    printf("An error occured while opening the predicted output file.\n");
     return -1;
   }
   if (floatResFile == NULL) {
-    printf("An error occured while opening the expected output file.");
+    printf("An error occured while opening the expected output file.\n");
     return -1;
   }
   if (outputLog == NULL) {
-    printf("An error occured while opening the output log file.");
+    printf("An error occured while opening the output log file.\n");
     return -1;
   }
 
@@ -181,98 +189,98 @@ int main(int argc, char **argv) {
 
   Q_FastGRNN_Scales rnn1_scales = {
     .input = input1,
-  	.mean = meanScale1,
+    .mean = meanScale1,
     .meanSub = meanSub1,
-  	.stdDev = stdDevScale1,
-  	.normFeaturesHDStdDev = normFeaturesHDStdDev1,
+    .stdDev = stdDevScale1,
+    .normFeaturesHDStdDev = normFeaturesHDStdDev1,
     .W = WScale1,
-  	.normFeaturesMVW = normFeaturesMVW1,
-  	.H1W = H1W1,
-  	.H2W = H2W1,
-  	.U = UScale1,
-  	.hiddenStateMVU = hiddenStateMVU1,
-  	.H1U = H1U1,
-  	.H2U = H2U1,
-  	.mV1AddMV2 = mV1AddMV21,
-  	.mV2AddMV1 = mV2AddMV11,
-  	.mV1AddMV2Out = mV1AddMV2Out1,
-  	.pC1AddBg = pC1AddBg1,
-  	.Bg = BgScale1,
-  	.pC1AddBgOut = pC1AddBgOut1,
-  	.sigmoidLimit = sigmoidLimit1,
-  	.sigmoidScaleIn = sigmoidScaleIn1,
-  	.sigmoidScaleOut = sigmoidScaleOut1,
-  	.pC1AddBh = pC1AddBh1,
-  	.Bh = BhScale1,
-  	.pC1AddBhOut = pC1AddBhOut1,
-  	.tanhScaleIn = tanhScaleIn1,
-  	.tanhScaleOut = tanhScaleOut1,
-  	.gateHDHiddenState = gateHDHiddenState1,
-  	.hiddenStateHDGate = hiddenStateHDGate1,
-  	.qOneScale = qOneScale1,
-  	.qOneSubGate = qOneSubGate1,
-  	.qOneSubGateOut = qOneSubGateOut1,
-  	.sigmoidZeta = sigmoidZetaScale1,
-  	.sigmoidZetaMulQOneSubGate = sigmoidZetaMulQOneSubGate1,
-  	.sigmoidNu = sigmoidNuScale1,
-  	.sigmoidNuAddQOneSubGate = sigmoidNuAddQOneSubGate1,
- 	  .sigmoidNuAddQOneSubGateOut = sigmoidNuAddQOneSubGateOut1,
-  	.sigmoidNuAddQOneSubGateHDUpdate = sigmoidNuAddQOneSubGateHDUpdate1,
-  	.updateHDSigmoidNuAddQOneSubGate = updateHDSigmoidNuAddQOneSubGate1,
-  	.pC3AddPC1 = pC3AddPC11,
-  	.pC1AddPC3 = pC1AddPC31,
-  	.hiddenStateOut = hiddenStateOut1,
-  	.div = div1,
-  	.add = add1,
-  	.qOne = qOne1
+    .normFeaturesMVW = normFeaturesMVW1,
+    .H1W = H1W1,
+    .H2W = H2W1,
+    .U = UScale1,
+    .hiddenStateMVU = hiddenStateMVU1,
+    .H1U = H1U1,
+    .H2U = H2U1,
+    .mV1AddMV2 = mV1AddMV21,
+    .mV2AddMV1 = mV2AddMV11,
+    .mV1AddMV2Out = mV1AddMV2Out1,
+    .pC1AddBg = pC1AddBg1,
+    .Bg = BgScale1,
+    .pC1AddBgOut = pC1AddBgOut1,
+    .sigmoidLimit = sigmoidLimit1,
+    .sigmoidScaleIn = sigmoidScaleIn1,
+    .sigmoidScaleOut = sigmoidScaleOut1,
+    .pC1AddBh = pC1AddBh1,
+    .Bh = BhScale1,
+    .pC1AddBhOut = pC1AddBhOut1,
+    .tanhScaleIn = tanhScaleIn1,
+    .tanhScaleOut = tanhScaleOut1,
+    .gateHDHiddenState = gateHDHiddenState1,
+    .hiddenStateHDGate = hiddenStateHDGate1,
+    .qOneScale = qOneScale1,
+    .qOneSubGate = qOneSubGate1,
+    .qOneSubGateOut = qOneSubGateOut1,
+    .sigmoidZeta = sigmoidZetaScale1,
+    .sigmoidZetaMulQOneSubGate = sigmoidZetaMulQOneSubGate1,
+    .sigmoidNu = sigmoidNuScale1,
+    .sigmoidNuAddQOneSubGate = sigmoidNuAddQOneSubGate1,
+    .sigmoidNuAddQOneSubGateOut = sigmoidNuAddQOneSubGateOut1,
+    .sigmoidNuAddQOneSubGateHDUpdate = sigmoidNuAddQOneSubGateHDUpdate1,
+    .updateHDSigmoidNuAddQOneSubGate = updateHDSigmoidNuAddQOneSubGate1,
+    .pC3AddPC1 = pC3AddPC11,
+    .pC1AddPC3 = pC1AddPC31,
+    .hiddenStateOut = hiddenStateOut1,
+    .div = div1,
+    .add = add1,
+    .qOne = qOne1
   };
 
   Q_FastGRNN_Scales rnn2_scales = {
     .input = input2,
-  	.mean = meanScale2,
-  	.meanSub = meanSub2,
-  	.stdDev = stdDevScale2,
-  	.normFeaturesHDStdDev = normFeaturesHDStdDev2,
- 	  .W = WScale2,
-  	.normFeaturesMVW = normFeaturesMVW2,
-  	.H1W = H1W2,
-  	.H2W = H2W2,
-  	.U = UScale2,
-  	.hiddenStateMVU = hiddenStateMVU2,
-  	.H1U = H1U2,
-  	.H2U = H2U2,
-  	.mV1AddMV2 = mV1AddMV22,
-  	.mV2AddMV1 = mV2AddMV12,
-  	.mV1AddMV2Out = mV1AddMV2Out2,
-  	.pC1AddBg = pC1AddBg2,
-  	.Bg = BgScale2,
-  	.pC1AddBgOut = pC1AddBgOut2,
-  	.sigmoidLimit = sigmoidLimit2,
-  	.sigmoidScaleIn = sigmoidScaleIn2,
-  	.sigmoidScaleOut = sigmoidScaleOut2,
-  	.pC1AddBh = pC1AddBh2,
-  	.Bh = BhScale2,
-  	.pC1AddBhOut = pC1AddBhOut2,
-  	.tanhScaleIn = tanhScaleIn2,
-  	.tanhScaleOut = tanhScaleOut2,
-  	.gateHDHiddenState = gateHDHiddenState2,
-  	.hiddenStateHDGate = hiddenStateHDGate2,
-  	.qOneScale = qOneScale2,
-  	.qOneSubGate = qOneSubGate2,
-  	.qOneSubGateOut = qOneSubGateOut2,
-  	.sigmoidZeta = sigmoidZetaScale2,
-  	.sigmoidZetaMulQOneSubGate = sigmoidZetaMulQOneSubGate2,
-  	.sigmoidNu = sigmoidNuScale2,
-  	.sigmoidNuAddQOneSubGate = sigmoidNuAddQOneSubGate2,
- 	  .sigmoidNuAddQOneSubGateOut = sigmoidNuAddQOneSubGateOut2,
-  	.sigmoidNuAddQOneSubGateHDUpdate = sigmoidNuAddQOneSubGateHDUpdate2,
-  	.updateHDSigmoidNuAddQOneSubGate = updateHDSigmoidNuAddQOneSubGate2,
-  	.pC3AddPC1 = pC3AddPC12,
-  	.pC1AddPC3 = pC1AddPC32,
-  	.hiddenStateOut = hiddenStateOut2,
-  	.div = div2,
-  	.add = add2,
-  	.qOne = qOne2
+    .mean = meanScale2,
+    .meanSub = meanSub2,
+    .stdDev = stdDevScale2,
+    .normFeaturesHDStdDev = normFeaturesHDStdDev2,
+    .W = WScale2,
+    .normFeaturesMVW = normFeaturesMVW2,
+    .H1W = H1W2,
+    .H2W = H2W2,
+    .U = UScale2,
+    .hiddenStateMVU = hiddenStateMVU2,
+    .H1U = H1U2,
+    .H2U = H2U2,
+    .mV1AddMV2 = mV1AddMV22,
+    .mV2AddMV1 = mV2AddMV12,
+    .mV1AddMV2Out = mV1AddMV2Out2,
+    .pC1AddBg = pC1AddBg2,
+    .Bg = BgScale2,
+    .pC1AddBgOut = pC1AddBgOut2,
+    .sigmoidLimit = sigmoidLimit2,
+    .sigmoidScaleIn = sigmoidScaleIn2,
+    .sigmoidScaleOut = sigmoidScaleOut2,
+    .pC1AddBh = pC1AddBh2,
+    .Bh = BhScale2,
+    .pC1AddBhOut = pC1AddBhOut2,
+    .tanhScaleIn = tanhScaleIn2,
+    .tanhScaleOut = tanhScaleOut2,
+    .gateHDHiddenState = gateHDHiddenState2,
+    .hiddenStateHDGate = hiddenStateHDGate2,
+    .qOneScale = qOneScale2,
+    .qOneSubGate = qOneSubGate2,
+    .qOneSubGateOut = qOneSubGateOut2,
+    .sigmoidZeta = sigmoidZetaScale2,
+    .sigmoidZetaMulQOneSubGate = sigmoidZetaMulQOneSubGate2,
+    .sigmoidNu = sigmoidNuScale2,
+    .sigmoidNuAddQOneSubGate = sigmoidNuAddQOneSubGate2,
+    .sigmoidNuAddQOneSubGateOut = sigmoidNuAddQOneSubGateOut2,
+    .sigmoidNuAddQOneSubGateHDUpdate = sigmoidNuAddQOneSubGateHDUpdate2,
+    .updateHDSigmoidNuAddQOneSubGate = updateHDSigmoidNuAddQOneSubGate2,
+    .pC3AddPC1 = pC3AddPC12,
+    .pC1AddPC3 = pC1AddPC32,
+    .hiddenStateOut = hiddenStateOut2,
+    .div = div2,
+    .add = add2,
+    .qOne = qOne2
   };
 
   MYINT output_test[4 * HIDDEN_DIM2];

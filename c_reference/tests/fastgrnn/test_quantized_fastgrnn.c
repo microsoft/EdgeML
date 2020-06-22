@@ -5,8 +5,10 @@
 #include <string.h>
 
 #include "quantized_fastgrnn.h"
-#include "../rnnpool/q_wider_faces_model/rnn1.h"
+#include "../rnnpool/q_wider_regression_model/rnn1.h"
 
+// Simple test for comparing Seedot's quantized FastGRNN output with our
+// implementation. All values generated from Seedot on Wider Regression dataset.
 int main() {
   Q_FastGRNN_Params rnn1_params = {
     .mean = NULL,
