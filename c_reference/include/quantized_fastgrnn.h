@@ -27,18 +27,18 @@
  * @var       sigmoid_nu   second weight parameter for update from input from next step
  */
 typedef struct Q_FastGRNN_LR_Params {
-  MYINT* mean;
-  MYINT* stdDev;
-  MYINT* W1; 
-  MYINT* W2;
-  MYITE wRank;
-  MYINT* U1;
-  MYINT* U2; 
-  MYITE uRank;
-  MYINT* Bg; 
-  MYINT* Bh;
-  MYINT sigmoid_zeta;
-  MYINT sigmoid_nu;
+  INT_T* mean;
+  INT_T* stdDev;
+  INT_T* W1;
+  INT_T* W2;
+  ITER_T wRank;
+  INT_T* U1;
+  INT_T* U2;
+  ITER_T uRank;
+  INT_T* Bg;
+  INT_T* Bh;
+  INT_T sigmoid_zeta;
+  INT_T sigmoid_nu;
 } Q_FastGRNN_LR_Params;
 
 /**
@@ -51,59 +51,59 @@ typedef struct Q_FastGRNN_LR_Params {
  * matrix it is being operated with.
  */
 typedef struct Q_FastGRNN_LR_Scales {
-  MYSCL input;
-  MYSCL mean;
-  MYSCL meanSub;
-  MYSCL stdDev;
-  MYSCL normFeaturesHDStdDev;
-  MYSCL W1;
-  MYSCL normFeaturesMVW1;
-  MYSCL H1W1;
-  MYSCL H2W1;
-  MYSCL W2;
-  MYSCL tempLRW;
-  MYSCL H1W2;
-  MYSCL H2W2;
-  MYSCL U1;
-  MYSCL hiddenStateMVU1;
-  MYSCL H1U1;
-  MYSCL H2U1;
-  MYSCL U2;
-  MYSCL tempLRU;
-  MYSCL H1U2;
-  MYSCL H2U2;
-  MYSCL mV2AddMV4;
-  MYSCL mV4AddMV2;
-  MYSCL mV2AddMV4Out;
-  MYSCL pC1AddBg;
-  MYSCL Bg;
-  MYSCL pC1AddBgOut;
-  MYSCL sigmoidScaleIn;
-  MYSCL sigmoidScaleOut;
-  MYSCL pC1AddBh;
-  MYSCL Bh;
-  MYSCL pC1AddBhOut;
-  MYSCL tanhScaleIn;
-  MYSCL tanhScaleOut;
-  MYSCL gateHDHiddenState;
-  MYSCL hiddenStateHDGate;
-  MYSCL qOneScale;
-  MYSCL qOneSubGate;
-  MYSCL qOneSubGateOut;
-  MYSCL sigmoidZeta;
-  MYSCL sigmoidZetaMulQOneSubGate;
-  MYSCL sigmoidNu;
-  MYSCL sigmoidNuAddQOneSubGate;
-  MYSCL sigmoidNuAddQOneSubGateOut;
-  MYSCL sigmoidNuAddQOneSubGateHDUpdate;
-  MYSCL updateHDSigmoidNuAddQOneSubGate;
-  MYSCL pC3AddPC1;
-  MYSCL pC1AddPC3;
-  MYSCL hiddenStateOut;
-  MYINT sigmoidLimit;
-  MYINT div;
-  MYINT add;
-  MYINT qOne;
+  SCALE_T input;
+  SCALE_T mean;
+  SCALE_T meanSub;
+  SCALE_T stdDev;
+  SCALE_T normFeaturesHDStdDev;
+  SCALE_T W1;
+  SCALE_T normFeaturesMVW1;
+  SCALE_T H1W1;
+  SCALE_T H2W1;
+  SCALE_T W2;
+  SCALE_T tempLRW;
+  SCALE_T H1W2;
+  SCALE_T H2W2;
+  SCALE_T U1;
+  SCALE_T hiddenStateMVU1;
+  SCALE_T H1U1;
+  SCALE_T H2U1;
+  SCALE_T U2;
+  SCALE_T tempLRU;
+  SCALE_T H1U2;
+  SCALE_T H2U2;
+  SCALE_T mV2AddMV4;
+  SCALE_T mV4AddMV2;
+  SCALE_T mV2AddMV4Out;
+  SCALE_T pC1AddBg;
+  SCALE_T Bg;
+  SCALE_T pC1AddBgOut;
+  SCALE_T sigmoidScaleIn;
+  SCALE_T sigmoidScaleOut;
+  SCALE_T pC1AddBh;
+  SCALE_T Bh;
+  SCALE_T pC1AddBhOut;
+  SCALE_T tanhScaleIn;
+  SCALE_T tanhScaleOut;
+  SCALE_T gateHDHiddenState;
+  SCALE_T hiddenStateHDGate;
+  SCALE_T qOneScale;
+  SCALE_T qOneSubGate;
+  SCALE_T qOneSubGateOut;
+  SCALE_T sigmoidZeta;
+  SCALE_T sigmoidZetaMulQOneSubGate;
+  SCALE_T sigmoidNu;
+  SCALE_T sigmoidNuAddQOneSubGate;
+  SCALE_T sigmoidNuAddQOneSubGateOut;
+  SCALE_T sigmoidNuAddQOneSubGateHDUpdate;
+  SCALE_T updateHDSigmoidNuAddQOneSubGate;
+  SCALE_T pC3AddPC1;
+  SCALE_T pC1AddPC3;
+  SCALE_T hiddenStateOut;
+  INT_T sigmoidLimit;
+  INT_T div;
+  INT_T add;
+  INT_T qOne;
 } Q_FastGRNN_LR_Scales;
 
 /**
@@ -116,12 +116,12 @@ typedef struct Q_FastGRNN_LR_Scales {
 * @var   normFeatures pointer to buffer space, must be initalized to atleast inputDims size
 */
 typedef struct Q_FastGRNN_LR_Buffers {
-  MYINT* preComp1;
-  MYINT* preComp2;
-  MYINT* preComp3;
-  MYINT* tempLRW;
-  MYINT* tempLRU;
-  MYINT* normFeatures;
+  INT_T* preComp1;
+  INT_T* preComp2;
+  INT_T* preComp3;
+  INT_T* tempLRW;
+  INT_T* tempLRU;
+  INT_T* normFeatures;
 } Q_FastGRNN_LR_Buffers;
 
 /**
@@ -144,8 +144,8 @@ typedef struct Q_FastGRNN_LR_Buffers {
  *             <code>ERR_TEMPLRU_NOT_INIT</code> if tempLRU not allocated
  *             <code>ERR_NORMFEAT_NOT_INIT</code> if normFeatures not allocated
 */
-int q_fastgrnn_lr(MYINT* const hiddenState, MYITE hiddenDims,
-                  const MYINT* const input, MYITE inputDims, MYITE steps,
+int q_fastgrnn_lr(INT_T* const hiddenState, ITER_T hiddenDims,
+                  const INT_T* const input, ITER_T inputDims, ITER_T steps,
                   const void* params, void* buffers, const void* scales,
                   int backward, int normalize);
 
@@ -161,14 +161,14 @@ int q_fastgrnn_lr(MYINT* const hiddenState, MYITE hiddenDims,
  * @var       sigmoid_nu   second weight parameter for update from input from next step
  */
 typedef struct Q_FastGRNN_Params {
-  MYINT* mean;
-  MYINT* stdDev;
-  MYINT* W;
-  MYINT* U;
-  MYINT* Bg;
-  MYINT* Bh;
-  MYINT sigmoid_zeta;
-  MYINT sigmoid_nu;
+  INT_T* mean;
+  INT_T* stdDev;
+  INT_T* W;
+  INT_T* U;
+  INT_T* Bg;
+  INT_T* Bh;
+  INT_T sigmoid_zeta;
+  INT_T sigmoid_nu;
 } Q_FastGRNN_Params;
 
 /**
@@ -181,51 +181,51 @@ typedef struct Q_FastGRNN_Params {
  * matrix it is being operated with.
  */
 typedef struct Q_FastGRNN_Scales {
-  MYSCL input;
-  MYSCL mean;
-  MYSCL meanSub;
-  MYSCL stdDev;
-  MYSCL normFeaturesHDStdDev;
-  MYSCL W;
-  MYSCL normFeaturesMVW;
-  MYSCL H1W;
-  MYSCL H2W;
-  MYSCL U;
-  MYSCL hiddenStateMVU;
-  MYSCL H1U;
-  MYSCL H2U;
-  MYSCL mV1AddMV2;
-  MYSCL mV2AddMV1;
-  MYSCL mV1AddMV2Out;
-  MYSCL pC1AddBg;
-  MYSCL Bg;
-  MYSCL pC1AddBgOut;
-  MYSCL sigmoidScaleIn;
-  MYSCL sigmoidScaleOut;
-  MYSCL pC1AddBh;
-  MYSCL Bh;
-  MYSCL pC1AddBhOut;
-  MYSCL tanhScaleIn;
-  MYSCL tanhScaleOut;
-  MYSCL gateHDHiddenState;
-  MYSCL hiddenStateHDGate;
-  MYSCL qOneScale;
-  MYSCL qOneSubGate;
-  MYSCL qOneSubGateOut;
-  MYSCL sigmoidZeta;
-  MYSCL sigmoidZetaMulQOneSubGate;
-  MYSCL sigmoidNu;
-  MYSCL sigmoidNuAddQOneSubGate;
-  MYSCL sigmoidNuAddQOneSubGateOut;
-  MYSCL sigmoidNuAddQOneSubGateHDUpdate;
-  MYSCL updateHDSigmoidNuAddQOneSubGate;
-  MYSCL pC3AddPC1;
-  MYSCL pC1AddPC3;
-  MYSCL hiddenStateOut;
-  MYINT div;
-  MYINT add;
-  MYINT sigmoidLimit;
-  MYINT qOne;
+  SCALE_T input;
+  SCALE_T mean;
+  SCALE_T meanSub;
+  SCALE_T stdDev;
+  SCALE_T normFeaturesHDStdDev;
+  SCALE_T W;
+  SCALE_T normFeaturesMVW;
+  SCALE_T H1W;
+  SCALE_T H2W;
+  SCALE_T U;
+  SCALE_T hiddenStateMVU;
+  SCALE_T H1U;
+  SCALE_T H2U;
+  SCALE_T mV1AddMV2;
+  SCALE_T mV2AddMV1;
+  SCALE_T mV1AddMV2Out;
+  SCALE_T pC1AddBg;
+  SCALE_T Bg;
+  SCALE_T pC1AddBgOut;
+  SCALE_T sigmoidScaleIn;
+  SCALE_T sigmoidScaleOut;
+  SCALE_T pC1AddBh;
+  SCALE_T Bh;
+  SCALE_T pC1AddBhOut;
+  SCALE_T tanhScaleIn;
+  SCALE_T tanhScaleOut;
+  SCALE_T gateHDHiddenState;
+  SCALE_T hiddenStateHDGate;
+  SCALE_T qOneScale;
+  SCALE_T qOneSubGate;
+  SCALE_T qOneSubGateOut;
+  SCALE_T sigmoidZeta;
+  SCALE_T sigmoidZetaMulQOneSubGate;
+  SCALE_T sigmoidNu;
+  SCALE_T sigmoidNuAddQOneSubGate;
+  SCALE_T sigmoidNuAddQOneSubGateOut;
+  SCALE_T sigmoidNuAddQOneSubGateHDUpdate;
+  SCALE_T updateHDSigmoidNuAddQOneSubGate;
+  SCALE_T pC3AddPC1;
+  SCALE_T pC1AddPC3;
+  SCALE_T hiddenStateOut;
+  INT_T div;
+  INT_T add;
+  INT_T sigmoidLimit;
+  INT_T qOne;
 } Q_FastGRNN_Scales;
 
 /**
@@ -236,10 +236,10 @@ typedef struct Q_FastGRNN_Scales {
 * @var   normFeatures pointer to buffer space, must be initalized to atleast inputDims size
 */
 typedef struct Q_FastGRNN_Buffers {
-  MYINT* preComp1;
-  MYINT* preComp2;
-  MYINT* preComp3;
-  MYINT* normFeatures;
+  INT_T* preComp1;
+  INT_T* preComp2;
+  INT_T* preComp3;
+  INT_T* normFeatures;
 } Q_FastGRNN_Buffers;
 
 /**
@@ -260,8 +260,8 @@ typedef struct Q_FastGRNN_Buffers {
  *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp3 not allocated
  *             <code>ERR_NORMFEAT_NOT_INIT</code> if normFeatures not allocated
 */
-int q_fastgrnn(MYINT* const hiddenState, MYITE hiddenDims,
-               const MYINT* const input, MYITE inputDims, MYITE steps,
+int q_fastgrnn(INT_T* const hiddenState, ITER_T hiddenDims,
+               const INT_T* const input, ITER_T inputDims, ITER_T steps,
                const void* params, void* buffers, const void* scales,
                int backward, int normalize);
 

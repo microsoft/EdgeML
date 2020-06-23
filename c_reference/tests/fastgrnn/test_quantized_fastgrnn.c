@@ -9,6 +9,7 @@
 
 // Simple test for comparing Seedot's quantized FastGRNN output with our
 // implementation. All values generated from Seedot on Wider Regression dataset.
+// By default, all tests run without using bit-shifting operations.
 int main() {
   Q_FastGRNN_Params rnn1_params = {
     .mean = NULL,
@@ -21,14 +22,14 @@ int main() {
     .sigmoid_nu = sigmoid_nu1
   };
 
-  MYINT preComp11[HIDDEN_DIM1];
-  MYINT preComp12[HIDDEN_DIM1];
-  MYINT preComp13[HIDDEN_DIM1];
-  MYINT normFeatures1[INPUT_CHANNELS];
-  memset(preComp11, 0, sizeof(MYINT) * HIDDEN_DIM1);
-  memset(preComp12, 0, sizeof(MYINT) * HIDDEN_DIM1);
-  memset(preComp13, 0, sizeof(MYINT) * HIDDEN_DIM1);
-  memset(normFeatures1, 0, sizeof(MYINT) * INPUT_CHANNELS);
+  INT_T preComp11[HIDDEN_DIM1];
+  INT_T preComp12[HIDDEN_DIM1];
+  INT_T preComp13[HIDDEN_DIM1];
+  INT_T normFeatures1[INPUT_CHANNELS];
+  memset(preComp11, 0, sizeof(INT_T) * HIDDEN_DIM1);
+  memset(preComp12, 0, sizeof(INT_T) * HIDDEN_DIM1);
+  memset(preComp13, 0, sizeof(INT_T) * HIDDEN_DIM1);
+  memset(normFeatures1, 0, sizeof(INT_T) * INPUT_CHANNELS);
 
   Q_FastGRNN_Buffers rnn1_buffers = {
     .preComp1 = preComp11,
@@ -85,11 +86,11 @@ int main() {
     .qOne = qOne1
   };
 
-  const MYINT patch[INPUT_CHANNELS] = {1040, 1919, 4254, 4024};
-  const MYINT expected[HIDDEN_DIM1] = {1423, 7085, -16378, 8209, -12067, 6805, 6475, 6897};
+  const INT_T patch[INPUT_CHANNELS] = {1040, 1919, 4254, 4024};
+  const INT_T expected[HIDDEN_DIM1] = {1423, 7085, -16378, 8209, -12067, 6805, 6475, 6897};
 
-  MYINT buffer[HIDDEN_DIM1];
-  memset(buffer, 0, sizeof(MYINT) * HIDDEN_DIM1);
+  INT_T buffer[HIDDEN_DIM1];
+  memset(buffer, 0, sizeof(INT_T) * HIDDEN_DIM1);
 
   q_fastgrnn(buffer, HIDDEN_DIM1, patch, INPUT_CHANNELS, 1,
              (const void*)(&rnn1_params), (void*)(&rnn1_buffers),

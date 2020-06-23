@@ -22,8 +22,8 @@ int compare_floats(const void *a, const void *b) {
 
 // Function for computing the deviation from the expected floating point
 // result and returning the largest such deviation found.
-float compute_error(MYINT pred[4 * HIDDEN_DIM2], float label[4 * HIDDEN_DIM2],
-                   float* const errors, MYSCL scl) {
+float compute_error(INT_T pred[4 * HIDDEN_DIM2], float label[4 * HIDDEN_DIM2],
+                   float* const errors, SCALE_T scl) {
   float epsilon = 0.01;
   float agg_diff = 0.0;
 
@@ -47,6 +47,7 @@ float aggregate_error(float* errors, unsigned len) {
 /** Run this test using the following command:
  * $: ./test_quantized_rnnpool <num_patches> <input.npy> <output.npy>
  *    <expected_output.npy> <log.txt>
+ *  By default, all tests run without using bit-shifting operations.
  */
 int main(int argc, char **argv) {
   unsigned patches;
@@ -157,14 +158,14 @@ int main(int argc, char **argv) {
     .sigmoid_nu = sigmoid_nu2
   };
 
-  MYINT preComp11[HIDDEN_DIM1];
-  MYINT preComp12[HIDDEN_DIM1];
-  MYINT preComp13[HIDDEN_DIM1];
-  MYINT normFeatures1[INPUT_CHANNELS];
-  memset(preComp11, 0, sizeof(MYINT) * HIDDEN_DIM1);
-  memset(preComp12, 0, sizeof(MYINT) * HIDDEN_DIM1);
-  memset(preComp13, 0, sizeof(MYINT) * HIDDEN_DIM1);
-  memset(normFeatures1, 0, sizeof(MYINT) * INPUT_CHANNELS);
+  INT_T preComp11[HIDDEN_DIM1];
+  INT_T preComp12[HIDDEN_DIM1];
+  INT_T preComp13[HIDDEN_DIM1];
+  INT_T normFeatures1[INPUT_CHANNELS];
+  memset(preComp11, 0, sizeof(INT_T) * HIDDEN_DIM1);
+  memset(preComp12, 0, sizeof(INT_T) * HIDDEN_DIM1);
+  memset(preComp13, 0, sizeof(INT_T) * HIDDEN_DIM1);
+  memset(normFeatures1, 0, sizeof(INT_T) * INPUT_CHANNELS);
   Q_FastGRNN_Buffers rnn1_buffers = {
   	.preComp1 = preComp11,
     .preComp2 = preComp12,
@@ -172,14 +173,14 @@ int main(int argc, char **argv) {
     .normFeatures = normFeatures1
   };
 
-  MYINT preComp21[HIDDEN_DIM2];
-  MYINT preComp22[HIDDEN_DIM2];
-  MYINT preComp23[HIDDEN_DIM2];
-  MYINT normFeatures2[HIDDEN_DIM1];
-  memset(preComp21, 0, sizeof(MYINT) * HIDDEN_DIM2);
-  memset(preComp22, 0, sizeof(MYINT) * HIDDEN_DIM2);
-  memset(preComp23, 0, sizeof(MYINT) * HIDDEN_DIM2);
-  memset(normFeatures2, 0, sizeof(MYINT) * HIDDEN_DIM1);
+  INT_T preComp21[HIDDEN_DIM2];
+  INT_T preComp22[HIDDEN_DIM2];
+  INT_T preComp23[HIDDEN_DIM2];
+  INT_T normFeatures2[HIDDEN_DIM1];
+  memset(preComp21, 0, sizeof(INT_T) * HIDDEN_DIM2);
+  memset(preComp22, 0, sizeof(INT_T) * HIDDEN_DIM2);
+  memset(preComp23, 0, sizeof(INT_T) * HIDDEN_DIM2);
+  memset(normFeatures2, 0, sizeof(INT_T) * HIDDEN_DIM1);
   Q_FastGRNN_Buffers rnn2_buffers = {
     .preComp1 = preComp21,
     .preComp2 = preComp22,
@@ -283,8 +284,8 @@ int main(int argc, char **argv) {
     .qOne = qOne2
   };
 
-  MYINT output_test[4 * HIDDEN_DIM2];
-  MYINT buffer[HIDDEN_DIM1 * PATCH_DIM];
+  INT_T output_test[4 * HIDDEN_DIM2];
+  INT_T buffer[HIDDEN_DIM1 * PATCH_DIM];
   float xLine[INPUT_CHANNELS * PATCH_DIM * PATCH_DIM];
   float yLine[4 * HIDDEN_DIM2];
   float* allErrors = malloc(patches * 4 * HIDDEN_DIM2 * (sizeof(float)));
@@ -292,13 +293,13 @@ int main(int argc, char **argv) {
   for (unsigned i = 0; i < patches; i++) {
     fread(&xLine[0], sizeof(float), INPUT_CHANNELS * PATCH_DIM * PATCH_DIM, xFile);
     fread(&yLine[0], sizeof(float), 4 * HIDDEN_DIM2, floatResFile);
-    MYINT reshapedXLine[INPUT_CHANNELS * PATCH_DIM * PATCH_DIM];
+    INT_T reshapedXLine[INPUT_CHANNELS * PATCH_DIM * PATCH_DIM];
 
     for (unsigned a = 0; a < INPUT_CHANNELS; a ++) {
       for (unsigned b = 0; b < PATCH_DIM; b++) {
         for (unsigned c = 0; c < PATCH_DIM; c++) {
           reshapedXLine[b * PATCH_DIM * INPUT_CHANNELS + c * INPUT_CHANNELS + a] =
-          (MYINT)((xLine[a * PATCH_DIM * PATCH_DIM + b * PATCH_DIM + c]) * pow(2, XScale));
+          (INT_T)((xLine[a * PATCH_DIM * PATCH_DIM + b * PATCH_DIM + c]) * pow(2, XScale));
         }
       }
     }

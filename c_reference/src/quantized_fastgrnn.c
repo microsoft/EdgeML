@@ -3,8 +3,8 @@
 
 #include "quantized_fastgrnn.h"
 
-int q_fastgrnn_lr(MYINT* const hiddenState, MYITE hiddenDims,
-                  const MYINT* const input, MYITE inputDims, MYITE steps,
+int q_fastgrnn_lr(INT_T* const hiddenState, ITER_T hiddenDims,
+                  const INT_T* const input, ITER_T inputDims, ITER_T steps,
                   const void* params, void* buffers, const void *scales,
                   int backward, int normalize) {
   const Q_FastGRNN_LR_Params* tparams = (const Q_FastGRNN_LR_Params*)params;
@@ -19,9 +19,9 @@ int q_fastgrnn_lr(MYINT* const hiddenState, MYITE hiddenDims,
   if (tbuffers->normFeatures == 0) return ERR_NORMFEATURES_NOT_INIT;
 
   // #steps iterations of the RNN cell starting from hiddenState
-  for (MYITE t = 0; t < steps; t++) {
+  for (ITER_T t = 0; t < steps; t++) {
     // Normalize the features
-    MYITE offset = backward ? steps - 1 - t : t;
+    ITER_T offset = backward ? steps - 1 - t : t;
     if (normalize) {
       // This diverges from the original implementation because of
       // impracticality of scaled addition beyond 0, 1, and -1 multipliers
@@ -34,7 +34,7 @@ int q_fastgrnn_lr(MYINT* const hiddenState, MYITE hiddenDims,
                    tscales->normFeaturesHDStdDev);
     }
     else {
-      for (MYITE d = 0; d < inputDims; ++d)
+      for (ITER_T d = 0; d < inputDims; ++d)
         tbuffers->normFeatures[d] = input[offset * inputDims + d];
     }
 
@@ -86,8 +86,8 @@ int q_fastgrnn_lr(MYINT* const hiddenState, MYITE hiddenDims,
   return 0;
 }
 
-int q_fastgrnn(MYINT* const hiddenState, MYITE hiddenDims,
-               const MYINT* const input, MYITE inputDims, MYITE steps,
+int q_fastgrnn(INT_T* const hiddenState, ITER_T hiddenDims,
+               const INT_T* const input, ITER_T inputDims, ITER_T steps,
                const void* params, void* buffers, const void* scales,
                int backward, int normalize) {
 
@@ -100,9 +100,9 @@ int q_fastgrnn(MYINT* const hiddenState, MYITE hiddenDims,
   if (tbuffers->preComp3 == 0) return ERR_PRECOMP_NOT_INIT;
   if (tbuffers->normFeatures == 0) return ERR_NORMFEATURES_NOT_INIT;
 
-  for (MYITE t = 0; t < steps; t++) {
+  for (ITER_T t = 0; t < steps; t++) {
     // Normalize the features
-    MYITE offset = backward ? steps - 1 - t : t;
+    ITER_T offset = backward ? steps - 1 - t : t;
     if (normalize) {
       // This diverges from the original implementation because of
       // impracticality of scaled addition beyond 0, 1, and -1 multipliers
@@ -115,7 +115,7 @@ int q_fastgrnn(MYINT* const hiddenState, MYITE hiddenDims,
                    tscales->normFeaturesHDStdDev);
     }
     else {
-      for (MYITE d = 0; d < inputDims; ++d)
+      for (ITER_T d = 0; d < inputDims; ++d)
         tbuffers->normFeatures[d] = input[offset * inputDims + d];
     }
 

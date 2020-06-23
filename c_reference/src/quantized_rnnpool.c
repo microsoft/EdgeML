@@ -4,19 +4,19 @@
 #include <string.h>
 #include "quantized_rnnpool.h"
 
-int q_rnnpool_block(const MYINT* const patch, MYITE inputDims, MYITE patchDim,
-                    MYITE stride, q_rnn_t rnn1, MYITE hiddenDims1,
+int q_rnnpool_block(const INT_T* const patch, ITER_T inputDims, ITER_T patchDim,
+                    ITER_T stride, q_rnn_t rnn1, ITER_T hiddenDims1,
                     const void* rnn1_params, void* rnn1_buffers,
                     const void* rnn1_scales, q_rnn_t rnn2,
-                    MYITE hiddenDims2, const void* rnn2_params,
+                    ITER_T hiddenDims2, const void* rnn2_params,
                     void* rnn2_buffers, const void* rnn2_scales,
-                    MYINT* const output, MYINT* const buffer) {
+                    INT_T* const output, INT_T* const buffer) {
   // Clear the output
-  memset(output, 0, sizeof(MYINT) * 4 * hiddenDims2);
+  memset(output, 0, sizeof(INT_T) * 4 * hiddenDims2);
 
   // Horizontal pass over each row with RNN1
-  memset(buffer, 0, sizeof(MYINT) * hiddenDims1 * patchDim);
-  for (MYITE r = 0; r < patchDim; ++r) {
+  memset(buffer, 0, sizeof(INT_T) * hiddenDims1 * patchDim);
+  for (ITER_T r = 0; r < patchDim; ++r) {
     rnn1(buffer + r * hiddenDims1, hiddenDims1, patch + stride * r * inputDims,
          inputDims, patchDim, rnn1_params, rnn1_buffers, rnn1_scales, 0, 0);
   }
@@ -28,9 +28,9 @@ int q_rnnpool_block(const MYINT* const patch, MYITE inputDims, MYITE patchDim,
        rnn2_params, rnn2_buffers, rnn2_scales, 1, 0);
 
   // Vertical pass over each column with RNN1
-  memset(buffer, 0, sizeof(MYINT) * hiddenDims1 * patchDim);
-  for (MYITE c = 0; c < patchDim; ++c) {
-    for (MYITE r = 0; r < patchDim; ++r) {
+  memset(buffer, 0, sizeof(INT_T) * hiddenDims1 * patchDim);
+  for (ITER_T c = 0; c < patchDim; ++c) {
+    for (ITER_T r = 0; r < patchDim; ++r) {
       rnn1(buffer + c * hiddenDims1, hiddenDims1,
            patch + (stride * r + c) * inputDims, inputDims, 1, rnn1_params,
            rnn1_buffers, rnn1_scales, 0, 0);

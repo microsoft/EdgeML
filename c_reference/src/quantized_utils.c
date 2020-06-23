@@ -3,9 +3,9 @@
 
 #include "quantized_utils.h"
 
-void v_q_add(const MYINT* const vec1, const MYINT* const vec2, MYITE len,
-             MYINT* const ret, MYSCL scvec1, MYSCL scvec2, MYSCL scret) {
-  for (MYITE i = 0; i < len; i++) {
+void v_q_add(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
+             INT_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret) {
+  for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
       ret[i] = ((vec1[i] >> (scvec1 + scret)) + (vec2[i] >> (scvec2 + scret)));
     #else
@@ -14,9 +14,9 @@ void v_q_add(const MYINT* const vec1, const MYINT* const vec2, MYITE len,
   }
 }
 
-void v_q_sub(const MYINT* const vec1, const MYINT* const vec2, MYITE len,
-             MYINT* const ret, MYSCL scvec1, MYSCL scvec2, MYSCL scret) {
-  for (MYITE i = 0; i < len; i++) {
+void v_q_sub(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
+             INT_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret) {
+  for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
       ret[i] = ((vec1[i] >> (scvec1 + scret)) - (vec2[i] >> (scvec2 + scret)));
     #else
@@ -25,22 +25,22 @@ void v_q_sub(const MYINT* const vec1, const MYINT* const vec2, MYITE len,
   }
 }
 
-void v_q_hadamard(const MYINT* const vec1, const MYINT* const vec2, MYITE len,
-                  MYINT* const ret, MYSCL scvec1, MYSCL scvec2) {
-  for (MYITE i = 0; i < len; i++) {
+void v_q_hadamard(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
+                  INT_T* const ret, SCALE_T scvec1, SCALE_T scvec2) {
+  for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
-      ret[i] = ((MYINM)vec1[i] * (MYINM)vec2[i]) >> (scvec1 + scvec2);
+      ret[i] = ((INTM_T)vec1[i] * (INTM_T)vec2[i]) >> (scvec1 + scvec2);
     #else
-      ret[i] = ((((MYINM)vec1[i] * (MYINM)vec2[i]) / scvec1) / scvec2);
+      ret[i] = ((((INTM_T)vec1[i] * (INTM_T)vec2[i]) / scvec1) / scvec2);
     #endif
   }
 }
 
-void v_q_sigmoid(const MYINT* const vec, MYITE len, MYINT* const ret, MYINT div,
-                 MYINT add, MYINT sigmoid_limit, MYSCL scale_in,
-                 MYSCL scale_out) {
-  for (MYITE i = 0; i < len; i++) {
-    MYINT x = (vec[i] / div) + add;
+void v_q_sigmoid(const INT_T* const vec, ITER_T len, INT_T* const ret, INT_T div,
+                 INT_T add, INT_T sigmoid_limit, SCALE_T scale_in,
+                 SCALE_T scale_out) {
+  for (ITER_T i = 0; i < len; i++) {
+    INT_T x = (vec[i] / div) + add;
 
     if (x >= sigmoid_limit) {
       ret[i] = sigmoid_limit << (scale_out - scale_in);
@@ -52,10 +52,10 @@ void v_q_sigmoid(const MYINT* const vec, MYITE len, MYINT* const ret, MYINT div,
   }
 }
 
-void v_q_tanh(const MYINT* const vec, MYITE len, MYINT* const ret,
-              MYSCL scale_in, MYSCL scale_out) {
-  MYINT scale = (1 << scale_in);
-  for (MYITE i = 0; i < len; i++) {
+void v_q_tanh(const INT_T* const vec, ITER_T len, INT_T* const ret,
+              SCALE_T scale_in, SCALE_T scale_out) {
+  INT_T scale = (1 << scale_in);
+  for (ITER_T i = 0; i < len; i++) {
     if (vec[i] >= scale) {
       ret[i] = scale;
     } else if (vec[i] <= -scale) {
@@ -67,9 +67,9 @@ void v_q_tanh(const MYINT* const vec, MYITE len, MYINT* const ret,
   }
 }
 
-void v_q_scalar_add(MYINT scalar, const MYINT* const vec, MYITE len,
-                    MYINT* const ret, MYSCL scscalar, MYSCL scvec, MYSCL scret) {
-  for (MYITE i = 0; i < len; i++) {
+void v_q_scalar_add(INT_T scalar, const INT_T* const vec, ITER_T len,
+                    INT_T* const ret, SCALE_T scscalar, SCALE_T scvec, SCALE_T scret) {
+  for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
       ret[i] = ((scalar >> (scscalar + scret)) + (vec[i] >> (scvec + scret)));
     #else
@@ -78,9 +78,9 @@ void v_q_scalar_add(MYINT scalar, const MYINT* const vec, MYITE len,
   }
 }
 
-void v_q_scalar_sub(MYINT scalar, const MYINT* const vec, MYITE len,
-                    MYINT* const ret, MYSCL scscalar, MYSCL scvec, MYSCL scret) {
-  for (MYITE i = 0; i < len; i++) {
+void v_q_scalar_sub(INT_T scalar, const INT_T* const vec, ITER_T len,
+                    INT_T* const ret, SCALE_T scscalar, SCALE_T scvec, SCALE_T scret) {
+  for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
       ret[i] = ((scalar >> (scscalar + scret)) - (vec[i] >> (scvec + scret)));
     #else
@@ -89,37 +89,37 @@ void v_q_scalar_sub(MYINT scalar, const MYINT* const vec, MYITE len,
   }
 }
 
-void v_q_scalar_mul(MYINT scalar, const MYINT* const vec, MYITE len,
-                    MYINT* const ret, MYSCL scscalar, MYSCL scvec) {
-  for (MYITE i = 0; i < len; i++) {
+void v_q_scalar_mul(INT_T scalar, const INT_T* const vec, ITER_T len,
+                    INT_T* const ret, SCALE_T scscalar, SCALE_T scvec) {
+  for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
-      ret[i] = ((MYINM)scalar * (MYINM)vec[i]) >> (scscalar + scvec);
+      ret[i] = ((INTM_T)scalar * (INTM_T)vec[i]) >> (scscalar + scvec);
     #else
-      ret[i] = ((((MYINM)scalar * (MYINM)vec[i]) / scscalar) / scvec);
+      ret[i] = ((((INTM_T)scalar * (INTM_T)vec[i]) / scscalar) / scvec);
     #endif
   }
 }
 
-void m_q_mulvec(const MYINT* const mat, const MYINT* const vec, MYITE nrows,
-                MYITE ncols, MYINT* const ret, MYSCL scmat, MYSCL scvec,
-                MYITE H1, MYITE H2) {
-  MYINM tmp[ncols];
-  for (MYITE row = 0; row < nrows; row++) {
-    MYINT* mat_offset = (MYINT*)mat + row * ncols;
+void m_q_mulvec(const INT_T* const mat, const INT_T* const vec, ITER_T nrows,
+                ITER_T ncols, INT_T* const ret, SCALE_T scmat, SCALE_T scvec,
+                ITER_T H1, ITER_T H2) {
+  INTM_T tmp[ncols];
+  for (ITER_T row = 0; row < nrows; row++) {
+    INT_T* mat_offset = (INT_T*)mat + row * ncols;
 
-    for (MYITE col = 0; col < ncols; col++) {
-      tmp[col] = ((MYINM)(*mat_offset++) * (MYINM)vec[col]);
+    for (ITER_T col = 0; col < ncols; col++) {
+      tmp[col] = ((INTM_T)(*mat_offset++) * (INTM_T)vec[col]);
     }
 
-    MYITE count = ncols, depth = 0;
+    ITER_T count = ncols, depth = 0;
     int divbytwo = 1;
 
     while (depth < (H1 + H2)) {
       if (depth >= H1)
         divbytwo = 0;
 
-      for (MYITE p = 0; p < ((ncols >> 1) + 1); p++) {
-        MYINM sum;
+      for (ITER_T p = 0; p < ((ncols >> 1) + 1); p++) {
+        INTM_T sum;
         if (p < (count >> 1)) {
           if (divbytwo == 1) {
             #ifdef SHIFT
