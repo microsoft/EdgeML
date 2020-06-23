@@ -21,14 +21,14 @@ int fastgrnn_lr(float* const hiddenState, unsigned hiddenDims,
     // Normalize the features
     unsigned offset = backward ? steps - 1 - t : t;
     if (normalize) {
-      v_add(1.0f, input + offset * inputDims, -1.0f, tparams->mean + t * inputDims,
+      v_add(1.0f, input + offset * inputDims, -1.0f, tparams->mean + offset * inputDims,
         inputDims, tbuffers->normFeatures);
-      v_div(tparams->stdDev + t * inputDims, tbuffers->normFeatures, inputDims,
+      v_div(tparams->stdDev + offset * inputDims, tbuffers->normFeatures, inputDims,
         tbuffers->normFeatures);
     }
     else {
-      for (unsigned d=0; d< inputDims; ++d)
-      tbuffers->normFeatures[d] = input[offset * inputDims + d];
+      for (unsigned d = 0; d < inputDims; ++d)
+        tbuffers->normFeatures[d] = input[offset * inputDims + d];
     }
 
     // Process the new input and previous hidden state
@@ -65,9 +65,9 @@ int fastgrnn(float* const hiddenState, unsigned hiddenDims,
     // Normalize the features
     unsigned offset = backward ? steps - 1 - t : t;
     if (normalize) {
-      v_add(1.0f, input + offset * inputDims, -1.0f, tparams->mean + t * inputDims,
+      v_add(1.0f, input + offset * inputDims, -1.0f, tparams->mean + offset * inputDims,
         inputDims, tbuffers->normFeatures);
-      v_div(tparams->stdDev + t * inputDims, tbuffers->normFeatures, inputDims,
+      v_div(tparams->stdDev + offset * inputDims, tbuffers->normFeatures, inputDims,
         tbuffers->normFeatures);
     }
     else {
