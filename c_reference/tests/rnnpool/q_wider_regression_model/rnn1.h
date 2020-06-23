@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 #define INPUT_CHANNELS 4
 #define PATCH_DIM 8
 #define HIDDEN_DIM1 8
