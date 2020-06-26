@@ -236,7 +236,7 @@ void arg_max(INT_T *A, INT_T len, INT_T *index) {
   return;
 }
 
-void Transpose(INT_T *A, INT_T *B, INT_T I, INT_T J) { 
+void transpose(INT_T *A, INT_T *B, INT_T I, INT_T J) { 
   INT_T i = 0;
   INT_T j = 0;
   
@@ -256,7 +256,7 @@ void Transpose(INT_T *A, INT_T *B, INT_T I, INT_T J) {
   return;
 }
 
-void AddOrSubCir4D(INT_T *A, const INT_T *B, INT_T *X, INT_T N, INT_T H,     \
+void add_or_sub_cir_4D(INT_T *A, const INT_T *B, INT_T *X, INT_T N, INT_T H,     \
                   INT_T W, INT_T C, INT_T shrA, INT_T shrB, INT_T shrC, uint8_t add) {
   INT_T n     = 0;
   INT_T c     = 0; 
@@ -301,7 +301,7 @@ void AddOrSubCir4D(INT_T *A, const INT_T *B, INT_T *X, INT_T N, INT_T H,     \
 }
 
 
-void AddOrSubCir2D(INT_T *A, const INT_T *B, INT_T *X, INT_T H, INT_T W,  \
+void add_or_sub_cir_2D(INT_T *A, const INT_T *B, INT_T *X, INT_T H, INT_T W,  \
                    INT_T shrA, INT_T shrB, INT_T shrC, uint8_t add) { 
 
   INT_T h   = 0;
@@ -351,12 +351,21 @@ void AddOrSubCir2D(INT_T *A, const INT_T *B, INT_T *X, INT_T H, INT_T W,  \
   return;
 }
 
-void Relu4D(INT_T *A, INT_T N, INT_T H, INT_T W, INT_T C) { 
+/*
+   For 2D array, give W = 0, C = 0
+*/
+void relu_4D(INT_T *A, INT_T N, INT_T H, INT_T W, INT_T C) { 
 
   INT_T n = 0;
-
+  
   if(A) {
-    for (n = 0; n < N * H *W * C; n++) {
+
+    if(W == 0 && C == 0) {
+      
+      W = 1;
+      C = 1;
+    }
+    for (n = 0; n < N * H * W * C; n++) {
       if (A[n] < 0)
         A[n] = 0;
     }
@@ -364,18 +373,7 @@ void Relu4D(INT_T *A, INT_T N, INT_T H, INT_T W, INT_T C) {
   return;
 }
 
-void Relu2D(INT_T *A, INT_T H, INT_T W) {
-  INT_T n = 0;
-
-  if(A) {
-    for (n = 0; n < H *W ; n++) {
-      if (A[n] < 0)
-        A[n] = 0;
-    }
-  }
-  return;
-}
-void Exp(INT_T *A, INT_T I, INT_T J, INT_T shrA, INT_T shrB, INT_T *B) {
+void exp_scale(INT_T *A, INT_T I, INT_T J, INT_T shrA, INT_T shrB, INT_T *B) {
 
   INT_T i = 0;
   
@@ -386,6 +384,156 @@ void Exp(INT_T *A, INT_T I, INT_T J, INT_T shrA, INT_T shrB, INT_T *B) {
 #else
     B[i] = ((INT_T)(exp(((float)A[i]) / shrA) * shrB));
 #endif /* SHIFT */
+    }
+  }
+
+  return;
+}
+
+void sigmoid(INT_T *A, INT_T I, INT_T J, INT_T div, INT_T add, INT_T sigmoid_limit, \
+             INT_T scale_in, INT_T scale_out, INT_T *B) {
+
+  INT_T i           = 0;
+  INT_T x           = 0;
+  INT_T y           = 0;
+  INT_T scale_diff  = 0;
+
+#ifdef FLOATEXP
+  INT_T z           = 0;
+#endif
+
+  if(A && B) {
+#ifdef SHIFT
+      scale_diff = scale_out >> scale_in;
+#else
+      scale_diff = scale_out / scale_in;
+#endif /* SHIFT */
+
+    for (i = 0; i < I*J; i++) {
+#ifdef FLOATEXP
+#ifdef SHIFT
+      float x = float(A[i]) >> scale_in;
+
+      float y = 1 >> (1 + exp(-x));
+#else
+      float x = float(A[i]) / scale_in;
+
+      float y = 1 / (1 + exp(-x));
+#endif /* SHIFT */
+
+      z = INT_T(y * scale_out);
+
+      B[i] = z;
+#else
+      x = A[i];
+#ifdef SHIFT
+      x = (x >> div) + add;
+#else
+      x = (x / div) + add;
+#endif /* SHIFT */
+
+      if (x >= sigmoid_limit)
+        y = sigmoid_limit;
+      else if (x <= 0)
+        y = 0;
+      else
+        y = x;
+
+      y = y * scale_diff;
+
+      B[i] = y;
+#endif
+    }
+  }
+
+  return;
+}
+
+/*
+   For 2D array, give K = 0, L = 0
+*/
+void adjust_scale_shr(INT_T *A, INT_T I, INT_T J, INT_T K, INT_T L, INT_T scale) {
+
+  INT_T i = 0;
+
+  if(A) {
+
+    if(K == 0 && L == 0 ) {
+
+      K = 1;
+      L = 1;
+    }
+
+    while(i < I * J * K * L ) {
+#ifdef SHIFT
+      A[i++] >>= scale;
+#else
+      A[i++] /= scale;
+#endif /* SHIFT */
+    }
+  }
+
+  return;
+}
+
+/**
+ * Following function does scaling on multidimensional array(4-D array)
+   For 2D array, give K = 0, L = 0
+ */ 
+void adjust_scale_shl(INT_T *A, INT_T I, INT_T J, INT_T K, INT_T L, INT_T scale) {
+
+  INT_T i = 0;
+
+  if(A) {
+
+  if(K == 0 && L == 0 ) {
+
+      K = 1;
+      L = 1;
+    }    
+    while(i < I * J * K * L) {
+      A[i++] *= scale;
+    }
+  }
+
+  return;
+}
+void Reverse2(INT_T *A, INT_T axis, INT_T I, INT_T J, INT_T *B) {
+
+  INT_T i   = 0;
+  INT_T j   = 0;
+  INT_T ref = 0;
+
+  if(A && B) {
+
+    j = J - 1;
+
+    if(axis) {
+
+      for ( i = 0; i < I * J; i++) {
+
+          B[i] = A[j--];
+          if(j < ref)
+          {
+              j   = i + J;
+              ref = i + 1;
+          }
+      }
+    }
+    else
+    {
+        j   = I*J - J;
+        ref = j;
+
+        for ( i = 0; i < I * J; i++) {
+
+          B[i] = A[j++];
+
+          if(j >= (ref + J) ) {
+              j = ref - J;
+              ref = j;
+          }
+      }
     }
   }
 
