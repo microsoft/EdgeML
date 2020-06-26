@@ -158,8 +158,7 @@ void m_q_mulvec(const INT_T* const mat, const INT_T* const vec, ITER_T nrows,
   }
 }
 void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T K, \
-                INT_T shrA, INT_T shrB, INT_T shrC)
-{
+                INT_T shrA, INT_T shrB, INT_T shrC) {
 
   INT_T   ite_idx = 0; 
   INT_T   ite_val = 0;
@@ -169,11 +168,9 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
   INT_T   a       = 0;
   INT_T   c       = 0;
   
-  if(Aidx && Aval && B && C)
-  {
+  if(Aidx && Aval && B && C) {
 
-    for (k = 0; k < K; k++)
-    {
+    for (k = 0; k < K; k++) {
 
       b = B[k * 1][0];
 #ifdef SHIFT
@@ -183,8 +180,7 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
 #endif
     
       idx = Aidx[ite_idx];
-      while (idx != 0)
-      {
+      while (idx != 0) {
         a = Aval[ite_val];
 #ifdef SHIFT
         a = a >> shrA
@@ -212,8 +208,7 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
   return;
 }
 
-void arg_max(INT_T *A, INT_T len, INT_T *index)
-{
+void arg_max(INT_T *A, INT_T len, INT_T *index) {
 
   INT_T max       = 0;
   INT_T maxIndex  = 0;
@@ -221,16 +216,13 @@ void arg_max(INT_T *A, INT_T len, INT_T *index)
   INT_T i         = 0;
   INT_T x         = 0;
 
-  if(A && index)
-  {
+  if(A && index) {
     max = A[0];
 
-    for (i = 0; i < len; i++)
-    {
+    for (i = 0; i < len; i++) {
       x = A[i];
 
-      if (max < x)
-      {
+      if (max < x) {
         maxIndex = counter;
         max      = x;
       }
@@ -243,8 +235,7 @@ void arg_max(INT_T *A, INT_T len, INT_T *index)
   return;
 }
 
-void Transpose(INT_T *A, INT_T *B, INT_T I, INT_T J)
-{ 
+void Transpose(INT_T *A, INT_T *B, INT_T I, INT_T J) { 
   INT_T i = 0;
   INT_T j = 0;
   
@@ -265,18 +256,15 @@ void Transpose(INT_T *A, INT_T *B, INT_T I, INT_T J)
 }
 
 void AddOrSubCir4D(INT_T *A, const INT_T *B, INT_T *X, INT_T N, INT_T H,     \
-                  INT_T W, INT_T C, INT_T shrA, INT_T shrB, INT_T shrC, uint8_t add)
-{
+                  INT_T W, INT_T C, INT_T shrA, INT_T shrB, INT_T shrC, uint8_t add) {
   INT_T n     = 0;
   INT_T c     = 0; 
   INT_T a     = 0;
   INT_T b     = 0;
   INT_T res   = 0;
 
-  if(A && B && X)
-  {
-    for (n = 0; n < N * H * W * C; n++)
-    {
+  if(A && B && X) {
+    for (n = 0; n < N * H * W * C; n++) {
           a = A[n];
 #ifdef SHIFT
           a >>= shrA;
@@ -313,8 +301,7 @@ void AddOrSubCir4D(INT_T *A, const INT_T *B, INT_T *X, INT_T N, INT_T H,     \
 
 
 void AddOrSubCir2D(INT_T *A, const INT_T *B, INT_T *X, INT_T H, INT_T W,  \
-                   INT_T shrA, INT_T shrB, INT_T shrC, uint8_t add)
-{ 
+                   INT_T shrA, INT_T shrB, INT_T shrC, uint8_t add) { 
 
   INT_T h   = 0;
   INT_T w   = 0;
@@ -322,11 +309,9 @@ void AddOrSubCir2D(INT_T *A, const INT_T *B, INT_T *X, INT_T H, INT_T W,  \
   INT_T b   = 0; 
   INT_T res = 0;
 
-  if(A && B && X)
-  {
+  if(A && B && X) {
     
-    for (h = 0; h < H * W; h++)
-    {
+    for (h = 0; h < H * W; h++) {
         a = A[h];
 #ifdef SHIFT
         a >>= shrA;
@@ -343,18 +328,20 @@ void AddOrSubCir2D(INT_T *A, const INT_T *B, INT_T *X, INT_T H, INT_T W,  \
         b = b / shrB;
 #endif /* SHIFT */
 
-        if (add)
+        if (add) {
 #ifdef SHIFT
             res = ((a+b) >> shrC);
 #else
             res = ( (a + b) / shrC);
 #endif /* SHIFT */
-        else
+        }
+        else {
 #ifdef SHIFT
             res = ((a-b) >> shrC);
 #else
             res = ( (a- b) / shrC);
 #endif /* SHIFT */
+        }
 
         X[h] = res;
     }
@@ -363,14 +350,12 @@ void AddOrSubCir2D(INT_T *A, const INT_T *B, INT_T *X, INT_T H, INT_T W,  \
   return;
 }
 
-void Relu4D(INT_T *A, INT_T N, INT_T H, INT_T W, INT_T C)
-{ 
+void Relu4D(INT_T *A, INT_T N, INT_T H, INT_T W, INT_T C) { 
+
   INT_T n = 0;
 
-  if(A)
-  {
-    for (n = 0; n < N * H *W * C; n++)
-    {
+  if(A) {
+    for (n = 0; n < N * H *W * C; n++) {
       if (A[n] < 0)
         A[n] = 0;
     }
@@ -378,28 +363,23 @@ void Relu4D(INT_T *A, INT_T N, INT_T H, INT_T W, INT_T C)
   return;
 }
 
-void Relu2D(INT_T *A, INT_T H, INT_T W)
-{
+void Relu2D(INT_T *A, INT_T H, INT_T W) {
   INT_T n = 0;
 
-  if(A)
-  {
-    for (n = 0; n < H *W ; n++)
-    {
+  if(A) {
+    for (n = 0; n < H *W ; n++) {
       if (A[n] < 0)
         A[n] = 0;
     }
   }
   return;
 }
-void Exp(INT_T *A, INT_T I, INT_T J, INT_T shrA, INT_T shrB, INT_T *B)
-{
+void Exp(INT_T *A, INT_T I, INT_T J, INT_T shrA, INT_T shrB, INT_T *B) {
+
   INT_T i = 0;
   
-  if(A && B)
-  {
-    for (i = 0; i < I*J; i++)
-    {
+  if(A && B) {
+    for (i = 0; i < I*J; i++) {
 #ifdef SHIFT
     B[i] = ((INT_T)(exp(((float)A[i]) >> shrA) * shrB));
 #else
