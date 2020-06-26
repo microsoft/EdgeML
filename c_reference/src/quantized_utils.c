@@ -544,8 +544,8 @@ void maxpool(INT_T *A, INT_T *B, INT_T N, INT_T H, INT_T W, INT_T C, INT_T FH, \
 
 void conv(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,                   \
           INT_T N, INT_T H, INT_T W, INT_T CI, INT_T HF,                    \
-          INT_T WF, INT_T CO, INT_T shrA, INT_T shrB, INT_T H1, INT_T H2)
-{
+          INT_T WF, INT_T CO, INT_T shrA, INT_T shrB, INT_T H1, INT_T H2) {
+
   INT_T     padH      =  0;
   INT_T     padW      =  0;
   INT_T     n         =  0;
@@ -565,28 +565,23 @@ void conv(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,                   \
   INT_T     sum       =  0;
   uint8_t   shr       =  0;
 
-  if(A && B && C && tmp)
-  { 
+  if(A && B && C && tmp) { 
     padH      = (HF - 1) / 2;
     padW      = (WF - 1) / 2;
 
-    for (n = 0; n < N; n++)
-    {
-      for (h = 0; h < H; h++)
-      {
-        for (w = 0; w < W; w++)
-        {
-          for (co = 0; co < CO; co++)
-          {
+    for (n = 0; n < N; n++) {
+      for (h = 0; h < H; h++) {
+        for (w = 0; w < W; w++) {
+          for (co = 0; co < CO; co++) {
 
             counter = 0;
-            for (hf = 0; hf < HF; hf++)
-            {
-              for (wf = 0; wf < WF; wf++)
-              {
-                for (ci = 0; ci < CI; ci++)
-                {
-                  a = (((((h + hf) < padH) || ((h + hf) >= (H + padH))) || (((w + wf) < padW) || ((w + wf) >= (W + padW)))) ? 0 : A[n * H * W * CI + ((h + hf) - padH) * W * CI + ((w + wf) - padW) * CI + ci]);
+            for (hf = 0; hf < HF; hf++) {
+              for (wf = 0; wf < WF; wf++) {
+                for (ci = 0; ci < CI; ci++) {
+                  a = (((((h + hf) < padH) || ((h + hf) >= (H + padH))) ||     \
+                      (((w + wf) < padW) || ((w + wf) >= (W + padW)))) ? 0 :   \
+                      A[n * H * W * CI + ((h + hf) - padH) * W * CI + ((w + wf) - padW) * CI + ci]);
+
                   b = B[hf * WF * CI * CO + wf * CI * CO + ci * CO + co];
 
 #ifdef SHIFT
@@ -607,19 +602,17 @@ void conv(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,                   \
             count     = HF * WF * CI; 
             shr       = 1;
 
-            while (depth < (H1 + H2))
-            {
+            while (depth < (H1 + H2)){
+
               if (depth >= H1)
                 shr = 0;
               
 #ifdef SHIFT
-              for (p = 0; p < ( (totalEle >> 1 ) + 1); p++)
+              for (p = 0; p < ( (totalEle >> 1 ) + 1); p++) {
 #else
-              for (p = 0; p < ( (totalEle / 2) + 1); p++)
+              for (p = 0; p < ( (totalEle / 2) + 1); p++) {
 #endif
-              {
-                if (p < (count >> 1))
-                {
+                if (p < (count >> 1)) {
                   if (shr)
 #ifdef SHIFT
                     sum = ( tmp[2 * p] >> 1 ) + ( tmp[(2 * p) + 1] >> 1 );
@@ -629,8 +622,7 @@ void conv(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,                   \
                   else
                     sum = tmp[2 * p] + tmp[(2 * p) + 1];
                 }
-                else if ((p == (count >> 1)) && ((count & 1) == 1))
-                {
+                else if ((p == (count >> 1)) && ((count & 1) == 1)) {
                   if (shr)
 #ifdef SHIFT
                     sum = tmp[2 * p] >> 1;
@@ -695,8 +687,7 @@ void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,
   INT_T     wout      = 0;
   uint8_t   shr       = 0;
 
-  if( A && B && C && tmp)
-  {
+  if( A && B && C && tmp) {
     HOffsetL = HDL*(HF/2) - HPADL;
     WOffsetL = WDL*(WF/2) - WPADL;
     HOffsetR = HDL*(HF/2) - HPADR;
