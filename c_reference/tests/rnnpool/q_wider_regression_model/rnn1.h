@@ -30,7 +30,7 @@ static SCALE_T tanhScaleIn1 = 11; //2048
 static SCALE_T tanhScaleOut1 = 11; //2048
 static INT_T qOne1 = 16384;
 
-#ifdef SHIFT
+#if defined SHIFT || defined CMSISDSP
   static SCALE_T WScale1 = 7; //128
   static SCALE_T normFeaturesMVW1 = 6; //64
   static SCALE_T UScale1 = 7; //128

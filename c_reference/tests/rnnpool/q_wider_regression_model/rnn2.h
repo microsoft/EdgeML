@@ -28,7 +28,7 @@ static SCALE_T tanhScaleIn2 = 13; //8192
 static SCALE_T tanhScaleOut2 = 13; //8192
 static INT_T qOne2 = 16384;
 
-#ifdef SHIFT
+#if defined SHIFT || defined CMSISDSP
   static SCALE_T WScale2 = 6; //64
   static SCALE_T normFeaturesMVW2 = 5; //32
   static SCALE_T UScale2 = 6; //64

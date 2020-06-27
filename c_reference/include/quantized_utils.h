@@ -64,8 +64,8 @@ void v_q_treesum(INTM_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2);
  *                  scret     = 1
  *                  ret       = {-2772, -1358, -3028, -389, -1666, -2070, -608, -699}
  */
-void v_q_add(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
-             INT_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret);
+void v_q_add(const INT_T* vec1, const INT_T* vec2, ITER_T len,
+             INT_T* ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret);
 /**
  * @brief Compute the element-wise subtraction between two vectors.
  * @param[in]       vec1      pointer to the first input vector
@@ -84,8 +84,8 @@ void v_q_add(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
  *                  scret     = 1
  *                  ret       = {1922, 1020, -4040, 1437, -3812, 2244, 712, 1283}
  */
-void v_q_sub(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
-             INT_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret);
+void v_q_sub(const INT_T* vec1, const INT_T* vec2, ITER_T len,
+             INT_T* ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret);
 /**
  * @brief Compute the element-wise product (also known as Hadamard product) between two vectors.
  * @param[in]       vec1      pointer to the first input vector
@@ -102,8 +102,8 @@ void v_q_sub(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
  *                  scvec2    = 64
  *                  ret       = {1423, 7085, -16378, 8209, -12067, 6805, 6475, 6897}
  */
-void v_q_hadamard(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
-                  INT_T* const ret, SCALE_T scvec1, SCALE_T scvec2);
+void v_q_hadamard(const INT_T* vec1, const INT_T* vec2, ITER_T len,
+                  INT_T* ret, SCALE_T scvec1, SCALE_T scvec2);
 /**
  * @brief Compute the element-wise Sigmoid activation on the input vector.
  * @param[in]       vec            pointer to the input vector
@@ -162,8 +162,8 @@ void v_q_tanh(const INT_T* const vec, ITER_T len, INT_T* const ret,
  *                  scret     = 1
  *                  ret       = {16378, 13638, 16378, 9787, 14861, 16378, 10661, 11018}
  */
-void v_q_scalar_add(INT_T scalar, const INT_T* const vec, ITER_T len,
-                    INT_T* const ret, SCALE_T scscalar, SCALE_T scvec, SCALE_T scret);
+void v_q_scalar_add(INT_T scalar, const INT_T* vec, ITER_T len,
+                    INT_T* ret, SCALE_T scscalar, SCALE_T scvec, SCALE_T scret);
 /**
  * @brief Compute the subtraction of every element of a vector (B) from a scalar (a). The resultant vector has elements C_{i} = a - B_{i}.
  * @param[in]       scalar    the input scalar
@@ -182,8 +182,8 @@ void v_q_scalar_add(INT_T scalar, const INT_T* const vec, ITER_T len,
  *                  scret     = 1
  *                  ret       = {16384, 13624, 16384, 9744, 14856, 16384, 10624, 10984}
  */
-void v_q_scalar_sub(INT_T scalar, const INT_T* const vec, ITER_T len,
-                    INT_T* const ret, SCALE_T scscalar, SCALE_T scvec, SCALE_T scret);
+void v_q_scalar_sub(INT_T scalar, const INT_T* vec, ITER_T len,
+                    INT_T* ret, SCALE_T scscalar, SCALE_T scvec, SCALE_T scret);
 /**
  * @brief Compute the subtraction of a scalar (b) from  every element of a vector (A). The resultant vector has elements C_{i} = A_{i} - b.
  * @param[in]       scalar    the input scalar to be subtracted
@@ -202,8 +202,8 @@ void v_q_scalar_sub(INT_T scalar, const INT_T* const vec, ITER_T len,
  *                  scret     = 1
  *                  ret       = {-16384, -13624, -16384, -9744, -14856, -16384, -10624, -10984}
  */
-void v_q_sub_scalar(const INT_T* const vec, INT_T scalar, ITER_T len,
-                    INT_T* const ret, SCALE_T scvec, SCALE_T scscalar, SCALE_T scret);
+void v_q_sub_scalar(const INT_T* vec, INT_T scalar, ITER_T len,
+                    INT_T* ret, SCALE_T scvec, SCALE_T scscalar, SCALE_T scret);
 /**
  * @brief Compute the multiplication of a scalar to every element of a vector.
  * @param[in]       scalar    the input scalar to be multiplied
@@ -220,8 +220,8 @@ void v_q_sub_scalar(const INT_T* const vec, INT_T scalar, ITER_T len,
  *                  scvec     = 256
  *                  ret       = {16261, 13521, 16261, 9670, 14744, 16261, 10544, 10901}
  */
-void v_q_scalar_mul(INT_T scalar, const INT_T* const vec, ITER_T len,
-                    INT_T* const ret, SCALE_T scscalar, SCALE_T scvec);
+void v_q_scalar_mul(INT_T scalar, const INT_T* vec, ITER_T len,
+                    INT_T* ret, SCALE_T scscalar, SCALE_T scvec);
 /**
  * @brief Finds the index of largest element in a vector.
  * @param[in]       vec       pointer to input vector
@@ -402,8 +402,8 @@ void m_q_sub_vec(const INT_T* const mat, const INT_T* const vec,
  *                  H2        = 0
  *                  ret       = {-425, -169, -3534, 524, -2739, 87, 52, 292}
  */
-void m_q_mulvec(const INT_T* const mat, const INT_T* const vec, ITER_T nrows,
-                ITER_T ncols, INT_T* const ret, SCALE_T scmat, SCALE_T scvec,
+void m_q_mulvec(INT_T* mat, INT_T* vec, ITER_T nrows,
+                ITER_T ncols, INT_T* ret, SCALE_T scmat, SCALE_T scvec,
                 SCALE_T H1, SCALE_T H2);
 /**
  * @brief Performs sparse matrix multiplication of a matrix and a vector.
