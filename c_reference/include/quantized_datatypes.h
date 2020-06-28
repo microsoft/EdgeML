@@ -6,8 +6,6 @@
 
 #include <stdint.h>
 
-#define CMSISDSP
-
 // Macro for input type.
 typedef int16_t INT_T;
 // Macro for signed iterator type.

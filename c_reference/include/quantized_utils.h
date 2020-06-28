@@ -402,7 +402,7 @@ void m_q_sub_vec(const INT_T* const mat, const INT_T* const vec,
  *                  H2        = 0
  *                  ret       = {-425, -169, -3534, 524, -2739, 87, 52, 292}
  */
-void m_q_mulvec(INT_T* mat, INT_T* vec, ITER_T nrows,
+void m_q_mulvec(const INT_T* mat, const INT_T* vec, ITER_T nrows,
                 ITER_T ncols, INT_T* ret, SCALE_T scmat, SCALE_T scvec,
                 SCALE_T H1, SCALE_T H2);
 /**
