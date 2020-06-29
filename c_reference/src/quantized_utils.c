@@ -157,6 +157,7 @@ void m_q_mulvec(const INT_T* const mat, const INT_T* const vec, ITER_T nrows,
 #endif
   }
 }
+
 void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T K, \
                 INT_T shrA, INT_T shrB, INT_T shrC) {
 
@@ -239,74 +240,109 @@ void transpose(INT_T *A, INT_T *B, INT_T I, INT_T J) {
   INT_T i = 0;
   INT_T j = 0;
   
-  if( A && B )
-  {
-    for (i = 0; i < I*J; i++)
-    {
+  if( A && B ) {
+    for (i = 0; i < I*J; i++) {
       B[j] = A[i];
       j += I;
 
-      if( (i + 1 ) % J == 0 )
-      {
+      if( (i + 1 ) % J == 0 ) {
         j = ( (i + 1 ) / J );
       }
     }
   }
   return;
 }
-/*
-   For 2D array, give W = 0, C = 0
-*/
-void add_or_sub_cir_4D_2D(INT_T *A, const INT_T *B, INT_T *X, INT_T N, INT_T H,     \
-                  INT_T W, INT_T C, INT_T shrA, INT_T shrB, INT_T shrC, uint8_t add) {
-  INT_T n     = 0;
-  INT_T c     = 0; 
-  INT_T a     = 0;
-  INT_T b     = 0;
-  INT_T res   = 0;
 
+void add_or_sub_cir_4D(INT_T *A, const INT_T *B, INT_T *X, INT_T N, INT_T H, INT_T W, INT_T C, INT_T shrA, INT_T shrB, INT_T shrC, uint8_t add)
+{
+  INT_T n   = 0;
+  INT_T c   = 0;
+  INT_T a   = 0;
+  INT_T b   = 0;
+  INT_T res = 0;
+  
   if(A && B && X) {
-
-    if( W == 0 && C == 0 ) {
-
-      W = 1;
-      C = 1;
-    }
-
     for (n = 0; n < N * H * W * C; n++) {
-          a = A[n];
+      a = A[n];
 #ifdef SHIFT
-          a >>= shrA;
+            a >>= shrA;
 #else
-          a = a / shrA;
+      a = a / shrA;
 #endif /* SHIFT */
-          b = B[c++];
-          if(c >= C)
-              c = 0;
+      b = B[c++];
+      if(c >= C)
+          c = 0;
 #ifdef SHIFT
-          b >>= shrB;
+            b >>= shrB;
 #else
-          b = b / shrB;
+      b = b / shrB;
 #endif /* SHIFT */
 
-          if (add)
+      if (add)
 #ifdef SHIFT
-            res = ((a+b) >> shrC);
+                res = ((a+b) >> shrC);
 #else
-            res = ( (a + b) / shrC);
+                res = ( (a + b) / shrC);
 #endif /* SHIFT */
-          else
+    else
 #ifdef SHIFT
-            res = ((a-b) >> shrC);
+                res = ((a-b) >> shrC);
 #else
             res = ( (a- b) / shrC);
 #endif /* SHIFT */
-          X[n] = res;
+    X[n] = res;
     }
   }
 
   return;
 }
+
+void add_or_sub_cir_2D(INT_T *A, const INT_T *B, INT_T *X, INT_T H, INT_T W, INT_T shrA, INT_T shrB, INT_T shrC, uint8_t add)
+{
+  INT_T h   = 0;
+  INT_T w   = 0;
+  INT_T a   = 0;
+  INT_T b   = 0;
+  INT_T res = 0;
+
+  if(A && B && X) {
+    for (h = 0; h < H * W; h++) {
+    a = A[h];
+#ifdef SHIFT
+          a >>= shrA;
+#else
+    a = a / shrA;
+#endif /* SHIFT */
+
+    b = B[w++];
+          if(w >= W)
+              w = 0;
+#ifdef SHIFT
+          b >>= shrB;
+#else
+    b = b / shrB;
+#endif /* SHIFT */
+
+    if (add)
+#ifdef SHIFT
+                res = ((a+b) >> shrC);
+#else
+      res = ( (a + b) / shrC);
+#endif /* SHIFT */
+    else
+#ifdef SHIFT
+                res = ((a-b) >> shrC);
+#else
+      res = ( (a- b) / shrC);
+#endif /* SHIFT */
+
+    X[h] = res;
+    }
+  }
+
+  return;
+}
+
 /*
    For 2D array, give W = 0, C = 0
 */
@@ -469,15 +505,13 @@ void Reverse2(INT_T *A, INT_T axis, INT_T I, INT_T J, INT_T *B) {
       for ( i = 0; i < I * J; i++) {
 
           B[i] = A[j--];
-          if(j < ref)
-          {
+          if(j < ref) {
               j   = i + J;
               ref = i + 1;
           }
       }
     }
-    else
-    {
+    else {
         j   = I*J - J;
         ref = j;
 
