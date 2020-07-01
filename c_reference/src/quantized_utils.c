@@ -947,11 +947,10 @@ void v_q_treesum(INTM_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2) {
 void v_q_add(const INT_T* vec1, const INT_T* vec2, ITER_T len,
              INT_T* ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret) {
   #ifdef CMSISDSP
-    INT_T *ret2 = malloc(len * sizeof(INT_T));
+    INT_T ret2[len];
     arm_shift_q15(vec1, -(scvec1 + scret), ret, len);
     arm_shift_q15(vec2, -(scvec2 + scret), ret2, len);
     arm_add_q15(ret, ret2, ret, len);
-    free(ret2);
   #else
     for (ITER_T i = 0; i < len; i++) {
       #ifdef SHIFT
@@ -966,11 +965,10 @@ void v_q_add(const INT_T* vec1, const INT_T* vec2, ITER_T len,
 void v_q_sub(const INT_T* vec1, const INT_T* vec2, ITER_T len,
              INT_T* ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret) {
   #ifdef CMSISDSP
-    INT_T *ret2 = malloc(len * sizeof(INT_T));
+    INT_T ret2[len];
     arm_shift_q15(vec1, -(scvec1 + scret), ret, len);
     arm_shift_q15(vec2, -(scvec2 + scret), ret2, len);
     arm_sub_q15(ret, ret2, ret, len);
-    free(ret2);
   #else
     for (ITER_T i = 0; i < len; i++) {
       #ifdef SHIFT
@@ -984,7 +982,7 @@ void v_q_sub(const INT_T* vec1, const INT_T* vec2, ITER_T len,
 
 void v_q_hadamard(const INT_T* vec1, const INT_T* vec2, ITER_T len,
                   INT_T* ret, SCALE_T scvec1, SCALE_T scvec2) {
-  #ifdef CMSISDSP
+  #if defined CMSISDSP && !defined SHIFT
     arm_mult_q15(vec1, vec2, ret, len);
     arm_shift_q15(ret, 15 - (scvec1 + scvec2), ret, len);
   #else
@@ -1224,20 +1222,14 @@ void m_q_sub_vec(const INT_T* const mat, const INT_T* const vec,
 void m_q_mulvec(const INT_T* mat, const INT_T* vec, ITER_T nrows,
                 ITER_T ncols, INT_T* ret, SCALE_T scmat, SCALE_T scvec,
                 SCALE_T H1, SCALE_T H2) {
-  #ifdef CMSISDSP
-    INT_T *tmp = malloc(ncols * sizeof(INT_T));
-    INT_T *ret2 = malloc(ncols * nrows * sizeof(INT_T));
-    INT_T *ret3 = malloc(ncols * sizeof(INT_T));
-    arm_shift_q15(mat, -scmat, ret2, nrows * ncols);
-    arm_shift_q15(vec, -scvec, ret3, ncols);
+  #if defined CMSISDSP && !defined SHIFT
+    INT_T tmp[ncols];
     arm_matrix_instance_q15 A, B, C;
-    arm_mat_init_q15(&A, nrows, ncols, ret2);
-    arm_mat_init_q15(&B, ncols, 1, ret3);
+    arm_mat_init_q15(&A, nrows, ncols, mat);
+    arm_mat_init_q15(&B, ncols, 1, vec);
     arm_mat_init_q15(&C, nrows, 1, ret);
-    arm_mat_mult_q15(&A, &B, &C, tmp);
-    free(tmp);
-    free(ret2);
-    free(ret3);
+    arm_mat_mult_q15(&A, &B, &C, &tmp[0]);
+    arm_shift_q15(ret, 15 - (scvec + scmat + H1), ret, nrows);
   #else
     INTM_T tmp[ncols];
     for (ITER_T row = 0; row < nrows; row++) {
