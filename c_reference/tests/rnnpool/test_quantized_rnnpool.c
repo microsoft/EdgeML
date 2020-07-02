@@ -290,6 +290,7 @@ int main(int argc, char **argv) {
   float yLine[4 * HIDDEN_DIM2];
   float* allErrors = malloc(patches * 4 * HIDDEN_DIM2 * (sizeof(float)));
 
+  double time_spent = 0.0;
   for (unsigned i = 0; i < patches; i++) {
     fread(&xLine[0], sizeof(float), INPUT_CHANNELS * PATCH_DIM * PATCH_DIM, xFile);
     fread(&yLine[0], sizeof(float), 4 * HIDDEN_DIM2, floatResFile);
@@ -304,7 +305,6 @@ int main(int argc, char **argv) {
       }
     }
 
-    double time_spent = 0.0;
     fprintf(outputLog, "Running Quantized RNNPool on Patch %d\n", i + 1);
     clock_t begin = clock();
     q_rnnpool_block(reshapedXLine, INPUT_CHANNELS, PATCH_DIM, PATCH_DIM,
@@ -315,7 +315,7 @@ int main(int argc, char **argv) {
                     output_test, buffer);
     clock_t end = clock();
     time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
-    fprintf(outputLog, "Time elpased is %f seconds\n", time_spent);
+    fprintf(outputLog, "Time elapsed is %f seconds\n", time_spent);
 
     float max_diff = compute_error(output_test, yLine,
                                    allErrors + i * 4 * HIDDEN_DIM2, YScale);
@@ -332,13 +332,13 @@ int main(int argc, char **argv) {
   fclose(floatResFile);
 
   float aggregate = aggregate_error(allErrors, patches * 4 * HIDDEN_DIM2);
+  fprintf(outputLog, "Aggregated 95th Percentile Error: %f\n", aggregate);
   if (aggregate < 1.61) {
     fprintf(outputLog, "Quantized RNNPool Numerical Test Passed!\n");
   } else {
     fprintf(outputLog, "Quantized RNNPool Numerical Test Failed!\n");
     return -1;
   }
-  fprintf(outputLog, "Aggregated 95th Percentile Error: %f\n", aggregate);
 
   free(allErrors);
   return 0;
