@@ -193,7 +193,9 @@ void transpose(INT_T *mat_in, INT_T *mat_out, INT_T nrows, INT_T ncols) {
   return;
 }
 
-void add_or_sub_cir_4D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out, INT_T nbatch, INT_T nrows, INT_T ncols, INT_T nchannel, INT_T scl_a, INT_T scl_b, INT_T scl_out, uint8_t add) {
+void add_or_sub_cir_4D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out, 
+                       INT_T nbatch, INT_T nrows, INT_T ncols, INT_T nchannel, 
+                       INT_T scl_a, INT_T scl_b, INT_T scl_out, uint8_t add) {
 
   INT_T n   = 0;
   INT_T c   = 0;
@@ -237,7 +239,9 @@ void add_or_sub_cir_4D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out, INT
   return;
 }
 
-void add_or_sub_cir_2D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out, INT_T nrows, INT_T ncols, INT_T scl_a, INT_T scl_b, INT_T scl_out, uint8_t add) {
+void add_or_sub_cir_2D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out, 
+                       INT_T nrows, INT_T ncols, INT_T scl_a, INT_T scl_b, 
+                       INT_T scl_out, uint8_t add) {
   INT_T h   = 0;
   INT_T w   = 0;
   INT_T a   = 0;
@@ -282,7 +286,7 @@ void add_or_sub_cir_2D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out, INT
   return;
 }
 
-void relu_nD(INT_T *mat, INT_T length) {
+void relu(INT_T *mat, INT_T length) {
 
   INT_T n = 0;
 
@@ -362,110 +366,12 @@ void Reverse2(INT_T *mat_in, INT_T axis, INT_T nrows, INT_T ncols, INT_T *mat_ou
   return;
 }
 
-void conv(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,
-          INT_T N, INT_T H, INT_T W, INT_T CI, INT_T HF,
-          INT_T WF, INT_T CO, INT_T shrA, INT_T shrB, INT_T H1, INT_T H2) {
-
-  INT_T     padH      =  0;
-  INT_T     padW      =  0;
-  INT_T     n         =  0;
-  INT_T     h         =  0;
-  INT_T     w         =  0;
-  INT_T     co        =  0;
-  INT_T     counter   =  0;
-  INT_T     hf        =  0;
-  INT_T     wf        =  0;
-  INT_T     ci        =  0;
-  INT_T     a         =  0;
-  INT_T     b         =  0;
-  INT_T     totalEle  =  0;
-  INT_T     count     =  0;
-  INT_T     depth     =  0;
-  INT_T     p         =  0;
-  INT_T     sum       =  0;
-  uint8_t   shr       =  0;
-  int64_t   temp      =  0;
-
-  if(A && B && C && tmp) { 
-    padH = (HF - 1) / 2;
-    padW = (WF - 1) / 2;
-    for (n = 0; n < N; n++) {
-      for ( h = 0; h < H; h++) {
-        for ( w = 0; w < W; w++) {
-          for ( co = 0; co < CO; co++) {
-            counter = 0;
-            for ( hf = 0; hf < HF; hf++) {
-              for ( wf = 0; wf < WF; wf++) {
-                for ( ci = 0; ci < CI; ci++) {
-
-                  a = (((((h + hf) < padH) || ((h + hf) >= (H + padH))) || (((w + wf) < padW) || ((w + wf) >= (W + padW)))) ? 0 : A[n * H * W * CI + ((h + hf) - padH) * W * CI + ((w + wf) - padW) * CI + ci]);
-                  b = B[hf * WF * CI * CO + wf * CI * CO + ci * CO + co];
-
-                  #ifdef FASTAPPROX
-                    #ifdef SHIFT
-                      a = a >> shrA;
-                      b = b >> shrB;
-                    #else
-                      a = a / shrA;
-                      b = b / shrB;
-                    #endif /* SHIFT */
-
-                  tmp[counter] = a * b;
-                  #else
-                    temp          = (((int64_t) a) * ((int64_t)b)) / (((int64_t)shrA) * ((int64_t)shrB));
-                    tmp[counter]  = (temp);
-                  #endif
-                  counter++;
-                }
-              }
-            }
-
-            totalEle  = HF * WF * CI;
-            count     = HF * WF * CI, depth = 0;
-            shr       = 1;
-
-            while (depth < (H1 + H2))
-            {
-              if (depth >= H1)
-                shr = 0;
-
-              for ( p = 0; p < (totalEle / 2 + 1); p++)
-              {
-                  
-                if (p < (count >> 1))
-                {
-                  if (shr)
-                    sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
-                  else
-                    sum = tmp[2 * p] + tmp[(2 * p) + 1];
-                }
-                else if ((p == (count >> 1)) && ((count & 1) == 1))
-                {
-                  if (shr)
-                    sum = tmp[2 * p] / 2;
-                  else
-                    sum = tmp[2 * p];
-                }
-                else
-                  sum = 0;
-
-                tmp[p] = sum;
-              }
-              count = (count + 1) >> 1;
-
-              depth++;
-            }
-
-            C[n * H * W * CO + h * W * CO + w * CO + co] = tmp[0];
-          }
-        }
-      }
-    }
-  }
-  return;
-}
-
-void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,INT_T N, INT_T H, INT_T W, INT_T CIN, INT_T HF,INT_T WF, INT_T CINF, INT_T COUTF, INT_T HOUT,INT_T WOUT, INT_T HPADL, INT_T HPADR, INT_T WPADL,INT_T WPADR, INT_T HSTR, INT_T WSTR, INT_T HDL,INT_T WDL, INT_T G, INT_T shrA, INT_T shrB, INT_T H1,INT_T H2) {
+void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,INT_T N, 
+                 INT_T H, INT_T W, INT_T CIN, INT_T HF,INT_T WF, 
+                 INT_T CINF, INT_T COUTF, INT_T HOUT,INT_T WOUT, 
+                 INT_T HPADL, INT_T HPADR, INT_T WPADL,INT_T WPADR, 
+                 INT_T HSTR, INT_T WSTR, INT_T HDL,INT_T WDL, INT_T G, 
+                 INT_T shrA, INT_T shrB, INT_T H1,INT_T H2) {
 
   INT_T n         = 0;
   INT_T h         = 0;
@@ -569,7 +475,8 @@ void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,INT_T N, INT_T H
 }
 
 
-void sigmoid(INT_T *A, INT_T I, INT_T J, INT_T div, INT_T add, INT_T sigmoid_limit,INT_T scale_in, INT_T scale_out, INT_T *B) {
+void sigmoid(INT_T *A, INT_T I, INT_T J, INT_T div, INT_T add, INT_T sigmoid_limit,
+             INT_T scale_in, INT_T scale_out, INT_T *B) {
 
   INT_T i           = 0;
   INT_T x           = 0;
@@ -627,7 +534,8 @@ void sigmoid(INT_T *A, INT_T I, INT_T J, INT_T div, INT_T add, INT_T sigmoid_lim
 }
 
 
-void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T K, INT_T shrA, INT_T shrB, INT_T shrC) {
+void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T K, 
+                INT_T shrA, INT_T shrB, INT_T shrC) {
 
   INT_T k       = 0;
   INT_T b       = 0;
@@ -665,7 +573,9 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
   return;
 }
 
-void maxpool(INT_T *A, INT_T *B, INT_T N, INT_T H, INT_T W, INT_T C, INT_T FH,INT_T FW, INT_T strideH, INT_T strideW, INT_T HPADL, INT_T HPADR,INT_T WPADL, INT_T WPADR) {
+void maxpool(INT_T *A, INT_T *B, INT_T N, INT_T H, INT_T W, INT_T C, INT_T FH, 
+             INT_T FW, INT_T strideH, INT_T strideW, INT_T HPADL, INT_T HPADR, 
+             INT_T WPADL, INT_T WPADR) {
 
   INT_T n   = 0;
   INT_T ho  = 0;
