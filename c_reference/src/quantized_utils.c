@@ -548,18 +548,32 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
   for (k = 0; k < K; k++) {
     b = B[k * 1][0];
     #ifdef FASTAPPROX
-      b = b / shrB;
+      #ifdef SHIFT
+        b = b >> shrB
+      #else
+        b = b / shrB;
+      #endif
     #endif
 
     idx = Aidx[ite_idx];
     while (idx != 0) {
       a = Aval[ite_val];
       #ifdef FASTAPPROX
-        a = a / shrA;
-        c = a * b;
-        c = c / shrC;
+        #ifdef SHIFT
+          a = a >> shrA;
+          c = a * b;
+          c = c >> shrC;
+        #else
+          a = a / shrA;
+          c = a * b;
+          c = c / shrC;
+        #endif
       #else
-        c = (((INT_T)a * (INT_T)b) / ((INT_T)shrC * (INT_T)shrA * (INT_T)shrB));
+        #ifdef  SHIFT
+          c = (((INT_T)a * (INT_T)b) >> ((INT_T)shrC * (INT_T)shrA * (INT_T)shrB));
+        #else
+          c = (((INT_T)a * (INT_T)b) / ((INT_T)shrC * (INT_T)shrA * (INT_T)shrB));
+        #endif
       #endif
 
       C[idx - 1] += c;
