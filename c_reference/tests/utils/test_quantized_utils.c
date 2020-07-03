@@ -146,10 +146,10 @@ int test_transpose(void) {
 // Test adjust_scale_shr() unction
 int test_adjust_scale_shl(void) {
 
-  INT_T qmatrix[16]= {4232, -987, -2342,1232, -3242, 843, 982, 2342, 343, 6543, 987, 6542, 5674, 2876, 987, 1265};
-  INT_T expected[16] = {42320, -9870, -23420,12320, -32420, 8430, 9820, 23420, 3430, 65430, 9870, 65420, 56740, 28760, 9870, 12650};
-  INT_T qmatrix1[16]= {4232, -987, -2342,1232, -3242, 843, 982, 2342, 343, 6543, 987, 6542, 5674, 2876, 987, 1265};
-  INT_T expected1[16] = {42320, -9870, -23420,12320, -32420, 8430, 9820, 23420, 3430, 65430, 9870, 65420, 56740, 28760, 9870, 12650};
+  INT_T qmatrix[16]= {4232, -987, -2342, 1232, -3242, 843, 982, 2342, 343, 6543, 987, 6542, 5674, 2876, 987, 1265};
+  INT_T expected[16] = {42320, -9870, -23420, 12320, -32420, 8430, 9820, 23420, 3430, 65430, 9870, 65420, 56740, 28760, 9870, 12650};
+  INT_T qmatrix1[16]= {4232, -987, -2342, 1232, -3242, 843, 982, 2342, 343, 6543, 987, 6542, 5674, 2876, 987, 1265};
+  INT_T expected1[16] = {42320, -9870, -23420, 12320, -32420, 8430, 9820, 23420, 3430, 65430, 9870, 65420, 56740, 28760, 9870, 12650};
 
   adjust_scale_shl(qmatrix, 16, 10);
   adjust_scale_shl(qmatrix1, 16, 10);
@@ -159,10 +159,10 @@ int test_adjust_scale_shl(void) {
 
 // Test AdjustScaleShr function
 int test_adjust_scale_shr(void) {
-  INT_T qmatrix[16]= {4232, -9879, -2342,1232, -3242, 8432, 9823, 2342, 343, 6543, 9876, 6542, 5674, 28765, 9876, 12654};
-  INT_T expected[16] = {114 ,-267 ,-63 ,33 ,-87 ,227 ,265 ,63 ,9 ,176 ,266 ,176 ,153 ,777 ,266 ,342}; 
-  INT_T qmatrix1[16]= {4232, -9879, -2342,1232, -3242, 8432, 9823, 2342, 343, 6543, 9876, 6542, 5674, 28765, 9876, 12654};
-  INT_T expected1[16] = {114 ,-267 ,-63 ,33 ,-87 ,227 ,265 ,63 ,9 ,176 ,266 ,176 ,153 ,777 ,266 ,342};
+  INT_T qmatrix[16]= {4232, -9879, -2342, 1232, -3242, 8432, 9823, 2342, 343, 6543, 9876, 6542, 5674, 28765, 9876, 12654};
+  INT_T expected[16] = {114, -267, -63, 33, -87, 227, 265, 63, 9, 176, 266, 176, 153, 777, 266, 342}; 
+  INT_T qmatrix1[16]= {4232, -9879, -2342, 1232, -3242, 8432, 9823, 2342, 343, 6543, 9876, 6542, 5674, 28765, 9876, 12654};
+  INT_T expected1[16] = {114, -267, -63, 33, -87, 227, 265, 63, 9, 176, 266, 176, 153, 777, 266, 342};
 
   adjust_scale_shr(qmatrix, 16, 37);
   adjust_scale_shr(qmatrix1, 16, 37);
@@ -172,16 +172,16 @@ int test_adjust_scale_shr(void) {
 
 // Test Reverse2 function
 int test_reverse2(void) {
-  INT_T qmatrix[16]= {4232, -9879, -2342,1232, -3242, 8432, 9823, 2342, 343, 6543, 9876, 6542, 5674, 28765, 9876, 12654};
-  INT_T expected[16] = {1232,-2342,-9879,4232,2342,9823,8432,-3242,6542,9876,6543,343,12654,9876,28765,5674};
-  INT_T expected1[16] = {5674,28765,9876,12654,343,6543,9876,6542,-3242,8432,9823,2342,4232,-9879,-2342,1232};
+  INT_T qmatrix[16]= {4232, -9879, -2342, 1232, -3242, 8432, 9823, 2342, 343, 6543, 9876, 6542, 5674, 28765, 9876, 12654};
+  INT_T expected[16] = {1232, -2342, -9879, 4232, 2342, 9823, 8432, -3242, 6542, 9876, 6543, 343, 12654, 9876, 28765, 5674};
+  INT_T expected1[16] = {5674, 28765, 9876, 12654, 343, 6543, 9876, 6542, -3242, 8432, 9823, 2342, 4232, -9879, -2342, 1232};
   INT_T predicted[16];
   INT_T predicted1[16];
 
   Reverse2(qmatrix, 1, 4, 4, predicted);
-  Reverse2(qmatrix, 0, 4, 4,predicted1);
+  Reverse2(qmatrix, 0, 4, 4, predicted1);
 
-  return check_output(predicted,expected, 16) == 0 && check_output(predicted1,expected1, 16) == 0 ? 0: 1; 
+  return check_output(predicted, expected, 16) == 0 && check_output(predicted1, expected1, 16) == 0 ? 0: 1; 
 }
 
 // Test AddOrSubCir4D function
@@ -192,10 +192,10 @@ int test_add_or_sub_cir_4D(void) {
   INT_T predicted1[16];
   INT_T predicted2[16];
   INT_T predicted3[16];
-  INT_T expected[16] = {18,21,25,14,43,14,32,32,36,7,36,21,43,18,45,34 };
-  INT_T expected1[16] = {-10 ,15 ,-3 ,8 ,15,8 ,4 ,26 ,8 ,1 ,8 ,15 ,15,12,17 ,28};
-  INT_T expected2[16] = {554,662,767,460,1300,458,963,1010,1111,238,1101,659,1319,570,1356,1049};
-  INT_T expected3[16] = {-290,428,-77,226,456,224,119,776,267,4,257,425,475,336,512,815};
+  INT_T expected[16] = {18, 21, 25, 14, 43, 14, 32, 32, 36, 7, 36, 21, 43, 18, 45, 34 };
+  INT_T expected1[16] = {-10, 15, -3, 8, 15, 8, 4, 26, 8, 1, 8, 15, 15, 12, 17, 28};
+  INT_T expected2[16] = {554, 662, 767, 460, 1300, 458, 963, 1010, 1111, 238, 1101, 659, 1319, 570, 1356, 1049};
+  INT_T expected3[16] = {-290, 428, -77, 226, 456, 224, 119, 776, 267, 4, 257, 425, 475, 336, 512, 815};
 
   add_or_sub_cir_4D(arrA,arrB, predicted, 2, 2, 2, 2, 10, 20, 30, 1);
   add_or_sub_cir_4D(arrA,arrB, predicted1, 2, 2, 2, 2, 10, 20, 30, 0);
@@ -212,8 +212,8 @@ int test_add_or_sub_cir_2D(void) {
   const INT_T arrB[16] = {8452, 2341, 9383, 2353, 4522, 6232, 2562, 565, 4564, 7756, 2585, 8735, 3525, 4341, 4656, 2313};
   INT_T predicted[16];
   INT_T predicted1[16];
-  const INT_T expected[16] = {18,21,26,14,43 ,14 ,33,32,36,7,37,21,43,18,46,34};
-  const INT_T expected1[16] = {-10,15,-4,8 ,15 ,8,3,26,8 ,1,7,15,15,12,16 ,28};
+  const INT_T expected[16] = {18, 21, 26, 14, 43 , 14, 33, 32, 36, 7, 37, 21, 43, 18, 46, 34};
+  const INT_T expected1[16] = {-10, 15, -4, 8, 15, 8, 3, 26, 8, 1, 7, 15, 15, 12, 16, 28};
   add_or_sub_cir_2D(arrA,arrB, predicted, 4, 4, 10, 20, 30, 1);
 
   add_or_sub_cir_2D(arrA,arrB, predicted1, 4, 4, 10, 20, 30, 0);
@@ -224,22 +224,22 @@ int test_add_or_sub_cir_2D(void) {
 int test_exp(void) {
   INT_T arrA[16] = {13, 54, 34, 35, 87, 11, 41, 93, 89, 11, 90, 25, 76, 39, 48, 93};
   INT_T predicted[16];
-  const INT_T expected[16] = {227,343,280,283,477,223,301,506,487,223,491,256,427,295,323,506};
+  const INT_T expected[16] = {227, 343, 280, 283, 477, 223, 301, 506, 487, 223, 491, 256, 427, 295, 323, 506};
 
   exp_scale(arrA, 16, 100, 200, predicted);
   return check_output(predicted, expected, 16);
 }
 
 // Test RelunD function
-int test_relu_nD(void) {
-  INT_T predicted[16] = {-3648,648,-2147,-2348,1468,-4348,3648,3648,-648,9648,3778,4743,7483,-243,8,-21};
-  INT_T predicted1[16] = {-3648,648,-2147,-2348,1468,-4348,3648,3648,-648,9648,3778,4743,7483,-243,8,-21};
-  const INT_T expected[16] = {0,648,0,0,1468,0,3648,3648,0,9648,3778,4743,7483,0,8,0};
-  const INT_T expected1[16] = {0,648,0,0,1468,0,3648,3648,0,9648,3778,4743,7483,0,8,0};
+int test_relu(void) {
+  INT_T predicted[16] = {-3648, 648, -2147, -2348, 1468, -4348, 3648, 3648, -648, 9648, 3778, 4743, 7483, -243, 8, -21};
+  INT_T predicted1[16] = {-3648, 648, -2147, -2348, 1468, -4348, 3648, 3648, -648, 9648, 3778, 4743, 7483, -243, 8, -21};
+  const INT_T expected[16] = {0, 648, 0, 0, 1468, 0, 3648, 3648, 0, 9648, 3778, 4743, 7483, 0, 8, 0};
+  const INT_T expected1[16] = {0, 648, 0, 0, 1468, 0, 3648, 3648, 0, 9648, 3778, 4743, 7483, 0, 8, 0};
 
-  relu_nD(predicted, 16);
-  relu_nD(predicted1, 16);
-  return check_output(predicted,expected, 16) == 0 && check_output(predicted1,expected1, 16) == 0 ? 0: 1;
+  relu(predicted, 16);
+  relu(predicted1, 16);
+  return check_output(predicted, expected, 16) == 0 && check_output(predicted1, expected1, 16) == 0 ? 0: 1;
 }
 
 // Test maxpool function
@@ -247,30 +247,18 @@ int test_maxpool(void)
 {
   INT_T arr[] = {1, 2, 3, 4, 5, 6, 7 ,8, 9, 10, 11,12, 13, 14, 15, 16};
   INT_T predicted[16] = {0};
-  INT_T expected[16] = {13 ,14 ,15 ,16 ,15 ,16 ,15 ,16 ,15 ,16 ,15 ,16 ,15 ,16 ,15 ,16};
-  maxpool(arr, predicted, 2,2,2,2,3, 3, 1, 1, 1, 1, 1, 1);
+  INT_T expected[16] = {13, 14, 15, 16, 15, 16, 15, 16, 15, 16, 15, 16, 15, 16, 15, 16};
+  maxpool(arr, predicted, 2, 2, 2, 2, 3, 3, 1, 1, 1, 1, 1, 1);
   return check_output(predicted, expected, 16);
 }
 
 // Test sigmoid function
 int test_sigmoid(void)
 {
-  INT_T arr[] = {1, 2, 3, 4, 5, 6, 7 ,8, 9, 10, 11,12, 13, 14, 15, 16};
+  INT_T arr[] = {1, 2, 3, 4, 5, 6, 7 ,8, 9, 10, 11, 12, 13, 14, 15, 16};
   INT_T predicted[16] = {0};
-  INT_T expected[16] = {2 ,4 ,4 ,6 ,6 ,8 ,8 ,10 ,10 ,10 ,10 ,10 ,10 ,10 ,10 ,10};
+  INT_T expected[16] = {2, 4, 4, 6, 6, 8, 8, 10, 10, 10, 10, 10 , 10, 10, 10, 10};
   sigmoid(arr, 4, 4, 2, 1, 5, 5, 10, predicted);
-  return check_output(predicted, expected, 16);
-}
-
-// Test conv function
-int test_conv(void)
-{
-  INT_T arr[] = {1, 2, 3, 4, 5, 6, 7 ,8, 9, 10, 11,12, 13, 14, 15, 16};
-  INT_T arr1[] = {1,2,5,6,7,8,3,4,5,2,2,2,7,8,9,10};
-  INT_T temp[16] = {0};
-  INT_T predicted[16] = {0};
-  INT_T expected[16] = {21 ,27 ,11 ,15 ,53 ,67 ,23 ,31 ,85 ,107 ,35 ,47 ,117 ,147 ,47 ,63};
-  conv(arr, arr1, predicted, temp, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1 );
   return check_output(predicted, expected, 16);
 }
 
@@ -278,11 +266,11 @@ int test_conv(void)
 int test_convolution(void)
 {
     INT_T input1[16] = {11, 220, 130, 40, 50, 60, 66 ,76, 86, 910, 411,312, 513, 514,715, 716};
-    INT_T input2[16] = {100,992,15,26,27,8,3,4,5,2,2,2,7,8,29,140};
+    INT_T input2[16] = {100, 992, 15, 26, 27, 8, 3, 4, 5, 2, 2, 2, 7, 8, 29, 140};
     INT_T output[sizeof(input1)/sizeof(input1[0])];
     INT_T temp[sizeof(input1)/sizeof(input1[0])];
-    INT_T expected[16] = {0 ,0 ,0 ,0 ,1 ,2 ,0 ,0 ,0 ,0 ,0 ,0 ,11 ,10 ,1 ,2};
-    convolution(input1, input2, output, temp,2, 2, 2, 2,2, 2, 2,2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2 , 10 , 20, 1, 1);
+    INT_T expected[16] = {0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 11, 10, 1, 2};
+    convolution(input1, input2, output, temp, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 10, 20, 1, 1);
     return check_output(output, expected, 16);
 }
 
@@ -297,7 +285,7 @@ int test_sparcematrix(void)
     input3[0][0] = 1;
     input3[1][0] = 2;
     INT_T output[16] = {0};
-    INT_T expected[] = {1 ,29 ,5 ,36 ,8 ,43 ,11 ,36 ,0 ,40 ,0 ,43 ,0 ,46 ,0 ,0};
+    INT_T expected[] = {1, 29, 5, 36, 8, 43, 11, 36, 0, 40, 0, 43, 0, 46, 0, 0};
     sp_mat_mul(input1, input2, input3, output, 2, 1, 2, 3);
      
     free(input3[1]);
@@ -343,14 +331,12 @@ int main() {
     printf("Test Failure for test_AddOrSubCir2D()!\n");
   } else if (test_exp()) {
     printf("Test Failure for test_Exp()!\n");
-  } else if (test_relu_nD()) {
-    printf("Test Failure for test_Relu4D2D()!\n");
+  } else if (test_relu()) {
+    printf("Test Failure for test_Relu()!\n");
   } else if (test_maxpool()) {
     printf("Test Failure for test_maxpool()!\n");
   } else if (test_sigmoid()) {
     printf("Test Failure for test_sigmoid()!\n");
-  } else if (test_conv()) {
-    printf("Test Failure for test_conv()!\n");
   } else if (test_convolution()) {
     printf("Test Failure for test_convolution()!\n");
   } else if (test_sparcematrix()) {
