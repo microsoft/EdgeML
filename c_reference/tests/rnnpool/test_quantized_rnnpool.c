@@ -40,7 +40,7 @@ float compute_error(INT_T pred[4 * HIDDEN_DIM2], float label[4 * HIDDEN_DIM2],
 // Function for computing the 95th percentile deviation among all the outputs.
 float aggregate_error(float* errors, unsigned len) {
   qsort(errors, len, sizeof(float), compare_floats);
-  unsigned index = round(fmax((0.95 * len - 1), 0));
+  unsigned index = (unsigned) round(fmax((0.95 * len - 1), 0));
   return errors[index];
 }
 
@@ -51,7 +51,7 @@ float aggregate_error(float* errors, unsigned len) {
  */
 int main(int argc, char **argv) {
   unsigned patches;
-  int XScale = 12, YScale = 14;
+  SCALE_T XScale = 12, YScale = 14;
 
   FILE *xFile, *yFile, *floatResFile, *outputLog;
 
@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
 
   int16_t floatHeaderSize;
   fread(&floatHeaderSize, sizeof(int16_t), 1, floatResFile);
-  char* floatHeaderLine = malloc((floatHeaderSize + 1)* sizeof(*floatHeaderLine));
+  char* floatHeaderLine = malloc((floatHeaderSize + 1) * sizeof(*floatHeaderLine));
   fgets(floatHeaderLine, floatHeaderSize + 1, floatResFile);
   free(floatHeaderLine);
   free(headerLine);
@@ -105,10 +105,10 @@ int main(int argc, char **argv) {
   snprintf(numpyHeader2, len + 1, "%d", patches);
   char numpyHeader3[] = ", 1, 32), }";
 
-  unsigned headerLength = strlen(numpyHeader1) + strlen(numpyHeader2) +
-                          strlen(numpyHeader3);
-  unsigned count = 1;
-  for (unsigned i = headerLength + 10; i % 64 != 63; i++) {
+  size_t headerLength = strlen(numpyHeader1) + strlen(numpyHeader2) +
+                        strlen(numpyHeader3);
+  int count = 1;
+  for (size_t i = headerLength + 10; i % 64 != 63; i++) {
     count++;
   }
 
