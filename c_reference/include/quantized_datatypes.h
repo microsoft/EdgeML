@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+#ifndef __QUANTIZED_DATATYPES_H__
+#define __QUANTIZED_DATATYPES_H__
+
 #include <stdint.h>
 
 // Macro for input type.
@@ -19,3 +22,5 @@ typedef int32_t INTM_T;
 #define INT_TMAX 32767
 // Macro for min value of input type.
 #define INT_TMIN -32768
+
+#endif
