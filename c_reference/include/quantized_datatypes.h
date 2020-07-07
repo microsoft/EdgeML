@@ -9,7 +9,7 @@
 // Macro for input type.
 typedef int16_t INT_T;
 // Macro for iterator type.
-typedef uint16_t ITER_T;
+typedef int16_t ITER_T;
 // Macro for intermediate buffer type.
 typedef int32_t INTM_T;
 // Macro for scale variable type.

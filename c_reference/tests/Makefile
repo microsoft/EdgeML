@@ -25,9 +25,9 @@ UTILS_DIR=utils
 test_quantized_utils: $(UTILS_DIR)/test_quantized_utils.c $(SRC_DIR)/quantized_utils.o
 	$(CC) -o $@ $^ $(IFLAGS) $(CFLAGS) -lm
 
-MBCONV_DIR=mbconv
-test_quantized_mbconv: $(UTILS_DIR)/test_quantized_mbconv.c $(SRC_DIR)/quantized_mbconv.o
-	$(CC) -o $@ $^ $(IFLAGS) $(CFLAGS) -lm
+#MBCONV_DIR=mbconv
+#test_quantized_mbconv: $(MBCONV_DIR)/test_quantized_mbconv.c $(SRC_DIR)/quantized_utils.o $(SRC_DIR)/quantized_mbconv.o
+#	$(CC) -o $@ $^ $(IFLAGS) $(CFLAGS) -lm
 
 .PHONY: clean cleanest
 

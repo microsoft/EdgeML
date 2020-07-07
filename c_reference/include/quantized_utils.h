@@ -20,7 +20,21 @@ inline INT_T saturate(INTM_T inp) {
     }
 }
 
+// This function is used to provide a truncation of input to a specific
+// range within the ReLU operation.
+inline INTM_T truncate_relu(INTM_T inp, INTM_T limit) {
+    if (inp > limit){
+        return limit;
+    } else if (inp < 0) {
+        return 0;
+    } else {
+        return inp;
+    }
+}
+
 // Functions for calculating quantized operations and activations.
+// Function for computing TreeSum from a given vector holding intermediate results.
+void v_q_treesum(INTM_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2);
 // Function for computing the element-wise addition between two vectors.
 void v_q_add(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
              INT_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret);
