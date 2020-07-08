@@ -22,7 +22,7 @@ inline INT_T saturate(INTM_T inp) {
 
 // This function is used to provide a truncation of input to a specific
 // range within the ReLU operation.
-inline INTM_T truncate_relu(INTM_T inp, INTM_T limit) {
+inline INTM_T q_relu(INTM_T inp, INTM_T limit) {
     if (inp > limit){
         return limit;
     } else if (inp < 0) {
