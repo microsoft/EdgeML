@@ -305,7 +305,7 @@ void exp_scale(INT_T *mat_in, INT_T length, INT_T scl_in, INT_T scl_out, INT_T *
   if(mat_in && mat_out) {
     for (i = 0; i < length; i++) {
       #ifdef SHIFT
-        mat_out[i] = ((INT_T)(exp(((float)mat_in[i]) >> scl_in) * scl_out));
+        mat_out[i] = ((INT_T)(exp(((float)mat_in[i]) >> scl_in) << scl_out));
       #else
         mat_out[i] = ((INT_T)(exp(((float)mat_in[i]) / scl_in) * scl_out));
       #endif /* SHIFT */
@@ -338,7 +338,11 @@ void adjust_scale_shl(INT_T *mat, INT_T length, INT_T scale) {
 
   if(mat) {
     while(i < length) {
+     #ifdef SHIFT
+        mat[i++] <<= scale;
+      #else
       mat[i++] *= scale;
+      #endif /* SHIFT */
     }
   }
 
@@ -439,7 +443,7 @@ void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,INT_T N,
                     if (p < (count >> 1)) {
                       if (shr)
                         #ifdef SHIFT
-                          sum = ( tmp[2 * p] >> 1 ) + ( tmp[(2 * p) + 1] / 2 );
+                          sum = ( tmp[2 << p] >> 1 ) + ( tmp[(2 << p) + 1] / 2 );
                         #else
                           sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
                         #endif
@@ -449,7 +453,7 @@ void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,INT_T N,
                     else if ((p == (count >> 1)) && ((count & 1) == 1)) {
                       if (shr)
                         #ifdef SHIFT
-                          sum = tmp[2 * p] >> 1;
+                          sum = tmp[2 << p] >> 1;
                         #else
                           sum = tmp[2 * p] / 2;
                         #endif
@@ -560,7 +564,7 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
       #ifdef FASTAPPROX
         #ifdef SHIFT
           a = a >> shrA;
-          c = a * b;
+          c = a << b;
           c = c >> shrC;
         #else
           a = a / shrA;
@@ -569,7 +573,7 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
         #endif
       #else
         #ifdef  SHIFT
-          c = (((INT_T)a * (INT_T)b) >> ((INT_T)shrC * (INT_T)shrA * (INT_T)shrB));
+          c = (((INT_T)a << (INT_T)b) >> ((INT_T)shrC << (INT_T)shrA << (INT_T)shrB));
         #else
           c = (((INT_T)a * (INT_T)b) / ((INT_T)shrC * (INT_T)shrA * (INT_T)shrB));
         #endif
