@@ -4,6 +4,15 @@
 #include "ProtoNNFunctions.h"
 
 #include "mmaped.h"
+
+#ifdef LINUX
+#include <dirent.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
 using namespace EdgeML;
 using namespace EdgeML::ProtoNN;
 
@@ -63,14 +72,17 @@ void ProtoNNTrainer::createOutputDirs()
 #endif
 
   try {
-    std::string testcommand = "test -d " + outDir;
     std::string command = "mkdir " + outDir;
 
+  // On linux -
+  // opendir() is non-NULL if dir exists
+  // mkdir() returns -1 on error
+
 #ifdef LINUX
-    if (system(testcommand.c_str()) == 0)
+    if (opendir(outDir.c_str()))
       LOG_INFO("Directory " + outDir + " already exists.");
     else
-      if (system(command.c_str()) != 0)
+      if (mkdir(outDir.c_str(), 0700) == -1)
         LOG_WARNING("Error in creating directory at this location: " + outDir);
 #endif
 
@@ -82,13 +94,12 @@ void ProtoNNTrainer::createOutputDirs()
 
 #ifdef DUMP
 #ifdef LINUX
-    testcommand = "test -d " + outDir + "/dump";
-    command = "mkdir " + outDir + "/dump";
-    if (system(testcommand.c_str()) == 0)
-      LOG_INFO("Directory " + outDir + "/dump already exists.");
+    std::string dumpDir = outDir + "/dump";
+    if (opendir(dumpDir.c_str()))
+      LOG_INFO("Directory " + dumpDir + " already exists.");
     else
-      if (system(command.c_str()) != 0)
-        LOG_WARNING("Error in creating directory at this location: " + outDir + "/dump");
+      if (mkdir(dumpDir.c_str(), 0700) == -1)
+        LOG_WARNING("Error in creating directory at this location: " + dumpDir);
 #endif
 
 #ifdef WINDOWS
@@ -100,13 +111,12 @@ void ProtoNNTrainer::createOutputDirs()
 
 #ifdef VERIFY
 #ifdef LINUX
-    testcommand = "test -d " + outDir + "/verify";
-    command = "mkdir " + outDir + "/verify";
-    if (system(testcommand.c_str()) == 0)
-      LOG_INFO("Directory " + outDir + "/verify already exists.");
+    std::string verifyDir = outDir + "/verify";
+    if (opendir(verifyDir.c_str()))
+      LOG_INFO("Directory " + verifyDir + " already exists.");
     else
-      if (system(command.c_str()) != 0)
-        LOG_WARNING("Error in creating directory at this location: " + outDir + "/verify");
+      if (mkdir(verifyDir.c_str(), 0700) == -1)
+        LOG_WARNING("Error in creating directory at this location: " + verifyDir);
 #endif
 
 #ifdef WINDOWS

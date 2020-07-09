@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 #ifndef __QUANTIZED_FASTGRNN_H__
-#define __QUANTIZED_FASRGRNN_H__
+#define __QUANTIZED_FASTGRNN_H__
 
 #define ERR_PRECOMP_NOT_INIT -1
 #define ERR_TEMPLRW_NOT_INIT -2
