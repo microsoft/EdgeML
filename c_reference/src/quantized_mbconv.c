@@ -42,10 +42,19 @@ void q_mbconv_block(const INT_T* const input, const INT_T* const F1,
           }
 
           v_q_treesum(treesumBuffer, CIn, D1, 0);
-          INTM_T x = (((INTM_T)((treesumBuffer[0] * shlU1) / shrU1 + (BN1B[k] * shlB1) / shrB1)) *
-                      ((INTM_T)BN1W[k]));
+          #ifdef SHIFT
+            INTM_T x = (((INTM_T)(((treesumBuffer[0] << shlU1) >> shrU1) + ((BN1B[k] << shlB1) >> shrB1))) *
+                        ((INTM_T)BN1W[k]));
+          #else
+            INTM_T x = (((INTM_T)((treesumBuffer[0] * shlU1) / shrU1 + (BN1B[k] * shlB1) / shrB1)) *
+                        ((INTM_T)BN1W[k]));
+          #endif
           x = q_relu(x, limit1);
-          convBuffer1[i * W * CTemp + j * CTemp + k] = (x * shlX1) / shrX1;
+          #ifdef SHIFT
+            convBuffer1[i * W * CTemp + j * CTemp + k] = ((x << shlX1) >> shrX1);
+          #else
+            convBuffer1[i * W * CTemp + j * CTemp + k] = (x * shlX1) / shrX1;
+          #endif
         }
       }
     }
@@ -68,10 +77,19 @@ void q_mbconv_block(const INT_T* const input, const INT_T* const F1,
             }
 
             v_q_treesum(treesumBuffer, CIn, D1, 0);
-            INTM_T x = (((INTM_T)((treesumBuffer[0] * shlU1) / shrU1 + (BN1B[k] * shlB1) / shrB1)) *
-                        ((INTM_T)BN1W[k]));
+            #ifdef SHIFT
+              INTM_T x = (((INTM_T)(((treesumBuffer[0] << shlU1) >> shrU1) + ((BN1B[k] << shlB1) >> shrB1))) *
+                          ((INTM_T)BN1W[k]));
+            #else
+              INTM_T x = (((INTM_T)((treesumBuffer[0] * shlU1) / shrU1 + (BN1B[k] * shlB1) / shrB1)) *
+                          ((INTM_T)BN1W[k]));
+            #endif
             x = q_relu(x, limit1);
-            convBuffer1[iRed * W * CTemp + j * CTemp + k] = (x * shlX1) / shrX1;
+            #ifdef SHIFT
+              convBuffer1[iRed * W * CTemp + j * CTemp + k] = ((x << shlX1) >> shrX1);
+            #else
+              convBuffer1[iRed * W * CTemp + j * CTemp + k] = (x * shlX1) / shrX1;
+            #endif
           }
         }
       }
@@ -93,10 +111,19 @@ void q_mbconv_block(const INT_T* const input, const INT_T* const F1,
           }
 
           v_q_treesum(treesumBuffer, HF * WF, D2, 0);
-          INTM_T x = (((INTM_T)((treesumBuffer[0] * shlU2) / shrU2 + (BN2B[g] * shlB2) / shrB2)) *
-                      ((INTM_T)BN2W[g]));
+          #ifdef SHIFT
+            INTM_T x = (((INTM_T)(((treesumBuffer[0] << shlU2) >> shrU2) + ((BN2B[g] << shlB2) >> shrB2))) *
+                        ((INTM_T)BN2W[g]));
+          #else
+            INTM_T x = (((INTM_T)((treesumBuffer[0] * shlU2) / shrU2 + (BN2B[g] * shlB2) / shrB2)) *
+                        ((INTM_T)BN2W[g]));
+          #endif
           x = q_relu(x, limit2);
-          convBuffer2[g] = (x * shlX2) / shrX2;
+          #ifdef SHIFT
+            convBuffer2[g] = ((x << shlX2) >> shrX2);
+          #else
+            convBuffer2[g] = (x * shlX2) / shrX2;
+          #endif
         }
 
         for (ITER_T i = 0; i < COut; i++) {
@@ -105,9 +132,15 @@ void q_mbconv_block(const INT_T* const input, const INT_T* const F1,
           }
 
           v_q_treesum(treesumBuffer, CTemp, D3, 0);
-          output[n * HOut * WOut * COut + hout * WOut * COut + wout * COut + i] =
-            ((((INTM_T)((treesumBuffer[0] * shlU3) / shrU3 + (BN3B[i] * shlB3) / shrB3)) *
-              ((INTM_T) BN3W[i])) * shlW3) / shrW3;
+          #ifdef SHIFT
+            output[n * HOut * WOut * COut + hout * WOut * COut + wout * COut + i] =
+              (((((INTM_T)(((treesumBuffer[0] << shlU3) >> shrU3) + ((BN3B[i] << shlB3) >> shrB3))) *
+                ((INTM_T) BN3W[i])) << shlW3) >> shrW3);
+          #else
+            output[n * HOut * WOut * COut + hout * WOut * COut + wout * COut + i] =
+              ((((INTM_T)((treesumBuffer[0] * shlU3) / shrU3 + (BN3B[i] * shlB3) / shrB3)) *
+                ((INTM_T) BN3W[i])) * shlW3) / shrW3;
+          #endif
         }
       }
     }
