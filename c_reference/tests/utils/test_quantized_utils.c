@@ -18,6 +18,15 @@ int check_output(const INT_T* const pred, const INT_T* const expected,
   return 0;
 }
 
+// Test v_q_treesum() function.
+int test_v_q_treesum() {
+  INTM_T qvec_A[8] = {-425, -169, -3534, 524, -2739, 87, 52, 292};
+  const INTM_T expected[1] = {-738};
+
+  v_q_treesum(qvec_A, 8, 3, 0);
+  return check_output((const INT_T*)qvec_A, (const INT_T*)expected, 1);
+}
+
 // Test v_q_add() function.
 int test_v_q_add() {
   const INT_T qvec_A[8] = {-425, -169, -3534, 524, -2739, 87, 52, 292};
@@ -116,7 +125,9 @@ int test_m_q_mulvec() {
 }
 
 int main() {
-  if (test_v_q_add()) {
+  if (test_v_q_treesum()) {
+    printf("Test Failure for v_q_treesum()!\n");
+  } else if (test_v_q_add()) {
     printf("Test Failure for v_q_add()!\n");
   } else if (test_v_q_sub()) {
     printf("Test Failure for v_q_sub()!\n");

@@ -147,29 +147,15 @@ int main(int argc, char **argv) {
     reshapedXLine[i] = (INT_T)((xLine[i]) * pow(2, XScale));
   }
 
-  //xLine[13333] 4 1 8 7
-  //xLine[27915] 10 0 36 37, 10 0 36 69, 10 0 36 74, 10 0 36 101
-  //xLine[35363] 12 1 32 96, 12 1 32 102, 12 1 32 126
-  //xLine[49100] 18 1 7 14, 18 1 7 59, 18 1 7 84
-  //xLine[60132] 22 1 19 31, 22 1 19 85, 22 1 19 112
-  //xLine[67350] 26 0 12 31, 26 0 12 45, 26 0 12 125
-  //printf("%f\n", xLine[13333]);
-  //printf("%f\n", xLine[13333] * 4096);
-  //reshapedXLine[13333] = -7544;
-  //reshapedXLine[27915] = 8988;
-  //reshapedXLine[35363] = 8213;
-  //reshapedXLine[49100] = -3000;
-  //reshapedXLine[60132] = 9208;
-  //reshapedXLine[67350] = 5233;
   fprintf(outputLog, "Running Quantized MBConv\n");
   double time_spent = 0.0;
   clock_t begin = clock();
-  q_mbconv(reshapedXLine, F1, W1, B1, F2, W2, B2, F3, W3, B3,
-           output_test, X, T, U, N, H, W, CIN, CTEMP, HF, WF,
-           COUT, HOUT, WOUT, HPADL, HPADR, WPADL, WPADR, HSTRIDE,
-           WSTRIDE, D1, D2, D3, Limit1, Limit2, ShRU1, ShRB1, ShRX1,
-           ShRU2, ShRB2, ShRX2, ShRU3, ShRB3, ShRW3, ShLU1, ShLB1,
-           ShLX1, ShLU2, ShLB2, ShLX2, ShLU3, ShLB3, ShLW3);
+  q_mbconv_block(reshapedXLine, F1, W1, B1, F2, W2, B2, F3, W3, B3,
+                 output_test, X, T, U, N, H, W, CIN, CTEMP, HF, WF,
+                 COUT, HOUT, WOUT, HPADL, HPADR, WPADL, WPADR, HSTRIDE,
+                 WSTRIDE, D1, D2, D3, Limit1, Limit2, ShRU1, ShRB1, ShRX1,
+                 ShRU2, ShRB2, ShRX2, ShRU3, ShRB3, ShRW3, ShLU1, ShLB1,
+                 ShLX1, ShLU2, ShLB2, ShLX2, ShLU3, ShLB3, ShLW3);
   clock_t end = clock();
   time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
   fprintf(outputLog, "Time elapsed is %f seconds\n", time_spent);

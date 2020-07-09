@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 #include "quantized_mbconv.h"
-#include <stdio.h>
 
 void q_mbconv_block(const INT_T* const input, const INT_T* const F1,
   const INT_T* const BN1W, const INT_T* const BN1B, const INT_T* const F2,
@@ -71,7 +70,7 @@ void q_mbconv_block(const INT_T* const input, const INT_T* const F1,
             v_q_treesum(treesumBuffer, CIn, D1, 0);
             INTM_T x = (((INTM_T)((treesumBuffer[0] * shlU1) / shrU1 + (BN1B[k] * shlB1) / shrB1)) *
                         ((INTM_T)BN1W[k]));
-            x = 1_relu(x, limit1);
+            x = q_relu(x, limit1);
             convBuffer1[iRed * W * CTemp + j * CTemp + k] = (x * shlX1) / shrX1;
           }
         }
