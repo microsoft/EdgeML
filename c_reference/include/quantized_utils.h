@@ -7,6 +7,22 @@
 #include <math.h>
 #include "quantized_datatypes.h"
 
+#define SHIFT 1
+#define FASTAPPROX 1
+#define FLOATEXP 1
+
+// Function for figuring out number bits by which the data is to be shifted.
+inline INT_T findScale(INT_T scale)
+{
+    INT_T index = 0;
+    while(scale/2 > 0)
+    {
+        index++;
+        scale = scale/2;
+    }
+    return index;
+}
+
 // Function for saturating the input to the required format.
 // This function isn't used currently because of SeeDot generated scales
 // ensuring the overflows aren't a possibility.
@@ -19,7 +35,6 @@ inline INT_T saturate(INTM_T inp) {
         return (INT_T)inp;
     }
 }
-
 // Functions for calculating quantized operations and activations.
 // Function for computing the element-wise addition between two vectors.
 void v_q_add(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
