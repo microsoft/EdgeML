@@ -556,7 +556,6 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
     INT_T shrA_shift = findScale(shrA);
     INT_T shrB_shift = findScale(shrB);
     INT_T shrC_shift = findScale(shrC);
-    INT_T b_shift = findScale(b);
   #endif /* SHIFT */
   INT_T k       = 0;
   INT_T b       = 0;
@@ -582,7 +581,7 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
       #ifdef FASTAPPROX
         #ifdef SHIFT
           a = a >> shrA_shift;
-          c = a << b_shift;
+          c = a << findScale(b);
           c = c >> shrC_shift;
         #else
           a = a / shrA;
@@ -591,7 +590,7 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
         #endif
       #else
         #ifdef  SHIFT
-          c = (((INT_T)a << b_shift) >> (shrC_shift << shrA_shift << shrB_shift));
+          c = (((INT_T)a << findScale(b)) >> (shrC_shift << shrA_shift << shrB_shift));
         #else
           c = (((INT_T)a * (INT_T)b) / ((INT_T)shrC * (INT_T)shrA * (INT_T)shrB));
         #endif

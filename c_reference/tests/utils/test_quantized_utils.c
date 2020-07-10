@@ -392,7 +392,11 @@ int test_sigmoid(void)
 {
   INT_T arr[] = {1, 2, 3, 4, 5, 6, 7 ,8, 9, 10, 11, 12, 13, 14, 15, 16};
   INT_T predicted[16] = {0};
-  INT_T expected[16] = {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+  #ifdef SHIFT
+    INT_T expected[16] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+  #else
+    INT_T expected[16] = {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+  #endif /* SHIFT */
   sigmoid(arr, 4, 4, predicted);
   return check_output(predicted, expected, 16);
 }
