@@ -489,14 +489,14 @@ int test_sparcematrix(void)
     input3[0][0] = 1;
     input3[1][0] = 2;
     INT_T output[16] = {0};
-    #ifdef FLOATEXP
+    #ifdef SHIFT
       INT_T expected[] = {2, 25, 7, 32, 12, 40, 17, 27, 0, 30, 0, 32, 0, 35, 0, 0};
     #else
       INT_T expected[] = {1, 22, 3, 27, 6, 32, 8, 27, 0, 30, 0, 32, 0, 35, 0, 0};
-    #endif /* FLOATEXP */ 
+    #endif /* SHIFT */ 
 
     sp_mat_mul(input1, input2, input3, output, 2, 1, 2, 4);
-
+    
     free(input3[1]);
     free(input3[0]);
     free(input3);    
