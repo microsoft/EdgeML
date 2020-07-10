@@ -7,9 +7,8 @@
 #include <math.h>
 #include "quantized_datatypes.h"
 
-#define SHIFT 1
-#define FASTAPPROX 1
-#define FLOATEXP 1
+// #define SHIFT 1
+// #define FASTAPPROX 1
 
 // Function for figuring out number bits by which the data is to be shifted.
 inline INT_T findScale(INT_T scale)
@@ -336,26 +335,15 @@ void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,
  * @param[in]       mat_in              pointer to input matrix
  * @param[in]       nrows               rows of matrices
  * @param[in]       ncols               columns of matrices
- * @param[in]       div                 division value
- * @param[in]       add                 addition value
- * @param[in]       sigmoid_limit       sigmoid limit value
- * @param[in]       scale_in            Dividing (float division) each element of matrix mat_in by scale_in gives the floating point matrix of mat_in
- * @param[in]       scale_out           Dividing (float division) each element of matrix mat_out by scale_out gives the floating point matrix of mat_out
  * @param[out]      mat_out             pointer to output matrix
    @return          none
  * @example         mat_in              = 1, 2, 3, 4, 5, 6, 7, 8
  *                  nrows               = 4
  *                  ncols               = 4
- *                  div                 = 2
- *                  add                 = 1
- *                  sigmoid_limit       = 5
- *                  scale_in            = 5
- *                  scale_out           = 10
- *                  mat_out             = 21, 27, 11, 15, 53, 67, 23, 31
+ *                  mat_out             = 0, 1, 1, 1, 1, 1, 1, 1
 */
 
-void sigmoid(INT_T *mat_in, INT_T nrows, INT_T ncols, INT_T div, INT_T add, 
-             INT_T sigmoid_limit, INT_T scale_in, INT_T scale_out, INT_T *mat_out);
+void sigmoid(INT_T *mat_in, INT_T nrows, INT_T ncols,  INT_T *mat_out);
 
 /**
  * @brief  Sparse Matrix Multiplication. Compute A * B and store it in C.
