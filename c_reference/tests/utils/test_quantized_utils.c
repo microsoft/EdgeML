@@ -392,13 +392,8 @@ int test_sigmoid(void)
 {
   INT_T arr[] = {1, 2, 3, 4, 5, 6, 7 ,8, 9, 10, 11, 12, 13, 14, 15, 16};
   INT_T predicted[16] = {0};
-  #ifdef FLOATEXP
-    INT_T expected[16] = {0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4};
-  #else
-    INT_T expected[16] = {2, 4, 4, 6, 6, 8, 8, 10, 10, 10, 10, 10 , 10, 10, 10, 10};
-  #endif/* FLOATEXP */
-  sigmoid(arr, 4, 4, 2, 1, 5, 2, 4, predicted);
-
+  INT_T expected[16] = {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+  sigmoid(arr, 4, 4, predicted);
   return check_output(predicted, expected, 16);
 }
 
