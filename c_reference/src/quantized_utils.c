@@ -44,9 +44,14 @@ void v_q_treesum(INTM_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2) {
 
 void v_q_add(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
              INT_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret) {
+  #ifdef SHIFT
+    INT_T scvec1_shift = findScale(scvec1);
+    INT_T scvec2_shift = findScale(scvec2);
+    INT_T scret_shift  = findScale(scret);
+  #endif /* SHIFT */
   for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
-      ret[i] = ((vec1[i] >> (scvec1 + scret)) + (vec2[i] >> (scvec2 + scret)));
+      ret[i] = ((vec1[i] >> scvec1_shift) >> scret_shift) + ((vec2[i] >> scvec2_shift) >> scret_shift);
     #else
       ret[i] = ((vec1[i] / scvec1) / scret) + ((vec2[i] / scvec2) / scret);
     #endif
@@ -55,9 +60,14 @@ void v_q_add(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
 
 void v_q_sub(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
              INT_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret) {
+  #ifdef SHIFT
+    INT_T scvec1_shift = findScale(scvec1);
+    INT_T scvec2_shift = findScale(scvec2);
+    INT_T scret_shift  = findScale(scret);
+  #endif /* SHIFT */
   for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
-      ret[i] = ((vec1[i] >> (scvec1 + scret)) - (vec2[i] >> (scvec2 + scret)));
+      ret[i] = ((vec1[i] >> scvec1_shift) >> scret_shift) - ((vec2[i] >> scvec2_shift) >> scret_shift);
     #else
       ret[i] = ((vec1[i] / scvec1) / scret) - ((vec2[i] / scvec2) / scret);
     #endif
@@ -65,9 +75,14 @@ void v_q_sub(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
 }
 void v_q_scalar_add(INT_T scalar, const INT_T* const vec, ITER_T len,
                     INT_T* const ret, SCALE_T scscalar, SCALE_T scvec, SCALE_T scret) {
+  #ifdef SHIFT
+    INT_T scvec_shift = findScale(scvec);
+    INT_T scscalar_shift = findScale(scscalar);
+    INT_T scret_shift  = findScale(scret);
+  #endif /* SHIFT */
   for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
-      ret[i] = ((scalar >> (scscalar + scret)) + (vec[i] >> (scvec + scret)));
+      ret[i] = ( (scalar >> scscalar_shift) >> scret_shift) + ((vec[i] >> scvec_shift) >> scret_shift);
     #else
       ret[i] = ((scalar / scscalar) / scret) + ((vec[i] / scvec) / scret);
     #endif
@@ -76,9 +91,14 @@ void v_q_scalar_add(INT_T scalar, const INT_T* const vec, ITER_T len,
 
 void v_q_scalar_sub(INT_T scalar, const INT_T* const vec, ITER_T len,
                     INT_T* const ret, SCALE_T scscalar, SCALE_T scvec, SCALE_T scret) {
+  #ifdef SHIFT
+    INT_T scvec_shift = findScale(scvec);
+    INT_T scscalar_shift = findScale(scscalar);
+    INT_T scret_shift  = findScale(scret);
+  #endif /* SHIFT */
   for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
-      ret[i] = ((scalar >> (scscalar + scret)) - (vec[i] >> (scvec + scret)));
+      ret[i] = ( (scalar >> scscalar_shift) >> scret_shift) - ((vec[i] >> scvec_shift) >> scret_shift);
     #else
       ret[i] = ((scalar / scscalar) / scret) - ((vec[i] / scvec) / scret);
     #endif
@@ -87,9 +107,13 @@ void v_q_scalar_sub(INT_T scalar, const INT_T* const vec, ITER_T len,
 
 void v_q_scalar_mul(INT_T scalar, const INT_T* const vec, ITER_T len,
                     INT_T* const ret, SCALE_T scscalar, SCALE_T scvec) {
+  #ifdef SHIFT
+    INT_T scvec_shift = findScale(scvec);
+    INT_T scscalar_shift = findScale(scscalar);
+  #endif /* SHIFt */
   for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
-      ret[i] = ((INTM_T)scalar * (INTM_T)vec[i]) >> (scscalar + scvec);
+      ret[i] = ( ( ( (INTM_T)scalar << findScale(vec[i]) ) >> scscalar_shift) >> scvec_shift);
     #else
       ret[i] = ((((INTM_T)scalar * (INTM_T)vec[i]) / scscalar) / scvec);
     #endif
@@ -99,9 +123,13 @@ void v_q_scalar_mul(INT_T scalar, const INT_T* const vec, ITER_T len,
 
 void v_q_hadamard(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
                   INT_T* const ret, SCALE_T scvec1, SCALE_T scvec2) {
+  #ifdef SHIFT
+    INT_T scvec1_shift = findScale(scvec1);
+    INT_T scvec2_shift = findScale(scvec2);
+  #endif /* SHIFT */
   for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
-      ret[i] = ((INTM_T)vec1[i] * (INTM_T)vec2[i]) >> (scvec1 + scvec2);
+      ret[i] = ( ( ( vec1[i] << findScale(vec2[i]))  >> scvec1_shift) >> scvec2_shift);
     #else
       ret[i] = ((((INTM_T)vec1[i] * (INTM_T)vec2[i]) / scvec1) / scvec2);
     #endif
@@ -143,6 +171,10 @@ void m_q_mulvec(const INT_T* const mat, const INT_T* const vec, ITER_T nrows,
                 ITER_T ncols, INT_T* const ret, SCALE_T scmat, SCALE_T scvec,
                 SCALE_T H1, SCALE_T H2) {
   INTM_T tmp[ncols];
+  #ifdef SHIFT
+    INT_T scvec_shift = findScale(scvec);
+    INT_T scmat_shift = findScale(scmat);
+  #endif /* SHIFT */
   for (ITER_T row = 0; row < nrows; row++) {
     INT_T* mat_offset = (INT_T*)mat + row * ncols;
 
@@ -152,7 +184,7 @@ void m_q_mulvec(const INT_T* const mat, const INT_T* const vec, ITER_T nrows,
 
     v_q_treesum(&tmp[0], ncols, H1, H2);
     #ifdef SHIFT
-      ret[row] = (tmp[0] >> (scmat + scvec));
+      ret[row] = ((tmp[0] >> scmat_shift) >> scvec_shift);
     #else
       ret[row] = ((tmp[0] / scmat) / scvec);
     #endif
@@ -207,7 +239,7 @@ void add_or_sub_cir_4D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out,
     for (n = 0; n < nbatch * nrows * ncols * nchannel; n++) {
       a = mat_in[n];
         #ifdef SHIFT
-          a >>= scl_a;
+          a >>= findScale(scl_a);
         #else
           a = a / scl_a;
         #endif /* SHIFT */
@@ -215,20 +247,20 @@ void add_or_sub_cir_4D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out,
       if(c >= nchannel)
           c = 0;
         #ifdef SHIFT
-          b >>= scl_b;
+          b >>= findScale(scl_b);
         #else
           b = b / scl_b;
         #endif /* SHIFT */
 
       if (add)
         #ifdef SHIFT
-          res = (( a >> scl_out) + ( b >> scl_out ));
+          res = (( a >> findScale(scl_out)) + ( b >> findScale(scl_out) ));
         #else
           res = ( ( a / scl_out) + ( b / scl_out ));
         #endif /* SHIFT */
       else
         #ifdef SHIFT
-          res = (( a >> scl_out ) - ( b >> scl_out ));
+          res = (( a >> findScale(scl_out) ) - ( b >> findScale(scl_out) ));
         #else
           res = ( ( a / scl_out ) - ( b / scl_out ));
         #endif /* SHIFT */
@@ -252,7 +284,7 @@ void add_or_sub_cir_2D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out,
     for (h = 0; h < nrows * ncols; h++) {
       a = mat_in[h];
       #ifdef SHIFT
-        a >>= scl_a;
+        a >>= findScale(scl_a);
       #else
         a = a / scl_a;
       #endif /* SHIFT */
@@ -261,20 +293,20 @@ void add_or_sub_cir_2D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out,
       if(w >= ncols)
         w = 0;
         #ifdef SHIFT
-          b >>= scl_b;
+          b >>= findScale(scl_b);
         #else
           b = b / scl_b;
         #endif /* SHIFT */
 
       if (add)
         #ifdef SHIFT
-          res = ( ( a >> scl_out ) + ( b >> scl_out ));
+          res = ( ( a >> findScale(scl_out) ) + ( b >> findScale(scl_out) ));
         #else
           res = ( ( a / scl_out ) + ( b / scl_out ));
         #endif /* SHIFT */
       else
         #ifdef SHIFT
-          res = ( ( a >> scl_out) - ( b >> scl_out ));
+          res = ( ( a >> findScale(scl_out)) - ( b >> findScale(scl_out) ));
         #else
           res = ( ( a / scl_out ) - ( b / scl_out ));
         #endif /* SHIFT */
@@ -306,7 +338,7 @@ void exp_scale(INT_T *mat_in, INT_T length, INT_T scl_in, INT_T scl_out, INT_T *
   if(mat_in && mat_out) {
     for (i = 0; i < length; i++) {
       #ifdef SHIFT
-        mat_out[i] = ((INT_T)(exp(((float)mat_in[i]) >> scl_in) << scl_out));
+        mat_out[i] = ((INT_T)((INT_T)exp(mat_in[i] >> findScale(scl_in)) << findScale(scl_out)));
       #else
         mat_out[i] = ((INT_T)(exp(((float)mat_in[i]) / scl_in) * scl_out));
       #endif /* SHIFT */
@@ -323,7 +355,7 @@ void adjust_scale_shr(INT_T *mat, INT_T length, INT_T scale) {
   if(mat) {
     while(i < length) {
       #ifdef SHIFT
-        mat[i++] >>= scale;
+        mat[i++] >>= findScale(scale);
       #else
         mat[i++] /= scale;
       #endif /* SHIFT */
@@ -340,7 +372,7 @@ void adjust_scale_shl(INT_T *mat, INT_T length, INT_T scale) {
   if(mat) {
     while(i < length) {
      #ifdef SHIFT
-        mat[i++] <<= scale;
+        mat[i++] <<= findScale(scale);
       #else
       mat[i++] *= scale;
       #endif /* SHIFT */
@@ -444,7 +476,7 @@ void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,INT_T N,
                     if (p < (count >> 1)) {
                       if (shr)
                         #ifdef SHIFT
-                          sum = ( tmp[2 << p] >> 1 ) + ( tmp[(2 << p) + 1] / 2 );
+                          sum = ( tmp[2 * p] >> 1 ) + ( tmp[(2 * p) + 1] / 2 );
                         #else
                           sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
                         #endif
@@ -454,7 +486,7 @@ void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,INT_T N,
                     else if ((p == (count >> 1)) && ((count & 1) == 1)) {
                       if (shr)
                         #ifdef SHIFT
-                          sum = tmp[2 << p] >> 1;
+                          sum = tmp[2 * p] >> 1;
                         #else
                           sum = tmp[2 * p] / 2;
                         #endif
@@ -493,7 +525,7 @@ void sigmoid(INT_T *A, INT_T I, INT_T J, INT_T div, INT_T add, INT_T sigmoid_lim
 
   if(A && B) {
     #ifdef SHIFT
-      scale_diff = scale_out >> scale_in;
+      scale_diff = scale_out >> findScale(scale_in);
     #else
       scale_diff = scale_out / scale_in;
     #endif /* SHIFT */
@@ -501,22 +533,22 @@ void sigmoid(INT_T *A, INT_T I, INT_T J, INT_T div, INT_T add, INT_T sigmoid_lim
     for (i = 0; i < I*J; i++) {
       #ifdef FLOATEXP
         #ifdef SHIFT
-          float x = float(A[i]) >> scale_in;
+          float x = /*float*/(A[i]) >> findScale(scale_in);
 
-          float y = 1 >> (1 + exp(-x));
+          float y = 1 >> findScale((1 + exp(-x)));
         #else
           float x = float(A[i]) / scale_in;
 
           float y = 1 / (1 + exp(-x));
         #endif /* SHIFT */
 
-        z    = INT_T(y * scale_out);
+        z    = /*INT_T*/(y * scale_out);
         B[i] = z;
 
       #else
         x = A[i];
       #ifdef SHIFT
-        x = (x >> div) + add;
+        x = (x >> findScale(div)) + add;
       #else
         x = (x / div) + add;
       #endif /* SHIFT */
@@ -553,7 +585,7 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
     b = B[k * 1][0];
     #ifdef FASTAPPROX
       #ifdef SHIFT
-        b = b >> shrB
+        b = b >> findScale(shrB);
       #else
         b = b / shrB;
       #endif
@@ -564,9 +596,9 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
       a = Aval[ite_val];
       #ifdef FASTAPPROX
         #ifdef SHIFT
-          a = a >> shrA;
-          c = a << b;
-          c = c >> shrC;
+          a = a >> findScale(shrA);
+          c = a << findScale(b);
+          c = c >> findScale(shrC);
         #else
           a = a / shrA;
           c = a * b;
@@ -574,7 +606,7 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
         #endif
       #else
         #ifdef  SHIFT
-          c = (((INT_T)a << (INT_T)b) >> ((INT_T)shrC << (INT_T)shrA << (INT_T)shrB));
+          c = (((INT_T)a << findScale(b)) >> (findScale(shrC) << findScale(shrA) << findScale(shrB)));
         #else
           c = (((INT_T)a * (INT_T)b) / ((INT_T)shrC * (INT_T)shrA * (INT_T)shrB));
         #endif
@@ -608,8 +640,8 @@ void maxpool(INT_T *A, INT_T *B, INT_T N, INT_T H, INT_T W, INT_T C, INT_T FH,
 
 if(A && B) {
   #ifdef SHIFT 
-    HO = H >> strideH;
-    WO = W >> strideW;
+    HO = H >> findScale(strideH);
+    WO = W >> findScale(strideW);
   #else
     HO = H / strideH;
     WO = W / strideW;
