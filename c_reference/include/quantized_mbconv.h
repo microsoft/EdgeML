@@ -9,16 +9,16 @@
 /**
  * @brief Model parameters for Quantized MBConv Layer
  * @param[in]        input          pointer to the input buffer
- * @param[in]        F1             pointer to the first convolution filter buffer
+ * @param[in]        filter1        pointer to the first convolution filter buffer
  * @param[in]        BN1W           pointer to the buffer holding the multiplication factor of the first BatchNorm computation
  * @param[in]        BN1B           pointer to the buffer holding the additive factor of the first BatchNorm computation
- * @param[in]        F2             pointer to the second convolution filter buffer
+ * @param[in]        filter2        pointer to the second convolution filter buffer
  * @param[in]        BN2W           pointer to the buffer holding the multiplication factor of the second BatchNorm computation
  * @param[in]        BN2B           pointer to the buffer holding the additive factor of the second BatchNorm computation
- * @param[in]        F3             pointer to the third convolution filter buffer
+ * @param[in]        filter3        pointer to the third convolution filter buffer
  * @param[in]        BN3W           pointer to the buffer holding the multiplication factor of the third BatchNorm computation
  * @param[in]        BN3B           pointer to the buffer holding the additive factor of the third BatchNorm computation
- * @param[in, out]   output         pointer to the output buffer
+ * @param[out]       output         pointer to the output buffer
  * @param[in]        convBuffer1    pointer to the buffer used for storing intermediate values for the first Convolution
  * @param[in]        convBuffer2    pointer to the buffer used for storing intermediate values for the second Convolution
  * @param[in]        treesumBuffer  pointer to the buffer used for storing intermediate values for TreeSum
@@ -38,9 +38,9 @@
  * @param[in]        WPadR          pad to the right of the input tensor, along its width dimension
  * @param[in]        HStride        stride of the filter along the height dimension
  * @param[in]        WStride        stride of the filter along the height dimension
- * @param[in]        D1             depth of the first TreeSum computation
- * @param[in]        D2             depth of the second TreeSum computation
- * @param[in]        D3             depth of the third TreeSum computation
+ * @param[in]        depth1         depth of the first TreeSum computation
+ * @param[in]        depth2         depth of the second TreeSum computation
+ * @param[in]        depth3         depth of the third TreeSum computation
  * @param[in]        limit1         maximum output value of the first relu_six computation
  * @param[in]        limit2         maximum output value of the first relu_six computation
  * @param[in]        shrU1          scale to divide the first TreeSum output by
@@ -61,16 +61,23 @@
  * @param[in]        shlU3          scale to multiply with the third TreeSum output
  * @param[in]        shlB3          scale to multiply with the third BatchNorm addition factor
  * @param[in]        shlW3          scale to multiply with the third Convolution output
+ *
+ * @brief The function computes the following three sub-parts:
+ * 1) Convolution(input, filter1) -> Batch Normalization(BN1W, BN1B) -> ReLU(limit1) -> convBuffer1
+ * 2) Depthwise Separable Convolution(convBuffer1, filter2) -> Batch Normalization(BN2W, BN2B) -> ReLU(limit2) -> convBuffer2
+ * 3) Convolution(convBuffer2, filter3) -> Batch Normalization(BN3W, BN3B) -> output
+ * Variables depth1, depth2 and depth3 are used along with treesumBuffer for accumulating the sums during convolutions.
+ * Rest of the variables are used as indicated.
  */
-void q_mbconv_block(const INT_T* const input, const INT_T* const F1,
-  const INT_T* const BN1W, const INT_T* const BN1B, const INT_T* const F2,
-  const INT_T* const BN2W, const INT_T* const BN2B, const INT_T* const F3,
+void q_mbconv_block(const INT_T* const input, const INT_T* const filter1,
+  const INT_T* const BN1W, const INT_T* const BN1B, const INT_T* const filter2,
+  const INT_T* const BN2W, const INT_T* const BN2B, const INT_T* const filter3,
   const INT_T* const BN3W, const INT_T* const BN3B, INT_T* const output,
   INT_T* const convBuffer1, INT_T* const convBuffer2, INTM_T* const treesumBuffer,
   ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T CTemp, ITER_T HF, ITER_T WF,
   ITER_T COut, ITER_T HOut, ITER_T WOut, S_ITER_T HPadU, S_ITER_T HPadD,
-  S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, SCALE_T D1,
-  SCALE_T D2, SCALE_T D3, INTM_T limit1, INTM_T limit2, L_SCALE_T shrU1,
+  S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, SCALE_T depth1,
+  SCALE_T depth2, SCALE_T depth3, INTM_T limit1, INTM_T limit2, L_SCALE_T shrU1,
   L_SCALE_T shrB1, L_SCALE_T shrX1, L_SCALE_T shrU2, L_SCALE_T shrB2,
   L_SCALE_T shrX2, L_SCALE_T shrU3, L_SCALE_T shrB3, L_SCALE_T shrW3,
   L_SCALE_T shlU1, L_SCALE_T shlB1, L_SCALE_T shlX1, L_SCALE_T shlU2,
