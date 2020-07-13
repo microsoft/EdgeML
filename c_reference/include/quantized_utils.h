@@ -7,21 +7,6 @@
 #include <math.h>
 #include "quantized_datatypes.h"
 
-#define SHIFT 1
-#define FASTAPPROX 1
-
-// Function for figuring out number bits by which the data is to be shifted.
-inline INT_T findScale(INT_T scale)
-{
-    INT_T index = 0;
-    while(scale/2 > 0)
-    {
-        index++;
-        scale = scale/2;
-    }
-    return index;
-}
-
 // Function for saturating the input to the required format.
 // This function isn't used currently because of SeeDot generated scales
 // ensuring the overflows aren't a possibility.
