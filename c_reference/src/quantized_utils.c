@@ -160,8 +160,7 @@ void m_q_mulvec(const INT_T* const mat, const INT_T* const vec, ITER_T nrows,
 }
 
 void arg_max(INT_T *vec, INT_T len, INT_T *index) {
-
-  INT_T max_val = 0; 
+  INT_T max_val = 0;
   INT_T i       = 0;
   INT_T max_idx = 0;
 
@@ -179,7 +178,6 @@ void arg_max(INT_T *vec, INT_T len, INT_T *index) {
 }
 
 void transpose(INT_T *mat_in, INT_T *mat_out, INT_T nrows, INT_T ncols) {
-  
   INT_T i = 0;
   INT_T j = 0;
 
@@ -193,15 +191,15 @@ void transpose(INT_T *mat_in, INT_T *mat_out, INT_T nrows, INT_T ncols) {
   return;
 }
 
-void add_or_sub_cir_4D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out, 
-                       INT_T nbatch, INT_T nrows, INT_T ncols, INT_T nchannel, 
+void add_or_sub_cir_4D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out,
+                       INT_T nbatch, INT_T nrows, INT_T ncols, INT_T nchannel,
                        INT_T scl_a, INT_T scl_b, INT_T scl_out, uint8_t add) {
   INT_T n   = 0;
   INT_T c   = 0;
   INT_T a   = 0;
   INT_T b   = 0;
   INT_T res = 0;
-  
+
   if(mat_in && mat_bias && mat_out) {
     for (n = 0; n < nbatch * nrows * ncols * nchannel; n++) {
       a = mat_in[n];
@@ -238,8 +236,8 @@ void add_or_sub_cir_4D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out,
   return;
 }
 
-void add_or_sub_cir_2D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out, 
-                       INT_T nrows, INT_T ncols, INT_T scl_a, INT_T scl_b, 
+void add_or_sub_cir_2D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out,
+                       INT_T nrows, INT_T ncols, INT_T scl_a, INT_T scl_b,
                        INT_T scl_out, uint8_t add) {
   INT_T h   = 0;
   INT_T w   = 0;
@@ -345,7 +343,6 @@ void adjust_scale_shl(INT_T *mat, INT_T length, INT_T scale) {
 }
 
 void Reverse2(INT_T *mat_in, INT_T axis, INT_T nrows, INT_T ncols, INT_T *mat_out) {
-
   INT_T i         = 0;
   INT_T j         = 0;
   INT_T i_prime   = 0;
@@ -353,9 +350,9 @@ void Reverse2(INT_T *mat_in, INT_T axis, INT_T nrows, INT_T ncols, INT_T *mat_ou
 
   if(mat_in && mat_out) {
     for (i = 0; i < nrows; i++) {
-      for (j = 0; j < ncols; j++) { 
-        i_prime = (axis == 0 ? (nrows-1-i) : i);
-        j_prime = (axis == 1 ? (ncols-1-j) : j); 
+      for (j = 0; j < ncols; j++) {
+        i_prime = (axis == 0 ? (nrows - 1 - i) : i);
+        j_prime = (axis == 1 ? (ncols - 1 - j) : j);
         mat_out[i * ncols + j] = mat_in[i_prime*ncols  + j_prime];
       }
     }
@@ -364,13 +361,12 @@ void Reverse2(INT_T *mat_in, INT_T axis, INT_T nrows, INT_T ncols, INT_T *mat_ou
   return;
 }
 
-void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,INT_T N, 
-                 INT_T H, INT_T W, INT_T CIN, INT_T HF,INT_T WF, 
-                 INT_T CINF, INT_T COUTF, INT_T HOUT,INT_T WOUT, 
-                 INT_T HPADL, INT_T HPADR, INT_T WPADL,INT_T WPADR, 
-                 INT_T HSTR, INT_T WSTR, INT_T HDL,INT_T WDL, INT_T G, 
+void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,INT_T N,
+                 INT_T H, INT_T W, INT_T CIN, INT_T HF,INT_T WF,
+                 INT_T CINF, INT_T COUTF, INT_T HOUT,INT_T WOUT,
+                 INT_T HPADL, INT_T HPADR, INT_T WPADL,INT_T WPADR,
+                 INT_T HSTR, INT_T WSTR, INT_T HDL,INT_T WDL, INT_T G,
                  INT_T shrA, INT_T shrB, INT_T H1,INT_T H2) {
-
   INT_T n         = 0;
   INT_T h         = 0;
   INT_T w         = 0;
@@ -396,7 +392,7 @@ void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,INT_T N,
   INT_T WOffsetL  = WDL*(WF/2) - WPADL;
   INT_T HOffsetR  = HDL*(HF/2) - HPADR;
   INT_T WOffsetR  = WDL*(WF/2) - WPADR;
-    
+
   if(A && B && C && tmp) {
     for(n = 0; n < N; n++) {
       for( h = HOffsetL, hout = 0; h < H - HOffsetR; h += HSTR, hout++) {
@@ -423,7 +419,7 @@ void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,INT_T N,
               }
 
               totalEle  = HF * WF * CINF;
-              count     = HF * WF * CINF; 
+              count     = HF * WF * CINF;
               depth     = 0;
               shr       = 1;
 
@@ -492,14 +488,14 @@ void sigmoid(INT_T *A, INT_T I, INT_T J, INT_T *B) {
   return;
 }
 
-void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T K, 
+void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T K,
                 INT_T shrA, INT_T shrB, INT_T shrC) {
   INT_T k       = 0;
   INT_T b       = 0;
   INT_T idx     = 0;
   INT_T a       = 0;
   INT_T c       = 0;
-  INT_T ite_idx = 0; 
+  INT_T ite_idx = 0;
   INT_T ite_val = 0;
 
   for (k = 0; k < K; k++) {
@@ -544,8 +540,8 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
   return;
 }
 
-void maxpool(INT_T *A, INT_T *B, INT_T N, INT_T H, INT_T W, INT_T C, INT_T FH, 
-             INT_T FW, INT_T strideH, INT_T strideW, INT_T HPADL, INT_T HPADR, 
+void maxpool(INT_T *A, INT_T *B, INT_T N, INT_T H, INT_T W, INT_T C, INT_T FH,
+             INT_T FW, INT_T strideH, INT_T strideW, INT_T HPADL, INT_T HPADR,
              INT_T WPADL, INT_T WPADR) {
   INT_T n   = 0;
   INT_T ho  = 0;
@@ -558,16 +554,16 @@ void maxpool(INT_T *A, INT_T *B, INT_T N, INT_T H, INT_T W, INT_T C, INT_T FH,
   INT_T HO  = 0;
   INT_T WO  = 0;
 
-if(A && B) {
-  #ifdef SHIFT 
+if (A && B) {
+  #ifdef SHIFT
     HO = H >> strideH;
     WO = W >> strideW;
   #else
     HO = H / strideH;
     WO = W / strideW;
-  #endif /* SHIFT */
+  #endif
 
-  if(A && B) {
+  if (A && B) {
     for (n = 0; n < N; n++) {
       for (ho = 0; ho < HO; ho++) {
         for (wo = 0; wo < WO; wo++) {

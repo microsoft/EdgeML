@@ -81,20 +81,20 @@ void arg_max(INT_T *vec, INT_T len, INT_T *index);
  * @param[in]       mat_out      pointer to output matrix which will hold transpose of input matrix mat_in
  * @param[in]       nrows        number of rows of output matrix
  * @param[in]       ncols        number of columns of output matrix
-   @return          none
+ * @return          none
  * @example         vec_in       = 1, 2
  *                                 4, 5
- *                            
+ *
  *                  vec_out      = 1 4
  *                                 2 5
- * 
+ *
  * @example         vec_in       = 1, 2, 3
  *                                 4, 5, 6
- *                   
+ *
  *                  vec_out      = 1  4
  *                                 2  5
  *                                 3  6
-*/
+ */
 void transpose(INT_T *mat_in, INT_T *mat_out, INT_T nrows, INT_T ncols);
 
 /**
@@ -114,24 +114,24 @@ void transpose(INT_T *mat_in, INT_T *mat_out, INT_T nrows, INT_T ncols);
  * @param[in]       add           flag to defining functionality. 1 for addtion 0 for substraction
  * @return          none
  * @example         mat_in        = { { {1324, 5453}, {3454, 3435}},
- *                                    { {8789, 3411}, {5412, 8934}} }, 
- *                                  { { {6895, 1211}, {6790, 5425}}, 
+ *                                    { {8789, 3411}, {5412, 8934}} },
+ *                                  { { {6895, 1211}, {6790, 5425}},
  *                                    { {8976, 4539}, {9348, 9321}} }}
- * 
- *                  mat_bias      = { { {8452, 2341}, {9383, 2353}}, 
-*                                     { {4522, 6232}, {2562, 565}} },
- *                                    { {4564, 7756}, {2585, 8735}}, 
+ *
+ *                  mat_bias      = { { {8452, 2341}, {9383, 2353}},
+ *                                    { {4522, 6232}, {2562, 565}} },
+ *                                    { {4564, 7756}, {2585, 8735}},
  *                                    { {3525, 4341}, {4656, 2313}} }}
  *                  scl_a         = 1
  *                  scl_b         = 2
  *                  scl_out       = 2
- *                  mat_out       = { { {2775, 3311}, {3840, 2302}}, 
+ *                  mat_out       = { { {2775, 3311}, {3840, 2302}},
  *                                    { {6507, 2290}, {4819, 5052}} },
- *                                  { { {5560, 1190}, {5508, 3297}}, 
+ *                                  { { {5560, 1190}, {5508, 3297}},
  *                                    { {6601, 2854}, {6787, 5245}} }}
-*/
-void add_or_sub_cir_4D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out, 
-                       INT_T nbatch, INT_T nrows, INT_T ncols, INT_T nchannel, 
+ */
+void add_or_sub_cir_4D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out,
+                       INT_T nbatch, INT_T nrows, INT_T ncols, INT_T nchannel,
                        INT_T scl_a, INT_T scl_b, INT_T scl_out, uint8_t add);
 
 /**
@@ -154,9 +154,9 @@ void add_or_sub_cir_4D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out,
  *                  scl_b        = 2
  *                  scl_out      = 2
  *                  mat_out      = {2775, 3311, 4072, 2305, 6507, 2290}
-*/
-void add_or_sub_cir_2D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out, 
-                       INT_T nrows, INT_T ncols, INT_T scl_a, INT_T scl_b, 
+ */
+void add_or_sub_cir_2D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out,
+                       INT_T nrows, INT_T ncols, INT_T scl_a, INT_T scl_b,
                        INT_T scl_out, uint8_t add);
 
 /**
@@ -164,10 +164,10 @@ void add_or_sub_cir_2D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out,
  * @param[in/out]   mat        pointer to matrix from which negative elements to be eliminated by replacing with 0
  * @param[in]       length     length of nD matrix
  * @return          none
- * @example         length     = 4 
-                    mat        = {1324, -5453, 3454, -3435, 8789}
+ * @example         length     = 4
+ *                  mat        = {1324, -5453, 3454, -3435, 8789}
  *                  mat        = {1324, 0, 3454, 0, 8789}
-*/
+ */
 void relu(INT_T *mat, INT_T length);
 
 /**
@@ -182,11 +182,11 @@ void relu(INT_T *mat, INT_T length);
  *                  scl_in       = 100
  *                  scl_out      = 200
  *                  mat_out      = {227, 343, 280, 283, 477}
-*/
+ */
 void exp_scale(INT_T *mat_in, INT_T length, INT_T scl_in, INT_T scl_out, INT_T *mat_out);
 
 /**
- * @brief Performs down scaling on matrix. Divides all elements of mat by scale and stores the result in mat. 
+ * @brief Performs down scaling on matrix. Divides all elements of mat by scale and stores the result in mat.
  * @param[in/out]   mat          pointer to matrix on which down scaling is to be performed.
  * @param[in]       length       length of matrix
  * @param[in]       scale        scaling factor of matrix
@@ -195,7 +195,7 @@ void exp_scale(INT_T *mat_in, INT_T length, INT_T scl_in, INT_T scl_out, INT_T *
  *                  length       = 4
  *                  scale        = 37
  *                  mat          = {114, -267, -63, 33}
-*/
+ */
 void adjust_scale_shr(INT_T *mat, INT_T length, INT_T scale);
 
 /**
@@ -208,7 +208,7 @@ void adjust_scale_shr(INT_T *mat, INT_T length, INT_T scale);
  *                  length       = 4
  *                  scale        = 10
  *                  mat          = {4230, -9870, -23420, 12320}
-*/
+ */
 void adjust_scale_shl(INT_T *mat, INT_T length, INT_T scale);
 
 /**
@@ -223,8 +223,8 @@ void adjust_scale_shl(INT_T *mat, INT_T length, INT_T scale);
  *                  ncols        = 4
  *                  axis         = 1
  *                  mat_out      = {1232, -2342, -9879, 4232, 2342, 9823, 8432, -3242}
-
-*/
+ *
+ */
 void Reverse2(INT_T *mat_in, INT_T axis, INT_T nrows, INT_T ncols, INT_T *mat_out);
 
 /**
@@ -257,61 +257,59 @@ void Reverse2(INT_T *mat_in, INT_T axis, INT_T nrows, INT_T ncols, INT_T *mat_ou
  * @param[in]       shrB        scale factor for input matrix B. dividing input matrices' elements to prevent overflows
  * @param[in]       H1          fixed point arithmetic
  * @param[in]       H2          fixed point arithmetic
-   @return          none
+ * @return          none
  * @example         A           = {
  *                                    11, 220,
  *                                    130, 40,
- * 
+ *
  *                                    50, 60,
  *                                    66, 76,
  *
- * 
+ *
  *                                    86, 910,
  *                                    411, 312,
- * 
- *                                    513, 514, 
+ *
+ *                                    513, 514,
  *                                    715, 716
  *                                 }
  * 100, 992, 15, 26, 27, 8, 3, 4, 5, 2, 2, 2, 7, 8, 29, 140
- * 
+ *
  *                  B           = {
  *                                    100, 992,
  *                                    15, 26,
- * 
+ *
  *                                    27, 8,
  *                                    3, 4,
  *
- * 
+ *
  *                                    5, 2,
  *                                    2, 2,
- * 
- *                                    7, 8, 
+ *
+ *                                    7, 8,
  *                                    29, 140
  *                                 }
  *                  shrA        = 8
  *                  shrB        = 8
  *                  C           = {
- *                                    0, 0, 
- *                                    0, 0, 
- * 
- *                                    7, 6, 
- *                                    7, 6, 
- * 
- *                                    0, 0, 
- *                                    0, 0, 
- * 
- *                                    39, 33, 
+ *                                    0, 0,
+ *                                    0, 0,
+ *
+ *                                    7, 6,
+ *                                    7, 6,
+ *
+ *                                    0, 0,
+ *                                    0, 0,
+ *
+ *                                    39, 33,
  *                                    39, 33
  *                                }
- *                  
- *
-*/
-void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp, 
-                 INT_T N, INT_T H, INT_T W, INT_T CIN, INT_T HF,        
-                 INT_T WF, INT_T CINF, INT_T COUTF, INT_T HOUT,         
-                 INT_T WOUT, INT_T HPADL, INT_T HPADR, INT_T WPADL,     
-                 INT_T WPADR, INT_T HSTR, INT_T WSTR, INT_T HDL,        
-                 INT_T WDL, INT_T G, INT_T shrA, INT_T shrB, INT_T H1,  
+ */
+void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,
+                 INT_T N, INT_T H, INT_T W, INT_T CIN, INT_T HF,
+                 INT_T WF, INT_T CINF, INT_T COUTF, INT_T HOUT,
+                 INT_T WOUT, INT_T HPADL, INT_T HPADR, INT_T WPADL,
+                 INT_T WPADR, INT_T HSTR, INT_T WSTR, INT_T HDL,
+                 INT_T WDL, INT_T G, INT_T shrA, INT_T shrB, INT_T H1,
                  INT_T H2);
 
 /**
@@ -326,7 +324,7 @@ void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,
  *                  nrows               = 4
  *                  ncols               = 4
  *                  mat_out             = 0, 1, 1, 1, 1, 1, 1, 1
-*/
+ */
 
 void sigmoid(INT_T *mat_in, INT_T nrows, INT_T ncols,  INT_T *mat_out);
 
@@ -353,7 +351,7 @@ void sigmoid(INT_T *mat_in, INT_T nrows, INT_T ncols,  INT_T *mat_out);
  *                  shrB     = 2
  *                  shrC     = 3
  *                  C        = 1 ,29 ,5 ,36 ,8 ,43 ,11 ,36
-*/
+ */
 void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T K,
                 INT_T shrA, INT_T shrB, INT_T shrC);
 
@@ -374,23 +372,23 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
  * @param[in]       HPADR       Thickness of padding on bottom of the image
  * @param[in]       WPADL       Thickness of padding on left of the image
  * @param[in]       WPADR       Thickness of padding on right of the image
- * @param[in]       
-   @return          none
+ * @param[in]
+ * @return          none
  * @example         mat_in       = {
  *                                    1, 2,
  *                                    3, 4,
- * 
+ *
  *                                    5, 6,
  *                                    7, 8,
  *
- * 
+ *
  *                                    9, 10,
  *                                    11, 12,
- * 
- *                                    13, 14, 
+ *
+ *                                    13, 14,
  *                                    15, 16
  *                                 }
- *                            
+ *
  *                  N,H,W,C      = 2, 2, 2, 2
  *                  FW, FH       = 2, 2
  *                  strideH      = 1
@@ -398,22 +396,21 @@ void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T
  *                  HPADL, HPADR = 1, 1
  *                  WPADL, WPADR = 1, 1
  *                  mat_out      = {
- *                                    7, 8, 
- *                                    9, 10, 
- * 
- *                                    11, 12, 
- *                                    13, 14, 
- * 
- *                                    15, 16, 
- *                                    15, 16, 
- *                       
- *                                    15, 16, 
+ *                                    7, 8,
+ *                                    9, 10,
+ *
+ *                                    11, 12,
+ *                                    13, 14,
+ *
+ *                                    15, 16,
+ *                                    15, 16,
+ *
+ *                                    15, 16,
  *                                    15, 16
  *                                  }
-*/
-
-void maxpool(INT_T *mat_in, INT_T *mat_out, INT_T N, INT_T H, INT_T W, INT_T C, INT_T FH, 
-             INT_T FW, INT_T strideH, INT_T strideW, INT_T HPADL, INT_T HPADR, 
+ */
+void maxpool(INT_T *mat_in, INT_T *mat_out, INT_T N, INT_T H, INT_T W, INT_T C, INT_T FH,
+             INT_T FW, INT_T strideH, INT_T strideW, INT_T HPADL, INT_T HPADR,
             INT_T WPADL, INT_T WPADR);
 
 #endif
