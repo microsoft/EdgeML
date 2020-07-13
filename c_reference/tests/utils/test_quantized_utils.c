@@ -165,56 +165,91 @@ int test_m_q_mulvec() {
   return check_output(pred, expected, 8);
 }
 
-// Test arg_max() function.
-int test_arg_max() {
-  INT_T qarg_A[10] = {1675, 9870, -9876, -1234, 5674, 28765, 9876, 12654};
-  const INT_T expected = 5;
-  INT_T predicted = 0;
+// Test v_q_argmax() function.
+int test_v_q_argmax() {
+  const INT_T qvec_A[8] = {1675, 9870, -9876, -1234, 5674, 28765, 9876, 12654};
+  const ITER_T expected[1] = {5};
+  ITER_T pred[1];
 
-  arg_max(qarg_A, sizeof(qarg_A) / sizeof(qarg_A[0]), &predicted);
-  return predicted ==  expected ? 0 : 1;
+  v_q_argmax(&qvec_A[0], 8, &pred[0]);
+  return check_output((const INT_T*)pred, (const INT_T*)expected, 1);
 }
 
-// Test transpose() function
-int test_transpose() {
-  INT_T qmatrix[12] = {1238, 5432, 1834 ,6543, -5698, -2342 ,9876, 5674, 8435, 6542, 7824, 3924};
-  INT_T predicted[12];
-  const INT_T expected[12] = {1238, 6543, 9876, 6542 ,5432, -5698, 5674, 7824, 1834, -2342, 8435, 3924};
-  INT_T qmatrix1[9] = {1238, 5432, 1834, 6543, -5698, -2342 ,9876, 5674, 8435};
-  INT_T predicted1[9];
-  const INT_T expected1[9] = {1238, 6543, 9876, 5432, -5698, 5674 ,1834, -2342, 8435};
+// Test v_q_relu() function.
+int test_v_q_relu() {
+  INT_T qvec_A[16] = {-3648, 648, -2147, -2348, 1468, -4348, 3648, 3648, -648, 9648, 3778, 4743, 7483, -243, 8, -21};
+  INT_T qvec_B[16] = {-3648, 648, -2147, -2348, 1468, -4348, 3648, 3648, -648, 9648, 3778, 4743, 7483, -243, 8, -21};
+  const INT_T expected_A[16] = {0, 648, 0, 0, 1468, 0, 3648, 3648, 0, 9648, 3778, 4743, 7483, 0, 8, 0};
+  const INT_T expected_B[16] = {0, 648, 0, 0, 1468, 0, 3648, 3648, 0, 9648, 3778, 4743, 7483, 0, 8, 0};
 
-  transpose((INT_T *)qmatrix, (INT_T *)predicted, 3, 4);
-  transpose((INT_T *)qmatrix1, (INT_T *)predicted1, 3, 3);
-
-  return check_output((INT_T *)predicted1, (INT_T *)expected1, 9) == 0 && check_output((INT_T *)predicted, (INT_T *)expected, 12) == 0 ? 0: 1;
+  v_q_relu(&qvec_A[0], 16);
+  v_q_relu(&qvec_B[0], 16);
+  return check_output(qvec_A, expected_A, 16) || check_output(qvec_B, expected_B, 16);
 }
 
-// Test adjust_scale_shr() unction
-int test_adjust_scale_shl() {
-  INT_T qmatrix[16]= {423, -987, -2342, 1232, -324, 843, 982, 2342, 343, 654, 987, 654, 567, 2876, 987, 1265};
-  INT_T expected[16] = {846, -1974, -4684, 2464, -648, 1686, 1964, 4684, 686, 1308, 1974, 1308, 1134, 5752, 1974, 2530};
+// Test v_q_exp() function.
+int test_v_q_exp() {
+  const INT_T qvec_A[16] = {13, 54, 34, 35, 87, 11, 41, 93, 89, 11, 90, 25, 76, 39, 48, 93};
+  INT_T pred[16];
 
-  adjust_scale_shl(qmatrix, 16, 2);
-
-  return check_output(qmatrix, expected, 16);
-}
-
-// Test AdjustScaleShr function
-int test_adjust_scale_shr() {
-  INT_T qmatrix[16]= {4232, -9879, -2342, 1232, -3242, 8432, 9823, 2342, 343, 6543, 9876, 6542, 5674, 28765, 9876, 12654};
   #ifdef SHIFT
-    INT_T expected[16] = {2116, -4940, -1171, 616, -1621, 4216, 4911, 1171, 171, 3271, 4938, 3271, 2837, 14382, 4938, 6327};
+    const INT_T expected[16] = {16,  3224,  432,  432,  -20400,  16,  1184,  20240,  20240,  16,  20240,  160,  -712,  432,  3224,  20240};
+    v_q_exp(&qvec_A[0], 16, &pred[0], 3, 3);
   #else
-    INT_T expected[16] = {2116, -4939, -1171, 616, -1621, 4216, 4911, 1171, 171, 3271, 4938, 3271, 2837, 14382, 4938, 6327};
+    const INT_T expected[16] = {40,  6832,  560,  635,  29493,  31,  1345,  -22628,  18482,  31,  25215,  182,  -24195,  1047,  3227,  -22628};
+    v_q_exp(&qvec_A[0], 16, &pred[0], 8, 8);
   #endif
 
-  adjust_scale_shr(qmatrix, 16, 2);
-  return check_output(qmatrix, expected, 16);
+  return check_output(pred, expected, 16);
 }
 
-// Test Reverse2 function
-int test_reverse2() {
+// Test v_q_scale_up() function.
+int test_v_q_scale_up() {
+  const INT_T qvec_A[16] = {423, -987, -2342, 1232, -324, 843, 982, 2342, 343, 654, 987, 654, 567, 2876, 987, 1265};
+  const INT_T expected[16] = {846, -1974, -4684, 2464, -648, 1686, 1964, 4684, 686, 1308, 1974, 1308, 1134, 5752, 1974, 2530};
+
+  #ifdef SHIFT
+    v_q_scale_up(&qvec[0], 16, 1);
+  #else
+    v_q_scale_up(&qvec[0], 16, 2);
+  #endif
+
+  return check_output(qvec_A, expected, 16);
+}
+
+// Test v_q_scale_down() function.
+int test_v_q_scale_down() {
+  const INT_T qvec_A[16] = {4232, -9879, -2342, 1232, -3242, 8432, 9823, 2342, 343, 6543, 9876, 6542, 5674, 28765, 9876, 12654};
+
+  #ifdef SHIFT
+    const INT_T expected[16] = {2116, -4940, -1171, 616, -1621, 4216, 4911, 1171, 171, 3271, 4938, 3271, 2837, 14382, 4938, 6327};
+    v_q_scale_down(&qvec_A[0], 16, 1);
+  #else
+    const INT_T expected[16] = {2116, -4939, -1171, 616, -1621, 4216, 4911, 1171, 171, 3271, 4938, 3271, 2837, 14382, 4938, 6327};
+    v_q_scale_down(&qvec_A[0], 16, 2);
+  #endif
+
+  return check_output(qvec_A, expected, 16);
+}
+
+// Test m_q_transpose() function.
+int test_m_q_transpose() {
+  const INT_T qmat_A[4 * 3] = {1238, 5432, 1834, 6543, -5698, -2342, 9876, 5674, 8435, 6542, 7824, 3924};
+  const INT_T expected_A[3 * 4] = {1238, 6543, 9876, 6542, 5432, -5698, 5674, 7824, 1834, -2342, 8435, 3924};
+  INT_T pred_A[12];
+
+  const INT_T qmat_B[3 * 3] = {1238, 5432, 1834, 6543, -5698, -2342, 9876, 5674, 8435};
+  const INT_T expected_B[3 * 3] = {1238, 6543, 9876, 5432, -5698, 5674, 1834, -2342, 8435};
+  INT_T pred_B[9];
+
+  m_q_transpose(&qmat_A[0], 3, 4, &pred_A[0]);
+  m_q_transpose(&qmat_B[0], 3, 3, &pred_B[0]);
+
+  return (check_output(pred_A, expected_A, 12) || check_output(pred_B, expected_B, 9));
+}
+
+// Test reverse() function
+int test_reverse() {
   INT_T qmatrix[16]= {4232, -9879, -2342, 1232, -3242, 8432, 9823, 2342, 343, 6543, 9876, 6542, 5674, 28765, 9876, 12654};
   INT_T expected[16] = {1232, -2342, -9879, 4232, 2342, 9823, 8432, -3242, 6542, 9876, 6543, 343, 12654, 9876, 28765, 5674};
   INT_T expected1[16] = {5674, 28765, 9876, 12654, 343, 6543, 9876, 6542, -3242, 8432, 9823, 2342, 4232, -9879, -2342, 1232};
@@ -227,41 +262,37 @@ int test_reverse2() {
   return check_output(predicted, expected, 16) == 0 && check_output(predicted1, expected1, 16) == 0 ? 0: 1;
 }
 
-// Test AddOrSubCir4D function
-int test_add_or_sub_cir_4D() {
-  INT_T arrA[2 * 2 * 2 * 2] = {
-                                1324, 5453,
-                                3454, 3435,
+// Test m_q_add_sub_4D() function.
+int test_m_q_add_sub_4D() {
+  const INT_T qmat_A[2 * 2 * 2 * 2] = {1324, 5453,
+                                       3454, 3435,
 
-                                8789, 3411,
-                                5412, 8934,
-
-
-                                6895, 1211,
-                                6790, 5425,
-
-                                8976, 4539,
-                                9348, 9321
-                              };
-  const INT_T arrB[2 * 2 * 2 * 2] = {
-                                8452, 2341,
-                                9383, 2353,
-
-                                4522, 6232,
-                                2562, 565,
+                                       8789, 3411,
+                                       5412, 8934,
 
 
-                                4564, 7756,
-                                2585, 8735,
+                                       6895, 1211,
+                                       6790, 5425,
 
-                                3525, 4341,
-                                4656, 2313
-                              };
+                                       8976, 4539,
+                                       9348, 9321};
+  const INT_T qmat_B[2 * 2 * 2 * 2] = {8452, 2341,
+                                       9383, 2353,
+
+                                       4522, 6232,
+                                       2562, 565,
+
+
+                                       4564, 7756,
+                                       2585, 8735,
+
+                                       3525, 4341,
+                                       4656, 2313};
   INT_T predicted[16];
   INT_T predicted1[16];
   INT_T predicted2[16];
   INT_T predicted3[16];
-  INT_T expected[2 * 2 * 2 * 2] = {
+  const INT_T expected[2 * 2 * 2 * 2] = {
                                 2775, 3311,
                                 3840, 2302,
 
@@ -275,7 +306,7 @@ int test_add_or_sub_cir_4D() {
                                 6601, 2854,
                                 6787, 5245
                               };
-  INT_T expected1[2 * 2 * 2 * 2] =  {
+  const INT_T expected1[2 * 2 * 2 * 2] =  {
                                 -1451, 2141,
                                 -386, 1132,
 
@@ -287,9 +318,8 @@ int test_add_or_sub_cir_4D() {
                                 1282, 2127,
 
                                 2375, 1684,
-                                2561, 4075
-                              };
-  INT_T expected2[2 * 2 * 2 * 2] = {
+                                2561, 4075};
+  const INT_T expected2[2 * 2 * 2 * 2] = {
                                 2775, 3311,
                                 3840, 2302,
 
@@ -301,14 +331,14 @@ int test_add_or_sub_cir_4D() {
                                 5508, 3297,
 
                                 6601, 2854,
-                                6787, 5245
-                              };
-  INT_T expected3[2 * 2 * 2 * 2] = {
+                                6787, 5245};
+  const INT_T expected3[2 * 2 * 2 * 2] = {
                                 -1451, 2141,
                                 -386, 1132,
 
                                 2281, 1120,
                                 593, 3882,
+
 
                                 1334, 20,
                                 1282, 2127,
@@ -326,10 +356,10 @@ int test_add_or_sub_cir_4D() {
     && check_output(predicted2, expected2, 16) == 0 && check_output(predicted3, expected3, 16) == 0 ? 0 : 1;
 }
 
-// Test AddOrSubCir2D function
-int test_add_or_sub_cir_2D() {
-  INT_T arrA[16] = {1324, 5453, 3454, 3435, 8789, 3411, 5412, 8934, 6895, 1211, 6790, 5425, 8976, 4539, 9348, 9321};
-  const INT_T arrB[16] = {8452, 2341, 9383, 2353, 4522, 6232, 2562, 565, 4564, 7756, 2585, 8735, 3525, 4341, 4656, 2313};
+// Test m_q_add_sub_2D() function.
+int test_m_q_add_sub_2D() {
+  const INT_T qmat_A[4 * 4] = {1324, 5453, 3454, 3435, 8789, 3411, 5412, 8934, 6895, 1211, 6790, 5425, 8976, 4539, 9348, 9321};
+  const INT_T qmat_B[4 * 4] = {8452, 2341, 9383, 2353, 4522, 6232, 2562, 565, 4564, 7756, 2585, 8735, 3525, 4341, 4656, 2313};
   INT_T predicted[16];
   INT_T predicted1[16];
   const INT_T expected[16] = {2775, 3311, 4072, 2305, 6507, 2290, 5051, 5055, 5560, 1190, 5740, 3300, 6601, 2854, 7019, 5248};
@@ -338,33 +368,6 @@ int test_add_or_sub_cir_2D() {
   add_or_sub_cir_2D(arrA,arrB, predicted1, 4, 4, 1, 2, 2, 0);
 
   return check_output(predicted, expected, 16) == 0 && check_output(predicted1, expected1, 16) == 0 ? 0 : 1;
-}
-
-// Test Exp() function
-int test_exp() {
-  INT_T arrA[16] = {13, 54, 34, 35, 87, 11, 41, 93, 89, 11, 90, 25, 76, 39, 48, 93};
-  INT_T predicted[16];
-  #ifdef SHIFT
-    const INT_T expected[16] = {16,  3224,  432,  432,  -20400,  16,  1184,  20240,  20240,  16,  20240,  160,  -712,  432,  3224,  20240};
-  #else
-    const INT_T expected[16] = {40,  6832,  560,  635,  29493,  31,  1345,  -22628,  18482,  31,  25215,  182,  -24195,  1047,  3227,  -22628};
-  #endif
-
-  exp_scale(arrA, 16, 8, 8, predicted);
-
-  return check_output(predicted, expected, 16);
-}
-
-// Test RelunD function
-int test_relu() {
-  INT_T predicted[16] = {-3648, 648, -2147, -2348, 1468, -4348, 3648, 3648, -648, 9648, 3778, 4743, 7483, -243, 8, -21};
-  INT_T predicted1[16] = {-3648, 648, -2147, -2348, 1468, -4348, 3648, 3648, -648, 9648, 3778, 4743, 7483, -243, 8, -21};
-  const INT_T expected[16] = {0, 648, 0, 0, 1468, 0, 3648, 3648, 0, 9648, 3778, 4743, 7483, 0, 8, 0};
-  const INT_T expected1[16] = {0, 648, 0, 0, 1468, 0, 3648, 3648, 0, 9648, 3778, 4743, 7483, 0, 8, 0};
-
-  relu(predicted, 16);
-  relu(predicted1, 16);
-  return check_output(predicted, expected, 16) == 0 && check_output(predicted1, expected1, 16) == 0 ? 0: 1;
 }
 
 // Test maxpool function
@@ -402,19 +405,6 @@ int test_maxpool() {
   return check_output(predicted, expected, 16);
 }
 
-// Test sigmoid function
-int test_sigmoid()
-{
-  INT_T arr[] = {1, 2, 3, 4, 5, 6, 7 ,8, 9, 10, 11, 12, 13, 14, 15, 16};
-  INT_T predicted[16] = {0};
-  #ifdef SHIFT
-    INT_T expected[16] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-  #else
-    INT_T expected[16] = {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-  #endif
-  sigmoid(arr, 4, 4, predicted);
-  return check_output(predicted, expected, 16);
-}
 
 // Test convolution function
 int test_convolution()
@@ -530,10 +520,10 @@ int main() {
     printf("Test Failure for v_q_scalar_mul()!\n");
   } else if (test_m_q_mulvec()) {
     printf("Test Failure for m_q_mulvec()!\n");
-  } else if (test_arg_max()) {
-    printf("Test Failure for test_arg_max()!\n");
-  } else if (test_transpose()) {
-    printf("Test Failure for test_transpose()!\n");
+  } else if (test_v_q_argmax()) {
+    printf("Test Failure for v_q_argmax()!\n");
+  } else if (test_m_q_transpose()) {
+    printf("Test Failure for m_q_transpose()!\n");
   } else if (test_adjust_scale_shl()) {
     printf("Test Failure for test_adjust_scale_shl()!\n");
   } else if (test_adjust_scale_shr()) {
@@ -550,8 +540,6 @@ int main() {
     printf("Test Failure for test_Relu()!\n");
   } else if (test_maxpool()) {
     printf("Test Failure for test_maxpool()!\n");
-  } else if (test_sigmoid()) {
-    printf("Test Failure for test_sigmoid()!\n");
   } else if (test_convolution()) {
     printf("Test Failure for test_convolution()!\n");
   } else if (test_sparsematrix()) {

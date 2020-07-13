@@ -159,203 +159,177 @@ void m_q_mulvec(const INT_T* const mat, const INT_T* const vec, ITER_T nrows,
   }
 }
 
-void arg_max(INT_T *vec, INT_T len, INT_T *index) {
-  INT_T max_val = 0;
-  INT_T i       = 0;
-  INT_T max_idx = 0;
+void v_q_argmax(const INT_T* const vec, ITER_T len, ITER_T* const ret) {
+  INT_T max_value = vec[0];
+  ITER_T max_index = 0;
 
-  if(vec && index) {
-    max_val = vec[0];
-    for (i = 1; i < len; i++) {
-      if (max_val < vec[i]) {
-        max_idx  = i;
-        max_val  = vec[i];
+  for (ITER_T i = 1; i < len; i++) {
+    if (max_value < vec[i]) {
+      max_index = i;
+      max_value = vec[i];
+    }
+  }
+
+  *ret = max_index;
+}
+
+void v_q_relu(INT_T* const vec, ITER_T len) {
+  for (ITER_T i = 0; i < len; i++) {
+    if (vec[i] < 0) {
+      vec[i] = 0;
+    }
+  }
+}
+
+void v_q_exp(const INT_T* const vec, ITER_T len, INT_T* const ret,
+             SCALE_T scvec, SCALE_T scret) {
+  for (ITER_T i = 0; i < len; i++) {
+    #ifdef SHIFT
+      ret[i] = (((INT_T)exp((float)(vec[i] >> scvec))) << scret);
+    #else
+      ret[i] = ((INT_T)(exp(((float)vec[i]) / scvec) * scret));
+    #endif
+  }
+}
+
+void v_q_scale_up(INT_T* const vec, ITER_T len, SCALE_T scvec) {
+  for (ITER_T i = 0; i < len; i++) {
+    #ifdef SHIFT
+      mat[i] <<= scvec;
+    #else
+      mat[i] *= scvec;
+    #endif
+  }
+}
+
+void v_q_scale_down(INT_T* const vec, ITER_T len, SCALE_T scvec) {
+  for (ITER_T i = 0; i < len; i++) {
+    #ifdef SHIFT
+      vec[i] >>= scvec;
+    #else
+      vec[i] /= scvec;
+    #endif
+  }
+}
+
+void m_q_transpose(const INT_T* const mat, ITER_T nrows, ITER_T ncols,
+                   INT_T* const ret) {
+  for (ITER_T i = 0; i < nrows; i++) {
+    for (ITER_T j = 0; j < ncols; j++) {
+      ret[i * ncols + j] = mat[j * nrows + i];
+    }
+  }
+}
+
+void m_q_reverse(const INT_T* const mat, ITER_T nrows, ITER_T ncols, ITER_T axis,
+                 INT_T* const ret) {
+  for (ITER_T i = 0; i < nrows; i++) {
+    for (ITER_T j = 0; j < ncols; j++) {
+      if (axis == 0) {
+        ret[i * ncols + j] = mat[(nrows - 1 - i) * ncols + j];
+      } else {
+        ret[i * ncols + j] = mat[i * ncols + (ncols - 1 - j)];
       }
     }
-    *index = max_idx;
   }
-  return;
 }
 
-void transpose(INT_T *mat_in, INT_T *mat_out, INT_T nrows, INT_T ncols) {
-  INT_T i = 0;
-  INT_T j = 0;
-
-  if(mat_in && mat_out) {
-    for (i = 0; i < nrows; i++) {
-      for (j = 0; j < ncols; j++) {
-        mat_out[i * ncols + j] = mat_in[j * nrows + i];
-      }
+void m_q_add_sub_2D(const INT_T* const mat, const INT_T* const vec,
+                    ITER_T nrows, ITER_T ncols, INT_T* const ret,
+                    SCALE_T scmat, SCALE_T scvec, SCALE_T scret, uint8_t add) {
+  for (ITER_T i = 0, w = 0; i < nrows * ncols; i++, w++) {
+    if (w >= ncols) {
+      w = 0;
     }
-  }
-  return;
-}
 
-void add_or_sub_cir_4D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out,
-                       INT_T nbatch, INT_T nrows, INT_T ncols, INT_T nchannel,
-                       INT_T scl_a, INT_T scl_b, INT_T scl_out, uint8_t add) {
-  INT_T n   = 0;
-  INT_T c   = 0;
-  INT_T a   = 0;
-  INT_T b   = 0;
-  INT_T res = 0;
-
-  if(mat_in && mat_bias && mat_out) {
-    for (n = 0; n < nbatch * nrows * ncols * nchannel; n++) {
-      a = mat_in[n];
-        #ifdef SHIFT
-          a >>= scl_a;
-        #else
-          a = a / scl_a;
-        #endif
-      b = mat_bias[c++];
-      if(c >= nchannel)
-          c = 0;
-        #ifdef SHIFT
-          b >>= scl_b;
-        #else
-          b = b / scl_b;
-        #endif
-
-      if (add)
-        #ifdef SHIFT
-          res = ((a >> scl_out) + (b >> scl_out));
-        #else
-          res = ((a / scl_out) + (b / scl_out));
-        #endif
-      else
-        #ifdef SHIFT
-          res = ((a >> scl_out) - (b >> scl_out));
-        #else
-          res = ((a / scl_out) - (b / scl_out));
-        #endif
-      mat_out[n] = res;
-    }
-  }
-
-  return;
-}
-
-void add_or_sub_cir_2D(INT_T *mat_in, const INT_T *mat_bias, INT_T *mat_out,
-                       INT_T nrows, INT_T ncols, INT_T scl_a, INT_T scl_b,
-                       INT_T scl_out, uint8_t add) {
-  INT_T h   = 0;
-  INT_T w   = 0;
-  INT_T a   = 0;
-  INT_T b   = 0;
-  INT_T res = 0;
-
-  if (mat_in && mat_bias && mat_out) {
-    for (h = 0; h < nrows * ncols; h++) {
-      a = mat_in[h];
+    if (add) {
       #ifdef SHIFT
-        a >>= scl_a;
+        ret[i] = (mat[i] >> (scmat + scret)) + (vec[w] >> (scvec + scret));
       #else
-        a = a / scl_a;
+        ret[i] = ((mat[i] / scmat) / scret) + ((vec[w] / scvec) / scret);
       #endif
-
-      b = mat_bias[w++];
-      if(w >= ncols)
-        w = 0;
-        #ifdef SHIFT
-          b >>= scl_b;
-        #else
-          b = b / scl_b;
-        #endif
-
-      if (add)
-        #ifdef SHIFT
-          res = ((a >> scl_out) + (b >> scl_out));
-        #else
-          res = ((a / scl_out) + (b / scl_out));
-        #endif
-      else
-        #ifdef SHIFT
-          res = ((a >> scl_out) - (b >> scl_out));
-        #else
-          res = ((a / scl_out) - (b / scl_out));
-        #endif
-
-      mat_out[h] = res;
-    }
-  }
-
-  return;
-}
-
-void relu(INT_T *mat, INT_T length) {
-  INT_T n = 0;
-
-  if (mat) {
-    for (n = 0; n < length; n++) {
-      if (mat[n] < 0)
-        mat[n] = 0;
-    }
-  }
-  return;
-}
-
-void exp_scale(INT_T *mat_in, INT_T length, INT_T scl_in, INT_T scl_out, INT_T *mat_out) {
-  INT_T i = 0;
-  if (mat_in && mat_out) {
-    for (i = 0; i < length; i++) {
+    } else {
       #ifdef SHIFT
-        mat_out[i] = ((INT_T)((INT_T)exp(mat_in[i] >> scl_in) << scl_out));
+        ret[i] = (mat[i] >> (scmat + scret)) - (vec[w] >> (scvec + scret));
       #else
-        mat_out[i] = ((INT_T)(exp(((float)mat_in[i]) / scl_in) * scl_out));
+        ret[i] = ((mat[i] / scmat) / scret) - ((vec[w] / scvec) / scret);
       #endif
     }
   }
-
-  return;
 }
 
-void adjust_scale_shr(INT_T *mat, INT_T length, INT_T scale) {
-  INT_T i = 0;
+void m_q_add_sub_4D(const INT_T* const mat, const INT_T* const vec,
+                    ITER_T nbatches, ITER_T nrows, ITER_T ncols,
+                    ITER_T nchannels, INT_T* const ret, SCALE_T scmat,
+                    SCALE_T scvec, SCALE_T scret, uint8_t add) {
+  for (ITER_T i = 0, c = 0; i < nbatches * nrows * ncols * nchannels; i++, c++) {
+    if (c >= nchannels) {
+      c = 0;
+    }
 
-  if (mat) {
-    while(i < length) {
+    if (add) {
       #ifdef SHIFT
-        mat[i++] >>= scale;
+        ret[i] = (mat[i] >> (scmat + scret)) + (vec[c] >> (scvec + scret));
       #else
-        mat[i++] /= scale;
+        ret[i] = ((mat[i] / scmat) / scret) + ((vec[c] / scvec) / scret);
+      #endif
+    } else {
+      #ifdef SHIFT
+        ret[i] = (mat[i] >> (scmat + scret)) - (vec[c] >> (scvec + scret));
+      #else
+        ret[i] = ((mat[i] / scmat) / scret) - ((vec[c] / scvec) / scret);
       #endif
     }
   }
-
-  return;
 }
 
-void adjust_scale_shl(INT_T *mat, INT_T length, INT_T scale) {
-  INT_T i = 0;
+void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T K,
+                INT_T shrA, INT_T shrB, INT_T shrC) {
+  INT_T k       = 0;
+  INT_T b       = 0;
+  INT_T idx     = 0;
+  INT_T a       = 0;
+  INT_T c       = 0;
+  INT_T ite_idx = 0;
+  INT_T ite_val = 0;
 
-  if (mat) {
-    while(i < length) {
-     #ifdef SHIFT
-        mat[i++] <<= scale;
+  for (k = 0; k < K; k++) {
+    b = B[k * 1][0];
+    #ifdef FASTAPPROX
+      #ifdef SHIFT
+        b = b >> shrB;
       #else
-      mat[i++] *= scale;
+        b = b / shrB;
       #endif
+    #endif
+
+    idx = Aidx[ite_idx];
+    while (idx != 0) {
+      a = Aval[ite_val];
+      #ifdef FASTAPPROX
+        #ifdef SHIFT
+          a = a >> shrA;
+          c = a * b;
+          c = c >> shrC;
+        #else
+          a = a / shrA;
+          c = a * b;
+          c = c / shrC;
+        #endif
+      #else
+        #ifdef SHIFT
+          c = (((INT_T)a * (INT_T)b) >> (shrC + shrA + shrB));
+        #else
+          c = (((INT_T)a * (INT_T)b) / ((INT_T)shrC * (INT_T)shrA * (INT_T)shrB));
+        #endif
+      #endif
+
+      C[idx - 1] += c;
+      ite_idx++;
+      ite_val++;
+      idx = Aidx[ite_idx];
     }
-  }
-
-  return;
-}
-
-void Reverse2(INT_T *mat_in, INT_T axis, INT_T nrows, INT_T ncols, INT_T *mat_out) {
-  INT_T i         = 0;
-  INT_T j         = 0;
-  INT_T i_prime   = 0;
-  INT_T j_prime   = 0;
-
-  if(mat_in && mat_out) {
-    for (i = 0; i < nrows; i++) {
-      for (j = 0; j < ncols; j++) {
-        i_prime = (axis == 0 ? (nrows - 1 - i) : i);
-        j_prime = (axis == 1 ? (ncols - 1 - j) : j);
-        mat_out[i * ncols + j] = mat_in[i_prime*ncols  + j_prime];
-      }
-    }
+    ite_idx++;
   }
 
   return;
@@ -388,10 +362,10 @@ void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,INT_T N,
   INT_T wout      = 0;
   INT_T depth     = 0;
 
-  INT_T HOffsetL  = HDL*(HF/2) - HPADL;
-  INT_T WOffsetL  = WDL*(WF/2) - WPADL;
-  INT_T HOffsetR  = HDL*(HF/2) - HPADR;
-  INT_T WOffsetR  = WDL*(WF/2) - WPADR;
+  INT_T HOffsetL  = HDL * (HF / 2) - HPADL;
+  INT_T WOffsetL  = WDL * (WF / 2) - WPADL;
+  INT_T HOffsetR  = HDL * (HF / 2) - HPADR;
+  INT_T WOffsetR  = WDL * (WF / 2) - WPADR;
 
   if(A && B && C && tmp) {
     for(n = 0; n < N; n++) {
@@ -466,78 +440,6 @@ void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,INT_T N,
       }
     }
   }
-}
-
-
-void sigmoid(INT_T *A, INT_T I, INT_T J, INT_T *B) {
-  INT_T i = 0;
-  INT_T temp = 0;
-
-  if (A && B) {
-    for (i = 0; i < I*J; i++) {
-      #ifdef SHIFT
-        temp =  (A[i] + 2) << 2 > 0 ? (A[i] + 2) << 2: 0;
-      #else
-        temp =  (A[i] + 2) / 4 > 0 ? (A[i] + 2) / 4: 0;
-      #endif
-      temp = temp < 1 ? temp : 1;
-      B[i] = temp;
-    }
-  }
-
-  return;
-}
-
-void sp_mat_mul(const INT_T *Aidx, const INT_T *Aval, INT_T **B, INT_T *C, INT_T K,
-                INT_T shrA, INT_T shrB, INT_T shrC) {
-  INT_T k       = 0;
-  INT_T b       = 0;
-  INT_T idx     = 0;
-  INT_T a       = 0;
-  INT_T c       = 0;
-  INT_T ite_idx = 0;
-  INT_T ite_val = 0;
-
-  for (k = 0; k < K; k++) {
-    b = B[k * 1][0];
-    #ifdef FASTAPPROX
-      #ifdef SHIFT
-        b = b >> shrB;
-      #else
-        b = b / shrB;
-      #endif
-    #endif
-
-    idx = Aidx[ite_idx];
-    while (idx != 0) {
-      a = Aval[ite_val];
-      #ifdef FASTAPPROX
-        #ifdef SHIFT
-          a = a >> shrA;
-          c = a * b;
-          c = c >> shrC;
-        #else
-          a = a / shrA;
-          c = a * b;
-          c = c / shrC;
-        #endif
-      #else
-        #ifdef SHIFT
-          c = (((INT_T)a * (INT_T)b) >> (shrC + shrA + shrB));
-        #else
-          c = (((INT_T)a * (INT_T)b) / ((INT_T)shrC * (INT_T)shrA * (INT_T)shrB));
-        #endif
-      #endif
-
-      C[idx - 1] += c;
-      ite_idx++;
-      ite_val++;
-      idx = Aidx[ite_idx];
-    }
-    ite_idx++;
-  }
-
-  return;
 }
 
 void maxpool(INT_T *A, INT_T *B, INT_T N, INT_T H, INT_T W, INT_T C, INT_T FH,
