@@ -6,7 +6,7 @@ include ../config.mk
 INCLUDE_DIR=../include
 IFLAGS = -I $(INCLUDE_DIR)
 
-all: utils.o fastgrnn.o classifier.o rnnpool.o quantized_utils.o quantized_fastgrnn.o quantized_rnnpool.o
+all: utils.o fastgrnn.o classifier.o rnnpool.o quantized_utils.o quantized_fastgrnn.o quantized_rnnpool.o quantized_mbconv.o
 
 utils.o: utils.c
 	$(CC) -o $@ $(IFLAGS) $(CFLAGS) -c $^
@@ -27,6 +27,9 @@ quantized_fastgrnn.o: quantized_fastgrnn.c
 	$(CC) -o $@ $(IFLAGS) $(CFLAGS) -c $^
 
 quantized_rnnpool.o: quantized_rnnpool.c
+	$(CC) -o $@ $(IFLAGS) $(CFLAGS) -c $^
+
+quantized_mbconv.o: quantized_mbconv.c
 	$(CC) -o $@ $(IFLAGS) $(CFLAGS) -c $^
 
 .PHONY: clean cleanest
