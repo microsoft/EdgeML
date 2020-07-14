@@ -174,12 +174,22 @@ int main(int argc, char **argv) {
   float aggregate = aggregate_error(allErrors, N * HOUT * WOUT * COUT);
   fprintf(outputLog, "Aggregated 95th Percentile Error: %f\n", aggregate);
   if (aggregate < 1.419) {
-    fprintf(outputLog, "Quantized RNNPool Numerical Test Passed!\n");
+    fprintf(outputLog, "Quantized MBConv Numerical Test Passed!\n");
   } else {
-    fprintf(outputLog, "Quantized RNNPool Numerical Test Failed!\n");
+    fprintf(outputLog, "Quantized MBConv Numerical Test Failed!\n");
     return -1;
   }
 
+  for (unsigned i = 0; i < N * HOUT * WOUT * COUT; i++){
+    if (output_test[i] != expected[i]) {
+      fprintf(outputLog, "Output: %d, Expected: %d at Index: %d\n",
+              output_test[i], expected[i], i);
+      fprintf(outputLog, "Quantized MBConv Fixed Point Test Failed!\n");
+      return -1;
+    }
+  }
+
+  fprintf(outputLog, "Quantized MBConv Fixed Point Test Passed!\n");
   free(reshapedXLine);
   free(output_test);
   free(X);

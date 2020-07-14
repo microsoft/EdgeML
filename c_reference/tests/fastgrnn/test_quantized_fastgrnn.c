@@ -98,6 +98,7 @@ int main() {
 
   for (unsigned i = 0; i < HIDDEN_DIM1; i++){
     if (buffer[i] != expected[i]) {
+      printf("Output: %d, Expected: %d at Index: %d\n", buffer[i], expected[i], i);
       printf("Quantized FastGRNN Test Failed!\n");
       return -1;
     }
