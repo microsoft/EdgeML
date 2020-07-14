@@ -7,8 +7,7 @@ import os
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from edgeml_tf.graph.protoNN import ProtoNN
-from edgeml_tf.graph.protoNNLayer import ProtoNNLayer
+from edgeml_tf.tflite.protoNNLayer import ProtoNNLayer
 import helpermethods as helper
 
 def main():
@@ -68,6 +67,7 @@ def main():
 
     # Save the Keras model in tflite format
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
     tflite_model = converter.convert()
 
     # Save the TF Lite model as file

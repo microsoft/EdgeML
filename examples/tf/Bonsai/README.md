@@ -53,6 +53,18 @@ Non-Zeros: 4156.0 Model Size: 31.703125 KB hasSparse: True
 
 usps10 directory will now have a consolidated results file called `TFBonsaiResults.txt` and a directory `TFBonsaiResults` with the corresponding models with each run of the code on the usps10 dataset
 
+
+In case you need this model for inference via tflite framework, you can use the `bonsai_model_to_tflite.py`
+script to generate the tflite model. It converts the already trained Bonsai model to Keras sequential model,
+converts it into tflite format, and shows how to evaluate an example using the tflite interpreter. Please run 
+the following script (change model-dir-path with the timestamp'd directory created by Bonsai script)
+
+```
+python bonsai_model_to_tflite.py --data-dir ./usps10/ --model-dir ./usps10/TFBonsaiResults/model-dir-path/
+```
+
+
+
 ## Byte Quantization (Q) for model compression
 If you wish to quantize the generated model to use byte quantized integers use `quantizeBonsaiModels.py`. Usage Instructions:
 

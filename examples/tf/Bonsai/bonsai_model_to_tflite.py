@@ -7,7 +7,7 @@ from tensorflow import keras
 import numpy as np
 import sys
 import argparse
-from edgeml_tf.graph.bonsaiLayer import BonsaiLayer
+from edgeml_tf.tflite.bonsaiLayer import BonsaiLayer
 from helpermethods import str2bool
 
 def main():
@@ -78,6 +78,7 @@ def main():
     
     # Save the Keras model in tflite format
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    #converter.optimizations = [tf.lite.Optimize.DEFAULT]
     tflite_model = converter.convert()
 
     # Save the TF Lite model as file
