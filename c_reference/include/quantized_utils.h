@@ -7,8 +7,8 @@
 #include <math.h>
 #include "quantized_datatypes.h"
 
-#define SHIFT 1
-#define FASTAPPROX 1
+//#define SHIFT 1
+//#define FASTAPPROX 1
 
 // Function for figuring out number bits by which the data is to be shifted.
 inline INT_T findScale(INT_T scale)

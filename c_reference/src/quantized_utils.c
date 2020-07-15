@@ -439,7 +439,9 @@ void convolution(INT_T *A, const INT_T *B, INT_T *C, INT_T *tmp,INT_T N,
   INT_T ci        = 0;
   INT_T a         = 0;
   INT_T b         = 0;
-  int64_t temp    = 0;
+  #ifndef SHIFT
+    int64_t temp    = 0;
+  #endif /* SHIFT */
   INT_T totalEle  = 0;
   INT_T count     = 0;
   uint8_t shr     = 0;
