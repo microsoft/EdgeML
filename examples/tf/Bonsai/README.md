@@ -55,9 +55,11 @@ usps10 directory will now have a consolidated results file called `TFBonsaiResul
 
 
 In case you need this model for inference via tflite framework, you can use the `bonsai_model_to_tflite.py`
-script to generate the tflite model. It converts the already trained Bonsai model to Keras sequential model,
-converts it into tflite format, and shows how to evaluate an example using the tflite interpreter. Please run 
-the following script (change model-dir-path with the timestamp'd directory created by Bonsai script)
+script to generate the tflite model. It creates a Keras sequential model from already trained Bonsai model,
+converts it into tflite format, and shows how to evaluate an example using the tflite interpreter. Note that 
+this scripts runs only on Tensorflow 2.X API since many recent tflite optimization including quantization are 
+enabled in the Tensorflow 2.X API. Please run the following script in tensorflow 2.X environment (change model-dir-path 
+with the timestamp'd directory created by Bonsai script)
 
 ```
 python bonsai_model_to_tflite.py --data-dir ./usps10/ --model-dir ./usps10/TFBonsaiResults/model-dir-path/

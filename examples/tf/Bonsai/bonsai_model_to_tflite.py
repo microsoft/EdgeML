@@ -11,6 +11,8 @@ from edgeml_tf.tflite.bonsaiLayer import BonsaiLayer
 from helpermethods import str2bool
 
 def main():
+    assert tf.__version__.startswith('2')==True, 'Only Tensorflow-2.X API is supported.'
+
     # Hyper Param pre-processing
     parser = argparse.ArgumentParser(
         description='HyperParams for Bonsai Algorithm')

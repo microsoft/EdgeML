@@ -11,6 +11,8 @@ from edgeml_tf.tflite.protoNNLayer import ProtoNNLayer
 import helpermethods as helper
 
 def main():
+    assert tf.__version__.startswith('2')==True, 'Only Tensorflow-2.X API is supported.'
+
     config = helper.getProtoNNArgs()
 
     # Get hyper parameters
