@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 #include <stdio.h>
-#include <stdlib.h>
 #include "quantized_utils.h"
 
 // All values generated from Seedot on Wider Regression dataset.
@@ -23,10 +22,19 @@ static int check_output(const INT_T* const pred, const INT_T* const expected,
 // Test v_q_treesum() function.
 int test_v_q_treesum() {
   INTM_T qvec_A[128] = {3038976, 0, 0, 1514478, 0, 0, 778261, 32670, -2619599, 0, 3849336, 5310900, 0, 0, 0, 0, 0, 0, 0, 0, -142898, 1510353, 0, -6888482, 0, -760720, 1296384, -6749490, -9687275, -686501, -743600, -2112105, 0, 8962408, 0, -17460547, -1477630, 0, 0, -2195694, -860184, -214912, 0, -1389548, 0, 0, 2081898, 0, 0, 23544, -3351768, 0, 0, 0, 3886614, 0, -5839384, 0, 842100, 4051917, 0, 0, 1459796, 2006850, 517867, 3044471, 0, 2578300, 0, 0, -1921101, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4709000, 0, 0, 0, 0, -65664, 0, 0, 4313415, -1126680, 0, 0, -8524140, 0, 6248088, 0, 0, 0, 0, 2273558, 0, 0, -738913, 0, 0, -13912800, 0, 0, 0, -5329773, 5346088, 0, 113245, 0, 0, 8590397, 0, 2224368, 1020225, 489580, 0, -185584, -86475, 0, -2013258, -2417536, 0};
-  const INTM_T expected[1] = {-135837};
+
+  #ifdef SHIFT
+    INTM_T expected = {-135840};
+  #else
+    INTM_T expected = {-135837};
+  #endif
 
   v_q_treesum(&qvec_A[0], 128, 7, 0);
-  return check_output((const INT_T*)qvec_A, (const INT_T*)expected, 1);
+  if (qvec_A[0] != expected) {
+      printf("TreeSum Output: %d, Expected: %d\n", qvec_A[0], expected);
+      return 1;
+  }
+  return 0;
 }
 
 // Test v_q_add() function.
@@ -303,7 +311,7 @@ int test_m_q_mulvec() {
 
 // Test m_q_sparse_mulvec() function.
 int test_m_q_sparse_mulvec() {
-  const INT_T qmat_A[16] = {1, 2, 3, 4, 5, 6, 7, 0, 2, 4, 6, 8, 10, 12, 14, 0};
+  const ITER_T qmat_A[16] = {1, 2, 3, 4, 5, 6, 7, 0, 2, 4, 6, 8, 10, 12, 14, 0};
   const INT_T qmat_B[16] = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160};
   const INT_T qvec_C[2] = {1, 2};
   const INT_T expected[16] = {1, 22, 3, 27, 6, 32, 8, 27, 0, 30, 0, 32, 0, 35, 0, 0};
@@ -394,99 +402,6 @@ int test_t_q_sub_vec() {
   return check_output(pred, expected, 16);
 }
 
-// Test q_maxpool() function.
-int test_q_maxpool() {
-  //Check
-  const INT_T qmat_A[2 * 2 * 2 * 2] = {1, 2,
-                                       3, 4,
-
-                                       5, 6,
-                                       7, 8,
-
-
-                                       9, 10,
-                                       11, 12,
-
-                                       13, 14,
-                                       15, 16};
-  const INT_T expected[2 * 2 * 2 * 2] =  {7, 8,
-                                          9, 10,
-
-                                          11, 12,
-                                          13, 14,
-
-
-                                          15, 16,
-                                          15, 16,
-
-                                          15, 16,
-                                          15, 16};
-  INT_T pred[16];
-
-  q_maxpool(&qmat_A[0], 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, &pred[0]);
-  return check_output(pred, expected, 16);
-}
-
-// Test q_convolution() function.
-int test_q_convolution() {
-  const INT_T qmat_A[2 * 2 * 2 * 2] = {11, 220,
-                                       130, 40,
-
-                                       50, 60,
-                                       66, 76,
-
-
-                                       86, 910,
-                                       411, 312,
-
-                                       513, 514,
-                                       715, 716};
-  const INT_T qmat_B[2 * 2 * 2 * 2] = {100, 992,
-                                       15, 26,
-
-                                       27, 8,
-                                       3, 4,
-
-
-                                       5, 2,
-                                       2, 2,
-
-                                       7, 8,
-                                       29, 140};
-  INT_T pred[2 * 2 * 2 * 2];
-  INT_T temp[2 * 2 * 2 * 2];
-  #ifdef SHIFT
-    const INT_T expected[2 * 2 * 2 * 2] = {0, 0,
-                                           0, 0,
-
-                                           1, 0,
-                                           0, 0,
-
-
-                                           0, 0,
-                                           0, 0,
-
-                                           15, 5,
-                                           0, 0};
-  #else
-    const INT_T expected[2 * 2 * 2 * 2] = {0, 0,
-                                           0, 0,
-
-                                           7, 6,
-                                           7, 6,
-
-
-                                           0, 0,
-                                           0, 0,
-
-                                           39, 33,
-                                           39, 33};
-  #endif
-
-  // q_convolution(qmat_A, qmat_B, temp, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, pred, 8, 8, 1, 1);
-  return check_output(pred, expected, 16);
-}
-
 int main() {
   if (test_v_q_treesum()) {
     printf("Test Failure for v_q_treesum()!\n");
@@ -534,10 +449,6 @@ int main() {
     printf("Test Failure for t_q_add_vec()!\n");
   } else if (test_t_q_sub_vec()) {
     printf("Test Failure for t_q_sub_vec()!\n");
-  } else if (test_q_maxpool()) {
-    printf("Test Failure for q_maxpool()!\n");
-  } else if (test_q_convolution()) {
-    printf("Test Failure for q_convolution()!\n");
   } else {
     printf("All Tests Passed!\n");
     return 0;

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 #include "quantized_utils.h"
-#include <stdio.h>
 
 void v_q_treesum(INTM_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2) {
   ITER_T count = len, depth = 0;
@@ -259,24 +258,24 @@ void m_q_sub_vec(const INT_T* const mat, const INT_T* const vec,
 void m_q_mulvec(const INT_T* const mat, const INT_T* const vec, ITER_T nrows,
                 ITER_T ncols, INT_T* const ret, SCALE_T scmat, SCALE_T scvec,
                 SCALE_T H1, SCALE_T H2) {
-  INTM_T tmp[ncols];
+  INTM_T treesumBuffer[ncols];
   for (ITER_T row = 0; row < nrows; row++) {
     INT_T* mat_offset = (INT_T*)mat + row * ncols;
 
     for (ITER_T col = 0; col < ncols; col++) {
-      tmp[col] = ((INTM_T)(*mat_offset++) * (INTM_T)vec[col]);
+      treesumBuffer[col] = ((INTM_T)(*mat_offset++) * (INTM_T)vec[col]);
     }
 
-    v_q_treesum(&tmp[0], ncols, H1, H2);
+    v_q_treesum(&treesumBuffer[0], ncols, H1, H2);
     #ifdef SHIFT
-      ret[row] = (tmp[0] >> (scmat + scvec));
+      ret[row] = (treesumBuffer[0] >> (scmat + scvec));
     #else
-      ret[row] = ((tmp[0] / scmat) / scvec);
+      ret[row] = ((treesumBuffer[0] / scmat) / scvec);
     #endif
   }
 }
 
-void m_q_sparse_mulvec(const INT_T* const mat_indices, const INT_T* const mat_values,
+void m_q_sparse_mulvec(const ITER_T* const mat_indices, const INT_T* const mat_values,
                        const INT_T* const vec, ITER_T ndims, INT_T* const ret,
                        SCALE_T scmat, SCALE_T scvec, SCALE_T scret) {
   ITER_T iter_index = 0, iter_value = 0;
@@ -332,74 +331,4 @@ void t_q_sub_vec(const INT_T* const mat, const INT_T* const vec,
       ret[i] = ((mat[i] / scmat) / scret) - ((vec[c] / scvec) / scret);
     #endif
   }
-}
-
-void q_maxpool(const INT_T* const mat, ITER_T nbatches, ITER_T nrows, ITER_T ncols,
-               ITER_T nchannels, ITER_T hfilter, ITER_T wfilter, ITER_T hstride,
-               ITER_T wstride, ITER_T hpadl, ITER_T hpadr, ITER_T wpadl,
-               ITER_T wpadr, INT_T* const ret) {
-  //CHECK
-  ITER_T hoffset = nrows / hstride;
-  ITER_T woffset = ncols / wstride;
-
-  for (ITER_T n = 0; n < nbatches; n++) {
-    for (ITER_T h = 0; h < hoffset; h++) {
-      for (ITER_T w = 0; w < woffset; w++) {
-        for (ITER_T c = 0; c < nchannels; c++) {
-          INT_T max = mat[n * nrows * ncols * nchannels + (hstride * h) * ncols * nchannels + (wstride * w) * nchannels + c];
-
-          for (ITER_T hs = 0; hs < hfilter; hs++) {
-            for (ITER_T ws = 0; ws < wfilter; ws++) {
-              INT_T a = mat[n * nrows * ncols * nchannels + ((hstride * h) + hs) * ncols * nchannels + ((wstride * w) + ws) * nchannels + c];
-              if (a > max) {
-                max = a;
-              }
-            }
-          }
-
-          ret[n * hoffset * woffset * nchannels + h * woffset * nchannels + w * nchannels + c] = max;
-        }
-      }
-    }
-  }
-}
-
-void q_convolution(const INT_T* const mat, const INT_T* const filter,
-                   INT_T* const treesumBuffer, INT_T N, INT_T H, INT_T W,
-                   INT_T CIN, INT_T HF,INT_T WF, INT_T CINF, INT_T COUTF,
-                   INT_T HOUT, INT_T WOUT, INT_T HPADL, INT_T HPADR, INT_T WPADL,
-                   INT_T WPADR, INT_T HSTR, INT_T WSTR, INT_T HDL, INT_T WDL,
-                   INT_T G, INT_T* const ret, INT_T shrA, INT_T shrB, INT_T H1,
-                   INT_T H2) {
-  //Check
-  /*ITER_T hoffsetl = HDL * (HF >> 1) - HPADL;
-  ITER_T woffsetl = WDL * (WF >> 1) - WPADL;
-  ITER_T hoffsetr = HDL * (HF >> 1) - HPADR;
-  ITER_T woffsetr = WDL * (WF >> 1) - WPADR;
-
-  for (ITER_T n = 0; n < N; n++) {
-    for (ITER_T h = HOffsetL, hout = 0; h < H - HOffsetR; h += HSTR, hout++) {
-      for (ITER_T w = WOffsetL, wout = 0; w < W - WOffsetR; w += WSTR, wout++) {
-        for (ITER_T g = 0; g < G; g++) {
-          for (ITER_T co = 0; co < COUTF; co ++) {
-
-            ITER_T counter = 0;
-            for (ITER_T hf = -(HF >> 1); hf <= HF >> 1; hf++) {
-              for (ITER_T wf = -(WF >> 1); wf <= WF >> 1; wf++) {
-                for (ITER_T ci = 0; ci < CINF; ci++) {
-                  MYINT a = (((h + HDL * hf) < 0) || ((h + HDL * hf) >= H) || ((w + WDL * wf) < 0) || ((w + WDL * wf) >= W)) ? 0 : mat[n * H * W * CIN + (h + HDL * hf) * W * CIN + (w + WDL * wf) * CIN + (ci + g * CINF)];
-                  MYINT b = filter[(hf + (HF >> 1)) * WF * CINF * COUTF + (wf + (WF >> 1)) * CINF * COUTF + ci * COUTF + co];
-                  treesumBuffer[counter] = (((INTM_T) a) * ((INTM_T)b)) / (((INTM_T)shrA) * ((INTM_T)shrB));
-                  counter++;
-                }
-              }
-            }
-
-            v_q_treesum(&treeumBuffer[0], HF * WF * CINF, H1, H2);
-            ret[n * HOUT * WOUT * (COUTF * G) + hout * WOUT * (COUTF * G) + wout * (COUTF * G) + (co + g * COUTF)] = treesumBuffer[0];
-          }
-        }
-      }
-    }
-  }*/
 }
