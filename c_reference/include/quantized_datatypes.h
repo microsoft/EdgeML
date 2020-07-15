@@ -8,15 +8,19 @@
 
 // Macro for input type.
 typedef int16_t INT_T;
-// Macro for iterator type.
+// Macro for unsigned iterator type.
 typedef uint16_t ITER_T;
+// Macro for signed iterator type.
+typedef int16_t S_ITER_T;
 // Macro for intermediate buffer type.
 typedef int32_t INTM_T;
-// Macro for scale variable type.
+// Macros for scale variable type.
 #ifdef SHIFT
   typedef uint8_t SCALE_T;
+  typedef uint8_t L_SCALE_T;
 #else
   typedef int16_t SCALE_T;
+  typedef int32_t L_SCALE_T;
 #endif
 // Macro for max value of input type.
 #define INT_TMAX 32767

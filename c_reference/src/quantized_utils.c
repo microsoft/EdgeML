@@ -3,6 +3,45 @@
 
 #include "quantized_utils.h"
 
+void v_q_treesum(INTM_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2) {
+  ITER_T count = len, depth = 0;
+  int divbytwo = 1;
+
+  while (depth < (H1 + H2)) {
+    if (depth >= H1) {
+      divbytwo = 0;
+    }
+
+    for (ITER_T p = 0; p < ((len >> 1) + 1); p++) {
+      if (p < (count >> 1)) {
+        if (divbytwo == 1) {
+          #ifdef SHIFT
+            vec[p] = (vec[2 * p] >> 1) + (vec[(2 * p) + 1] >> 1);
+          #else
+            vec[p] = vec[2 * p] / 2 + vec[(2 * p) + 1] / 2;
+          #endif
+        } else {
+          vec[p] = vec[2 * p] + vec[(2 * p) + 1];
+        }
+      } else if ((p == (count >> 1)) && ((count & 1) == 1)) {
+        if (divbytwo == 1) {
+          #ifdef SHIFT
+            vec[p] = (vec[2 * p] >> 1);
+          #else
+            vec[p] = vec[2 * p] / 2;
+          #endif
+        } else {
+          vec[p] = vec[2 * p];
+        }
+      } else {
+        vec[p] = 0;
+      }
+    }
+    count = (count + 1) >> 1;
+    depth++;
+  }
+}
+
 void v_q_add(const INT_T* const vec1, const INT_T* const vec2, ITER_T len,
              INT_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret) {
   #ifdef SHIFT
@@ -143,44 +182,7 @@ void m_q_mulvec(const INT_T* const mat, const INT_T* const vec, ITER_T nrows,
       tmp[col] = ((INTM_T)(*mat_offset++) * (INTM_T)vec[col]);
     }
 
-    ITER_T count = ncols, depth = 0;
-    int divbytwo = 1;
-
-    while (depth < (H1 + H2)) {
-      if (depth >= H1)
-        divbytwo = 0;
-
-      for (ITER_T p = 0; p < ((ncols >> 1) + 1); p++) {
-        INTM_T sum;
-        if (p < (count >> 1)) {
-          if (divbytwo == 1) {
-            #ifdef SHIFT
-              sum = (tmp[2 * p] >> 1) + (tmp[(2 * p) + 1] >> 1);
-            #else
-              sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
-            #endif
-          } else {
-            sum = tmp[2 * p] + tmp[(2 * p) + 1];
-          }
-        } else if ((p == (count >> 1)) && ((count & 1) == 1)) {
-          if (divbytwo == 1) {
-          #ifdef SHIFT
-              sum = (tmp[2 * p] >> 1);
-          #else
-              sum = tmp[2 * p] / 2;
-          #endif
-          } else {
-            sum = tmp[2 * p];
-          }
-        } else {
-          sum = 0;
-        }
-
-        tmp[p] = sum;
-      }
-      count = (count + 1) >> 1;
-      depth++;
-    }
+    v_q_treesum(&tmp[0], ncols, H1, H2);
     #ifdef SHIFT
       ret[row] = ((tmp[0] >> scmat_shift) >> scvec_shift);
     #else
