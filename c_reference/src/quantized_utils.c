@@ -151,26 +151,6 @@ void v_q_scalar_mul(INT_T scalar, const INT_T* const vec, ITER_T len,
   }
 }
 
-void m_q_mulvec(const INT_T* const mat, const INT_T* const vec, ITER_T nrows,
-                ITER_T ncols, INT_T* const ret, SCALE_T scmat, SCALE_T scvec,
-                SCALE_T H1, SCALE_T H2) {
-  INTM_T tmp[ncols];
-  for (ITER_T row = 0; row < nrows; row++) {
-    INT_T* mat_offset = (INT_T*)mat + row * ncols;
-
-    for (ITER_T col = 0; col < ncols; col++) {
-      tmp[col] = ((INTM_T)(*mat_offset++) * (INTM_T)vec[col]);
-    }
-
-    v_q_treesum(&tmp[0], ncols, H1, H2);
-    #ifdef SHIFT
-      ret[row] = (tmp[0] >> (scmat + scvec));
-    #else
-      ret[row] = ((tmp[0] / scmat) / scvec);
-    #endif
-  }
-}
-
 void v_q_argmax(const INT_T* const vec, ITER_T len, ITER_T* const ret) {
   INT_T max_value = vec[0];
   ITER_T max_index = 0;
@@ -272,6 +252,26 @@ void m_q_sub_vec(const INT_T* const mat, const INT_T* const vec,
       ret[i] = ((mat[i] >> (scmat + scret)) - (vec[w] >> (scvec + scret)));
     #else
       ret[i] = ((mat[i] / scmat) / scret) - ((vec[w] / scvec) / scret);
+    #endif
+  }
+}
+
+void m_q_mulvec(const INT_T* const mat, const INT_T* const vec, ITER_T nrows,
+                ITER_T ncols, INT_T* const ret, SCALE_T scmat, SCALE_T scvec,
+                SCALE_T H1, SCALE_T H2) {
+  INTM_T tmp[ncols];
+  for (ITER_T row = 0; row < nrows; row++) {
+    INT_T* mat_offset = (INT_T*)mat + row * ncols;
+
+    for (ITER_T col = 0; col < ncols; col++) {
+      tmp[col] = ((INTM_T)(*mat_offset++) * (INTM_T)vec[col]);
+    }
+
+    v_q_treesum(&tmp[0], ncols, H1, H2);
+    #ifdef SHIFT
+      ret[row] = (tmp[0] >> (scmat + scvec));
+    #else
+      ret[row] = ((tmp[0] / scmat) / scvec);
     #endif
   }
 }
@@ -395,38 +395,7 @@ void q_convolution(const INT_T* const mat, const INT_T* const filter,
               }
             }
 
-            ITER_T totalEle = HF * WF * CINF;
-            ITER_T count = HF * WF * CINF, depth = 0;
-            bool shr = true;
-
-            while (depth < (H1 + H2)) {
-              if (depth >= H1)
-                shr = false;
-
-              for (ITER_T p = 0; p < (totalEle / 2 + 1); p++) {
-                MYINT sum;
-                if (p < (count >> 1)) {
-                  if (shr)
-                    sum = treesumBuffer[2 * p] / 2 + treesumBuffer[(2 * p) + 1] / 2;
-                  else
-                    sum = treesumBuffer[2 * p] + treesumBuffer[(2 * p) + 1];
-                }
-                else if ((p == (count >> 1)) && ((count & 1) == 1)) {
-                  if (shr)
-                    sum = treesumBuffer[2 * p] / 2;
-                  else
-                    sum = treesumBuffer[2 * p];
-                }
-                else
-                  sum = 0;
-
-                treesumBuffer[p] = sum;
-              }
-              count = (count + 1) >> 1;
-
-              depth++;
-            }
-
+            v_q_treesum(&treeumBuffer[0], HF * WF * CINF, H1, H2);
             ret[n * HOUT * WOUT * (COUTF * G) + hout * WOUT * (COUTF * G) + wout * (COUTF * G) + (co + g * COUTF)] = treesumBuffer[0];
           }
         }
