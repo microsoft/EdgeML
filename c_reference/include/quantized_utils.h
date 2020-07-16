@@ -315,4 +315,26 @@ void t_q_sub_vec(const INT_T* const ten, const INT_T* const vec,
                  ITER_T nchannels, INT_T* const ret, SCALE_T scmat,
                  SCALE_T scvec, SCALE_T scret);
 
+/**
+ *
+ */
+void q_maxpool2D(const INT_T* const input, INT_T* const output, ITER_T N,
+                 ITER_T H, ITER_T W, ITER_T C, ITER_T HF, ITER_T WF,
+                 ITER_T COut, ITER_T HOut, ITER_T WOut, S_ITER_T HPadU,
+                 S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR,
+                 ITER_T HStride, ITER_T WStride, ITER_T HDilation,
+                 ITER_T WDilation, SCALE_T scinput, SCALE_T scoutput);
+
+/**
+ *
+ */
+void q_convolution(const INT_T* const input, const INT_T* const filter,
+                   INT_T* const output, INTM_T* const treesumBuffer, ITER_T N,
+                   ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF,
+                   ITER_T CF, ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G,
+                   S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR,
+                   ITER_T HStride, ITER_T WStride, ITER_T HDilation,
+                   ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput,
+                   SCALE_T scoutput) {
+
 #endif

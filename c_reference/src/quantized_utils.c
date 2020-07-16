@@ -355,3 +355,89 @@ void t_q_sub_vec(const INT_T* const mat, const INT_T* const vec,
     #endif
   }
 }
+
+void q_maxpool2D(const INT_T* const input, INT_T* const output, ITER_T N,
+                 ITER_T H, ITER_T W, ITER_T C, ITER_T HF, ITER_T WF,
+                 ITER_T COut, ITER_T HOut, ITER_T WOut, S_ITER_T HPadU,
+                 S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR,
+                 ITER_T HStride, ITER_T WStride, ITER_T HDilation,
+                 ITER_T WDilation, SCALE_T scinput, SCALE_T scoutput) {
+  S_ITER_T HOffsetL = ((S_ITER_T)HDilation * (HF >> 1)) - HPadU;
+  S_ITER_T WOffsetL = ((S_ITER_T)WDilation * (WF >> 1)) - WPadL;
+  S_ITER_T HOffsetR = ((S_ITER_T)HDilation * (HF >> 1)) - HPadD;
+  S_ITER_T WOffsetR = ((S_ITER_T)WDilation * (WF >> 1)) - WPadR;
+
+  for (ITER_T n = 0; n < N; n++) {
+    ITER_T hout = 0;
+    for (S_ITER_T h = HOffsetL; h < (S_ITER_T)H - HOffsetR; h += (S_ITER_T)HStride, hout++) {
+      ITER_T wout = 0;
+      for (S_ITER_T w = WOffsetL; w < (S_ITER_T)W - WOffsetR; w += (S_ITER_T)WStride, wout++) {
+        for (ITER_T c = 0; c < COut; c++) {
+
+          INT_T max = INT_TMIN;
+          for (S_ITER_T hf = -(HF >> 1); hf <= (HF >> 1); hf++) {
+            for (S_ITER_T wf = -(WF >> 1); wf <= (WF >> 1); wf++) {
+              if (((h + ((S_ITER_T)HDilation * hf)) < 0) || ((h + ((S_ITER_T)HDilation * hf)) >= H) || ((w + ((S_ITER_T)WDilation * wf)) < 0) || ((w + ((S_ITER_T)WDilation * wf)) >= W)) {
+                if (max < 0){
+                  max = 0;
+                }
+              } else {
+                INT_T a = input[n * H * W * C + (ITER_T)(h + ((S_ITER_T)HDilation * hf)) * W * C + (ITER_T)(w + ((S_ITER_T)WDilation * wf)) * C + c];
+                if (max < a) {
+                  max = a;
+                }
+              }
+            }
+          }
+
+          output[n * HOut * WOut * COut + hout * WOut * COut + wout * COut + c] = ((max / scinput) / scoutput);
+        }
+      }
+    }
+  }
+}
+
+void q_convolution(const INT_T* const input, const INT_T* const filter,
+                   INT_T* const output, INTM_T* const treesumBuffer, ITER_T N,
+                   ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF,
+                   ITER_T CF, ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G,
+                   S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR,
+                   ITER_T HStride, ITER_T WStride, ITER_T HDilation,
+                   ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput,
+                   SCALE_T scoutput) {
+  S_ITER_T HOffsetL = ((S_ITER_T)HDilation * (HF >> 1)) - HPadU;
+  S_ITER_T WOffsetL = ((S_ITER_T)WDilation * (WF >> 1)) - WPadL;
+  S_ITER_T HOffsetR = ((S_ITER_T)HDilation * (HF >> 1)) - HPadD;
+  S_ITER_T WOffsetR = ((S_ITER_T)WDilation * (WF >> 1)) - WPadR;
+
+  for (ITER_T n = 0; n < N; n++) {
+    ITER_T hout = 0;
+    for (S_ITER_T h = HOffsetL; h < (S_ITER_T)H - HOffsetR; h += (S_ITER_T)HStride, hout++) {
+      ITER_T wout = 0;
+      for (S_ITER_T w = WOffsetL; w < (S_ITER_T)W - WOffsetR; w += (S_ITER_T)WStride, wout++) {
+        for (ITER_T g = 0; g < G; g++) {
+          for (ITER_T c = 0; c < COut; c++) {
+
+            ITER_T counter = 0;
+            for (S_ITER_T hf = -((HF - 1) >> 1); hf <= (HF >> 1); hf++) {
+              for (S_ITER_T wf = -((WF - 1) >> 1); wf <= (WF >> 1); wf++) {
+                for (ITER_T cf = 0; cf < CF; cf++) {
+                  if (((h + ((S_ITER_T)HDilation * hf)) < 0) || ((h + ((S_ITER_T)HDilation * hf)) >= H) || ((w + ((S_ITER_T)WDilation * wf)) < 0) || ((w + ((S_ITER_T)WDilation * wf)) >= W)) {
+                    treesumBuffer[counter] = 0;
+                  } else {
+                    treesumBuffer[counter] = ((INTM_T)input[(S_ITER_T)(n * H * W * CIn) + (h + ((S_ITER_T)HDilation * hf)) * (S_ITER_T)W * (S_ITER_T)CIn + (w + ((S_ITER_T)WDilation * wf)) * (S_ITER_T)CIn + (S_ITER_T)(cf + g * CF)]) *
+                                             ((INTM_T)filter[(ITER_T)(hf + ((HF - 1) >> 1)) * WF * CF * COut + (ITER_T)(wf + ((WF - 1) >> 1)) * CF * COut + cf * COut + c]);
+                  }
+                  counter++;
+                }
+              }
+            }
+
+            v_q_treesum(&treesumBuffer[0], HF * WF * CF, H1, H2);
+            output[n * HOut * WOut * (COut * G) + hout * WOut * (COut * G) + wout * (COut * G) + (c + g * COut)] = ((treesumBuffer[0] / scinput) / scoutput);
+          }
+        }
+      }
+    }
+  }
+}

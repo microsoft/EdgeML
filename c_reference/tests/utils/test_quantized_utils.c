@@ -402,6 +402,65 @@ int test_t_q_sub_vec() {
   return check_output(pred, expected, 16);
 }
 
+// Test q_convolution() function.
+int test_q_convolution() {
+  const INT_T qmat_A[2 * 2 * 2 * 2] = {11, 220,
+                                       130, 40,
+
+                                       50, 60,
+                                       66 ,76,
+
+
+                                       86, 910,
+                                       411,312,
+
+                                       513, 514,
+                                       715, 716};
+  const INT_T qmat_B[2 * 2 * 2 * 2] = {100, 992,
+                                       15, 26,
+
+                                       27, 8,
+                                       3, 4,
+
+
+                                       5, 2,
+                                       2, 2,
+
+                                       7, 8,
+                                       29, 140};
+    INT_T output[2 * 2 * 2 * 2];
+    INTM_T temp[1];
+    #ifdef SHIFT
+      const INT_T expected[2 * 2 * 2 * 2] = {0, 0, 
+                                             0, 0,
+
+                                             1, 0,
+                                             0, 0,
+
+
+                                             0, 0,
+                                             0, 0,
+
+                                             15, 5,
+                                             0, 0};
+    #else
+      const INT_T expected[2 * 2 * 2 * 2] = {0, 0,
+                                             0, 0,
+
+                                             7, 6,
+                                             7, 6,
+
+
+                                             0, 0,
+                                             0, 0,
+
+                                             39, 33,
+                                             39, 33};
+    #endif
+    convolution(input1, input2, output, temp, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 8, 8, 1, 1);
+    return check_output(output, expected, 16);
+}
+
 int main() {
   if (test_v_q_treesum()) {
     printf("Test Failure for v_q_treesum()!\n");
