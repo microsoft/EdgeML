@@ -316,25 +316,75 @@ void t_q_sub_vec(const INT_T* const ten, const INT_T* const vec,
                  SCALE_T scvec, SCALE_T scret);
 
 /**
- *
+ * @brief Computes the maxpool operation on the input tensor with the given parameters.
+ * Note: This implementation assumes no dilation by default.
+ * @param[in]       input     pointer to the tensor on which max-pooling is to be performed
+ * @param[out]      output    pointer to the output tensor
+ * @param[in]       N         number of batches of the input tensor
+ * @param[in]       H         number of rows of the input tensor
+ * @param[in]       W         number of columns of the input tensor
+ * @param[in]       CIn       number of channels of the input tensor
+ * @param[in]       HF        number of rows of the pooling filter
+ * @param[in]       WF        number of columns of the pooling filter
+ * @param[in]       CF        number of channels of the pooling filter
+ * @param[in]       COut      number of channels of the output tensor
+ * @param[in]       HOut      number of rows of the output tensor
+ * @param[in]       WOut      number of columns of the output tensor
+ * @param[in]       G         number of groups of pooling filters
+ * @param[in]       HPadU     padding over the top row
+ * @param[in]       HPadD     padding under the bottom row
+ * @param[in]       WPadL     padding before the leftmost column
+ * @param[in]       WPadR     padding after the rightmost column
+ * @param[in]       HStride   stride of the filter along the rows
+ * @param[in]       WStride   stride of the filter along the columns
+ * @param[in]       scinput   scale of the input tensor
+ * @param[in]       scoutput  scale of the output tensor
+ * @return          none
+ * @example         Please refer the test-case: test_quantized_maxpool()
  */
-void q_maxpool2D(const INT_T* const input, INT_T* const output, ITER_T N,
-                 ITER_T H, ITER_T W, ITER_T C, ITER_T HF, ITER_T WF,
-                 ITER_T COut, ITER_T HOut, ITER_T WOut, S_ITER_T HPadU,
-                 S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR,
-                 ITER_T HStride, ITER_T WStride, ITER_T HDilation,
-                 ITER_T WDilation, SCALE_T scinput, SCALE_T scoutput);
+void q_maxpool(const INT_T* const input, INT_T* const output, ITER_T N,
+               ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF,
+               ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G, S_ITER_T HPadU,
+               S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride,
+               ITER_T WStride, SCALE_T scinput, SCALE_T scoutput);
 
 /**
- *
+ * @brief Computes the maxpool operation on the input tensor with the given parameters.
+ * Note: This implementation assumes no dilation by default.
+ * @param[in]       input          pointer to the tensor on which convolution is to be performed
+ * @param[in]       filter         pointer to the convolutional filter tensor
+ * @param[out]      output         pointer to the output tensor
+ * @param[in]       treesumBuffer  pointer to the buffer for computing TreeSum accumulation
+ * @param[in]       N              number of batches of the input tensor
+ * @param[in]       H              number of rows of the input tensor
+ * @param[in]       W              number of columns of the input tensor
+ * @param[in]       CIn            number of channels of the input tensor
+ * @param[in]       HF             number of rows of the convolutional filter
+ * @param[in]       WF             number of columns of the convolutional filter
+ * @param[in]       CF             number of channels of the convolutional filter
+ * @param[in]       COut           number of channels of the output tensor
+ * @param[in]       HOut           number of rows of the output tensor
+ * @param[in]       WOut           number of columns of the output tensor
+ * @param[in]       G              number of groups of convolutional filters
+ * @param[in]       HPadU          padding over the top row
+ * @param[in]       HPadD          padding under the bottom row
+ * @param[in]       WPadL          padding before the leftmost column
+ * @param[in]       WPadR          padding after the rightmost column
+ * @param[in]       HStride        stride of the filter along the rows
+ * @param[in]       WStride        stride of the filter along the columns
+ * @param[in]       H1             depth parameter for division by two used in TreeSum
+ * @param[in]       H2             depth parameter for direct sum used in TreeSum
+ * @param[in]       scinput        scale of the input tensor
+ * @param[in]       scoutput       scale of the output tensor
+ * @return          none
+ * @example         Please refer the test-case: test_quantized_convolution()
  */
 void q_convolution(const INT_T* const input, const INT_T* const filter,
                    INT_T* const output, INTM_T* const treesumBuffer, ITER_T N,
                    ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF,
                    ITER_T CF, ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G,
-                   S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR,
-                   ITER_T HStride, ITER_T WStride, ITER_T HDilation,
-                   ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput,
-                   SCALE_T scoutput) {
+                   S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
+                   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, SCALE_T H1,
+                   SCALE_T H2, SCALE_T scinput, SCALE_T scoutput);
 
 #endif
