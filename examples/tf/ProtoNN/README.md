@@ -59,5 +59,17 @@ python protoNN_example.py \
 
 You can expect a test set accuracy of about 92.5%.
 
+
+In case you need this model for inference via tflite framework, you can use the `protoNN_model_to_tflite.py`
+script to generate the tflite model. It creates a Keras sequential model from already trained ProtoNN model, 
+converts it into tflite format, and shows how to evaluate an example using the tflite interpreter. Note that 
+this scripts runs only on Tensorflow 2.X API since many recent tflite optimization including quantization are 
+enabled in the Tensorflow 2.X API. Please run the following script in tensorflow 2.X environment
+
+```
+python protoNN_model_to_tflite.py --data-dir ./usps10/ --output-dir ./model/
+```
+
+
 Copyright (c) Microsoft Corporation. All rights reserved. 
 Licensed under the MIT license.
