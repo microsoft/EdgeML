@@ -366,24 +366,37 @@ void q_maxpool(const INT_T* const input, INT_T* const output, ITER_T N,
   S_ITER_T HOffsetR = (S_ITER_T)(HF >> 1) - HPadD;
   S_ITER_T WOffsetR = (S_ITER_T)(WF >> 1) - WPadR;
 
+  ITER_T HOffsetIn = W * CIn;
+  ITER_T NOffsetIn = H * HOffsetIn;
+  ITER_T WOffsetOut = (COut * G);
+  ITER_T HOffsetOut = WOut * WOffsetOut;
+  ITER_T NOffsetOut = HOut * HOffsetOut;
   for (ITER_T n = 0; n < N; n++) {
     ITER_T hout = 0;
+    ITER_T NIndexIn = n * NOffsetIn;
+    ITER_T NIndexOut = n * NOffsetOut;
     for (S_ITER_T h = HOffsetL; h < (S_ITER_T)H - HOffsetR; h += (S_ITER_T)HStride, hout++) {
       ITER_T wout = 0;
+      ITER_T HIndexOut = hout * HOffsetOut;
       for (S_ITER_T w = WOffsetL; w < (S_ITER_T)W - WOffsetR; w += (S_ITER_T)WStride, wout++) {
+        ITER_T WIndexOut = wout * WOffsetOut;
         for (ITER_T g = 0; g < G; g++) {
+          ITER_T CIndexIn = g * CF;
+          ITER_T CIndexOut = g * COut;
           for (ITER_T c = 0; c < COut; c++) {
 
             INT_T max = INT_TMIN;
             for (S_ITER_T hf = -((HF - 1) >> 1); hf <= (HF >> 1); hf++) {
+              ITER_T HIndexIn = ((ITER_T)(h + hf)) * HOffsetIn;
               for (S_ITER_T wf = -((WF - 1) >> 1); wf <= (WF >> 1); wf++) {
+                ITER_T WIndexIn = ((ITER_T)(w + wf)) * CIn;
                 for (ITER_T cf = 0; cf < CF; cf++) {
                   if ((h + hf < 0) || (h + hf >= (S_ITER_T)H) || (w + wf < 0) || (w + wf >= (S_ITER_T)W)) {
                     if (max < 0) {
                       max = 0;
                     }
                   } else {
-                    INT_T a = input[n * H * W * CIn + ((ITER_T)(h + hf)) * W * CIn + ((ITER_T)(w + wf)) * CIn + (cf + g * CF)];
+                    INT_T a = input[NIndexIn + HIndexIn + WIndexIn + (cf + CIndexIn)];
                     if (max < a) {
                       max = a;
                     }
@@ -393,9 +406,9 @@ void q_maxpool(const INT_T* const input, INT_T* const output, ITER_T N,
             }
 
             #ifdef SHIFT
-              output[n * HOut * WOut * (COut * G) + hout * WOut * (COut * G) + wout * (COut * G) + (c + g * COut)] = (max >> (scinput + scoutput));
+              output[NIndexOut + HIndexOut + WIndexOut + (c + CIndexOut)] = (max >> (scinput + scoutput));
             #else
-              output[n * HOut * WOut * (COut * G) + hout * WOut * (COut * G) + wout * (COut * G) + (c + g * COut)] = ((max / scinput) / scoutput);
+              output[NIndexOut + HIndexOut + WIndexOut + (c + CIndexOut)] = ((max / scinput) / scoutput);
             #endif
           }
         }
@@ -416,23 +429,40 @@ void q_convolution(const INT_T* const input, const INT_T* const filter,
   S_ITER_T HOffsetR = (S_ITER_T)(HF >> 1) - HPadD;
   S_ITER_T WOffsetR = (S_ITER_T)(WF >> 1) - WPadR;
 
+  ITER_T HOffsetIn = W * CIn;
+  ITER_T NOffsetIn = H * HOffsetIn;
+  ITER_T WOffsetF = CF * COut;
+  ITER_T HOffsetF = WF * WOffsetF;
+  ITER_T WOffsetOut = (COut * G);
+  ITER_T HOffsetOut = WOut * WOffsetOut;
+  ITER_T NOffsetOut = HOut * HOffsetOut;
   for (ITER_T n = 0; n < N; n++) {
     ITER_T hout = 0;
+    ITER_T NIndexIn = n * NOffsetIn;
+    ITER_T NIndexOut = n * NOffsetOut;
     for (S_ITER_T h = HOffsetL; h < (S_ITER_T)H - HOffsetR; h += (S_ITER_T)HStride, hout++) {
       ITER_T wout = 0;
+      ITER_T HIndexOut = hout * HOffsetOut;
       for (S_ITER_T w = WOffsetL; w < (S_ITER_T)W - WOffsetR; w += (S_ITER_T)WStride, wout++) {
+        ITER_T WIndexOut = wout * WOffsetOut;
         for (ITER_T g = 0; g < G; g++) {
+          ITER_T CIndexIn = g * CF;
+          ITER_T CIndexOut = g * COut;
           for (ITER_T c = 0; c < COut; c++) {
 
             ITER_T counter = 0;
             for (S_ITER_T hf = -((HF - 1) >> 1); hf <= (HF >> 1); hf++) {
+              ITER_T HIndexIn = ((ITER_T)(h + hf)) * HOffsetIn;
+              ITER_T HIndexF = ((ITER_T)(hf + ((HF - 1) >> 1))) * HOffsetF;
               for (S_ITER_T wf = -((WF - 1) >> 1); wf <= (WF >> 1); wf++) {
+                ITER_T WIndexIn = ((ITER_T)(w + wf)) * CIn;
+                ITER_T WIndexF = ((ITER_T)(wf + ((WF - 1) >> 1))) * WOffsetF;
                 for (ITER_T cf = 0; cf < CF; cf++) {
                   if ((h + hf < 0) || (h + hf >= (S_ITER_T)H) || (w + wf < 0) || (w + wf >= (S_ITER_T)W)) {
                     treesumBuffer[counter] = 0;
                   } else {
-                    treesumBuffer[counter] = ((INTM_T)input[n * H * W * CIn + ((ITER_T)(h + hf)) * W * CIn + ((ITER_T)(w + wf)) * CIn + (cf + g * CF)]) *
-                      ((INTM_T)filter[((ITER_T)(hf + ((HF - 1) >> 1))) * WF * CF * COut + ((ITER_T)(wf + ((WF - 1) >> 1))) * CF * COut + cf * COut + c]);
+                    treesumBuffer[counter] = ((INTM_T)input[NIndexIn + HIndexIn + WIndexIn + (cf + CIndexIn)]) *
+                      ((INTM_T)filter[HIndexF + WIndexF + (c + cf * COut)]);
                   }
                   counter++;
                 }
@@ -441,9 +471,9 @@ void q_convolution(const INT_T* const input, const INT_T* const filter,
 
             v_q_treesum(&treesumBuffer[0], HF * WF * CF, H1, H2);
             #ifdef SHIFT
-              output[n * HOut * WOut * (COut * G) + hout * WOut * (COut * G) + wout * (COut * G) + (c + g * COut)] = (treesumBuffer[0] >> (scinput + scoutput));
+              output[NIndexOut + HIndexOut + WIndexOut + (c + CIndexOut)] = (treesumBuffer[0] >> (scinput + scoutput));
             #else
-              output[n * HOut * WOut * (COut * G) + hout * WOut * (COut * G) + wout * (COut * G) + (c + g * COut)] = ((treesumBuffer[0] / scinput) / scoutput);
+              output[NIndexOut + HIndexOut + WIndexOut + (c + CIndexOut)] = ((treesumBuffer[0] / scinput) / scoutput);
             #endif
           }
         }

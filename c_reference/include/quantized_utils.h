@@ -335,8 +335,8 @@ void t_q_sub_vec(const INT_T* const ten, const INT_T* const vec,
  * @param[in]       HPadD     padding under the bottom row
  * @param[in]       WPadL     padding before the leftmost column
  * @param[in]       WPadR     padding after the rightmost column
- * @param[in]       HStride   stride of the filter along the rows
- * @param[in]       WStride   stride of the filter along the columns
+ * @param[in]       HStride   stride of the pooling filter along the rows, used for moving the receptive field horizontally within the larger image
+ * @param[in]       WStride   stride of the pooling filter along the columns, used for moving the receptive field vertically within the larger image
  * @param[in]       scinput   scale of the input tensor
  * @param[in]       scoutput  scale of the output tensor
  * @return          none
@@ -370,8 +370,8 @@ void q_maxpool(const INT_T* const input, INT_T* const output, ITER_T N,
  * @param[in]       HPadD          padding under the bottom row
  * @param[in]       WPadL          padding before the leftmost column
  * @param[in]       WPadR          padding after the rightmost column
- * @param[in]       HStride        stride of the filter along the rows
- * @param[in]       WStride        stride of the filter along the columns
+ * @param[in]       HStride        stride of the convolution filter along the rows, used for moving the receptive field horizontally within the larger image
+ * @param[in]       WStride        stride of the convolution filter along the columns, used for moving the receptive field vertically within the larger image
  * @param[in]       H1             depth parameter for division by two used in TreeSum
  * @param[in]       H2             depth parameter for direct sum used in TreeSum
  * @param[in]       scinput        scale of the input tensor
