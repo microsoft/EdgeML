@@ -100,7 +100,7 @@ void q_mbconv_block(const INT_T* const input, const INT_T* const filter1,
           ITER_T counter = 0;
           for (S_ITER_T hf = -(HF >> 1); hf <= (HF >> 1); hf++) {
             for (S_ITER_T wf = -(WF >> 1); wf <= (WF >> 1); wf++) {
-              if (((h + hf) < 0) || ((h + hf) >= H) || ((w + wf) < 0) || ((w + wf) >= W)) {
+              if (((h + hf) < 0) || ((h + hf) >= (S_ITER_T)H) || ((w + wf) < 0) || ((w + wf) >= (S_ITER_T)W)) {
                 treesumBuffer[counter] = 0;
               } else {
                 treesumBuffer[counter] = ((INTM_T)convBuffer1[(((ITER_T)(h + hf)) % HF) * W * CTemp + ((ITER_T)(w + wf)) * CTemp + g]) *

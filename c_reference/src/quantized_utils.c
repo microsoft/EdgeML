@@ -128,6 +128,17 @@ void v_q_scalar_sub(INT_T scalar, const INT_T* const vec, ITER_T len,
   }
 }
 
+void v_q_sub_scalar(const INT_T* const vec, INT_T scalar, ITER_T len,
+                    INT_T* const ret, SCALE_T scvec, SCALE_T scscalar, SCALE_T scret) {
+  for (ITER_T i = 0; i < len; i++) {
+    #ifdef SHIFT
+      ret[i] = ((vec[i] >> (scvec + scret)) - (scalar >> (scscalar + scret)));
+    #else
+      ret[i] = ((vec[i] / scvec) / scret) - ((scalar / scscalar) / scret);
+    #endif
+  }
+}
+
 void v_q_scalar_mul(INT_T scalar, const INT_T* const vec, ITER_T len,
                     INT_T* const ret, SCALE_T scscalar, SCALE_T scvec) {
   for (ITER_T i = 0; i < len; i++) {
@@ -139,22 +150,208 @@ void v_q_scalar_mul(INT_T scalar, const INT_T* const vec, ITER_T len,
   }
 }
 
+void v_q_argmax(const INT_T* const vec, ITER_T len, ITER_T* const ret) {
+  INT_T max_value = vec[0];
+  ITER_T max_index = 0;
+
+  for (ITER_T i = 1; i < len; i++) {
+    if (max_value < vec[i]) {
+      max_index = i;
+      max_value = vec[i];
+    }
+  }
+
+  *ret = max_index;
+}
+
+void v_q_relu(INT_T* const vec, ITER_T len) {
+  for (ITER_T i = 0; i < len; i++) {
+    if (vec[i] < 0) {
+      vec[i] = 0;
+    }
+  }
+}
+
+void v_q_exp(const INT_T* const vec, ITER_T len, INT_T* const ret,
+             SCALE_T scvec, SCALE_T scret) {
+  for (ITER_T i = 0; i < len; i++) {
+    ret[i] = ((INT_T)(exp(((float)vec[i]) / scvec) * scret));
+  }
+}
+
+void v_q_scale_up(INT_T* const vec, ITER_T len, SCALE_T scvec) {
+  for (ITER_T i = 0; i < len; i++) {
+    #ifdef SHIFT
+      vec[i] <<= scvec;
+    #else
+      vec[i] *= scvec;
+    #endif
+  }
+}
+
+void v_q_scale_down(INT_T* const vec, ITER_T len, SCALE_T scvec) {
+  for (ITER_T i = 0; i < len; i++) {
+    #ifdef SHIFT
+      vec[i] >>= scvec;
+    #else
+      vec[i] /= scvec;
+    #endif
+  }
+}
+
+void m_q_transpose(const INT_T* const mat, ITER_T nrows, ITER_T ncols,
+                   INT_T* const ret) {
+  ITER_T len = nrows * ncols, counter = 0;
+  for (ITER_T i = 0; i < len; i++) {
+    if (counter >= len) {
+      counter -= len - 1;
+    }
+
+    ret[i] = mat[counter];
+    counter += nrows;
+  }
+}
+
+void m_q_reverse(const INT_T* const mat, ITER_T nrows, ITER_T ncols, ITER_T axis,
+                 INT_T* const ret) {
+  ITER_T len = nrows * ncols;
+
+  if (axis == 0) {
+    ITER_T col_counter = 0, row_index = len - ncols;
+
+    for (ITER_T i = 0; i < len; i++) {
+      if (col_counter >= ncols) {
+        col_counter = 0;
+        row_index -= ncols;
+      }
+
+      ret[i] = mat[row_index + col_counter];
+      col_counter++;
+    }
+  } else {
+    S_ITER_T row_counter = ncols - 1;
+    ITER_T col_index = 0;
+
+    for (ITER_T i = 0; i < len; i++) {
+      if (row_counter < 0) {
+        row_counter = ncols - 1;
+        col_index += ncols;
+      }
+
+      ret[i] = mat[col_index + (ITER_T)row_counter];
+      row_counter--;
+    }
+  }
+}
+
+void m_q_add_vec(const INT_T* const mat, const INT_T* const vec,
+                 ITER_T nrows, ITER_T ncols, INT_T* const ret,
+                 SCALE_T scmat, SCALE_T scvec, SCALE_T scret) {
+  ITER_T len = nrows * ncols;
+  for (ITER_T i = 0, w = 0; i < len; i++, w++) {
+    if (w >= ncols) {
+      w = 0;
+    }
+
+    #ifdef SHIFT
+      ret[i] = ((mat[i] >> (scmat + scret)) + (vec[w] >> (scvec + scret)));
+    #else
+      ret[i] = ((mat[i] / scmat) / scret) + ((vec[w] / scvec) / scret);
+    #endif
+  }
+}
+
+void m_q_sub_vec(const INT_T* const mat, const INT_T* const vec,
+                 ITER_T nrows, ITER_T ncols, INT_T* const ret,
+                 SCALE_T scmat, SCALE_T scvec, SCALE_T scret) {
+  ITER_T len = nrows * ncols;
+  for (ITER_T i = 0, w = 0; i < len; i++, w++) {
+    if (w >= ncols) {
+      w = 0;
+    }
+
+    #ifdef SHIFT
+      ret[i] = ((mat[i] >> (scmat + scret)) - (vec[w] >> (scvec + scret)));
+    #else
+      ret[i] = ((mat[i] / scmat) / scret) - ((vec[w] / scvec) / scret);
+    #endif
+  }
+}
+
 void m_q_mulvec(const INT_T* const mat, const INT_T* const vec, ITER_T nrows,
                 ITER_T ncols, INT_T* const ret, SCALE_T scmat, SCALE_T scvec,
                 SCALE_T H1, SCALE_T H2) {
-  INTM_T tmp[ncols];
+  INTM_T treesumBuffer[ncols];
   for (ITER_T row = 0; row < nrows; row++) {
     INT_T* mat_offset = (INT_T*)mat + row * ncols;
 
     for (ITER_T col = 0; col < ncols; col++) {
-      tmp[col] = ((INTM_T)(*mat_offset++) * (INTM_T)vec[col]);
+      treesumBuffer[col] = ((INTM_T)(*mat_offset++) * (INTM_T)vec[col]);
     }
 
-    v_q_treesum(&tmp[0], ncols, H1, H2);
+    v_q_treesum(&treesumBuffer[0], ncols, H1, H2);
     #ifdef SHIFT
-      ret[row] = (tmp[0] >> (scmat + scvec));
+      ret[row] = (treesumBuffer[0] >> (scmat + scvec));
     #else
-      ret[row] = ((tmp[0] / scmat) / scvec);
+      ret[row] = ((treesumBuffer[0] / scmat) / scvec);
+    #endif
+  }
+}
+
+void m_q_sparse_mulvec(const ITER_T* const col_indices, const INT_T* const mat_values,
+                       const INT_T* const vec, ITER_T ndims, INT_T* const ret,
+                       SCALE_T scmat, SCALE_T scvec, SCALE_T scret) {
+  ITER_T iter_index = 0, iter_value = 0;
+  for (ITER_T k = 0; k < ndims; k++) {
+    ITER_T index = col_indices[iter_index];
+
+    while (index != 0) {
+      #ifdef SHIFT
+        ret[index - 1] += (((INTM_T)mat_values[iter_value] * (INTM_T)vec[k]) >> (scmat + scvec + scret));
+      #else
+        ret[index - 1] += (((INTM_T)mat_values[iter_value] * (INTM_T)vec[k]) / ((INTM_T)scmat * (INTM_T)scvec * (INTM_T)scret));
+      #endif
+      iter_index++;
+      iter_value++;
+      index = col_indices[iter_index];
+    }
+
+    iter_index++;
+  }
+}
+
+void t_q_add_vec(const INT_T* const mat, const INT_T* const vec,
+                 ITER_T nbatches, ITER_T nrows, ITER_T ncols,
+                 ITER_T nchannels, INT_T* const ret, SCALE_T scmat,
+                 SCALE_T scvec, SCALE_T scret) {
+  ITER_T len = nbatches * nrows * ncols * nchannels;
+  for (ITER_T i = 0, c = 0; i < len; i++, c++) {
+    if (c >= nchannels) {
+      c = 0;
+    }
+
+    #ifdef SHIFT
+      ret[i] = ((mat[i] >> (scmat + scret)) + (vec[c] >> (scvec + scret)));
+    #else
+      ret[i] = ((mat[i] / scmat) / scret) + ((vec[c] / scvec) / scret);
+    #endif
+  }
+}
+
+void t_q_sub_vec(const INT_T* const mat, const INT_T* const vec,
+                 ITER_T nbatches, ITER_T nrows, ITER_T ncols,
+                 ITER_T nchannels, INT_T* const ret, SCALE_T scmat,
+                 SCALE_T scvec, SCALE_T scret) {
+  ITER_T len = nbatches * nrows * ncols * nchannels;
+  for (ITER_T i = 0, c = 0; i < len; i++, c++) {
+    if (c >= nchannels) {
+      c = 0;
+    }
+
+    #ifdef SHIFT
+      ret[i] = ((mat[i] >> (scmat + scret)) - (vec[c] >> (scvec + scret)));
+    #else
+      ret[i] = ((mat[i] / scmat) / scret) - ((vec[c] / scvec) / scret);
     #endif
   }
 }
