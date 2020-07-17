@@ -53,12 +53,12 @@ void v_q_tanh(const INT_T* const vec, ITER_T len, INT_T* const ret,
 // Function for adding a scalar to every element of a vector.
 void v_q_scalar_add(INT_T scalar, const INT_T* const vec, ITER_T len,
                     INT_T* const ret, SCALE_T scscalar, SCALE_T scvec, SCALE_T scret);
-// Function for subtracting every element of a vector B from a scalar A.
-// The resultant vector has elements C_{i} = A - B_{i}.
+// Function for subtracting every element of a vector B from a scalar a.
+// The resultant vector has elements C_{i} = a - B_{i}.
 void v_q_scalar_sub(INT_T scalar, const INT_T* const vec, ITER_T len,
                     INT_T* const ret, SCALE_T scscalar, SCALE_T scvec, SCALE_T scret);
-// Function for subtracting a scalar B from every element of a vector A.
-// The resultant vector has elements C_{i} = A_{i} - B.
+// Function for subtracting a scalar b from every element of a vector A.
+// The resultant vector has elements C_{i} = A_{i} - b.
 void v_q_sub_scalar(const INT_T* const vec, INT_T scalar, ITER_T len,
                     INT_T* const ret, SCALE_T scvec, SCALE_T scscalar, SCALE_T scret);
 // Function for multiplying a scalar to every element of a vector.
@@ -76,6 +76,7 @@ void v_q_scalar_mul(INT_T scalar, const INT_T* const vec, ITER_T len,
 void v_q_argmax(const INT_T* const vec, ITER_T len, ITER_T* const ret);
 /**
  * @brief Replace any negative element present in the vector withs zero.
+ * Note: No saturation is done here, and hence, the output might overflow with a large input.
  * @param[in, out]  vec       pointer to vector on which element-wise ReLU operation is to be applied
  * @param[in]       len       length of the input vector
  * @return          none
@@ -86,13 +87,15 @@ void v_q_argmax(const INT_T* const vec, ITER_T len, ITER_T* const ret);
 void v_q_relu(INT_T* const vec, ITER_T len);
 /**
  * @brief Computes exponentiation of all elements in the vec (interpreted as a floating-point value) to the base e and stores the result in ret.
+ * Note: No saturation is done here, and hence, the output might overflow with a large input.
  * @param[in]       vec       pointer to vector whose exponential scaling is to be performed
  * @param[in]       len       length of the vector
  * @param[in]       scvec     scaling factor for input vector
  * @param[in]       scret     scaling factor for output vector
  * @param[out]      ret       pointer to the output vector
  * @return          none
- * @example         vec       = {13, 54, 34, 35, 87}
+ * @example         formula   = exp((float)vec_{i} / scvec) * scret
+ *                  vec       = {13, 54, 34, 35, 87}
  *                  len       = 5
  *                  scvec     = 8
  *                  scret     = 8
@@ -146,8 +149,8 @@ void v_q_scale_down(INT_T* const vec, ITER_T len, SCALE_T scvec);
 void m_q_transpose(const INT_T* const mat, ITER_T nrows, ITER_T ncols,
                    INT_T* const ret);
 /**
- * @brief Performs the row-order or the column-order reversal of the input matrix.
- * @param[in]       mat       pointer to the matrix on which reversal is to be performed
+ * @brief Performs the row-order or the column-order reversal of the 2-D input matrix.
+ * @param[in]       mat       pointer to the (row / column-major) input matrix on which reversal is to be performed
  * @param[in]       nrows     number of rows of the input matrix
  * @param[in]       ncols     number of columns of the input matrix
  * @param[in]       axis      axis of reversal; 0 for reversal along rows and 1 for reversal along columns
@@ -217,29 +220,31 @@ void m_q_mulvec(const INT_T* const mat, const INT_T* const vec, ITER_T nrows,
                 SCALE_T H1, SCALE_T H2);
 /**
  * @brief Performs sparse matrix multiplication of a matrix and a vector.
- * mat_indices and mat_values combined are a sparse representation; dim(mat_values) = [ndims], dim(mat_indices) = [ndims + ncols].
- * mat_values[i] is the i^th non-zero value of the input matrix, and mat_indices[i] encodes the location of mat_values[i].
- * Number of zeroes before Aidx[i] : row of Aval[i]
- * Aidx[i] + ... + Aidx[l] where l is the largest value less than i such that A[idx] = 0 : column of Aval[i]
- * @param[in]       mat_indices  pointer to input matrix which evaluates to matrix A
- * @param[in]       mat_values   pointer to input matrix which evaluates to matrix A
+ * col_indices and mat_values combined are a sparse representation; dim(vec) = [ndims].
+ * mat_values[i] is the i^th non-zero value of the input matrix, and col_indices[i] encodes the location of mat_values[i].
+ * Number of zeroes before col_indices[i] : row of mat_values[i]
+ * col_indices[i - l] where l is the number of zeroes before col_indices[i]: column of mat_values[i]
+ * @param[in]       col_indices  pointer to input matrix which stores the column indices of non-zero values of matrix A
+ * @param[in]       mat_values   pointer to input matrix which stores the non-zero values of matrix A
  * @param[in]       vec          pointer to the input vector
- * @param[in]       ndims        dimension of mat_values matrix
+ * @param[in]       ndims        dimension of the multiplication vector
  * @param[out]      ret          pointer to the output matrix
  * @param[in]       scmat        scale factor of the input matrix
  * @param[in]       scvec        scale factor of the input vector
  * @param[in]       scret        scale factor of the output matrix
    @return          none
- * @example         mat_indices  = {1, 2, 3, 4, 5, 6, 7, 0}
- *                  mat_values   = {10, 20, 30, 40, 50, 60, 70, 80}
+ * @example         mat          = {{10, 20, 30, 40, 50, 60, 70, 0, 0, 0, 0, 0, 0, 0},
+ *                                  {0, 80, 0, 90, 0, 100, 0, 110, 0, 120, 0, 130, 0, 140}}
+ *                  col_indices  = {1, 2, 3, 4, 5, 6, 7, 0, 2, 4, 6, 8, 10, 12, 14, 0}
+ *                  mat_values   = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140}
  *                  vec          = {1, 2}
  *                  ndims        = 2
  *                  scmat        = 1
  *                  scvec        = 2
  *                  scret        = 4
- *                  ret          = {1, 2, 8, 5, 6, 7, 8, 0}
+ *                  ret          = {1, 22, 3, 27, 6, 32, 8, 27, 0, 30, 0, 32, 0, 35}
  */
-void m_q_sparse_mulvec(const ITER_T* const mat_indices, const INT_T* const mat_values,
+void m_q_sparse_mulvec(const ITER_T* const col_indices, const INT_T* const mat_values,
                        const INT_T* const vec, ITER_T ndims, INT_T* const ret,
                        SCALE_T scmat, SCALE_T scvec, SCALE_T scret);
 

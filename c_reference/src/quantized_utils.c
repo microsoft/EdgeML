@@ -201,22 +201,45 @@ void v_q_scale_down(INT_T* const vec, ITER_T len, SCALE_T scvec) {
 
 void m_q_transpose(const INT_T* const mat, ITER_T nrows, ITER_T ncols,
                    INT_T* const ret) {
-  for (ITER_T i = 0; i < nrows; i++) {
-    for (ITER_T j = 0; j < ncols; j++) {
-      ret[i * ncols + j] = mat[j * nrows + i];
+  ITER_T len = nrows * ncols, counter = 0;
+  for (ITER_T i = 0; i < len; i++) {
+    if (counter >= len) {
+      counter -= len - 1;
     }
+
+    ret[i] = mat[counter];
+    counter += nrows;
   }
 }
 
 void m_q_reverse(const INT_T* const mat, ITER_T nrows, ITER_T ncols, ITER_T axis,
                  INT_T* const ret) {
-  for (ITER_T i = 0; i < nrows; i++) {
-    for (ITER_T j = 0; j < ncols; j++) {
-      if (axis == 0) {
-        ret[i * ncols + j] = mat[(nrows - 1 - i) * ncols + j];
-      } else {
-        ret[i * ncols + j] = mat[i * ncols + (ncols - 1 - j)];
+  ITER_T len = nrows * ncols;
+
+  if (axis == 0) {
+    ITER_T col_counter = 0, row_index = len - ncols;
+
+    for (ITER_T i = 0; i < len; i++) {
+      if (col_counter >= ncols) {
+        col_counter = 0;
+        row_index -= ncols;
       }
+
+      ret[i] = mat[row_index + col_counter];
+      col_counter++;
+    }
+  } else {
+    S_ITER_T row_counter = ncols - 1;
+    ITER_T col_index = 0;
+
+    for (ITER_T i = 0; i < len; i++) {
+      if (row_counter < 0) {
+        row_counter = ncols - 1;
+        col_index += ncols;
+      }
+
+      ret[i] = mat[col_index + (ITER_T)row_counter];
+      row_counter--;
     }
   }
 }
@@ -275,12 +298,12 @@ void m_q_mulvec(const INT_T* const mat, const INT_T* const vec, ITER_T nrows,
   }
 }
 
-void m_q_sparse_mulvec(const ITER_T* const mat_indices, const INT_T* const mat_values,
+void m_q_sparse_mulvec(const ITER_T* const col_indices, const INT_T* const mat_values,
                        const INT_T* const vec, ITER_T ndims, INT_T* const ret,
                        SCALE_T scmat, SCALE_T scvec, SCALE_T scret) {
   ITER_T iter_index = 0, iter_value = 0;
   for (ITER_T k = 0; k < ndims; k++) {
-    ITER_T index = mat_indices[iter_index];
+    ITER_T index = col_indices[iter_index];
 
     while (index != 0) {
       #ifdef SHIFT
@@ -290,7 +313,7 @@ void m_q_sparse_mulvec(const ITER_T* const mat_indices, const INT_T* const mat_v
       #endif
       iter_index++;
       iter_value++;
-      index = mat_indices[iter_index];
+      index = col_indices[iter_index];
     }
 
     iter_index++;

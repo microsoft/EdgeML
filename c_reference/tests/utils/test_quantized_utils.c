@@ -312,10 +312,10 @@ int test_m_q_mulvec() {
 // Test m_q_sparse_mulvec() function.
 int test_m_q_sparse_mulvec() {
   const ITER_T qmat_A[16] = {1, 2, 3, 4, 5, 6, 7, 0, 2, 4, 6, 8, 10, 12, 14, 0};
-  const INT_T qmat_B[16] = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160};
+  const INT_T qmat_B[14] = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140};
   const INT_T qvec_C[2] = {1, 2};
-  const INT_T expected[16] = {1, 22, 3, 27, 6, 32, 8, 27, 0, 30, 0, 32, 0, 35, 0, 0};
-  INT_T pred[16] = {};
+  const INT_T expected[14] = {1, 22, 3, 27, 6, 32, 8, 27, 0, 30, 0, 32, 0, 35};
+  INT_T pred[14] = {};
 
   #ifdef SHIFT
     m_q_sparse_mulvec(&qmat_A[0], &qmat_B[0], &qvec_C[0], 2, &pred[0], 0, 1, 2);
@@ -323,7 +323,7 @@ int test_m_q_sparse_mulvec() {
     m_q_sparse_mulvec(&qmat_A[0], &qmat_B[0], &qvec_C[0], 2, &pred[0], 1, 2, 4);
   #endif
 
-  return check_output(pred, expected, 16);
+  return check_output(pred, expected, 14);
 }
 
 // Test t_q_add_vec() function.
