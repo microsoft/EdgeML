@@ -18,15 +18,15 @@ void q_mbconv_block(const INT_T* const input, const INT_T* const filter1,
   L_SCALE_T shlB2, L_SCALE_T shlX2, L_SCALE_T shlU3, L_SCALE_T shlB3,
   L_SCALE_T shlW3) {
 
-  S_ITER_T HOffsetL = ((S_ITER_T)(HF >> 1)) - HPadU;
-  S_ITER_T WOffsetL = ((S_ITER_T)(WF >> 1)) - WPadL;
+  S_ITER_T HOffsetL = ((S_ITER_T)((HF - 1) >> 1)) - HPadU;
+  S_ITER_T WOffsetL = ((S_ITER_T)((WF - 1) >> 1)) - WPadL;
   S_ITER_T HOffsetR = ((S_ITER_T)(HF >> 1)) - HPadD;
   S_ITER_T WOffsetR = ((S_ITER_T)(WF >> 1)) - WPadR;
 
   for (ITER_T n = 0; n < N; n++) {
     ITER_T margin = 0, nstart = 0;
-    if (HOffsetL + ((S_ITER_T)(HF >> 1) + 1) - ((S_ITER_T)HStride) > 0) {
-      margin = (ITER_T)(HOffsetL + ((S_ITER_T)(HF >> 1) + 1) - ((S_ITER_T)HStride));
+    if ((S_ITER_T)HF - HPadU - (S_ITER_T)HStride > 0) {
+      margin = (ITER_T)((S_ITER_T)HF - HPadU - (S_ITER_T)HStride);
     }
     if (HPadU < 0) {
       // nstart will always be zero unless HPadU is negative.
@@ -66,7 +66,6 @@ void q_mbconv_block(const INT_T* const input, const INT_T* const filter1,
           for (ITER_T k = 0; k < CTemp; k++) {
             ITER_T iRed = (i + margin + hout * HStride) % HF;
             ITER_T iFull = i + margin + hout * HStride;
-            convBuffer1[iRed * W * CTemp + j * CTemp + k] = 0;
             for (ITER_T l = 0; l < CIn; l++) {
               if (iFull < H) {
                 treesumBuffer[l] = ((INTM_T)input[n * H * W * CIn + iFull * W * CIn + j * CIn + l]) *
@@ -98,13 +97,13 @@ void q_mbconv_block(const INT_T* const input, const INT_T* const filter1,
       for (S_ITER_T w = WOffsetL; w < ((S_ITER_T)W) - WOffsetR; wout++, w += ((S_ITER_T)WStride)) {
         for (ITER_T g = 0; g < CTemp; g++) {
           ITER_T counter = 0;
-          for (S_ITER_T hf = -(HF >> 1); hf <= (HF >> 1); hf++) {
-            for (S_ITER_T wf = -(WF >> 1); wf <= (WF >> 1); wf++) {
+          for (S_ITER_T hf = -((HF - 1) >> 1); hf <= (HF >> 1); hf++) {
+            for (S_ITER_T wf = -((WF - 1) >> 1); wf <= (WF >> 1); wf++) {
               if (((h + hf) < 0) || ((h + hf) >= (S_ITER_T)H) || ((w + wf) < 0) || ((w + wf) >= (S_ITER_T)W)) {
                 treesumBuffer[counter] = 0;
               } else {
                 treesumBuffer[counter] = ((INTM_T)convBuffer1[(((ITER_T)(h + hf)) % HF) * W * CTemp + ((ITER_T)(w + wf)) * CTemp + g]) *
-                                         ((INTM_T)filter2[g * HF * WF + ((ITER_T)(hf + (HF >> 1))) * WF + ((ITER_T)(wf + (WF >> 1)))]);
+                                         ((INTM_T)filter2[g * HF * WF + ((ITER_T)(hf + ((HF - 1) >> 1))) * WF + ((ITER_T)(wf + ((WF - 1) >> 1)))]);
               }
               counter++;
             }

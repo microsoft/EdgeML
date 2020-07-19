@@ -8,6 +8,7 @@
 
 /**
  * @brief Model parameters for Quantized MBConv Layer
+ * Note: This implementation doesn't support dilations yet.
  * @param[in]        input          pointer to the input buffer
  * @param[in]        filter1        pointer to the first convolution filter buffer
  * @param[in]        BN1W           pointer to the buffer holding the multiplication factor of the first BatchNorm computation
