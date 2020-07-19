@@ -504,7 +504,6 @@ void t_q_sub_vec(const INT_T* const ten, const INT_T* const vec,
 
 /**
  * @brief Computes the maxpool operation on the input tensor with the given parameters.
- * Note: This implementation assumes no dilation by default.
  * @param[in]       input     pointer to the tensor on which max-pooling is to be performed
  * @param[out]      output    pointer to the output tensor
  * @param[in]       N         number of batches of the input tensor
@@ -524,6 +523,8 @@ void t_q_sub_vec(const INT_T* const ten, const INT_T* const vec,
  * @param[in]       WPadR     padding after the rightmost column
  * @param[in]       HStride   stride of the pooling filter along the rows, used for moving the receptive field horizontally within the larger image
  * @param[in]       WStride   stride of the pooling filter along the columns, used for moving the receptive field vertically within the larger image
+ * @param[in]       HDilation dilation of the convolution filter along the rows (number of skipped input rows between two consecutive filter rows is HDilation - 1)
+ * @param[in]       WDilation dilation of the convolution filter along the columns (number of skipped input columns between two consecutive filter rows is WDilation - 1)
  * @param[in]       scinput   scale of the input tensor
  * @param[in]       scoutput  scale of the output tensor
  * @return          none
@@ -533,11 +534,11 @@ void q_maxpool(const INT_T* const input, INT_T* const output, ITER_T N,
                ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF,
                ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G, S_ITER_T HPadU,
                S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride,
-               ITER_T WStride, SCALE_T scinput, SCALE_T scoutput);
+               ITER_T WStride, ITER_T HDilation, ITER_T WDilation,
+               SCALE_T scinput, SCALE_T scoutput);
 
 /**
  * @brief Computes the maxpool operation on the input tensor with the given parameters.
- * Note: This implementation assumes no dilation by default.
  * @param[in]       input          pointer to the tensor on which convolution is to be performed
  * @param[in]       filter         pointer to the convolutional filter tensor
  * @param[out]      output         pointer to the output tensor
@@ -559,6 +560,8 @@ void q_maxpool(const INT_T* const input, INT_T* const output, ITER_T N,
  * @param[in]       WPadR          padding after the rightmost column
  * @param[in]       HStride        stride of the convolution filter along the rows, used for moving the receptive field horizontally within the larger image
  * @param[in]       WStride        stride of the convolution filter along the columns, used for moving the receptive field vertically within the larger image
+ * @param[in]       HDilation      dilation of the convolution filter along the rows (number of skipped input rows between two consecutive filter rows is HDilation - 1)
+ * @param[in]       WDilation      dilation of the convolution filter along the columns (number of skipped input columns between two consecutive filter rows is WDilation - 1)
  * @param[in]       H1             depth parameter for division-by-two used in TreeSum
  * @param[in]       H2             depth parameter for direct sum used in TreeSum
  * @param[in]       scinput        scale of the input tensor
@@ -571,7 +574,8 @@ void q_convolution(const INT_T* const input, const INT_T* const filter,
                    ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF,
                    ITER_T CF, ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G,
                    S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
-                   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, SCALE_T H1,
-                   SCALE_T H2, SCALE_T scinput, SCALE_T scoutput);
+                   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride,
+                   ITER_T HDilation, ITER_T WDilation, SCALE_T H1, SCALE_T H2,
+                   SCALE_T scinput, SCALE_T scoutput);
 
 #endif

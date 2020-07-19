@@ -360,11 +360,12 @@ void q_maxpool(const INT_T* const input, INT_T* const output, ITER_T N,
                ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF,
                ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G, S_ITER_T HPadU,
                S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride,
-               ITER_T WStride, SCALE_T scinput, SCALE_T scoutput) {
-  S_ITER_T HOffsetL = (S_ITER_T)((HF - 1) >> 1) - HPadU;
-  S_ITER_T WOffsetL = (S_ITER_T)((WF - 1) >> 1) - WPadL;
-  S_ITER_T HOffsetR = (S_ITER_T)(HF >> 1) - HPadD;
-  S_ITER_T WOffsetR = (S_ITER_T)(WF >> 1) - WPadR;
+               ITER_T WStride, ITER_T HDilation, ITER_T WDilation,
+               SCALE_T scinput, SCALE_T scoutput) {
+  S_ITER_T HOffsetL = ((S_ITER_T)HDilation * (S_ITER_T)((HF - 1) >> 1)) - HPadU;
+  S_ITER_T WOffsetL = ((S_ITER_T)WDilation * (S_ITER_T)((WF - 1) >> 1)) - WPadL;
+  S_ITER_T HOffsetR = ((S_ITER_T)HDilation * (S_ITER_T)(HF >> 1)) - HPadD;
+  S_ITER_T WOffsetR = ((S_ITER_T)WDilation * (S_ITER_T)(WF >> 1)) - WPadR;
 
   ITER_T HOffsetIn = W * CIn;
   ITER_T NOffsetIn = H * HOffsetIn;
@@ -387,11 +388,13 @@ void q_maxpool(const INT_T* const input, INT_T* const output, ITER_T N,
 
             INT_T max = INT_TMIN;
             for (S_ITER_T hf = -((HF - 1) >> 1); hf <= (HF >> 1); hf++) {
-              ITER_T HIndexIn = ((ITER_T)(h + hf)) * HOffsetIn;
+              S_ITER_T hoffset = h + ((S_ITER_T)HDilation * hf);
+              ITER_T HIndexIn = ((ITER_T)hoffset) * HOffsetIn;
               for (S_ITER_T wf = -((WF - 1) >> 1); wf <= (WF >> 1); wf++) {
-                ITER_T WIndexIn = ((ITER_T)(w + wf)) * CIn;
+                S_ITER_T woffset = w + ((S_ITER_T)WDilation * wf);
+                ITER_T WIndexIn = ((ITER_T)woffset) * CIn;
                 for (ITER_T cf = 0; cf < CF; cf++) {
-                  if ((h + hf < 0) || (h + hf >= (S_ITER_T)H) || (w + wf < 0) || (w + wf >= (S_ITER_T)W)) {
+                  if ((hoffset < 0) || (hoffset >= (S_ITER_T)H) || (woffset < 0) || (woffset >= (S_ITER_T)W)) {
                     if (max < 0) {
                       max = 0;
                     }
@@ -422,12 +425,13 @@ void q_convolution(const INT_T* const input, const INT_T* const filter,
                    ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF,
                    ITER_T CF, ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G,
                    S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
-                   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, SCALE_T H1,
-                   SCALE_T H2, SCALE_T scinput, SCALE_T scoutput) {
-  S_ITER_T HOffsetL = (S_ITER_T)((HF - 1) >> 1) - HPadU;
-  S_ITER_T WOffsetL = (S_ITER_T)((WF - 1) >> 1) - WPadL;
-  S_ITER_T HOffsetR = (S_ITER_T)(HF >> 1) - HPadD;
-  S_ITER_T WOffsetR = (S_ITER_T)(WF >> 1) - WPadR;
+                   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride,
+                   ITER_T HDilation, ITER_T WDilation, SCALE_T H1, SCALE_T H2,
+                   SCALE_T scinput, SCALE_T scoutput) {
+  S_ITER_T HOffsetL = ((S_ITER_T)HDilation * (S_ITER_T)((HF - 1) >> 1)) - HPadU;
+  S_ITER_T WOffsetL = ((S_ITER_T)WDilation * (S_ITER_T)((WF - 1) >> 1)) - WPadL;
+  S_ITER_T HOffsetR = ((S_ITER_T)HDilation * (S_ITER_T)(HF >> 1)) - HPadD;
+  S_ITER_T WOffsetR = ((S_ITER_T)WDilation * (S_ITER_T)(WF >> 1)) - WPadR;
 
   ITER_T HOffsetIn = W * CIn;
   ITER_T NOffsetIn = H * HOffsetIn;
@@ -452,13 +456,15 @@ void q_convolution(const INT_T* const input, const INT_T* const filter,
 
             ITER_T counter = 0;
             for (S_ITER_T hf = -((HF - 1) >> 1); hf <= (HF >> 1); hf++) {
-              ITER_T HIndexIn = ((ITER_T)(h + hf)) * HOffsetIn;
+              S_ITER_T hoffset = h + ((S_ITER_T)HDilation * hf);
+              ITER_T HIndexIn = ((ITER_T)hoffset) * HOffsetIn;
               ITER_T HIndexF = ((ITER_T)(hf + ((HF - 1) >> 1))) * HOffsetF;
               for (S_ITER_T wf = -((WF - 1) >> 1); wf <= (WF >> 1); wf++) {
-                ITER_T WIndexIn = ((ITER_T)(w + wf)) * CIn;
+                S_ITER_T woffset = w + ((S_ITER_T)WDilation * wf);
+                ITER_T WIndexIn = ((ITER_T)woffset) * CIn;
                 ITER_T WIndexF = ((ITER_T)(wf + ((WF - 1) >> 1))) * WOffsetF;
                 for (ITER_T cf = 0; cf < CF; cf++) {
-                  if ((h + hf < 0) || (h + hf >= (S_ITER_T)H) || (w + wf < 0) || (w + wf >= (S_ITER_T)W)) {
+                  if ((hoffset < 0) || (hoffset >= (S_ITER_T)H) || (woffset < 0) || (woffset >= (S_ITER_T)W)) {
                     treesumBuffer[counter] = 0;
                   } else {
                     treesumBuffer[counter] = ((INTM_T)input[NIndexIn + HIndexIn + WIndexIn + (cf + CIndexIn)]) *
