@@ -9,7 +9,7 @@ import torch.optim as optim
 from collections import OrderedDict
 from torch.utils.data import DataLoader, Dataset
 import numpy as np
-from drocc_trainer import DROCCTrainer
+from edgeml_pytorch.trainer.drocc_trainer import DROCCTrainer
 
 
 class MLP(nn.Module):
