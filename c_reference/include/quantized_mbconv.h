@@ -8,6 +8,7 @@
 
 /**
  * @brief Model parameters for Quantized MBConv Layer
+ * Note: This implementation doesn't support dilations yet.
  * @param[in]        input          pointer to the input buffer
  * @param[in]        filter1        pointer to the first convolution filter buffer
  * @param[in]        BN1W           pointer to the buffer holding the multiplication factor of the first BatchNorm computation
@@ -61,6 +62,7 @@
  * @param[in]        shlU3          scale to multiply with the third TreeSum output
  * @param[in]        shlB3          scale to multiply with the third BatchNorm addition factor
  * @param[in]        shlW3          scale to multiply with the third Convolution output
+ * @return           none
  *
  * @brief The function computes the following three sub-parts:
  * 1) Convolution(input, filter1) -> Batch Normalization(BN1W, BN1B) -> ReLU(limit1) -> convBuffer1
@@ -68,6 +70,8 @@
  * 3) Convolution(convBuffer2, filter3) -> Batch Normalization(BN3W, BN3B) -> output
  * Variables depth1, depth2 and depth3 are used along with treesumBuffer for accumulating the sums during convolutions.
  * Rest of the variables are used as indicated.
+ *
+ * @example          Please refer the file: c_reference/tests/mbconv/test_quantized_mbconv.c
  */
 void q_mbconv_block(const INT_T* const input, const INT_T* const filter1,
   const INT_T* const BN1W, const INT_T* const BN1B, const INT_T* const filter2,

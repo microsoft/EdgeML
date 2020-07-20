@@ -25,6 +25,8 @@ typedef int (*q_rnn_t)(INT_T* const, ITER_T, const INT_T* const, ITER_T, ITER_T,
  * @param[in]        rnn2_scales    pointer to the scales needed for RNN2
  * @param[out]       output         pointer to output, initialized to size 4 * hiddenDims2
  * @param[in,out]    buffer         pointer to buffer, intialized to size hiddenDims1 * max{nrows, cols}
+ * @return none
+ * @example          Please refer the file: c_reference/tests/rnnpool/test_quantized_rnnpool.c
  */
 int q_rnnpool_block(const INT_T* const patch, ITER_T inputDims, ITER_T patchDim,
                     ITER_T stride, q_rnn_t rnn1, ITER_T hiddenDims1,

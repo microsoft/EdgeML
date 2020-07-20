@@ -402,6 +402,199 @@ int test_t_q_sub_vec() {
   return check_output(pred, expected, 16);
 }
 
+// Test q_maxpool() function.
+int test_q_maxpool() {
+  const INT_T qmat_A[2 * 2 * 2 * 2] = {11, 220,
+                                       130, 40,
+
+                                       50, 60,
+                                       66, 76,
+
+
+                                       86, 910,
+                                       411, 312,
+
+                                       513, 514,
+                                       715, 716};
+  const INT_T qmat_B[2 * 2 * 2 * 2] = {100, 992,
+                                       15, 26,
+
+                                       27, 8,
+                                       3, 4,
+
+
+                                       5, 2,
+                                       2, 2,
+
+                                       7, 8,
+                                       29, 140};
+  const INT_T expected_A[2 * 1 * 1 * 2] = {32, 55,
+
+
+                                           178, 227};
+  const INT_T expected_B[2 * 3 * 3 * 2] = {100, 992,
+                                           100, 992,
+                                           15, 26,
+
+                                           100, 992,
+                                           100, 992,
+                                           15, 26,
+
+                                           27, 8,
+                                           27, 8,
+                                           3, 4,
+
+
+                                           5, 2,
+                                           5, 2,
+                                           2, 2,
+
+                                           7, 8,
+                                           29, 140,
+                                           29, 140,
+
+                                           7, 8,
+                                           29, 140,
+                                           29, 140};
+  const INT_T expected_C[2 * 2 * 2 * 2] = {100, 992,
+                                           100, 992,
+
+                                           100, 992,
+                                           100, 992,
+
+
+                                           29, 140,
+                                           29, 140,
+
+                                           29, 140,
+                                           29, 140};
+  const INT_T expected_D[2 * 3 * 3 * 2] = {16, 19,
+                                           0, 0,
+                                           12, 15,
+
+                                           0, 0,
+                                           0, 0,
+                                           0, 0,
+
+                                           32, 10,
+                                           0, 0,
+                                           2, 55,
+
+
+                                           178, 179,
+                                           0, 0,
+                                           128, 128,
+
+                                           0, 0,
+                                           0, 0,
+                                           0, 0,
+
+                                           102, 78,
+                                           0, 0,
+                                           21, 227};
+  INT_T pred_A[2 * 1 * 1 * 2], pred_B[2 * 3 * 3 * 2], pred_C[2 * 2 * 2 * 2], pred_D[2 * 3 * 3 * 2];
+
+  #ifdef SHIFT
+    q_maxpool(qmat_A, pred_A, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1);
+    q_maxpool(qmat_B, pred_B, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0);
+    q_maxpool(qmat_B, pred_C, 2, 2, 2, 2, 3, 3, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0);
+    q_maxpool(qmat_A, pred_D, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2, 2, 2, 2, 1, 1, 3, 3, 1, 1);
+  #else
+    q_maxpool(qmat_A, pred_A, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2);
+    q_maxpool(qmat_B, pred_B, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+    q_maxpool(qmat_B, pred_C, 2, 2, 2, 2, 3, 3, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+    q_maxpool(qmat_A, pred_D, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2);
+  #endif
+  return (check_output(pred_A, expected_A, 4) || check_output(pred_B, expected_B, 36) || check_output(pred_C, expected_C, 8) || check_output(pred_D, expected_D, 36));
+}
+
+// Test q_convolution() function.
+int test_q_convolution() {
+  const INT_T qmat_A[2 * 2 * 2 * 2] = {11, 220,
+                                       130, 40,
+
+                                       50, 60,
+                                       66, 76,
+
+
+                                       86, 910,
+                                       411, 312,
+
+                                       513, 514,
+                                       715, 716};
+  //Convolution Filters
+  const INT_T qmat_B[2 * 2 * 1 * 1] = {0, 1,
+                                       1, 0};
+  const INT_T qmat_C[2 * 2 * 2 * 1] = {0, 1,
+                                       1, 0,
+
+                                       1, 0,
+                                       0, 1};
+  const INT_T qmat_D[3 * 3 * 1 * 1] = {0, 0, 1,
+                                       0, 1, 0,
+                                       1, 0, 0};
+
+  const INT_T expected_A[2 * 1 * 1 * 2] = {44, 25,
+
+
+                                           230, 206};
+  const INT_T expected_B[2 * 1 * 1 * 1] = {58,
+
+
+                                           317};
+  const INT_T expected_C[2 * 2 * 2 * 2] = {1, 27,
+                                           22, 12,
+
+                                           22, 12,
+                                           8, 9,
+
+
+                                           10, 113,
+                                           115, 103,
+
+                                           115, 103,
+                                           89, 89};
+  const INT_T expected_D[2 * 3 * 3 * 2] = {0, 0,
+                                           0, 0,
+                                           1, 1,
+
+                                           0, 0,
+                                           0, 0,
+                                           0, 0,
+
+                                           4, 1,
+                                           0, 0,
+                                           0, 0,
+
+
+                                           0, 0,
+                                           0, 0,
+                                           16, 16,
+
+                                           0, 0,
+                                           0, 0,
+                                           0, 0,
+
+                                           12, 9,
+                                           0, 0,
+                                           0, 0};
+  INT_T pred_A[2 * 1 * 1 * 2], pred_B[2 * 1 * 1 * 1], pred_C[2 * 2 * 2 * 2], pred_D[2 * 3 * 3 * 2];
+  INTM_T temp[16];
+
+  #ifdef SHIFT
+    q_convolution(qmat_A, qmat_B, pred_A, temp, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 0, 0, 0);
+    q_convolution(qmat_A, qmat_C, pred_B, temp, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 3, 0, 0, 0);
+    q_convolution(qmat_A, qmat_D, pred_C, temp, 2, 2, 2, 2, 3, 3, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 0, 0, 0);
+    q_convolution(qmat_A, qmat_B, pred_D, temp, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2, 2, 2, 2, 1, 1, 3, 3, 3, 0, 1, 1);
+  #else
+    q_convolution(qmat_A, qmat_B, pred_A, temp, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 0, 1, 1);
+    q_convolution(qmat_A, qmat_C, pred_B, temp, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 3, 0, 1, 1);
+    q_convolution(qmat_A, qmat_D, pred_C, temp, 2, 2, 2, 2, 3, 3, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 0, 1, 1);
+    q_convolution(qmat_A, qmat_B, pred_D, temp, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2, 2, 2, 2, 1, 1, 3, 3, 3, 0, 2, 2);
+  #endif
+  return (check_output(pred_A, expected_A, 4) || check_output(pred_B, expected_B, 2) || check_output(pred_C, expected_C, 16) || check_output(pred_D, expected_D, 36));
+}
+
 int main() {
   if (test_v_q_treesum()) {
     printf("Test Failure for v_q_treesum()!\n");
@@ -449,6 +642,10 @@ int main() {
     printf("Test Failure for t_q_add_vec()!\n");
   } else if (test_t_q_sub_vec()) {
     printf("Test Failure for t_q_sub_vec()!\n");
+  } else if (test_q_maxpool()) {
+    printf("Test Failure for q_maxpool()!\n");
+  } else if (test_q_convolution()) {
+    printf("Test Failure for q_convolution()!\n");
   } else {
     printf("All Tests Passed!\n");
     return 0;

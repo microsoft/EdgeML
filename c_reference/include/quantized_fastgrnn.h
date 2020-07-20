@@ -259,7 +259,8 @@ typedef struct Q_FastGRNN_Buffers {
  *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp2 not allocated
  *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp3 not allocated
  *             <code>ERR_NORMFEAT_NOT_INIT</code> if normFeatures not allocated
-*/
+ * @example          Please refer the file: c_reference/tests/fastgrnn/test_quantized_fastgrnn.c
+ */
 int q_fastgrnn(INT_T* const hiddenState, ITER_T hiddenDims,
                const INT_T* const input, ITER_T inputDims, ITER_T steps,
                const void* params, void* buffers, const void* scales,
