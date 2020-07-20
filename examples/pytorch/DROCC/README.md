@@ -45,7 +45,7 @@ python3 main_tabular.py --hd 128 --lr 0.001 --inp_lamda 1 --inp_radius 3 --batch
 ```
 
 
-## one-class for TimeSeries
+## Time-Series Experiments
 
 ## Data Processing
 ### Audio-Keywords
