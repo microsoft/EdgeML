@@ -31,17 +31,17 @@ The output path is referred to as "root_data" in the following section.
 ### Command to run experiments to reproduce results
 #### Arrhythmia
 ```
-python3 main.py --hd 128 --lr 0.0001 --inp_lamda 1 --inp_radius 16 --batch_size 256 --epochs 200 --one_class_adv 1 --optim 0 --restore 0 -d "root_data"
+python3 main_tabular.py --hd 128 --lr 0.0001 --inp_lamda 1 --inp_radius 16 --batch_size 256 --epochs 200 --one_class_adv 1 --optim 0 --restore 0 -d "root_data"
 ```
 
 #### Thyroid
 ```
-python3 main.py --hd 128 --lr 0.001 --inp_lamda 1 --inp_radius 2.5 --batch_size 256 --epochs 100 --one_class_adv 1 --optim 0 --restore 0 -d "root_data"
+python3 main_tabular.py --hd 128 --lr 0.001 --inp_lamda 1 --inp_radius 2.5 --batch_size 256 --epochs 100 --one_class_adv 1 --optim 0 --restore 0 -d "root_data"
 ```
 
 #### Abalone 
 ```
-python3 main.py --hd 128 --lr 0.001 --inp_lamda 1 --inp_radius 3 --batch_size 256 --epochs 200 --one_class_adv 1 --optim 0 --restore 0 -d "root_data"
+python3 main_tabular.py --hd 128 --lr 0.001 --inp_lamda 1 --inp_radius 3 --batch_size 256 --epochs 200 --one_class_adv 1 --optim 0 --restore 0 -d "root_data"
 ```
 
 
@@ -64,7 +64,7 @@ The output path is referred to as "root_data" in the following section.
 
 ## Example Usage for Epilepsy Dataset
 ```
-python3  main.py --hd 128 --lr 0.00001 --inp_lamda 0.5 --gamma 2 --ascent_step_size 0.1 --inp_radius 10 --batch_size 256 --epochs 200  --optim 0 --restore 0 --metric AUC -d "root_data"
+python3  main_timeseries.py --hd 128 --lr 0.00001 --inp_lamda 0.5 --gamma 2 --ascent_step_size 0.1 --inp_radius 10 --batch_size 256 --epochs 200  --optim 0 --restore 0 --metric AUC -d "root_data"
 ```
 
 ## Arguments Detail
