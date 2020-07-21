@@ -58,7 +58,7 @@ python data_process_scripts/process_dataset_epilepsy.py -d <path to folder with 
 The output path is referred to as "root_data" in the following section.
 
 
-## Example Usage for Epilepsy Dataset
+### Example Usage for Epilepsy Dataset
 ```
 python3  main_timeseries.py --hd 128 --lr 0.00001 --inp_lamda 0.5 --gamma 2 --ascent_step_size 0.1 --inp_radius 10 --batch_size 256 --epochs 200  --optim 0 --restore 0 --metric AUC -d "root_data"
 ```
@@ -70,6 +70,7 @@ python3  main_cifar.py  --inp_lamda 1  --inp_radius 8 --lr 0.001  --ascent_step_
 
 
 ## Arguments Detail
+normal_class => CIFAR10 class to be considered as normal 
 inp_lamda => Weightage to the loss from adversarially sampled negative points (\mu in the paper)  
 inp_radius => radius corresponding to the definition of Ni(r)  
 hd => LSTM Hidden Dimension  
