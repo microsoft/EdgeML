@@ -16,7 +16,7 @@ test_labels.npy: labels for test data
 * The data is divided for training as presented in previous works: [DAGMM](https://openreview.net/forum?id=BJJLHbb0-) and [GOAD](https://openreview.net/forum?id=H1lK_lBtvS).
 * To generate the training and test data, use the `data_process_scripts/process_odds.py` script as follows 
 ```
-python data_process_scripts/process_odds.py -d <path/to/data/file_name.mat> -o <output path>
+python data_process_scripts/process_odds.py -d <path/to/downloaded_data/file_name.mat> -o <output path>
 ```
 The output path is referred to as "root_data" in the following section.
 
