@@ -21,7 +21,7 @@ python data_process_scripts/process_odds.py -d <path/to/downloaded_data/file_nam
 The output path is referred to as "root_data" in the following section.
 
 ### Abalone
-* Download the dataset from the UCI Repository [here](http://archive.ics.uci.edu/ml/datasets/Abalone). This will consist of `abalone.data`. 
+* Download the dataset from the UCI Repository [here](http://archive.ics.uci.edu/ml/machine-learning-databases/abalone/). This will consist of `abalone.data`. 
 * To generate the training and test data, use the `data_process_scripts/process_abalone.py` script as follows 
 ```
 python data_process_scripts/process_abalone.py -d <path/to/data/abalone.data> -o <output path>
