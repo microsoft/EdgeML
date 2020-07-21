@@ -1,9 +1,11 @@
+import os
 import numpy as np
 from scipy.io import loadmat
 import argparse
 
 parser = argparse.ArgumentParser(description='Preprocess Dataset from ODDS Repository')
 parser.add_argument('-d', '--data_path', type=str, default='./arrhythmia.mat')
+parser.add_argument('-o', '--output_path', type=str, default='.')
 args = parser.parse_args()
 
 dataset = loadmat(args.data_path)
@@ -29,7 +31,7 @@ test_labels = np.concatenate((
         np.zeros(num_normal_samples_test), np.ones(num_normal_samples_test)),
         axis=0)
 
-np.save('train_data.npy', train_data)
-np.save('train_labels.npy', train_labels)
-np.save('test_data.npy', test_data)
-np.save('test_labels.npy', test_labels)
+np.save(os.path.join(args.output_path,'train_data.npy'), train_data)
+np.save(os.path.join(args.output_path,'train_labels.npy'), train_labels)
+np.save(os.path.join(args.output_path,'test_data.npy'), test_data)
+np.save(os.path.join(args.output_path,'test_labels.npy'), test_labels)
