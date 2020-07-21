@@ -53,7 +53,7 @@ python3 main_tabular.py --hd 128 --lr 0.001 --lamda 1 --gamma 2 --ascent_step_si
 * To generate the training and test data, use the `data_process_scripts/process_epilepsy.py` script as follows
 
 ```
-python data_process_scripts/process_dataset_epilepsy.py -d <path to folder with data.csv> -o <output path>
+python data_process_scripts/process_epilepsy.py -d <path to folder with data.csv> -o <output path>
 ```
 The output path is referred to as "root_data" in the following section.
 
