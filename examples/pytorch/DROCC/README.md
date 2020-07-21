@@ -70,7 +70,7 @@ python3  main_cifar.py  --inp_lamda 1  --inp_radius 8 --lr 0.001  --ascent_step_
 
 
 ## Arguments Detail
-normal_class => CIFAR10 class to be considered as normal 
+normal_class => CIFAR10 class to be considered as normal  
 inp_lamda => Weightage to the loss from adversarially sampled negative points (\mu in the paper)  
 inp_radius => radius corresponding to the definition of Ni(r)  
 hd => LSTM Hidden Dimension  
