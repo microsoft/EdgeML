@@ -4,11 +4,11 @@ import pandas as pd
 import numpy as np
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-d', '--data_path', type=str, default='.')
+parser.add_argument('-d', '--data_path', type=str, default='./data.csv')
 parser.add_argument('-o', '--output_path', type=str, default='.')
 args = parser.parse_args()
 
-data = pd.read_csv(os.path.join(args.data_path, 'data.csv'))
+data = pd.read_csv(args.data_path)
 
 data['y'] = data['y'].replace(1, 0)
 
