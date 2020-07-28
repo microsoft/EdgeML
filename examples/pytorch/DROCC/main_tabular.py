@@ -89,9 +89,13 @@ def load_data(path):
     std=np.std(train_data,0)
     train_data=(train_data-mean)/ (std + 1e-4)
     num_features = train_data.shape[1]
-
     test_data = (test_data - mean)/(std + 1e-4)
-    print(train_data.shape, train_lab.shape, test_data.shape, test_lab.shape)
+
+    train_samples = train_data.shape[0]
+    test_samples = test_data.shape[0]
+    print("Train Samples: ", train_samples)
+    print("Test Samples: ", test_samples)
+    
     return CustomDataset(train_data, train_lab), CustomDataset(test_data, test_lab), num_features
 
 def main():

@@ -1,6 +1,12 @@
 # Deep Robust One-Class Classification 
 In this directory we present examples of how to use the `DROCCTrainer` to replicate results in [paper](https://proceedings.icml.cc/book/4293.pdf).
 
+`DROCCTrainer` is part of the `edgeml_pytorch` package. Please install the `edgeml_pytorch` package as follows:
+```
+git clone https://github.com/microsoft/EdgeML
+cd EdgeML/pytorch
+pip install -e .
+``` 
 
 ## Tabular Experiments
 Data is expected in the following format:
@@ -69,7 +75,7 @@ python3  main_cifar.py  --lamda 1  --radius 8 --lr 0.001 --gamma 1 --ascent_step
 ```
 
 
-## Arguments Detail
+### Arguments Detail
 normal_class => CIFAR10 class to be considered as normal  
 lamda => Weightage to the loss from adversarially sampled negative points (\mu in the paper)  
 radius => radius corresponding to the definition of set N_i(r)  
