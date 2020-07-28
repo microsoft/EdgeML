@@ -5,6 +5,7 @@ In this directory we present examples of how to use the `DROCCTrainer` to replic
 ```
 git clone https://github.com/microsoft/EdgeML
 cd EdgeML/pytorch
+pip install -r requirements-gpu.txt
 pip install -e .
 ``` 
 
