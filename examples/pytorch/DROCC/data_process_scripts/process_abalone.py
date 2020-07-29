@@ -27,7 +27,7 @@ test_data = np.concatenate((test.drop('y', axis=1), normal[:num_normal_samples_t
 train = normal[num_normal_samples_test:]
 train_data = train.drop('y', axis=1).values
 train_labels = train['y'].replace(-1, 1)
-test_labels = np.concatenate((test['y'], train['y'].replace(-1, 1)), axis=0)
+test_labels = np.concatenate((test['y'], normal[:num_normal_samples_test]['y'].replace(-1, 1)), axis=0)
 
 np.save(os.path.join(args.output_path,'train_data.npy'), train_data)
 np.save(os.path.join(args.output_path,'train_labels.npy'), train_labels)
