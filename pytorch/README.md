@@ -28,6 +28,8 @@ for these algorithms are in `edgeml_pytorch.trainer`.
 4. [S-RNN](https://github.com/microsoft/EdgeML/blob/master/docs/publications/SRNN.pdf): `edgeml_pytorch.graph.rnn.SRNN2` implements a 
     2 layer SRNN network which can be instantied with a choice of RNN cell. The training
     routine for SRNN is in `edgeml_pytorch.trainer.srnnTrainer`.
+5. DROCC: `edgeml_pytorch.trainer.drocc_trainer` implements a meta-trainer for training any given model architecture
+    for one-class classification on the supplied dataset.
 
 Usage directions and examples notebooks for this package are provided [here](https://github.com/microsoft/EdgeML/blobl/master/examples/pytorch).
 
