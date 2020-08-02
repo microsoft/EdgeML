@@ -9,7 +9,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 from collections import OrderedDict
 from data_process_scripts.process_mnist import MNIST_Dataset
-from edgeml_pytorch.trainer.drocclf_trainer import DROCCLFTrainer
+from edgeml_pytorch.trainer.drocclf_trainer import DROCCLFTrainer, cal_precision_recall
 
 class MNIST_LeNet(nn.Module):
 
@@ -105,8 +105,8 @@ def get_close_negs(test_loader):
 def main():
     #Load digit 0 and digit 1 data from MNIST
     dataset = MNIST_Dataset("data")
-    train_loader, normal_test_loader = dataset.loaders(batch_size=args.batch_size)
-    closeneg_test_data = get_close_negs(normal_test_loader)
+    train_loader, test_loader = dataset.loaders(batch_size=args.batch_size)
+    closeneg_test_data = get_close_negs(test_loader)
     closeneg_test_loader = DataLoader(closeneg_test_data, args.batch_size, shuffle=True)
 
     model = MNIST_LeNet().to(device)
@@ -124,17 +124,25 @@ def main():
     
     # Training the model
     trainer = DROCCLFTrainer(model, optimizer, args.lamda, args.radius, args.gamma, device)
-    
-    # Restore from checkpoint 
-    if args.restore == 1:
-        if os.path.exists(os.path.join(args.model_dir, 'model.pt')):
-            trainer.load(args.model_dir)
-            print("Saved Model Loaded")
-    
-    trainer.train(train_loader, normal_test_loader, closeneg_test_loader, args.lr, adjust_learning_rate, args.epochs,
+        
+    trainer.train(train_loader, test_loader, closeneg_test_loader, args.lr, adjust_learning_rate, args.epochs,
         ascent_step_size=args.ascent_step_size, only_ce_epochs = args.only_ce_epochs)
 
     trainer.save(args.model_dir)
+
+    if args.eval == 1:
+        if os.path.exists(os.path.join(args.model_dir, 'model.pt')):
+            trainer.load(args.model_dir)
+            print("Saved Model Loaded")
+        _, pos_scores, far_neg_scores  = trainer.test(test_loader, get_auc=False)
+        _, _, close_neg_scores  = trainer.test(closeneg_test_loader, get_auc=False)
+        
+        precision_fpr03, recall_fpr03 = cal_precision_recall(pos_scores, far_neg_scores, close_neg_scores, 0.03)
+        precision_fpr05, recall_fpr05 = cal_precision_recall(pos_scores, far_neg_scores, close_neg_scores, 0.05)
+        print('Test Precision @ FPR 3% : {}, Recall @ FPR 3%: {}'.format(
+            precision_fpr03, recall_fpr03))
+        print('Test Precision @ FPR 5% : {}, Recall @ FPR 5%: {}'.format(
+            precision_fpr05, recall_fpr05))
 
 if __name__ == '__main__':
     torch.set_printoptions(precision=5)
@@ -168,8 +176,8 @@ if __name__ == '__main__':
                         help='Weight to the adversarial loss')
     parser.add_argument('--reg', type=float, default=0, metavar='N',
                         help='weight reg')
-    parser.add_argument('--restore', type=int, default=0, metavar='N',
-                        help='whether to load a pretrained model, 1: load 0: train from scratch ')
+    parser.add_argument('--eval', type=int, default=0, metavar='N',
+                        help='whether to load a saved model and evaluate (0/1)')
     parser.add_argument('--optim', type=int, default=0, metavar='N',
                         help='0 : Adam 1: SGD')
     parser.add_argument('--gamma', type=float, default=2.0, metavar='N',

@@ -87,17 +87,18 @@ def main():
     
     # Training the model
     trainer = DROCCTrainer(model, optimizer, args.lamda, args.radius, args.gamma, device)
-    
-    # Restore from checkpoint 
-    if args.restore == 1:
-        if os.path.exists(os.path.join(args.model_dir, 'model.pt')):
-            trainer.load(args.model_dir)
-            print("Saved Model Loaded")
-    
+       
     trainer.train(train_loader, test_loader, args.lr, adjust_learning_rate, args.epochs,
         metric=args.metric, ascent_step_size=args.ascent_step_size, only_ce_epochs = 0)
 
     trainer.save(args.model_dir)
+
+    if args.eval == 1:
+        if os.path.exists(os.path.join(args.model_dir, 'model.pt')):
+            trainer.load(args.model_dir)
+            print("Saved Model Loaded")
+        score = trainer.test(test_loader, 'AUC')
+        print('Test AUC: {}'.format(score))
 
 if __name__ == '__main__':
     torch.set_printoptions(precision=5)
@@ -131,8 +132,8 @@ if __name__ == '__main__':
                         help='Weight to the adversarial loss')
     parser.add_argument('--reg', type=float, default=0, metavar='N',
                         help='weight reg')
-    parser.add_argument('--restore', type=int, default=0, metavar='N',
-                        help='whether to load a pretrained model, 1: load 0: train from scratch ')
+    parser.add_argument('--eval', type=int, default=0, metavar='N',
+                        help='whether to load a saved model and evaluate (0/1)')
     parser.add_argument('--optim', type=int, default=0, metavar='N',
                         help='0 : Adam 1: SGD')
     parser.add_argument('--gamma', type=float, default=2.0, metavar='N',
