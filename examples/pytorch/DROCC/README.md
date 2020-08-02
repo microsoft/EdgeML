@@ -1,7 +1,7 @@
 # Deep Robust One-Class Classification 
 In this directory we present examples of how to use the `DROCCTrainer` and `DROCCLFTrainer` to replicate results in [paper](https://proceedings.icml.cc/book/4293.pdf).
 
-`DROCCTrainer` and `DROCCLFTrainer` is part of the `edgeml_pytorch` package. Please install the `edgeml_pytorch` package as follows:
+`DROCCTrainer` and `DROCCLFTrainer` are part of the `edgeml_pytorch` package. Please install the `edgeml_pytorch` package as follows:
 ```
 git clone https://github.com/microsoft/EdgeML
 cd EdgeML/pytorch

@@ -81,9 +81,9 @@ If you use software from this library in your work, please use the BibTex entry 
 
 ```
 @software{edgeml03,
-   author = {{Dennis, Don Kurian and Gaurkar, Yash and Gopinath, Sridhar and Gupta, Chirag and
-              Jain, Moksh and Kumar, Ashish and Kusupati, Aditya and Lovett, Chris 
-              and Patil, Shishir G and Simhadri, Harsha Vardhan}},
+   author = {{Dennis, Don Kurian and Gaurkar, Yash and Gopinath, Sridhar and Goyal, Sachin 
+              and Gupta, Chirag and Jain, Moksh and Kumar, Ashish and Kusupati, Aditya and 
+              Lovett, Chris and Patil, Shishir G and Saha, Oindrila and Simhadri, Harsha Vardhan}},
    title = {{EdgeML: Machine Learning for resource-constrained edge devices}},
    url = {https://github.com/Microsoft/EdgeML},
    version = {0.3},
