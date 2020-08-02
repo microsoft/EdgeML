@@ -85,18 +85,21 @@ def main():
                                lr=args.lr)
         print("using Adam")
     
-    # Training the model
-    trainer = DROCCTrainer(model, optimizer, args.lamda, args.radius, args.gamma, device)
-       
-    trainer.train(train_loader, test_loader, args.lr, adjust_learning_rate, args.epochs,
-        metric=args.metric, ascent_step_size=args.ascent_step_size, only_ce_epochs = 0)
+    if args.eval == 0:
+        # Training the model
+        trainer = DROCCTrainer(model, optimizer, args.lamda, args.radius, args.gamma, device)
+        
+        trainer.train(train_loader, test_loader, args.lr, adjust_learning_rate, args.epochs,
+            metric=args.metric, ascent_step_size=args.ascent_step_size, only_ce_epochs = 0)
 
-    trainer.save(args.model_dir)
-
-    if args.eval == 1:
+        trainer.save(args.model_dir)
+    else:
         if os.path.exists(os.path.join(args.model_dir, 'model.pt')):
             trainer.load(args.model_dir)
             print("Saved Model Loaded")
+        else:
+            print('Saved model not found. Cannot run evaluation.')
+            exit()
         score = trainer.test(test_loader, 'AUC')
         print('Test AUC: {}'.format(score))
 

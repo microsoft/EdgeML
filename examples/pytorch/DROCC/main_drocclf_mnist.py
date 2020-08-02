@@ -121,19 +121,22 @@ def main():
         optimizer = optim.Adam(model.parameters(),
                                lr=args.lr)
         print("using Adam")
-    
-    # Training the model
-    trainer = DROCCLFTrainer(model, optimizer, args.lamda, args.radius, args.gamma, device)
-        
-    trainer.train(train_loader, test_loader, closeneg_test_loader, args.lr, adjust_learning_rate, args.epochs,
-        ascent_step_size=args.ascent_step_size, only_ce_epochs = args.only_ce_epochs)
+    if args.eval==0:
+        # Training the model
+        trainer = DROCCLFTrainer(model, optimizer, args.lamda, args.radius, args.gamma, device)
+            
+        trainer.train(train_loader, test_loader, closeneg_test_loader, args.lr, adjust_learning_rate, args.epochs,
+            ascent_step_size=args.ascent_step_size, only_ce_epochs = args.only_ce_epochs)
 
-    trainer.save(args.model_dir)
+        trainer.save(args.model_dir)
 
-    if args.eval == 1:
+    else:
         if os.path.exists(os.path.join(args.model_dir, 'model.pt')):
             trainer.load(args.model_dir)
             print("Saved Model Loaded")
+        else:
+            print('Saved model not found. Cannot run evaluation.')
+            exit()
         _, pos_scores, far_neg_scores  = trainer.test(test_loader, get_auc=False)
         _, _, close_neg_scores  = trainer.test(closeneg_test_loader, get_auc=False)
         
