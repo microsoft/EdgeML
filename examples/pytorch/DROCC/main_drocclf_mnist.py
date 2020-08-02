@@ -98,7 +98,8 @@ def get_close_negs(test_loader):
         else:
             close_neg_data = torch.cat((close_neg_data,aug1), dim=0)
 
-    close_neg_labels = torch.zeros(close_neg_data.shape[0]).to(device)
+    close_neg_data = close_neg_data.detach().cpu().numpy()
+    close_neg_labels = np.zeros((close_neg_data.shape[0]))
     
     return CustomDataset(close_neg_data, close_neg_labels)
 

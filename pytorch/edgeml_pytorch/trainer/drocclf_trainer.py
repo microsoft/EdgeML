@@ -143,6 +143,24 @@ def optim_solver( grad, diff, radius, device, gamma=2):
 
     return diff
 
+def get_gradients(model, device, data, target):
+
+    total_train_pts = len(data)
+    data = data.to(torch.float)
+    target = target.to(torch.float)
+    target = torch.squeeze(target)
+
+    #Extract the logits for cross entropy loss
+    data_copy = data
+    data_copy = data_copy.detach().requires_grad_()
+    # logits = model(data_copy)
+    logits = model(data_copy)
+    logits = torch.squeeze(logits, dim = 1)
+    ce_loss = F.binary_cross_entropy_with_logits(logits, target)
+    
+    grad = torch.autograd.grad(ce_loss, data_copy)[0]
+
+    return torch.abs(grad)
 
 #trainer class for DROCC
 class DROCCLFTrainer:
@@ -186,7 +204,6 @@ class DROCCLFTrainer:
                           generation of negative points.
         ascent_num_steps: Number of gradient ascent steps for adversarial 
                           generation of negative points.
-        metric: Metric used for evaluation (AUC / F1).
         """
         self.ascent_num_steps = ascent_num_steps
         self.ascent_step_size = ascent_step_size
@@ -222,8 +239,8 @@ class DROCCLFTrainer:
                 '''
                 if  epoch >= only_ce_epochs:
                     data = data[target == 1]
-                    target = torch.ones(data.shape[0]).to(device)
-                    gradients = grad_analyzer(args, model, device, data, target)
+                    target = torch.ones(data.shape[0]).to(self.device)
+                    gradients = get_gradients(self.model, self.device, data, target)
                     #AdvLoss in the input layer
                     # AdvLoss 
                     adv_loss_inp = self.one_class_adv_loss(data, gradients)
@@ -242,27 +259,25 @@ class DROCCLFTrainer:
             epoch_adv_loss = epoch_adv_loss/(batch_idx + 1) #Average AdvLoss @Input Layer
 
             #normal val loader has the positive data and the far negative data
-            auc, pos_scores, far_neg_scores  = self.test(normal_val_loader, metric)
-            auc, pos_scores, close_neg_scores  = self.test(close_neg_scores, metric)
+            auc, pos_scores, far_neg_scores  = self.test(normal_val_loader, get_auc=True)
+            _, _, close_neg_scores  = self.test(closeneg_val_loader, get_auc=False)
             
             precision_fpr03 , recall_fpr03 = cal_precision_recall(pos_scores, far_neg_scores, close_neg_scores, 0.03)
             precision_fpr05 , recall_fpr05 = cal_precision_recall(pos_scores, far_neg_scores, close_neg_scores, 0.05)
-            print('Epoch: {}, CE Loss: {}, AdvLoss: {}, {}: {}'.format(
+            print('Epoch: {}, CE Loss: {}, AdvLoss: {}'.format(
                 epoch, epoch_ce_loss.item(), epoch_adv_loss.item()))
             print('Precision @ FPR 3% : {}, Recall @ FPR 3%: {}'.format(
                 precision_fpr03, recall_fpr03))
             print('Precision @ FPR 5% : {}, Recall @ FPR 5%: {}'.format(
                 precision_fpr05, recall_fpr05))
 
-    def test(self, test_loader, metric):
+    def test(self, test_loader, get_auc = True):
         """Evaluate the model on the given test dataset.
 
         Parameters
         ----------
         test_loader: Dataloader object for the test dataset.
-        metric: Metric used for evaluation (AUC / F1).
         """        
-        self.model.eval()
         label_score = []
         batch_idx = -1
         for data, target, _ in test_loader:
@@ -284,7 +299,9 @@ class DROCCLFTrainer:
         scores = np.array(scores)
         pos_scores = scores[labels==1]
         neg_scores = scores[labels==0]
-        auc = roc_auc_score(labels, scores)
+        auc = -1
+        if get_auc:
+            auc = roc_auc_score(labels, scores)
         return auc, pos_scores, neg_scores
         
     
