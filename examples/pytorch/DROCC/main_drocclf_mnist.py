@@ -78,7 +78,6 @@ class CustomDataset(Dataset):
         return torch.from_numpy(self.data[idx]), (self.labels[idx]), torch.tensor([0])
 
 def get_close_negs(test_loader):
-
     # Getting the Close Negs data for MNIST Digit 0 by
     # randomly masking 50% of the digit 0 test image pixels
     batch_idx = -1
