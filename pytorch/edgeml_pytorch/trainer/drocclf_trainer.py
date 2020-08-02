@@ -345,7 +345,7 @@ class DROCCLFTrainer:
             with torch.no_grad():
                 x_adv_sampled.add_(self.ascent_step_size * grad_normalized)
 
-            if (step + 1) % 10==0:
+            if (step + 1) % 5==0:
                 # Project the normal points to the set N_i(r) based on mahalanobis distance
                 h = x_adv_sampled - x_train_data
                 h_flat = torch.reshape(h, (h.shape[0], -1))

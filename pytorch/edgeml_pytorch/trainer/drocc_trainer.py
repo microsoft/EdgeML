@@ -20,7 +20,7 @@ class DROCCTrainer:
         ----------
         model: Torch neural network object
         optimizer: Total number of epochs for training.
-        lamda: Adversarial loss weight for input layer
+        lamda: Weight given to the adversarial loss
         radius: Radius of hypersphere to sample points from.
         gamma: Parameter to vary projection.
         device: torch.device object for device to use.
@@ -59,7 +59,7 @@ class DROCCTrainer:
             lr_scheduler(epoch, total_epochs, only_ce_epochs, learning_rate, self.optimizer)
             
             #Placeholder for the respective 2 loss values
-            epoch_adv_loss = torch.tensor([0]).type(torch.float32).detach()  #AdvLoss @ Input Layer
+            epoch_adv_loss = torch.tensor([0]).type(torch.float32).to(self.device)  #AdvLoss
             epoch_ce_loss = 0  #Cross entropy Loss
             
             batch_idx = -1
@@ -86,10 +86,10 @@ class DROCCTrainer:
                 if  epoch >= only_ce_epochs:
                     data = data[target == 1]
                     # AdvLoss 
-                    adv_loss_inp = self.one_class_adv_loss(data)
-                    epoch_adv_loss += adv_loss_inp
+                    adv_loss = self.one_class_adv_loss(data)
+                    epoch_adv_loss += adv_loss
 
-                    loss = ce_loss + adv_loss_inp * self.lamda
+                    loss = ce_loss + adv_loss * self.lamda
                 else: 
                     # If only CE based training has to be done
                     loss = ce_loss
@@ -99,7 +99,7 @@ class DROCCTrainer:
                 self.optimizer.step()
                     
             epoch_ce_loss = epoch_ce_loss/(batch_idx + 1)  #Average CE Loss
-            epoch_adv_loss = epoch_adv_loss/(batch_idx + 1) #Average AdvLoss @Input Layer
+            epoch_adv_loss = epoch_adv_loss/(batch_idx + 1) #Average AdvLoss
 
             test_score = self.test(val_loader, metric)
             
