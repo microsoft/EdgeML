@@ -4,15 +4,17 @@ import torch
 import torch.optim as optim
 import torch.nn as nn
 import torch.nn.functional as F
-from sklearn.metrics import roc_auc_score, precision_recall_fscore_support
+from sklearn.metrics import roc_auc_score
 
-#Precision Recall Calculation
 def cal_precision_recall(positive_scores, far_neg_scores, close_neg_scores, fpr):
+    """
+    Computes the precision and recall for the given false positive rate.
+    """
     #combine the far and close negative scores
     all_neg_scores = np.concatenate((far_neg_scores, close_neg_scores), axis = 0)
     num_neg = all_neg_scores.shape[0]
     idx = int((1-fpr) * num_neg)
-    #sort scores in ascendign order
+    #sort scores in ascending order
     all_neg_scores.sort()
     thresh = all_neg_scores[idx]
     tp = np.sum(positive_scores > thresh)
@@ -22,8 +24,11 @@ def cal_precision_recall(positive_scores, far_neg_scores, close_neg_scores, fpr)
     return precision, recall
 
 
-def normalizer(grad):
-    # Normalizing gradients of shape (batch, -1)
+def normalize_grads(grad):
+    """
+    Utility function to normalize the gradients.
+    grad: (batch, -1)
+    """
     # make sum equal to the size of second dim
     grad_norm = torch.sum(torch.abs(grad), dim=1)
     grad_norm = torch.unsqueeze(grad_norm, dim = 1)
@@ -31,9 +36,12 @@ def normalizer(grad):
     grad = grad/grad_norm * grad.shape[1]
     return grad
 
-def get_mahalanobis_dis(grad, diff, radius, device, gamma):
-    #Grad Shape : (batch,-1)
-    #Diff(h) Shape : (batch,-1)
+def compute_mahalanobis_distance(grad, diff, radius, device, gamma):
+    """
+    Compute the mahalanobis distance.
+    grad: (batch,-1)
+    diff: (batch,-1)
+    """
     mhlnbs_dis = torch.sqrt(torch.sum(grad*diff**2, dim=1))
     #Categorize the batches based on mahalanobis distance
     #lamda = 1 : mahalanobis distance < radius
@@ -42,6 +50,10 @@ def get_mahalanobis_dis(grad, diff, radius, device, gamma):
     lamda[mhlnbs_dis < radius] = 1
     lamda[mhlnbs_dis > (gamma * radius)] = 2
     return lamda, mhlnbs_dis
+
+
+# The following are utitlity functions for checking the conditions in
+# Proposition 1 in https://arxiv.org/abs/2002.12718
 
 def check_left_part1(lam, grad, diff, radius, device):
     #Part 1 condition value
@@ -96,9 +108,12 @@ def range_nu_upper(grad, mhlnbs_dis, radius, gamma):
     nu = (alpha/(1-alpha))*max_sigma
     return nu
 
-def optim_solver( grad, diff, radius, device, gamma=2):
-
-    lamda, mhlnbs_dis = get_mahalanobis_dis(grad, diff, radius, device, gamma)
+def optim_solver(grad, diff, radius, device, gamma=2):
+    """
+    Solver for the optimization problem presented in Proposition 1 in
+    https://arxiv.org/abs/2002.12718
+    """
+    lamda, mhlnbs_dis = compute_mahalanobis_distance(grad, diff, radius, device, gamma)
     lamda_lower_limit = range_lamda_lower(grad).detach().cpu().numpy()
     nu_upper_limit = range_nu_upper(grad, mhlnbs_dis, radius, gamma).detach().cpu().numpy()
     
@@ -144,7 +159,10 @@ def optim_solver( grad, diff, radius, device, gamma=2):
     return diff
 
 def get_gradients(model, device, data, target):
-
+    """
+    Utility function to compute the gradients of the model on the
+    given data.
+    """
     total_train_pts = len(data)
     data = data.to(torch.float)
     target = target.to(torch.float)
@@ -165,12 +183,13 @@ def get_gradients(model, device, data, target):
 #trainer class for DROCC
 class DROCCLFTrainer:
     """
-    Trainer class that implements the LFOC algorithm proposed in
+    Trainer class that implements the DROCC-LF algorithm proposed for 
+    one-class classification with limited negative data presented in    
     https://arxiv.org/abs/2002.12718
     """
 
     def __init__(self, model, optimizer, lamda, radius, gamma, device):
-        """Initialize the DROCC Trainer class
+        """Initialize the DROCC-LF Trainer class
 
         Parameters
         ----------
@@ -188,7 +207,7 @@ class DROCCLFTrainer:
         self.gamma = gamma
         self.device = device
 
-    def train(self, train_loader, normal_val_loader, closeneg_val_loader, learning_rate, lr_scheduler, total_epochs, 
+    def train(self, train_loader, val_loader, closeneg_val_loader, learning_rate, lr_scheduler, total_epochs, 
                 only_ce_epochs=50, ascent_step_size=0.001, ascent_num_steps=50):
         """Trains the model on the given training dataset with periodic 
         evaluation on the validation dataset.
@@ -196,7 +215,8 @@ class DROCCLFTrainer:
         Parameters
         ----------
         train_loader: Dataloader object for the training dataset.
-        val_loader: Dataloader object for the validation dataset.
+        val_loader: Dataloader object for the validation dataset with far negatives.
+        closeneg_val_loader: Dataloader object for the validation dataset with close negatives.
         learning_rate: Initial learning rate for training.
         total_epochs: Total number of epochs for training.
         only_ce_epochs: Number of epochs for initial pretraining.
@@ -258,7 +278,7 @@ class DROCCLFTrainer:
             epoch_adv_loss = epoch_adv_loss/(batch_idx + 1) #Average AdvLoss
 
             #normal val loader has the positive data and the far negative data
-            auc, pos_scores, far_neg_scores  = self.test(normal_val_loader, get_auc=True)
+            auc, pos_scores, far_neg_scores  = self.test(val_loader, get_auc=True)
             _, _, close_neg_scores  = self.test(closeneg_val_loader, get_auc=False)
             
             precision_fpr03 , recall_fpr03 = cal_precision_recall(pos_scores, far_neg_scores, close_neg_scores, 0.03)
@@ -320,6 +340,7 @@ class DROCCLFTrainer:
         Parameters
         ----------
         x_train_data: Batch of data to compute loss on.
+        gradients: gradients of the model for the given data.
         """
         batch_size = len(x_train_data)
         # Randomly sample points around the training data
@@ -351,7 +372,7 @@ class DROCCLFTrainer:
                 h_flat = torch.reshape(h, (h.shape[0], -1))
                 gradients_flat = torch.reshape(gradients, (gradients.shape[0], -1))
                 #Normalize the gradients 
-                gradients_normalized = normalizer(gradients_flat)
+                gradients_normalized = normalize_grads(gradients_flat)
                 #Solve the non-convex 1D optimization
                 h_flat = optim_solver(gradients_normalized, h_flat, self.radius, self.device, self.gamma)
                 h = torch.reshape(h_flat, h.shape)
@@ -368,6 +389,3 @@ class DROCCLFTrainer:
 
     def load(self, path):
         self.model.load_state_dict(torch.load(os.path.join(path, 'model.pt')))
-
-    #Class end
-
