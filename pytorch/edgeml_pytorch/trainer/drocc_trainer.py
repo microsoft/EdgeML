@@ -1,4 +1,5 @@
 import os
+import copy
 import numpy as np
 import torch
 import torch.optim as optim
@@ -51,6 +52,8 @@ class DROCCTrainer:
                           generation of negative points.
         metric: Metric used for evaluation (AUC / F1).
         """
+        best_score = -np.inf
+        best_model = None
         self.ascent_num_steps = ascent_num_steps
         self.ascent_step_size = ascent_step_size
         for epoch in range(total_epochs): 
@@ -102,10 +105,16 @@ class DROCCTrainer:
             epoch_adv_loss = epoch_adv_loss/(batch_idx + 1) #Average AdvLoss
 
             test_score = self.test(val_loader, metric)
-            
+            if test_score > best_score:
+                best_score = test_score
+                best_model = copy.deepcopy(best_model)
             print('Epoch: {}, CE Loss: {}, AdvLoss: {}, {}: {}'.format(
                 epoch, epoch_ce_loss.item(), epoch_adv_loss.item(), 
                 metric, test_score))
+        self.model = copy.deepcopy(best_model)
+        print('\n\n Best test {}: {}'.format(
+            metric, best_score
+        ))
 
     def test(self, test_loader, metric):
         """Evaluate the model on the given test dataset.
