@@ -65,12 +65,14 @@ Code for algorithms, applications and tools contributed by:
   - [Don Dennis](https://dkdennis.xyz)
   - [Yash Gaurkar](https://github.com/mr-yamraj/)
   - [Sridhar Gopinath](http://www.sridhargopinath.in/)
+  - [Sachin Goyal](https://github.com/SachinG007)
   - [Chirag Gupta](https://aigen.github.io/)
   - [Moksh Jain](https://github.com/MJ10)
   - [Ashish Kumar](https://ashishkumar1993.github.io/)
   - [Aditya Kusupati](https://adityakusupati.github.io/)
   - [Chris Lovett](https://github.com/lovettchris)
   - [Shishir Patil](https://shishirpatil.github.io/)
+  - [Oindrila Saha](https://github.com/oindrilasaha)
   - [Harsha Vardhan Simhadri](http://harsha-simhadri.org)
 
 [Contributors](https://microsoft.github.io/EdgeML/People) to this project. New contributors welcome.

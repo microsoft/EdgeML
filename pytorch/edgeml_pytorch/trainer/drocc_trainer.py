@@ -107,12 +107,12 @@ class DROCCTrainer:
             test_score = self.test(val_loader, metric)
             if test_score > best_score:
                 best_score = test_score
-                best_model = copy.deepcopy(best_model)
+                best_model = copy.deepcopy(self.model)
             print('Epoch: {}, CE Loss: {}, AdvLoss: {}, {}: {}'.format(
                 epoch, epoch_ce_loss.item(), epoch_adv_loss.item(), 
                 metric, test_score))
         self.model = copy.deepcopy(best_model)
-        print('\n\n Best test {}: {}'.format(
+        print('\nBest test {}: {}'.format(
             metric, best_score
         ))
 

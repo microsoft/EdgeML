@@ -226,8 +226,10 @@ class DROCCLFTrainer:
         ascent_num_steps: Number of gradient ascent steps for adversarial 
                           generation of negative points.
         """
-        best_recall = -np.inf
-        best_precision = -np.inf
+        best_recall_fpr03 = -np.inf
+        best_precision_fpr03 = -np.inf
+        best_recall_fpr05 = -np.inf
+        best_precision_fpr05 = -np.inf
         best_model = None
         self.ascent_num_steps = ascent_num_steps
         self.ascent_step_size = ascent_step_size
@@ -287,9 +289,11 @@ class DROCCLFTrainer:
             
             precision_fpr03 , recall_fpr03 = cal_precision_recall(pos_scores, far_neg_scores, close_neg_scores, 0.03)
             precision_fpr05 , recall_fpr05 = cal_precision_recall(pos_scores, far_neg_scores, close_neg_scores, 0.05)
-            if recall_fpr03 > best_recall:
-                best_recall = recall_fpr03
-                best_precision = precision_fpr03
+            if recall_fpr03 > best_recall_fpr03:
+                best_recall_fpr03 = recall_fpr03
+                best_precision_fpr03 = precision_fpr03
+                best_recall_fpr05 = recall_fpr05
+                best_precision_fpr05 = precision_fpr05
                 best_model = copy.deepcopy(self.model)
             print('Epoch: {}, CE Loss: {}, AdvLoss: {}'.format(
                 epoch, epoch_ce_loss.item(), epoch_adv_loss.item()))
@@ -298,8 +302,11 @@ class DROCCLFTrainer:
             print('Precision @ FPR 5% : {}, Recall @ FPR 5%: {}'.format(
                 precision_fpr05, recall_fpr05))
         self.model = copy.deepcopy(best_model)
-        print('\n\nBest test Precision @ FPR 3% : {}, Recall @ FPR 3%: {}'.format(
-            best_precision, best_recall
+        print('\nBest test Precision @ FPR 3% : {}, Recall @ FPR 3%: {}'.format(
+            best_precision_fpr03, best_recall_fpr03
+        ))
+        print('\nBest test Precision @ FPR 5% : {}, Recall @ FPR 5%: {}'.format(
+            best_precision_fpr05, best_recall_fpr05
         ))
 
     def test(self, test_loader, get_auc = True):
