@@ -114,14 +114,15 @@ def main():
                                lr=args.lr)
         print("using Adam")
     
-    # Training the model
+    trainer = DROCCTrainer(model, optimizer, args.lamda, args.radius, args.gamma, device)
+
     if args.eval == 0:
-        trainer = DROCCTrainer(model, optimizer, args.lamda, args.radius, args.gamma, device)
-        
+        # Training the model       
         trainer.train(train_loader, test_loader, args.lr, adjust_learning_rate, args.epochs,
             metric=args.metric, ascent_step_size=args.ascent_step_size, only_ce_epochs = args.only_ce_epochs)
 
         trainer.save(args.model_dir)
+
     else:
         if os.path.exists(os.path.join(args.model_dir, 'model.pt')):
             trainer.load(args.model_dir)

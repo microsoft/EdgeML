@@ -121,10 +121,11 @@ def main():
         optimizer = optim.Adam(model.parameters(),
                                lr=args.lr)
         print("using Adam")
+
+    trainer = DROCCLFTrainer(model, optimizer, args.lamda, args.radius, args.gamma, device)
+
     if args.eval==0:
-        # Training the model
-        trainer = DROCCLFTrainer(model, optimizer, args.lamda, args.radius, args.gamma, device)
-            
+        # Training the model        
         trainer.train(train_loader, test_loader, closeneg_test_loader, args.lr, adjust_learning_rate, args.epochs,
             ascent_step_size=args.ascent_step_size, only_ce_epochs = args.only_ce_epochs)
 
