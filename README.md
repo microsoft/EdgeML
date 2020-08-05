@@ -65,7 +65,7 @@ Code for algorithms, applications and tools contributed by:
   - [Don Dennis](https://dkdennis.xyz)
   - [Yash Gaurkar](https://github.com/mr-yamraj/)
   - [Sridhar Gopinath](http://www.sridhargopinath.in/)
-  - [Sachin Goyal](https://github.com/SachinG007)
+  - [Sachin Goyal](https://saching007.github.io/)
   - [Chirag Gupta](https://aigen.github.io/)
   - [Moksh Jain](https://github.com/MJ10)
   - [Ashish Kumar](https://ashishkumar1993.github.io/)
