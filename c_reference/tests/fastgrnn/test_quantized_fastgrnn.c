@@ -11,7 +11,7 @@
 // implementation. All values generated from Seedot on Wider Regression dataset.
 // By default, all tests run without using bit-shifting operations.
 int main() {
-  Q_FastGRNN_Params rnn1_params = {
+  Q15_FastGRNN_Params rnn1_params = {
     .mean = NULL,
     .stdDev = NULL,
     .W = W1,
@@ -22,23 +22,23 @@ int main() {
     .sigmoid_nu = sigmoid_nu1
   };
 
-  INT_T preComp11[HIDDEN_DIM1];
-  INT_T preComp12[HIDDEN_DIM1];
-  INT_T preComp13[HIDDEN_DIM1];
-  INT_T normFeatures1[INPUT_CHANNELS];
-  memset(preComp11, 0, sizeof(INT_T) * HIDDEN_DIM1);
-  memset(preComp12, 0, sizeof(INT_T) * HIDDEN_DIM1);
-  memset(preComp13, 0, sizeof(INT_T) * HIDDEN_DIM1);
-  memset(normFeatures1, 0, sizeof(INT_T) * INPUT_CHANNELS);
+  Q15_T preComp11[HIDDEN_DIM1];
+  Q15_T preComp12[HIDDEN_DIM1];
+  Q15_T preComp13[HIDDEN_DIM1];
+  Q15_T normFeatures1[INPUT_CHANNELS];
+  memset(preComp11, 0, sizeof(Q15_T) * HIDDEN_DIM1);
+  memset(preComp12, 0, sizeof(Q15_T) * HIDDEN_DIM1);
+  memset(preComp13, 0, sizeof(Q15_T) * HIDDEN_DIM1);
+  memset(normFeatures1, 0, sizeof(Q15_T) * INPUT_CHANNELS);
 
-  Q_FastGRNN_Buffers rnn1_buffers = {
+  Q15_FastGRNN_Buffers rnn1_buffers = {
     .preComp1 = preComp11,
     .preComp2 = preComp12,
     .preComp3 = preComp13,
     .normFeatures = normFeatures1
   };
 
-  Q_FastGRNN_Scales rnn1_scales = {
+  Q15_FastGRNN_Scales rnn1_scales = {
     .input = input1,
     .mean = meanScale1,
     .meanSub = meanSub1,
@@ -86,15 +86,15 @@ int main() {
     .qOne = qOne1
   };
 
-  const INT_T patch[INPUT_CHANNELS] = {1040, 1919, 4254, 4024};
-  const INT_T expected[HIDDEN_DIM1] = {1423, 7085, -16378, 8209, -12067, 6805, 6475, 6897};
+  const Q15_T patch[INPUT_CHANNELS] = {1040, 1919, 4254, 4024};
+  const Q15_T expected[HIDDEN_DIM1] = {1423, 7085, -16378, 8209, -12067, 6805, 6475, 6897};
 
-  INT_T buffer[HIDDEN_DIM1];
-  memset(buffer, 0, sizeof(INT_T) * HIDDEN_DIM1);
+  Q15_T buffer[HIDDEN_DIM1];
+  memset(buffer, 0, sizeof(Q15_T) * HIDDEN_DIM1);
 
-  q_fastgrnn(buffer, HIDDEN_DIM1, patch, INPUT_CHANNELS, 1,
-             (const void*)(&rnn1_params), (void*)(&rnn1_buffers),
-             (const void*)(&rnn1_scales), 0, 0);
+  q15_fastgrnn(buffer, HIDDEN_DIM1, patch, INPUT_CHANNELS, 1,
+               (const void*)(&rnn1_params), (void*)(&rnn1_buffers),
+               (const void*)(&rnn1_scales), 0, 0);
 
   for (unsigned i = 0; i < HIDDEN_DIM1; i++){
     if (buffer[i] != expected[i]) {

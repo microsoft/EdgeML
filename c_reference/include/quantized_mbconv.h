@@ -73,11 +73,11 @@
  *
  * @example          Please refer the file: c_reference/tests/mbconv/test_quantized_mbconv.c
  */
-void q_mbconv_block(const INT_T* const input, const INT_T* const filter1,
-  const INT_T* const BN1W, const INT_T* const BN1B, const INT_T* const filter2,
-  const INT_T* const BN2W, const INT_T* const BN2B, const INT_T* const filter3,
-  const INT_T* const BN3W, const INT_T* const BN3B, INT_T* const output,
-  INT_T* const convBuffer1, INT_T* const convBuffer2, INTM_T* const treesumBuffer,
+void q15_mbconv_block(const Q15_T* const input, const Q15_T* const filter1,
+  const Q15_T* const BN1W, const Q15_T* const BN1B, const Q15_T* const filter2,
+  const Q15_T* const BN2W, const Q15_T* const BN2B, const Q15_T* const filter3,
+  const Q15_T* const BN3W, const Q15_T* const BN3B, Q15_T* const output,
+  Q15_T* const convBuffer1, Q15_T* const convBuffer2, INTM_T* const treesumBuffer,
   ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T CTemp, ITER_T HF, ITER_T WF,
   ITER_T COut, ITER_T HOut, ITER_T WOut, S_ITER_T HPadU, S_ITER_T HPadD,
   S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, SCALE_T depth1,

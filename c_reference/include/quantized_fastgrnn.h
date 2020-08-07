@@ -26,20 +26,20 @@
  * @var       sigmoid_zeta first weight parameter for update from input from next step
  * @var       sigmoid_nu   second weight parameter for update from input from next step
  */
-typedef struct Q_FastGRNN_LR_Params {
-  INT_T* mean;
-  INT_T* stdDev;
-  INT_T* W1;
-  INT_T* W2;
+typedef struct Q15_FastGRNN_LR_Params {
+  Q15_T* mean;
+  Q15_T* stdDev;
+  Q15_T* W1;
+  Q15_T* W2;
   ITER_T wRank;
-  INT_T* U1;
-  INT_T* U2;
+  Q15_T* U1;
+  Q15_T* U2;
   ITER_T uRank;
-  INT_T* Bg;
-  INT_T* Bh;
-  INT_T sigmoid_zeta;
-  INT_T sigmoid_nu;
-} Q_FastGRNN_LR_Params;
+  Q15_T* Bg;
+  Q15_T* Bh;
+  Q15_T sigmoid_zeta;
+  Q15_T sigmoid_nu;
+} Q15_FastGRNN_LR_Params;
 
 /**
  * @brief Model scales for different inputs. The naming convention follows
@@ -50,7 +50,7 @@ typedef struct Q_FastGRNN_LR_Params {
  * the scale after the matrix, the operation it is being used under and the
  * matrix it is being operated with.
  */
-typedef struct Q_FastGRNN_LR_Scales {
+typedef struct Q15_FastGRNN_LR_Scales {
   SCALE_T input;
   SCALE_T mean;
   SCALE_T meanSub;
@@ -100,11 +100,11 @@ typedef struct Q_FastGRNN_LR_Scales {
   SCALE_T pC3AddPC1;
   SCALE_T pC1AddPC3;
   SCALE_T hiddenStateOut;
-  INT_T sigmoidLimit;
-  INT_T div;
-  INT_T add;
-  INT_T qOne;
-} Q_FastGRNN_LR_Scales;
+  Q15_T sigmoidLimit;
+  Q15_T div;
+  Q15_T add;
+  Q15_T qOne;
+} Q15_FastGRNN_LR_Scales;
 
 /**
 * @brief Buffers required for computation of low-rank FastGRNN
@@ -115,14 +115,14 @@ typedef struct Q_FastGRNN_LR_Scales {
 * @var   tempLRU      pointer to buffer space, must be initalized to atleast uRank size
 * @var   normFeatures pointer to buffer space, must be initalized to atleast inputDims size
 */
-typedef struct Q_FastGRNN_LR_Buffers {
-  INT_T* preComp1;
-  INT_T* preComp2;
-  INT_T* preComp3;
-  INT_T* tempLRW;
-  INT_T* tempLRU;
-  INT_T* normFeatures;
-} Q_FastGRNN_LR_Buffers;
+typedef struct Q15_FastGRNN_LR_Buffers {
+  Q15_T* preComp1;
+  Q15_T* preComp2;
+  Q15_T* preComp3;
+  Q15_T* tempLRW;
+  Q15_T* tempLRU;
+  Q15_T* normFeatures;
+} Q15_FastGRNN_LR_Buffers;
 
 /**
  * @brief Multi-step updates of a FastGRNN cell with low rank W, U(W=W1*W2; U=U1*U2)
@@ -144,10 +144,10 @@ typedef struct Q_FastGRNN_LR_Buffers {
  *             <code>ERR_TEMPLRU_NOT_INIT</code> if tempLRU not allocated
  *             <code>ERR_NORMFEAT_NOT_INIT</code> if normFeatures not allocated
 */
-int q_fastgrnn_lr(INT_T* const hiddenState, ITER_T hiddenDims,
-                  const INT_T* const input, ITER_T inputDims, ITER_T steps,
-                  const void* params, void* buffers, const void* scales,
-                  int backward, int normalize);
+int q15_fastgrnn_lr(Q15_T* const hiddenState, ITER_T hiddenDims,
+                    const Q15_T* const input, ITER_T inputDims, ITER_T steps,
+                    const void* params, void* buffers, const void* scales,
+                    int backward, int normalize);
 
 /**
  * @brief Model paramters for low-rank FastGRNN
@@ -160,16 +160,16 @@ int q_fastgrnn_lr(INT_T* const hiddenState, ITER_T hiddenDims,
  * @var       sigmoid_zeta first weight parameter for update from input from next step
  * @var       sigmoid_nu   second weight parameter for update from input from next step
  */
-typedef struct Q_FastGRNN_Params {
-  INT_T* mean;
-  INT_T* stdDev;
-  INT_T* W;
-  INT_T* U;
-  INT_T* Bg;
-  INT_T* Bh;
-  INT_T sigmoid_zeta;
-  INT_T sigmoid_nu;
-} Q_FastGRNN_Params;
+typedef struct Q15_FastGRNN_Params {
+  Q15_T* mean;
+  Q15_T* stdDev;
+  Q15_T* W;
+  Q15_T* U;
+  Q15_T* Bg;
+  Q15_T* Bh;
+  Q15_T sigmoid_zeta;
+  Q15_T sigmoid_nu;
+} Q15_FastGRNN_Params;
 
 /**
  * @brief Model scales for different inputs. The naming convention follows
@@ -180,7 +180,7 @@ typedef struct Q_FastGRNN_Params {
  * the scale after the matrix, the operation it is being used under and the
  * matrix it is being operated with.
  */
-typedef struct Q_FastGRNN_Scales {
+typedef struct Q15_FastGRNN_Scales {
   SCALE_T input;
   SCALE_T mean;
   SCALE_T meanSub;
@@ -222,11 +222,11 @@ typedef struct Q_FastGRNN_Scales {
   SCALE_T pC3AddPC1;
   SCALE_T pC1AddPC3;
   SCALE_T hiddenStateOut;
-  INT_T div;
-  INT_T add;
-  INT_T sigmoidLimit;
-  INT_T qOne;
-} Q_FastGRNN_Scales;
+  Q15_T div;
+  Q15_T add;
+  Q15_T sigmoidLimit;
+  Q15_T qOne;
+} Q15_FastGRNN_Scales;
 
 /**
 * @brief Buffers required for computation of FastGRNN
@@ -235,12 +235,12 @@ typedef struct Q_FastGRNN_Scales {
 * @var   preComp3     pointer to buffer space, must be initalized to atleast hiddenDims size
 * @var   normFeatures pointer to buffer space, must be initalized to atleast inputDims size
 */
-typedef struct Q_FastGRNN_Buffers {
-  INT_T* preComp1;
-  INT_T* preComp2;
-  INT_T* preComp3;
-  INT_T* normFeatures;
-} Q_FastGRNN_Buffers;
+typedef struct Q15_FastGRNN_Buffers {
+  Q15_T* preComp1;
+  Q15_T* preComp2;
+  Q15_T* preComp3;
+  Q15_T* normFeatures;
+} Q15_FastGRNN_Buffers;
 
 /**
  * @brief Multi-step updates of a FastGRNN cell
@@ -261,8 +261,8 @@ typedef struct Q_FastGRNN_Buffers {
  *             <code>ERR_NORMFEAT_NOT_INIT</code> if normFeatures not allocated
  * @example          Please refer the file: c_reference/tests/fastgrnn/test_quantized_fastgrnn.c
  */
-int q_fastgrnn(INT_T* const hiddenState, ITER_T hiddenDims,
-               const INT_T* const input, ITER_T inputDims, ITER_T steps,
+int q15_fastgrnn(Q15_T* const hiddenState, ITER_T hiddenDims,
+               const Q15_T* const input, ITER_T inputDims, ITER_T steps,
                const void* params, void* buffers, const void* scales,
                int backward, int normalize);
 

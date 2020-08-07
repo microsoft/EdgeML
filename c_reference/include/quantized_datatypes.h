@@ -6,8 +6,9 @@
 
 #include <stdint.h>
 
-// Macro for input type.
-typedef int16_t INT_T;
+// Macros for input type.
+typedef int8_t Q7_T;
+typedef int16_t Q15_T;
 // Macro for unsigned iterator type.
 typedef uint16_t ITER_T;
 // Macro for signed iterator type.
@@ -23,8 +24,8 @@ typedef int32_t INTM_T;
   typedef int32_t L_SCALE_T;
 #endif
 // Macro for max value of input type.
-#define INT_TMAX 32767
+#define Q15_TMAX 32767
 // Macro for min value of input type.
-#define INT_TMIN -32768
+#define Q15_TMIN -32768
 
 #endif

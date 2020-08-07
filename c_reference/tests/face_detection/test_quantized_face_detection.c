@@ -6,28 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "quantized_face_detection_model.h"
-#include "q_wider_face_detection_model/conv2D.h"
-#include "q_wider_face_detection_model/rnn1.h"
-#include "q_wider_face_detection_model/rnn2.h"
-#include "q_wider_face_detection_model/mbconv1.h"
-#include "q_wider_face_detection_model/mbconv2.h"
-#include "q_wider_face_detection_model/mbconv3.h"
-#include "q_wider_face_detection_model/mbconv4.h"
-#include "q_wider_face_detection_model/detection1.h"
-#include "q_wider_face_detection_model/mbconv5.h"
-#include "q_wider_face_detection_model/mbconv6.h"
-#include "q_wider_face_detection_model/mbconv7.h"
-#include "q_wider_face_detection_model/mbconv8.h"
-#include "q_wider_face_detection_model/detection2.h"
-#include "q_wider_face_detection_model/mbconv9.h"
-#include "q_wider_face_detection_model/mbconv10.h"
-#include "q_wider_face_detection_model/mbconv11.h"
-#include "q_wider_face_detection_model/detection3.h"
-#include "q_wider_face_detection_model/mbconv12.h"
-#include "q_wider_face_detection_model/mbconv13.h"
-#include "q_wider_face_detection_model/mbconv14.h"
-#include "q_wider_face_detection_model/detection4.h"
+#include "quantized_face_detection.h"
 
 // Comparator function for sorting floats.
 int compare_floats(const void *a, const void *b) {
@@ -39,7 +18,7 @@ int compare_floats(const void *a, const void *b) {
 
 // Function for computing the deviation from the expected floating point
 // result and returning the largest such deviation found.
-float compute_error(const INT_T* const pred, const float* const label,
+float compute_error(const Q15_T* const pred, const float* const label,
                     float* const errors, SCALE_T scl) {
   float epsilon = 0.00001;
   float agg_diff = 0.0;
@@ -151,10 +130,10 @@ int main(int argc, char **argv) {
   fputs(numpyHeader3, yFile);
   fputs(numpyHeader4, yFile);
 
-  INT_T* reshapedXLine = malloc(N * H * W * CIN * sizeof(INT_T));
-  INT_T* output_test = malloc(N * HOUT * WOUT * COUT * sizeof(INT_T));
-  INT_T* X = malloc(HF * W * CTEMP * sizeof(INT_T));
-  INT_T* T = malloc(CTEMP * sizeof(INT_T));
+  Q15_T* reshapedXLine = malloc(N * H * W * CIN * sizeof(Q15_T));
+  Q15_T* output_test = malloc(N * HOUT * WOUT * COUT * sizeof(Q15_T));
+  Q15_T* X = malloc(HF * W * CTEMP * sizeof(Q15_T));
+  Q15_T* T = malloc(CTEMP * sizeof(Q15_T));
   INTM_T* U = malloc(CTEMP * sizeof(INTM_T));
   float* xLine = malloc(N * H * W * CIN * sizeof(float));
   float* yLine = malloc(N * HOUT * WOUT * COUT * sizeof(float));
@@ -164,13 +143,13 @@ int main(int argc, char **argv) {
   fread(yLine, sizeof(float), N * HOUT * WOUT * COUT, floatResFile);
 
   for (unsigned i = 0; i < N * H * W * CIN; i++) {
-    reshapedXLine[i] = (INT_T)((xLine[i]) * pow(2, XScale));
+    reshapedXLine[i] = (Q15_T)((xLine[i]) * pow(2, XScale));
   }
 
   fprintf(outputLog, "Running Quantized MBConv\n");
   double time_spent = 0.0;
   clock_t begin = clock();
-  q_mbconv_block(reshapedXLine, F1, W1, B1, F2, W2, B2, F3, W3, B3,
+  q15_mbconv_block(reshapedXLine, F1, W1, B1, F2, W2, B2, F3, W3, B3,
                  output_test, X, T, U, N, H, W, CIN, CTEMP, HF, WF,
                  COUT, HOUT, WOUT, HPADL, HPADR, WPADL, WPADR, HSTRIDE,
                  WSTRIDE, D1, D2, D3, Limit1, Limit2, ShRU1, ShRB1, ShRX1,

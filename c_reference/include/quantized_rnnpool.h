@@ -6,7 +6,7 @@
 
 #include "quantized_datatypes.h"
 
-typedef int (*q_rnn_t)(INT_T* const, ITER_T, const INT_T* const, ITER_T, ITER_T, const void*, void*, const void*, int, int);
+typedef int (*q15_rnn_t)(Q15_T* const, ITER_T, const Q15_T* const, ITER_T, ITER_T, const void*, void*, const void*, int, int);
 
 /**
  * @param[in]        patch          pointer to activation of patch (row, col, channel)
@@ -28,12 +28,12 @@ typedef int (*q_rnn_t)(INT_T* const, ITER_T, const INT_T* const, ITER_T, ITER_T,
  * @return none
  * @example          Please refer the file: c_reference/tests/rnnpool/test_quantized_rnnpool.c
  */
-int q_rnnpool_block(const INT_T* const patch, ITER_T inputDims, ITER_T patchDim,
-                    ITER_T stride, q_rnn_t rnn1, ITER_T hiddenDims1,
-                    const void* rnn1_params, void* rnn1_buffers,
-                    const void* rnn1_scales, q_rnn_t rnn2,
-                    ITER_T hiddenDims2, const void* rnn2_params,
-                    void* rnn2_buffers, const void* rnn2_scales,
-                    INT_T* const output, INT_T* const buffer);
+int q15_rnnpool_block(const Q15_T* const patch, ITER_T inputDims, ITER_T patchDim,
+                      ITER_T stride, q15_rnn_t rnn1, ITER_T hiddenDims1,
+                      const void* rnn1_params, void* rnn1_buffers,
+                      const void* rnn1_scales, q15_rnn_t rnn2,
+                      ITER_T hiddenDims2, const void* rnn2_params,
+                      void* rnn2_buffers, const void* rnn2_scales,
+                      Q15_T* const output, Q15_T* const buffer);
 
 #endif

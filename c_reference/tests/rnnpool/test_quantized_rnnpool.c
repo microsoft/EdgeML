@@ -22,7 +22,7 @@ int compare_floats(const void *a, const void *b) {
 
 // Function for computing the deviation from the expected floating point
 // result and returning the largest such deviation found.
-float compute_error(INT_T pred[4 * HIDDEN_DIM2], float label[4 * HIDDEN_DIM2],
+float compute_error(Q15_T pred[4 * HIDDEN_DIM2], float label[4 * HIDDEN_DIM2],
                    float* const errors, SCALE_T scl) {
   float epsilon = 0.01;
   float agg_diff = 0.0;
@@ -136,7 +136,7 @@ int main(int argc, char **argv) {
   fputs(numpyHeader3, yFile);
   fputs(numpyHeader4, yFile);
 
-  Q_FastGRNN_Params rnn1_params = {
+  Q15_FastGRNN_Params rnn1_params = {
     .mean = NULL,
     .stdDev = NULL,
     .W = W1,
@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
     .sigmoid_nu = sigmoid_nu1
   };
 
-  Q_FastGRNN_Params rnn2_params = {
+  Q15_FastGRNN_Params rnn2_params = {
     .mean = NULL,
     .stdDev = NULL,
     .W = W2,
@@ -158,37 +158,37 @@ int main(int argc, char **argv) {
     .sigmoid_nu = sigmoid_nu2
   };
 
-  INT_T preComp11[HIDDEN_DIM1];
-  INT_T preComp12[HIDDEN_DIM1];
-  INT_T preComp13[HIDDEN_DIM1];
-  INT_T normFeatures1[INPUT_CHANNELS];
-  memset(preComp11, 0, sizeof(INT_T) * HIDDEN_DIM1);
-  memset(preComp12, 0, sizeof(INT_T) * HIDDEN_DIM1);
-  memset(preComp13, 0, sizeof(INT_T) * HIDDEN_DIM1);
-  memset(normFeatures1, 0, sizeof(INT_T) * INPUT_CHANNELS);
-  Q_FastGRNN_Buffers rnn1_buffers = {
+  Q15_T preComp11[HIDDEN_DIM1];
+  Q15_T preComp12[HIDDEN_DIM1];
+  Q15_T preComp13[HIDDEN_DIM1];
+  Q15_T normFeatures1[INPUT_CHANNELS];
+  memset(preComp11, 0, sizeof(Q15_T) * HIDDEN_DIM1);
+  memset(preComp12, 0, sizeof(Q15_T) * HIDDEN_DIM1);
+  memset(preComp13, 0, sizeof(Q15_T) * HIDDEN_DIM1);
+  memset(normFeatures1, 0, sizeof(Q15_T) * INPUT_CHANNELS);
+  Q15_FastGRNN_Buffers rnn1_buffers = {
   	.preComp1 = preComp11,
     .preComp2 = preComp12,
     .preComp3 = preComp13,
     .normFeatures = normFeatures1
   };
 
-  INT_T preComp21[HIDDEN_DIM2];
-  INT_T preComp22[HIDDEN_DIM2];
-  INT_T preComp23[HIDDEN_DIM2];
-  INT_T normFeatures2[HIDDEN_DIM1];
-  memset(preComp21, 0, sizeof(INT_T) * HIDDEN_DIM2);
-  memset(preComp22, 0, sizeof(INT_T) * HIDDEN_DIM2);
-  memset(preComp23, 0, sizeof(INT_T) * HIDDEN_DIM2);
-  memset(normFeatures2, 0, sizeof(INT_T) * HIDDEN_DIM1);
-  Q_FastGRNN_Buffers rnn2_buffers = {
+  Q15_T preComp21[HIDDEN_DIM2];
+  Q15_T preComp22[HIDDEN_DIM2];
+  Q15_T preComp23[HIDDEN_DIM2];
+  Q15_T normFeatures2[HIDDEN_DIM1];
+  memset(preComp21, 0, sizeof(Q15_T) * HIDDEN_DIM2);
+  memset(preComp22, 0, sizeof(Q15_T) * HIDDEN_DIM2);
+  memset(preComp23, 0, sizeof(Q15_T) * HIDDEN_DIM2);
+  memset(normFeatures2, 0, sizeof(Q15_T) * HIDDEN_DIM1);
+  Q15_FastGRNN_Buffers rnn2_buffers = {
     .preComp1 = preComp21,
     .preComp2 = preComp22,
     .preComp3 = preComp23,
     .normFeatures = normFeatures2
   };
 
-  Q_FastGRNN_Scales rnn1_scales = {
+  Q15_FastGRNN_Scales rnn1_scales = {
     .input = input1,
     .mean = meanScale1,
     .meanSub = meanSub1,
@@ -236,7 +236,7 @@ int main(int argc, char **argv) {
     .qOne = qOne1
   };
 
-  Q_FastGRNN_Scales rnn2_scales = {
+  Q15_FastGRNN_Scales rnn2_scales = {
     .input = input2,
     .mean = meanScale2,
     .meanSub = meanSub2,
@@ -284,8 +284,8 @@ int main(int argc, char **argv) {
     .qOne = qOne2
   };
 
-  INT_T output_test[4 * HIDDEN_DIM2];
-  INT_T buffer[HIDDEN_DIM1 * PATCH_DIM];
+  Q15_T output_test[4 * HIDDEN_DIM2];
+  Q15_T buffer[HIDDEN_DIM1 * PATCH_DIM];
   float xLine[INPUT_CHANNELS * PATCH_DIM * PATCH_DIM];
   float yLine[4 * HIDDEN_DIM2];
   float* allErrors = malloc(patches * 4 * HIDDEN_DIM2 * (sizeof(float)));
@@ -294,25 +294,25 @@ int main(int argc, char **argv) {
   for (unsigned i = 0; i < patches; i++) {
     fread(&xLine[0], sizeof(float), INPUT_CHANNELS * PATCH_DIM * PATCH_DIM, xFile);
     fread(&yLine[0], sizeof(float), 4 * HIDDEN_DIM2, floatResFile);
-    INT_T reshapedXLine[INPUT_CHANNELS * PATCH_DIM * PATCH_DIM];
+    Q15_T reshapedXLine[INPUT_CHANNELS * PATCH_DIM * PATCH_DIM];
 
     for (unsigned a = 0; a < INPUT_CHANNELS; a ++) {
       for (unsigned b = 0; b < PATCH_DIM; b++) {
         for (unsigned c = 0; c < PATCH_DIM; c++) {
           reshapedXLine[b * PATCH_DIM * INPUT_CHANNELS + c * INPUT_CHANNELS + a] =
-          (INT_T)((xLine[a * PATCH_DIM * PATCH_DIM + b * PATCH_DIM + c]) * pow(2, XScale));
+          (Q15_T)((xLine[a * PATCH_DIM * PATCH_DIM + b * PATCH_DIM + c]) * pow(2, XScale));
         }
       }
     }
 
     fprintf(outputLog, "Running Quantized RNNPool on Patch %d\n", i + 1);
     clock_t begin = clock();
-    q_rnnpool_block(reshapedXLine, INPUT_CHANNELS, PATCH_DIM, PATCH_DIM,
-                    q_fastgrnn, HIDDEN_DIM1, (const void*)(&rnn1_params),
-                    (void*)(&rnn1_buffers), (const void*)(&rnn1_scales),
-                    q_fastgrnn, HIDDEN_DIM2, (const void*)(&rnn2_params),
-                    (void*)(&rnn2_buffers), (const void*)(&rnn2_scales),
-                    output_test, buffer);
+    q15_rnnpool_block(reshapedXLine, INPUT_CHANNELS, PATCH_DIM, PATCH_DIM,
+                      q15_fastgrnn, HIDDEN_DIM1, (const void*)(&rnn1_params),
+                      (void*)(&rnn1_buffers), (const void*)(&rnn1_scales),
+                      q15_fastgrnn, HIDDEN_DIM2, (const void*)(&rnn2_params),
+                      (void*)(&rnn2_buffers), (const void*)(&rnn2_scales),
+                      output_test, buffer);
     clock_t end = clock();
     time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
     fprintf(outputLog, "Time elapsed is %f seconds\n", time_spent);
