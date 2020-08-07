@@ -23,7 +23,7 @@ dataset and write numpy files that confirm to the required format.
 
  To run this script, please use:
 
-    ./fetch_google.py
+    ./fetch_google.sh
     python process_google.py
 
 ## Training the Model
