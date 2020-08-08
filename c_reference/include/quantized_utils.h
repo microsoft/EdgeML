@@ -530,12 +530,11 @@ void q15_t_sub_vec(const Q15_T* const ten, const Q15_T* const vec,
  * @return          none
  * @example         Please refer the test-case: test_quantized_maxpool() in file: c_reference/tests/utils/test_quantized_utils.c
  */
-void q15_maxpool(const Q15_T* const input, Q15_T* const output, ITER_T N,
-                 ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF,
-                 ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G, S_ITER_T HPadU,
-                 S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride,
-                 ITER_T WStride, ITER_T HDilation, ITER_T WDilation,
-                 SCALE_T scinput, SCALE_T scoutput);
+void q15_to_q15_maxpool(const Q15_T* const input, Q15_T* const output, ITER_T N,
+  ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut,
+  ITER_T HOut, ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD,
+  S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride,
+  ITER_T HDilation, ITER_T WDilation, SCALE_T scinput, SCALE_T scoutput);
 
 /**
  * @brief Computes the maxpool operation on the input tensor with the given parameters.
@@ -566,16 +565,32 @@ void q15_maxpool(const Q15_T* const input, Q15_T* const output, ITER_T N,
  * @param[in]       H2             depth parameter for direct sum used in TreeSum
  * @param[in]       scinput        scale of the input tensor
  * @param[in]       scoutput       scale of the output tensor
+ * @param[in]       demote         parameter for variable demotion
  * @return          none
  * @example         Please refer the test-case: test_quantized_convolution()  in file: c_reference/tests/utils/test_quantized_utils.c
  */
 void q15_convolution(const Q15_T* const input, const Q15_T* const filter,
-                     Q15_T* const output, INTM_T* const treesumBuffer, ITER_T N,
-                     ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF,
-                     ITER_T CF, ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G,
-                     S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
-                     S_ITER_T WPadR, ITER_T HStride, ITER_T WStride,
-                     ITER_T HDilation, ITER_T WDilation, SCALE_T H1, SCALE_T H2,
-                     SCALE_T scinput, SCALE_T scoutput);
+  Q15_T* const output, INTM_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
+  ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
+  ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
+  S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, ITER_T HDilation,
+  ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput, SCALE_T scoutput,
+  SCALE_T demote);
+
+void q7xq15_to_q15_convolution(const Q7_T* const input, const Q15_T* const filter,
+  Q15_T* const output, INTM_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
+  ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
+  ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
+  S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, ITER_T HDilation,
+  ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput, SCALE_T scoutput,
+  SCALE_T demote);
+
+void q7xq15_to_q7_convolution(const Q7_T* const input, const Q15_T* const filter,
+  Q7_T* const output, INTM_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
+  ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
+  ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
+  S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, ITER_T HDilation,
+  ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput, SCALE_T scoutput,
+  SCALE_T demote);
 
 #endif
