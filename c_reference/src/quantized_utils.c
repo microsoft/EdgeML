@@ -298,6 +298,26 @@ void q15_m_mulvec(const Q15_T* const mat, const Q15_T* const vec, ITER_T nrows,
   }
 }
 
+void q7xq15_to_q15_m_mulvec(const Q7_T* const mat, const Q15_T* const vec,
+                            ITER_T nrows, ITER_T ncols, Q15_T* const ret,
+                            SCALE_T scmat, SCALE_T scvec, SCALE_T H1, SCALE_T H2) {
+  INTM_T treesumBuffer[ncols];
+  for (ITER_T row = 0; row < nrows; row++) {
+    Q7_T* mat_offset = (Q7_T*)mat + row * ncols;
+
+    for (ITER_T col = 0; col < ncols; col++) {
+      treesumBuffer[col] = ((INTM_T)(*mat_offset++) * (INTM_T)vec[col]);
+    }
+
+    q_v_treesum(&treesumBuffer[0], ncols, H1, H2);
+    #ifdef SHIFT
+      ret[row] = (treesumBuffer[0] >> (scmat + scvec));
+    #else
+      ret[row] = ((treesumBuffer[0] / scmat) / scvec);
+    #endif
+  }
+}
+
 void q15_m_sparse_mulvec(const ITER_T* const col_indices, const Q15_T* const mat_values,
                          const Q15_T* const vec, ITER_T ndims, Q15_T* const ret,
                          SCALE_T scmat, SCALE_T scvec, SCALE_T scret) {
@@ -320,9 +340,9 @@ void q15_m_sparse_mulvec(const ITER_T* const col_indices, const Q15_T* const mat
   }
 }
 
-void q15_t_add_vec(const Q15_T* const mat, const Q15_T* const vec,
+void q15_t_add_vec(const Q15_T* const ten, const Q15_T* const vec,
                    ITER_T nbatches, ITER_T nrows, ITER_T ncols,
-                   ITER_T nchannels, Q15_T* const ret, SCALE_T scmat,
+                   ITER_T nchannels, Q15_T* const ret, SCALE_T scten,
                    SCALE_T scvec, SCALE_T scret) {
   ITER_T len = nbatches * nrows * ncols * nchannels;
   for (ITER_T i = 0, c = 0; i < len; i++, c++) {
@@ -331,16 +351,34 @@ void q15_t_add_vec(const Q15_T* const mat, const Q15_T* const vec,
     }
 
     #ifdef SHIFT
-      ret[i] = ((mat[i] >> (scmat + scret)) + (vec[c] >> (scvec + scret)));
+      ret[i] = ((ten[i] >> (scten + scret)) + (vec[c] >> (scvec + scret)));
     #else
-      ret[i] = ((mat[i] / scmat) / scret) + ((vec[c] / scvec) / scret);
+      ret[i] = ((ten[i] / scten) / scret) + ((vec[c] / scvec) / scret);
     #endif
   }
 }
 
-void q15_t_sub_vec(const Q15_T* const mat, const Q15_T* const vec,
+void q7xq15_to_q7_t_add_vec(const Q7_T* const ten, const Q15_T* const vec,
+                            ITER_T nbatches, ITER_T nrows, ITER_T ncols,
+                            ITER_T nchannels, Q7_T* const ret, SCALE_T scten,
+                            SCALE_T scvec, SCALE_T scret) {
+  ITER_T len = nbatches * nrows * ncols * nchannels;
+  for (ITER_T i = 0, c = 0; i < len; i++, c++) {
+    if (c >= nchannels) {
+      c = 0;
+    }
+
+    #ifdef SHIFT
+      ret[i] = ((ten[i] >> (scten + scret)) + (vec[c] >> (scvec + scret)));
+    #else
+      ret[i] = ((ten[i] / scten) / scret) + ((vec[c] / scvec) / scret);
+    #endif
+  }
+}
+
+void q15_t_sub_vec(const Q15_T* const ten, const Q15_T* const vec,
                    ITER_T nbatches, ITER_T nrows, ITER_T ncols,
-                   ITER_T nchannels, Q15_T* const ret, SCALE_T scmat,
+                   ITER_T nchannels, Q15_T* const ret, SCALE_T scten,
                    SCALE_T scvec, SCALE_T scret) {
   ITER_T len = nbatches * nrows * ncols * nchannels;
   for (ITER_T i = 0, c = 0; i < len; i++, c++) {
@@ -349,10 +387,18 @@ void q15_t_sub_vec(const Q15_T* const mat, const Q15_T* const vec,
     }
 
     #ifdef SHIFT
-      ret[i] = ((mat[i] >> (scmat + scret)) - (vec[c] >> (scvec + scret)));
+      ret[i] = ((ten[i] >> (scten + scret)) - (vec[c] >> (scvec + scret)));
     #else
-      ret[i] = ((mat[i] / scmat) / scret) - ((vec[c] / scvec) / scret);
+      ret[i] = ((ten[i] / scten) / scret) - ((vec[c] / scvec) / scret);
     #endif
+  }
+}
+
+void q7_t_relu(Q7_T* const ten, ITER_T nbatches, ITER_T nrows,
+               ITER_T ncols, ITER_T nchannels, INTM_T limit, Q7_T div) {
+  ITER_T len = nbatches * nrows * ncols * nchannels;
+  for (ITER_T i = 0; i < len; i++) {
+    ten[i] = q7_relu(ten[i], limit) / div;
   }
 }
 

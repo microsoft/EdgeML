@@ -49,7 +49,7 @@ void q15_mbconv_block(const Q15_T* const input, const Q15_T* const filter1,
             INTM_T x = (((INTM_T)((treesumBuffer[0] * shlU1) / shrU1 + (BN1B[k] * shlB1) / shrB1)) *
                         ((INTM_T)BN1W[k]));
           #endif
-          x = q_relu(x, limit1);
+          x = q32_relu(x, limit1);
           #ifdef SHIFT
             convBuffer1[i * W * CTemp + j * CTemp + k] = ((x << shlX1) >> shrX1);
           #else
@@ -83,7 +83,7 @@ void q15_mbconv_block(const Q15_T* const input, const Q15_T* const filter1,
               INTM_T x = (((INTM_T)((treesumBuffer[0] * shlU1) / shrU1 + (BN1B[k] * shlB1) / shrB1)) *
                           ((INTM_T)BN1W[k]));
             #endif
-            x = q_relu(x, limit1);
+            x = q32_relu(x, limit1);
             #ifdef SHIFT
               convBuffer1[iRed * W * CTemp + j * CTemp + k] = ((x << shlX1) >> shrX1);
             #else
@@ -117,7 +117,7 @@ void q15_mbconv_block(const Q15_T* const input, const Q15_T* const filter1,
             INTM_T x = (((INTM_T)((treesumBuffer[0] * shlU2) / shrU2 + (BN2B[g] * shlB2) / shrB2)) *
                         ((INTM_T)BN2W[g]));
           #endif
-          x = q_relu(x, limit2);
+          x = q32_relu(x, limit2);
           #ifdef SHIFT
             convBuffer2[g] = ((x << shlX2) >> shrX2);
           #else

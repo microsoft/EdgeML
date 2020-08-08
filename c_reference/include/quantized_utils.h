@@ -22,7 +22,17 @@ inline Q15_T q15_saturate(INTM_T inp) {
 
 // This function is used to provide a truncation of input to a specific
 // range within the ReLU operation.
-inline INTM_T q_relu(INTM_T inp, INTM_T limit) {
+inline Q7_T q7_relu(Q7_T inp, Q7_T limit) {
+    if (inp > limit){
+        return limit;
+    } else if (inp < 0) {
+        return 0;
+    } else {
+        return inp;
+    }
+}
+
+inline INTM_T q32_relu(INTM_T inp, INTM_T limit) {
     if (inp > limit){
         return limit;
     } else if (inp < 0) {
@@ -233,7 +243,7 @@ void q15_v_scalar_mul(Q15_T scalar, const Q15_T* const vec, ITER_T len,
  */
 void q15_v_argmax(const Q15_T* const vec, ITER_T len, ITER_T* const ret);
 /**
- * @brief Replace any negative element present in the vector withs zero.
+ * @brief Replace any negative element present in the vector with zero.
  * Note: No saturation is done here, and hence, the output might overflow with a large input.
  * @param[in, out]  vec       pointer to vector on which element-wise ReLU operation is to be applied
  * @param[in]       len       length of the input vector
@@ -405,6 +415,9 @@ void q15_m_sub_vec(const Q15_T* const mat, const Q15_T* const vec,
 void q15_m_mulvec(const Q15_T* const mat, const Q15_T* const vec, ITER_T nrows,
                   ITER_T ncols, Q15_T* const ret, SCALE_T scmat, SCALE_T scvec,
                   SCALE_T H1, SCALE_T H2);
+void q7xq15_to_q15_m_mulvec(const Q7_T* const mat, const Q15_T* const vec,
+                            ITER_T nrows, ITER_T ncols, Q15_T* const ret,
+                            SCALE_T scmat, SCALE_T scvec, SCALE_T H1, SCALE_T H2);
 /**
  * @brief Performs sparse matrix multiplication of a matrix and a vector.
  * col_indices and mat_values combined are a sparse representation; dim(vec) = [ndims].
@@ -437,19 +450,19 @@ void q15_m_sparse_mulvec(const ITER_T* const col_indices, const Q15_T* const mat
 
 /**
  * @brief Performs the channel-wise addition of a bias term to the input tensor.
- * dim(mat) = dim(ret) = [nbatches][nrows][ncols][nchannels]; dim(vec) = [nchannels].
- * @param[in]       mat       pointer to the input tensor on which addition is to be performed
+ * dim(ten) = dim(ret) = [nbatches][nrows][ncols][nchannels]; dim(vec) = [nchannels].
+ * @param[in]       ten       pointer to the input tensor on which addition is to be performed
  * @param[in]       vec       pointer to the bias vector which is to be added
  * @param[in]       nbatches  number of batches of the input tensor
  * @param[in]       nrows     number of rows of the input tensor
  * @param[in]       ncols     number of columns of the input tensor
  * @param[in]       nchannels number of channels of the input tensor
  * @param[out]      ret       pointer to the output tensor
- * @param[in]       scmat     scaling factor for the input tensor
+ * @param[in]       scten     scaling factor for the input tensor
  * @param[in]       scvec     scaling factor for the bias vector
  * @param[in]       scret     scaling factor for the output tensor
  * @return          none
- * @example         mat       = { { {1324, 5453}, {3454, 3435} },
+ * @example         ten       = { { {1324, 5453}, {3454, 3435} },
  *                                { {8789, 3411}, {5412, 8934} } },
  *                              { { {6895, 1211}, {6790, 5425} },
  *                                { {8976, 4539}, {9348, 9321} } }
@@ -460,29 +473,33 @@ void q15_m_sparse_mulvec(const ITER_T* const col_indices, const Q15_T* const mat
  *                                { {6507, 2290}, {4819, 5052} } },
  *                              { { {5560, 1190}, {5508, 3297} },
  *                                { {6601, 2854}, {6787, 5245} } }
- *                  scmat     = 1
+ *                  scten     = 1
  *                  scvec     = 2
  *                  scret     = 2
  */
-void q15_t_add_vec(const Q15_T* const mat, const Q15_T* const vec,
+void q15_t_add_vec(const Q15_T* const ten, const Q15_T* const vec,
                    ITER_T nbatches, ITER_T nrows, ITER_T ncols,
                    ITER_T nchannels, Q15_T* const ret, SCALE_T scmat,
                    SCALE_T scvec, SCALE_T scret);
+void q7xq15_to_q15_t_add_vec(const Q7_T* const ten, const Q15_T* const vec,
+                   ITER_T nbatches, ITER_T nrows, ITER_T ncols,
+                   ITER_T nchannels, Q7_T* const ret, SCALE_T scmat,
+                   SCALE_T scvec, SCALE_T scret);
 /**
  * @brief Performs the channel-wise subtraction of a bias term from the input tensor.
- * dim(mat) = dim(ret) = [nbatches][nrows][ncols][nchannels]; dim(vec) = [nchannels].
- * @param[in]       mat       pointer to the input tensor from which subtraction is to be performed
+ * dim(ten) = dim(ret) = [nbatches][nrows][ncols][nchannels]; dim(vec) = [nchannels].
+ * @param[in]       ten       pointer to the input tensor from which subtraction is to be performed
  * @param[in]       vec       pointer to the bias vector which is to be subtracted
  * @param[in]       nbatches  number of batches of the input tensor
  * @param[in]       nrows     number of rows of the input tensor
  * @param[in]       ncols     number of columns of the input tensor
  * @param[in]       nchannels number of channels of the input tensor
  * @param[out]      ret       pointer to the output tensor
- * @param[in]       scmat     scaling factor for the input tensor
+ * @param[in]       scten     scaling factor for the input tensor
  * @param[in]       scvec     scaling factor for the bias vector
  * @param[in]       scret     scaling factor for the output tensor
  * @return          none
- * @example         mat       = { { {1324, 5453}, {3454, 3435} },
+ * @example         ten       = { { {1324, 5453}, {3454, 3435} },
  *                                { {8789, 3411}, {5412, 8934} } },
  *                              { { {6895, 1211}, {6790, 5425} },
  *                                { {8976, 4539}, {9348, 9321} } }
@@ -493,14 +510,31 @@ void q15_t_add_vec(const Q15_T* const mat, const Q15_T* const vec,
  *                                { {2281, 1120}, {593, 3882} } },
  *                              { { {1334, 20}, {1282, 2127} },
  *                                { {2375, 1684}, {2561, 4075} } }
- *                  scmat     = 1
+ *                  scten     = 1
  *                  scvec     = 2
  *                  scret     = 2
  */
 void q15_t_sub_vec(const Q15_T* const ten, const Q15_T* const vec,
                    ITER_T nbatches, ITER_T nrows, ITER_T ncols,
-                   ITER_T nchannels, Q15_T* const ret, SCALE_T scmat,
+                   ITER_T nchannels, Q15_T* const ret, SCALE_T scten,
                    SCALE_T scvec, SCALE_T scret);
+/**
+ * @brief Replace any negative element present in the tensor with zero and clips positive elements to the limit.
+ * @param[in, out]  ten       pointer to tensor on which element-wise ReLU6 operation is to be applied
+ * @param[in]       nbatches  number of batches of the input tensor
+ * @param[in]       nrows     number of rows of the input tensor
+ * @param[in]       ncols     number of columns of the input tensor
+ * @param[in]       nchannels number of channels of the input tensor
+ * @param[in]       limit     upper threshold of the ReLU operation
+ * @param[in]       div       scaling factor for the input tensor
+ * @param[in]
+ * @return          none
+ * @example         
+ *                  
+ *                  
+ */
+void q7_t_relu(Q7_T* const ten, ITER_T nbatches, ITER_T nrows,
+               ITER_T ncols, ITER_T nchannels, INTM_T limit, Q7_T div);
 
 /**
  * @brief Computes the maxpool operation on the input tensor with the given parameters.
@@ -576,7 +610,6 @@ void q15_convolution(const Q15_T* const input, const Q15_T* const filter,
   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, ITER_T HDilation,
   ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput, SCALE_T scoutput,
   SCALE_T demote);
-
 void q7xq15_to_q15_convolution(const Q7_T* const input, const Q15_T* const filter,
   Q15_T* const output, INTM_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
   ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
@@ -584,7 +617,6 @@ void q7xq15_to_q15_convolution(const Q7_T* const input, const Q15_T* const filte
   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, ITER_T HDilation,
   ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput, SCALE_T scoutput,
   SCALE_T demote);
-
 void q7xq15_to_q7_convolution(const Q7_T* const input, const Q15_T* const filter,
   Q7_T* const output, INTM_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
   ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
