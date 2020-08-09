@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
   Q15_T* output_test = malloc(N * HOUT * WOUT * COUT * sizeof(Q15_T));
   Q15_T* X = malloc(HF * W * CTEMP * sizeof(Q15_T));
   Q15_T* T = malloc(CTEMP * sizeof(Q15_T));
-  INTM_T* U = malloc(CTEMP * sizeof(INTM_T));
+  Q31_T* U = malloc(CTEMP * sizeof(Q31_T));
   float* xLine = malloc(N * H * W * CIN * sizeof(float));
   float* yLine = malloc(N * HOUT * WOUT * COUT * sizeof(float));
   float* allErrors = malloc(N * HOUT * WOUT * COUT * (sizeof(float)));

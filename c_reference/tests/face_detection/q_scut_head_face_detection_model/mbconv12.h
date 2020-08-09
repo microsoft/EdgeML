@@ -32,8 +32,8 @@ static Q7_T L12_B3[L12_COUT] = {38, 19, 6, -37, -10, 20, 22, 33, 1, 12, -43, 33,
 static SCALE_T L12_D1 = 7;
 static SCALE_T L12_D2 = 4;
 static SCALE_T L12_D3 = 8;
-static INTM_T L12_Limit1 = 1572864L;
-static INTM_T L12_Limit2 = 786432L;
+static Q31_T L12_Limit1 = 1572864L;
+static Q31_T L12_Limit2 = 786432L;
 
 #ifdef SHIFT
   static L_SCALE_T L12_ShRU1 = 2;  //4

@@ -32,8 +32,8 @@ static Q15_T L6_B3[L6_COUT] = {7027, -9029, -283, -13229, 7695, 1736, -18733, -1
 static SCALE_T L6_D1 = 5;
 static SCALE_T L6_D2 = 4;
 static SCALE_T L6_D3 = 6;
-static INTM_T L6_Limit1 = 402653184L;
-static INTM_T L6_Limit2 = 201326592L;
+static Q31_T L6_Limit1 = 402653184L;
+static Q31_T L6_Limit2 = 201326592L;
 
 #ifdef SHIFT
   static L_SCALE_T L6_ShRU1 = 11; //2048

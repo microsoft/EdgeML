@@ -32,8 +32,8 @@ static Q15_T L5_B3[L5_COUT] = {-10308, -7177, 14781, 1991, -9667, 3030, -16297, 
 static SCALE_T L5_D1 = 5;
 static SCALE_T L5_D2 = 4;
 static SCALE_T L5_D3 = 6;
-static INTM_T L5_Limit1 = 402653184L;
-static INTM_T L5_Limit2 = 201326592L;
+static Q31_T L5_Limit1 = 402653184L;
+static Q31_T L5_Limit2 = 201326592L;
 
 #ifdef SHIFT
   static L_SCALE_T L5_ShRU1 = 11; //2048

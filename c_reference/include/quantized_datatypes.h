@@ -9,12 +9,11 @@
 // Macros for input type.
 typedef int8_t Q7_T;
 typedef int16_t Q15_T;
+typedef int32_t Q31_T;
 // Macro for unsigned iterator type.
 typedef uint16_t ITER_T;
 // Macro for signed iterator type.
 typedef int16_t S_ITER_T;
-// Macro for intermediate buffer type.
-typedef int32_t INTM_T;
 // Macros for scale variable type.
 #ifdef SHIFT
   typedef uint8_t SCALE_T;

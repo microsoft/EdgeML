@@ -3,7 +3,46 @@
 
 #include "quantized_utils.h"
 
-void q_v_treesum(INTM_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2) {
+void q15_v_treesum(Q15_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2) {
+  ITER_T count = len, depth = 0;
+  int divbytwo = 1;
+
+  while (depth < (H1 + H2)) {
+    if (depth >= H1) {
+      divbytwo = 0;
+    }
+
+    for (ITER_T p = 0; p < ((len >> 1) + 1); p++) {
+      if (p < (count >> 1)) {
+        if (divbytwo == 1) {
+          #ifdef SHIFT
+            vec[p] = (vec[2 * p] >> 1) + (vec[(2 * p) + 1] >> 1);
+          #else
+            vec[p] = vec[2 * p] / 2 + vec[(2 * p) + 1] / 2;
+          #endif
+        } else {
+          vec[p] = vec[2 * p] + vec[(2 * p) + 1];
+        }
+      } else if ((p == (count >> 1)) && ((count & 1) == 1)) {
+        if (divbytwo == 1) {
+          #ifdef SHIFT
+            vec[p] = (vec[2 * p] >> 1);
+          #else
+            vec[p] = vec[2 * p] / 2;
+          #endif
+        } else {
+          vec[p] = vec[2 * p];
+        }
+      } else {
+        vec[p] = 0;
+      }
+    }
+    count = (count + 1) >> 1;
+    depth++;
+  }
+}
+
+void q31_v_treesum(Q31_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2) {
   ITER_T count = len, depth = 0;
   int divbytwo = 1;
 
@@ -68,9 +107,9 @@ void q15_v_hadamard(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len
                     Q15_T* const ret, SCALE_T scvec1, SCALE_T scvec2) {
   for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
-      ret[i] = ((INTM_T)vec1[i] * (INTM_T)vec2[i]) >> (scvec1 + scvec2);
+      ret[i] = ((Q31_T)vec1[i] * (Q31_T)vec2[i]) >> (scvec1 + scvec2);
     #else
-      ret[i] = ((((INTM_T)vec1[i] * (INTM_T)vec2[i]) / scvec1) / scvec2);
+      ret[i] = ((((Q31_T)vec1[i] * (Q31_T)vec2[i]) / scvec1) / scvec2);
     #endif
   }
 }
@@ -84,9 +123,9 @@ void q15_v_sigmoid(const Q15_T* const vec, ITER_T len, Q15_T* const ret, Q15_T d
 
       if (x <= 0) {
         Q15_T y = exp_base_16(x, 1);
-        ret[i] = (Q15_T)((((INTM_T)y) << 14) / ((INTM_T)y + (INTM_T)16384));
+        ret[i] = (Q15_T)((((Q31_T)y) << 14) / ((Q31_T)y + (Q31_T)16384));
       } else {
-        ret[i] = (Q15_T)(((INTM_T)267943936L) / ((INTM_T)16384 + (INTM_T)exp_base_16(-x, 1)));
+        ret[i] = (Q15_T)(((Q31_T)267943936L) / ((Q31_T)16384 + (Q31_T)exp_base_16(-x, 1)));
       }
     }
   } else {
@@ -111,11 +150,11 @@ void q15_v_tanh(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
       Q15_T x = vec[i];
 
       if (x <= 0) {
-        INTM_T y = exp_base_16(2 * x, 1);
-        ret[i] = (Q15_T)((((INTM_T)(y - 16384)) << 14) / (y + 16384));
+        Q31_T y = exp_base_16(2 * x, 1);
+        ret[i] = (Q15_T)((((Q31_T)(y - 16384)) << 14) / (y + 16384));
       } else {
-        INTM_T y = exp_base_16(-2 * x, 1);
-        ret[i] = (Q15_T)((((INTM_T)(16384 - y)) << 14) / (y + 16384));
+        Q31_T y = exp_base_16(-2 * x, 1);
+        ret[i] = (Q15_T)((((Q31_T)(16384 - y)) << 14) / (y + 16384));
       }
     }
   } else {
@@ -170,9 +209,9 @@ void q15_v_scalar_mul(Q15_T scalar, const Q15_T* const vec, ITER_T len,
                       Q15_T* const ret, SCALE_T scscalar, SCALE_T scvec) {
   for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
-      ret[i] = ((INTM_T)scalar * (INTM_T)vec[i]) >> (scscalar + scvec);
+      ret[i] = ((Q31_T)scalar * (Q31_T)vec[i]) >> (scscalar + scvec);
     #else
-      ret[i] = ((((INTM_T)scalar * (INTM_T)vec[i]) / scscalar) / scvec);
+      ret[i] = ((((Q31_T)scalar * (Q31_T)vec[i]) / scscalar) / scvec);
     #endif
   }
 }
@@ -308,15 +347,15 @@ void q15_m_sub_vec(const Q15_T* const mat, const Q15_T* const vec,
 void q15_m_mulvec(const Q15_T* const mat, const Q15_T* const vec, ITER_T nrows,
                   ITER_T ncols, Q15_T* const ret, SCALE_T scmat, SCALE_T scvec,
                   SCALE_T H1, SCALE_T H2) {
-  INTM_T treesumBuffer[ncols];
+  Q31_T treesumBuffer[ncols];
   for (ITER_T row = 0; row < nrows; row++) {
     Q15_T* mat_offset = (Q15_T*)mat + row * ncols;
 
     for (ITER_T col = 0; col < ncols; col++) {
-      treesumBuffer[col] = ((INTM_T)(*mat_offset++) * (INTM_T)vec[col]);
+      treesumBuffer[col] = ((Q31_T)(*mat_offset++) * (Q31_T)vec[col]);
     }
 
-    q_v_treesum(&treesumBuffer[0], ncols, H1, H2);
+    q31_v_treesum(&treesumBuffer[0], ncols, H1, H2);
     #ifdef SHIFT
       ret[row] = (treesumBuffer[0] >> (scmat + scvec));
     #else
@@ -328,15 +367,15 @@ void q15_m_mulvec(const Q15_T* const mat, const Q15_T* const vec, ITER_T nrows,
 void q7xq15_to_q15_m_mulvec(const Q7_T* const mat, const Q15_T* const vec,
                             ITER_T nrows, ITER_T ncols, Q15_T* const ret,
                             SCALE_T scmat, SCALE_T scvec, SCALE_T H1, SCALE_T H2) {
-  INTM_T treesumBuffer[ncols];
+  Q31_T treesumBuffer[ncols];
   for (ITER_T row = 0; row < nrows; row++) {
     Q7_T* mat_offset = (Q7_T*)mat + row * ncols;
 
     for (ITER_T col = 0; col < ncols; col++) {
-      treesumBuffer[col] = ((INTM_T)(*mat_offset++) * (INTM_T)vec[col]);
+      treesumBuffer[col] = ((Q31_T)(*mat_offset++) * (Q31_T)vec[col]);
     }
 
-    q_v_treesum(&treesumBuffer[0], ncols, H1, H2);
+    q31_v_treesum(&treesumBuffer[0], ncols, H1, H2);
     #ifdef SHIFT
       ret[row] = (treesumBuffer[0] >> (scmat + scvec));
     #else
@@ -354,9 +393,9 @@ void q15_m_sparse_mulvec(const ITER_T* const col_indices, const Q15_T* const mat
 
     while (index != 0) {
       #ifdef SHIFT
-        ret[index - 1] += (((INTM_T)mat_values[iter_value] * (INTM_T)vec[k]) >> (scmat + scvec + scret));
+        ret[index - 1] += (((Q31_T)mat_values[iter_value] * (Q31_T)vec[k]) >> (scmat + scvec + scret));
       #else
-        ret[index - 1] += (((INTM_T)mat_values[iter_value] * (INTM_T)vec[k]) / ((INTM_T)scmat * (INTM_T)scvec * (INTM_T)scret));
+        ret[index - 1] += (((Q31_T)mat_values[iter_value] * (Q31_T)vec[k]) / ((Q31_T)scmat * (Q31_T)scvec * (Q31_T)scret));
       #endif
       iter_index++;
       iter_value++;
@@ -422,7 +461,7 @@ void q15_t_sub_vec(const Q15_T* const ten, const Q15_T* const vec,
 }
 
 void q7_t_relu(Q7_T* const ten, ITER_T nbatches, ITER_T nrows,
-               ITER_T ncols, ITER_T nchannels, INTM_T limit, Q7_T div) {
+               ITER_T ncols, ITER_T nchannels, Q31_T limit, Q7_T div) {
   ITER_T len = nbatches * nrows * ncols * nchannels;
   for (ITER_T i = 0; i < len; i++) {
     ten[i] = q7_relu(ten[i], limit) / div;
@@ -494,7 +533,7 @@ void q15_to_q15_maxpool(const Q15_T* const input, Q15_T* const output, ITER_T N,
 }
 
 void q15_convolution(const Q15_T* const input, const Q15_T* const filter,
-  Q15_T* const output, INTM_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
+  Q15_T* const output, Q31_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
   ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
   ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, ITER_T HDilation,
@@ -540,15 +579,15 @@ void q15_convolution(const Q15_T* const input, const Q15_T* const filter,
                   if ((hoffset < 0) || (hoffset >= (S_ITER_T)H) || (woffset < 0) || (woffset >= (S_ITER_T)W)) {
                     treesumBuffer[counter] = 0;
                   } else {
-                    treesumBuffer[counter] = ((INTM_T)input[NIndexIn + HIndexIn + WIndexIn + (cf + CIndexIn)]) *
-                      ((INTM_T)filter[HIndexF + WIndexF + (c + cf * COut)]);
+                    treesumBuffer[counter] = ((Q31_T)input[NIndexIn + HIndexIn + WIndexIn + (cf + CIndexIn)]) *
+                      ((Q31_T)filter[HIndexF + WIndexF + (c + cf * COut)]);
                   }
                   counter++;
                 }
               }
             }
 
-            q_v_treesum(&treesumBuffer[0], HF * WF * CF, H1, H2);
+            q31_v_treesum(&treesumBuffer[0], HF * WF * CF, H1, H2);
             #ifdef SHIFT
               output[NIndexOut + HIndexOut + WIndexOut + (c + CIndexOut)] = (treesumBuffer[0] >> (scinput + scoutput + demote));
             #else
@@ -562,7 +601,7 @@ void q15_convolution(const Q15_T* const input, const Q15_T* const filter,
 }
 
 void q7xq15_to_q15_convolution(const Q7_T* const input, const Q15_T* const filter,
-  Q15_T* const output, INTM_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
+  Q15_T* const output, Q31_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
   ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
   ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, ITER_T HDilation,
@@ -608,15 +647,15 @@ void q7xq15_to_q15_convolution(const Q7_T* const input, const Q15_T* const filte
                   if ((hoffset < 0) || (hoffset >= (S_ITER_T)H) || (woffset < 0) || (woffset >= (S_ITER_T)W)) {
                     treesumBuffer[counter] = 0;
                   } else {
-                    treesumBuffer[counter] = ((INTM_T)input[NIndexIn + HIndexIn + WIndexIn + (cf + CIndexIn)]) *
-                      ((INTM_T)filter[HIndexF + WIndexF + (c + cf * COut)]);
+                    treesumBuffer[counter] = ((Q31_T)input[NIndexIn + HIndexIn + WIndexIn + (cf + CIndexIn)]) *
+                      ((Q31_T)filter[HIndexF + WIndexF + (c + cf * COut)]);
                   }
                   counter++;
                 }
               }
             }
 
-            q_v_treesum(&treesumBuffer[0], HF * WF * CF, H1, H2);
+            q31_v_treesum(&treesumBuffer[0], HF * WF * CF, H1, H2);
             #ifdef SHIFT
               output[NIndexOut + HIndexOut + WIndexOut + (c + CIndexOut)] = (treesumBuffer[0] >> (scinput + scoutput + demote));
             #else
@@ -630,7 +669,7 @@ void q7xq15_to_q15_convolution(const Q7_T* const input, const Q15_T* const filte
 }
 
 void q7xq15_to_q7_convolution(const Q7_T* const input, const Q15_T* const filter,
-  Q7_T* const output, INTM_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
+  Q7_T* const output, Q31_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
   ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
   ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, ITER_T HDilation,
@@ -676,15 +715,15 @@ void q7xq15_to_q7_convolution(const Q7_T* const input, const Q15_T* const filter
                   if ((hoffset < 0) || (hoffset >= (S_ITER_T)H) || (woffset < 0) || (woffset >= (S_ITER_T)W)) {
                     treesumBuffer[counter] = 0;
                   } else {
-                    treesumBuffer[counter] = ((INTM_T)input[NIndexIn + HIndexIn + WIndexIn + (cf + CIndexIn)]) *
-                      ((INTM_T)filter[HIndexF + WIndexF + (c + cf * COut)]);
+                    treesumBuffer[counter] = ((Q31_T)input[NIndexIn + HIndexIn + WIndexIn + (cf + CIndexIn)]) *
+                      ((Q31_T)filter[HIndexF + WIndexF + (c + cf * COut)]);
                   }
                   counter++;
                 }
               }
             }
 
-            q_v_treesum(&treesumBuffer[0], HF * WF * CF, H1, H2);
+            q31_v_treesum(&treesumBuffer[0], HF * WF * CF, H1, H2);
             #ifdef SHIFT
               output[NIndexOut + HIndexOut + WIndexOut + (c + CIndexOut)] = (treesumBuffer[0] >> (scinput + scoutput + demote));
             #else

@@ -10,7 +10,7 @@
 // Function for saturating the input to the required format.
 // This function isn't used currently because of SeeDot generated scales
 // ensuring the overflows aren't a possibility.
-static inline Q15_T q15_saturate(INTM_T inp) {
+static inline Q15_T q15_saturate(Q31_T inp) {
     if (inp > Q15_TMAX){
         return (Q15_T)Q15_TMAX;
     } else if (inp < Q15_TMIN) {
@@ -32,7 +32,17 @@ static inline Q7_T q7_relu(Q7_T inp, Q7_T limit) {
     }
 }
 
-static inline INTM_T q32_relu(INTM_T inp, INTM_T limit) {
+static inline Q15_T q15_relu(Q15_T inp, Q15_T limit) {
+    if (inp > limit){
+        return limit;
+    } else if (inp < 0) {
+        return 0;
+    } else {
+        return inp;
+    }
+}
+
+static inline Q31_T q31_relu(Q31_T inp, Q31_T limit) {
     if (inp > limit){
         return limit;
     } else if (inp < 0) {
@@ -49,7 +59,7 @@ static inline Q15_T exp_base_16(Q15_T inp, Q15_T scale) {
   Q15_T val = (inp == -32768) ? 32767 : -inp;
   Q15_T val1 = val % 128;
   val >>= 7;
-  INTM_T ret = exp_table_A[val] * exp_table_B[val1];
+  Q31_T ret = exp_table_A[val] * exp_table_B[val1];
   return (Q15_T)((ret / scale) >> 14);
 }
 
@@ -66,7 +76,8 @@ static inline Q15_T exp_base_16(Q15_T inp, Q15_T scale) {
  *                  H2        = 0
  *                  vec[0]    = {-738}
  */
-void q_v_treesum(INTM_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2);
+void q15_v_treesum(Q15_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2);
+void q31_v_treesum(Q31_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2);
 /**
  * @brief Compute the element-wise addition between two vectors.
  * @param[in]       vec1      pointer to the first input vector
@@ -548,7 +559,7 @@ void q15_t_sub_vec(const Q15_T* const ten, const Q15_T* const vec,
  *                  
  */
 void q7_t_relu(Q7_T* const ten, ITER_T nbatches, ITER_T nrows,
-               ITER_T ncols, ITER_T nchannels, INTM_T limit, Q7_T div);
+               ITER_T ncols, ITER_T nchannels, Q31_T limit, Q7_T div);
 
 /**
  * @brief Computes the maxpool operation on the input tensor with the given parameters.
@@ -618,21 +629,21 @@ void q15_to_q15_maxpool(const Q15_T* const input, Q15_T* const output, ITER_T N,
  * @example         Please refer the test-case: test_quantized_convolution()  in file: c_reference/tests/utils/test_quantized_utils.c
  */
 void q15_convolution(const Q15_T* const input, const Q15_T* const filter,
-  Q15_T* const output, INTM_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
+  Q15_T* const output, Q31_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
   ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
   ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, ITER_T HDilation,
   ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput, SCALE_T scoutput,
   SCALE_T demote);
 void q7xq15_to_q15_convolution(const Q7_T* const input, const Q15_T* const filter,
-  Q15_T* const output, INTM_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
+  Q15_T* const output, Q31_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
   ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
   ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, ITER_T HDilation,
   ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput, SCALE_T scoutput,
   SCALE_T demote);
 void q7xq15_to_q7_convolution(const Q7_T* const input, const Q15_T* const filter,
-  Q7_T* const output, INTM_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
+  Q7_T* const output, Q31_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
   ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
   ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, ITER_T HDilation,
