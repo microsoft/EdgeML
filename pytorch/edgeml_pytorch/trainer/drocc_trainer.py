@@ -137,7 +137,7 @@ class DROCCTrainer:
             logits = self.model(data)
             logits = torch.squeeze(logits, dim = 1)
             sigmoid_logits = torch.sigmoid(logits)
-            scores = sigmoid_logits
+            scores = logits
             label_score += list(zip(target.cpu().data.numpy().tolist(),
                                             scores.cpu().data.numpy().tolist()))
         # Compute test score
