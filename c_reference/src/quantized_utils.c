@@ -406,6 +406,34 @@ void q15_m_sparse_mulvec(const ITER_T* const col_indices, const Q15_T* const mat
   }
 }
 
+void q7_t_add(const Q7_T* const ten1, const Q7_T* const ten2,
+              ITER_T nbatches, ITER_T nrows, ITER_T ncols,
+              ITER_T nchannels, Q7_T* const ret, SCALE_T scten1,
+              SCALE_T scten2, SCALE_T scret) {
+  ITER_T len = nbatches * nrows * ncols * nchannels;
+  for (ITER_T i = 0; i < len; i++) {
+    #ifdef SHIFT
+      ret[i] = ((ten1[i] >> (scten1 + scret)) + (ten2[i] >> (scten2 + scret)));
+    #else
+      ret[i] = ((ten1[i] / scten1) / scret) + ((ten2[i] / scten2) / scret);
+    #endif
+  }
+}
+
+void q15_t_add(const Q15_T* const ten1, const Q15_T* const ten2,
+               ITER_T nbatches, ITER_T nrows, ITER_T ncols,
+               ITER_T nchannels, Q15_T* const ret, SCALE_T scten1,
+               SCALE_T scten2, SCALE_T scret) {
+  ITER_T len = nbatches * nrows * ncols * nchannels;
+  for (ITER_T i = 0; i < len; i++) {
+    #ifdef SHIFT
+      ret[i] = ((ten1[i] >> (scten1 + scret)) + (ten2[i] >> (scten2 + scret)));
+    #else
+      ret[i] = ((ten1[i] / scten1) / scret) + ((ten2[i] / scten2) / scret);
+    #endif
+  }
+}
+
 void q15_t_add_vec(const Q15_T* const ten, const Q15_T* const vec,
                    ITER_T nbatches, ITER_T nrows, ITER_T ncols,
                    ITER_T nchannels, Q15_T* const ret, SCALE_T scten,
@@ -465,6 +493,47 @@ void q7_t_relu(Q7_T* const ten, ITER_T nbatches, ITER_T nrows,
   ITER_T len = nbatches * nrows * ncols * nchannels;
   for (ITER_T i = 0; i < len; i++) {
     ten[i] = q7_relu(ten[i], limit) / div;
+  }
+}
+
+void q15_t_l2_norm(const Q15_T* const ten, ITER_T nbatches, ITER_T nrows,
+                   ITER_T ncols, ITER_T nchannels, Q15_T* const ret,
+                   SCALE_T scale_in, SCALE_T scale_out) {
+  ITER_T len = nbatches * nrows * ncols;
+  #ifndef SHIFT
+    SCALE_T scdiv = (1 << scale_out);
+  #endif
+  for (ITER_T i = 0, j = 0; i < len; i++, j += nchannels) {
+    Q31_T sum_square = 0;
+
+    for (ITER_T c = 0; c < nchannels; c++) {
+      Q31_T x = ten[j + c];
+      sum_square += (((x * x) >> scale_out) << scale_out);
+    }
+
+    Q15_T low = 1;
+    Q15_T high = (1 << (scale_out - 1));
+    Q31_T one = (1 << (-(2 * scale_in + 2)));
+
+    while (low + 1 < high) {
+      Q15_T mid = ((high + low) >> 1);
+
+      if ((int64_t)sum_square * mid * mid > one) {
+        high = mid;
+      } else {
+        low = mid;
+      }
+    }
+
+    Q15_T inverse_norm = low;
+
+    for (ITER_T c = 0; c < nchannels; c++) {
+      #ifdef SHIFT
+        ret[j + c]  = (ten[j + c] >> scale_out) * inverse_norm;
+      #else
+        ret[j + c]  = (ten[j + c] / scdiv) * inverse_norm;
+      #endif
+    }
   }
 }
 

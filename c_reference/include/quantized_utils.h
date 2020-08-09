@@ -474,6 +474,30 @@ void q15_m_sparse_mulvec(const ITER_T* const col_indices, const Q15_T* const mat
                          SCALE_T scmat, SCALE_T scvec, SCALE_T scret);
 
 /**
+ * @brief Performs the element-wise addition of two input tensors.
+ * dim(ten1) = dim(ten2) = [nbatches][nrows][ncols][nchannels]
+ * @param[in]       ten1      pointer to the first input tensor
+ * @param[in]       ten2      pointer to the second input tensor
+ * @param[in]       nbatches  number of batches of the input tensor
+ * @param[in]       nrows     number of rows of the input tensor
+ * @param[in]       ncols     number of columns of the input tensor
+ * @param[in]       nchannels number of channels of the input tensor
+ * @param[out]      ret       pointer to the output tensor
+ * @param[in]       scten1    scaling factor for the first input tensor
+ * @param[in]       scten2    scaling factor for the second input tensor
+ * @param[in]       scret     scaling factor for the output tensor
+ * @return          none
+ * @example         
+ */
+void q7_t_add(const Q7_T* const ten1, const Q7_T* const ten2,
+              ITER_T nbatches, ITER_T nrows, ITER_T ncols,
+              ITER_T nchannels, Q7_T* const ret, SCALE_T scten1,
+              SCALE_T scten2, SCALE_T scret);
+void q15_t_add(const Q15_T* const ten1, const Q15_T* const ten2,
+               ITER_T nbatches, ITER_T nrows, ITER_T ncols,
+               ITER_T nchannels, Q15_T* const ret, SCALE_T scten1,
+               SCALE_T scten2, SCALE_T scret);
+/**
  * @brief Performs the channel-wise addition of a bias term to the input tensor.
  * dim(ten) = dim(ret) = [nbatches][nrows][ncols][nchannels]; dim(vec) = [nchannels].
  * @param[in]       ten       pointer to the input tensor on which addition is to be performed
@@ -560,7 +584,27 @@ void q15_t_sub_vec(const Q15_T* const ten, const Q15_T* const vec,
  */
 void q7_t_relu(Q7_T* const ten, ITER_T nbatches, ITER_T nrows,
                ITER_T ncols, ITER_T nchannels, Q31_T limit, Q7_T div);
-
+/**
+ * @brief Computes the L2-Norm for each channel of the input tensor, and divides each number in that channel by it.
+ * dim(ten) = dim(ret) = [nbatches][nrows][ncols][nchannels].
+ * @param[in]       ten       pointer to tensor on which channel-wise L2-Norm operation is to be applied
+ * @param[in]       nbatches  number of batches of the input tensor
+ * @param[in]       nrows     number of rows of the input tensor
+ * @param[in]       ncols     number of columns of the input tensor
+ * @param[in]       nchannels number of channels of the input tensor
+ * @param[in]       nchannels number of channels of the input tensor
+ * @param[out]      ret       pointer to the output tensor
+ * @param[in]       scale_in  scale factor of the input tensor
+ * @param[in]       scale_out scale factor of the output tensor
+ * @param[in]
+ * @return          none
+ * @example         
+ *                  
+ *                  
+ */
+void q15_t_l2_norm(const Q15_T* const ten, ITER_T nbatches, ITER_T nrows,
+                   ITER_T ncols, ITER_T nchannels, Q15_T* const ret,
+                   SCALE_T scale_in, SCALE_T scale_out);
 /**
  * @brief Computes the maxpool operation on the input tensor with the given parameters.
  * @param[in]       input     pointer to the tensor on which max-pooling is to be performed
