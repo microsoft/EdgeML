@@ -60,11 +60,11 @@ int q15_fastgrnn_lr(Q15_T* const hiddenState, ITER_T hiddenDims,
               tscales->pC1AddBg, tscales->Bg, tscales->pC1AddBgOut);
     q15_v_sigmoid(tbuffers->preComp2, hiddenDims, tbuffers->preComp2, tscales->div,
                   tscales->add, tscales->sigmoidLimit, tscales->sigmoidScaleIn,
-                  tscales->sigmoidScaleOut);
+                  tscales->sigmoidScaleOut, tscales->useTableSigmoid);
     q15_v_add(tbuffers->preComp1, tparams->Bh, hiddenDims, tbuffers->preComp1,
               tscales->pC1AddBh, tscales->Bh, tscales->pC1AddBhOut);
     q15_v_tanh(tbuffers->preComp1, hiddenDims, tbuffers->preComp1,
-               tscales->tanhScaleIn, tscales->tanhScaleOut);
+               tscales->tanhScaleIn, tscales->tanhScaleOut, tscales->useTableTanH);
     q15_v_hadamard(tbuffers->preComp2, hiddenState, hiddenDims, tbuffers->preComp3,
                    tscales->gateHDHiddenState, tscales->hiddenStateHDGate);
     q15_v_scalar_sub(tscales->qOne, tbuffers->preComp2, hiddenDims,
@@ -135,11 +135,11 @@ int q15_fastgrnn(Q15_T* const hiddenState, ITER_T hiddenDims,
               tscales->pC1AddBg, tscales->Bg, tscales->pC1AddBgOut);
     q15_v_sigmoid(tbuffers->preComp2, hiddenDims, tbuffers->preComp2, tscales->div,
                   tscales->add, tscales->sigmoidLimit, tscales->sigmoidScaleIn,
-                  tscales->sigmoidScaleOut);
+                  tscales->sigmoidScaleOut, tscales->useTableSigmoid);
     q15_v_add(tbuffers->preComp1, tparams->Bh, hiddenDims, tbuffers->preComp1,
               tscales->pC1AddBh, tscales->Bh, tscales->pC1AddBhOut);
     q15_v_tanh(tbuffers->preComp1, hiddenDims, tbuffers->preComp1,
-               tscales->tanhScaleIn, tscales->tanhScaleOut);
+               tscales->tanhScaleIn, tscales->tanhScaleOut, tscales->useTableTanH);
     q15_v_hadamard(tbuffers->preComp2, hiddenState, hiddenDims, tbuffers->preComp3,
                    tscales->gateHDHiddenState, tscales->hiddenStateHDGate);
     q15_v_scalar_sub(tscales->qOne, tbuffers->preComp2, hiddenDims,

@@ -27,6 +27,8 @@ static SCALE_T sigmoidScaleOut2 = 14; //16384
 static SCALE_T tanhScaleIn2 = 13; //8192
 static SCALE_T tanhScaleOut2 = 13; //8192
 static Q15_T qOne2 = 16384;
+static ITER_T useTableSigmoid2 = 0;
+static ITER_T useTableTanH2 = 0;
 
 #ifdef SHIFT
   static SCALE_T WScale2 = 6; //64

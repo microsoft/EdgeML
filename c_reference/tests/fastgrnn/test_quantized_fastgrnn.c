@@ -83,7 +83,9 @@ int main() {
     .hiddenStateOut = hiddenStateOut1,
     .div = div1,
     .add = add1,
-    .qOne = qOne1
+    .qOne = qOne1,
+    .useTableSigmoid = useTableSigmoid1,
+    .useTableTanH = useTableTanH1
   };
 
   const Q15_T patch[INPUT_CHANNELS] = {1040, 1919, 4254, 4024};

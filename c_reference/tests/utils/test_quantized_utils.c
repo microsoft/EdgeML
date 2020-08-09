@@ -94,7 +94,7 @@ int test_q15_v_sigmoid() {
   const Q15_T expected[8] = {0, 2760, 0, 6640, 1528, 0, 5760, 5400};
   Q15_T pred[8];
 
-  q15_v_sigmoid(&qvec_A[0], 8, &pred[0], 2, 1024, 2048, 11, 14);
+  q15_v_sigmoid(&qvec_A[0], 8, &pred[0], 2, 1024, 2048, 11, 14, 0);
   return check_output(pred, expected, 8);
 }
 
@@ -104,7 +104,7 @@ int test_q15_v_tanh() {
   const Q15_T expected[8] = {178, 1064, -2048, 1718, -1663, 851, 1244, 1282};
   Q15_T pred[8];
 
-  q15_v_tanh(&qvec_A[0], 8, &pred[0], 11, 11);
+  q15_v_tanh(&qvec_A[0], 8, &pred[0], 11, 11, 0);
   return check_output(pred, expected, 8);
 }
 

@@ -104,6 +104,8 @@ typedef struct Q15_FastGRNN_LR_Scales {
   Q15_T div;
   Q15_T add;
   Q15_T qOne;
+  ITER_T useTableSigmoid;
+  ITER_T useTableTanH;
 } Q15_FastGRNN_LR_Scales;
 
 /**
@@ -226,6 +228,8 @@ typedef struct Q15_FastGRNN_Scales {
   Q15_T add;
   Q15_T sigmoidLimit;
   Q15_T qOne;
+  ITER_T useTableSigmoid;
+  ITER_T useTableTanH;
 } Q15_FastGRNN_Scales;
 
 /**

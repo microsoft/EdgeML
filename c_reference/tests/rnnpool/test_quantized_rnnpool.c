@@ -233,7 +233,9 @@ int main(int argc, char **argv) {
     .hiddenStateOut = hiddenStateOut1,
     .div = div1,
     .add = add1,
-    .qOne = qOne1
+    .qOne = qOne1,
+    .useTableSigmoid = useTableSigmoid1,
+    .useTableTanH = useTableTanH1
   };
 
   Q15_FastGRNN_Scales rnn2_scales = {
@@ -281,7 +283,9 @@ int main(int argc, char **argv) {
     .hiddenStateOut = hiddenStateOut2,
     .div = div2,
     .add = add2,
-    .qOne = qOne2
+    .qOne = qOne2,
+    .useTableSigmoid = useTableSigmoid2,
+    .useTableTanH = useTableTanH2
   };
 
   Q15_T output_test[4 * HIDDEN_DIM2];

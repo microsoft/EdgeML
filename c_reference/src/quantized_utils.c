@@ -77,32 +77,59 @@ void q15_v_hadamard(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len
 
 void q15_v_sigmoid(const Q15_T* const vec, ITER_T len, Q15_T* const ret, Q15_T div,
                    Q15_T add, Q15_T sigmoid_limit, SCALE_T scale_in,
-                   SCALE_T scale_out) {
-  for (ITER_T i = 0; i < len; i++) {
-    Q15_T x = (vec[i] / div) + add;
+                   SCALE_T scale_out, ITER_T use_tables) {
+  if (use_tables) {
+    for (ITER_T i = 0; i < len; i++) {
+      Q15_T x = vec[i];
 
-    if (x >= sigmoid_limit) {
-      ret[i] = sigmoid_limit << (scale_out - scale_in);
-    } else if (x <= 0) {
-      ret[i] = 0;
-    } else {
-      ret[i] = x << (scale_out - scale_in);
+      if (x <= 0) {
+        Q15_T y = exp_base_16(x, 1);
+        ret[i] = (Q15_T)((((INTM_T)y) << 14) / ((INTM_T)y + (INTM_T)16384));
+      } else {
+        ret[i] = (Q15_T)(((INTM_T)267943936L) / ((INTM_T)16384 + (INTM_T)exp_base_16(-x, 1)));
+      }
+    }
+  } else {
+    for (ITER_T i = 0; i < len; i++) {
+      Q15_T x = (vec[i] / div) + add;
+
+      if (x >= sigmoid_limit) {
+        ret[i] = sigmoid_limit << (scale_out - scale_in);
+      } else if (x <= 0) {
+        ret[i] = 0;
+      } else {
+        ret[i] = x << (scale_out - scale_in);
+      }
     }
   }
 }
 
 void q15_v_tanh(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
-                SCALE_T scale_in, SCALE_T scale_out) {
-  Q15_T scale = (1 << scale_in);
-  for (ITER_T i = 0; i < len; i++) {
-    if (vec[i] >= scale) {
-      ret[i] = scale;
-    } else if (vec[i] <= -scale) {
-      ret[i] = (-scale);
-    } else {
-      ret[i] = vec[i];
+                SCALE_T scale_in, SCALE_T scale_out, ITER_T use_tables) {
+  if (use_tables) {
+    for (ITER_T i = 0; i < len; i++) {
+      Q15_T x = vec[i];
+
+      if (x <= 0) {
+        INTM_T y = exp_base_16(2 * x, 1);
+        ret[i] = (Q15_T)((((INTM_T)(y - 16384)) << 14) / (y + 16384));
+      } else {
+        INTM_T y = exp_base_16(-2 * x, 1);
+        ret[i] = (Q15_T)((((INTM_T)(16384 - y)) << 14) / (y + 16384));
+      }
     }
-    ret[i] <<= (scale_out - scale_in);
+  } else {
+    Q15_T scale = (1 << scale_in);
+    for (ITER_T i = 0; i < len; i++) {
+      if (vec[i] >= scale) {
+        ret[i] = scale;
+      } else if (vec[i] <= -scale) {
+        ret[i] = (-scale);
+      } else {
+        ret[i] = vec[i];
+      }
+      ret[i] <<= (scale_out - scale_in);
+    }
   }
 }
 

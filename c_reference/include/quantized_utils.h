@@ -10,7 +10,7 @@
 // Function for saturating the input to the required format.
 // This function isn't used currently because of SeeDot generated scales
 // ensuring the overflows aren't a possibility.
-inline Q15_T q15_saturate(INTM_T inp) {
+static inline Q15_T q15_saturate(INTM_T inp) {
     if (inp > Q15_TMAX){
         return (Q15_T)Q15_TMAX;
     } else if (inp < Q15_TMIN) {
@@ -22,7 +22,7 @@ inline Q15_T q15_saturate(INTM_T inp) {
 
 // This function is used to provide a truncation of input to a specific
 // range within the ReLU operation.
-inline Q7_T q7_relu(Q7_T inp, Q7_T limit) {
+static inline Q7_T q7_relu(Q7_T inp, Q7_T limit) {
     if (inp > limit){
         return limit;
     } else if (inp < 0) {
@@ -32,7 +32,7 @@ inline Q7_T q7_relu(Q7_T inp, Q7_T limit) {
     }
 }
 
-inline INTM_T q32_relu(INTM_T inp, INTM_T limit) {
+static inline INTM_T q32_relu(INTM_T inp, INTM_T limit) {
     if (inp > limit){
         return limit;
     } else if (inp < 0) {
@@ -40,6 +40,17 @@ inline INTM_T q32_relu(INTM_T inp, INTM_T limit) {
     } else {
         return inp;
     }
+}
+
+static Q15_T exp_table_A[256] = {16384, 15391, 14459, 13583, 12760, 11987, 11261, 10578, 9937, 9335, 8770, 8238, 7739, 7270, 6830, 6416, 6027, 5662, 5319, 4997, 4694, 4410, 4143, 3892, 3656, 3434, 3226, 3031, 2847, 2675, 2513, 2360, 2217, 2083, 1957, 1838, 1727, 1622, 1524, 1432, 1345, 1263, 1187, 1115, 1047, 984, 924, 868, 816, 766, 720, 676, 635, 597, 561, 527, 495, 465, 437, 410, 385, 362, 340, 319, 300, 282, 265, 249, 234, 220, 206, 194, 182, 171, 161, 151, 142, 133, 125, 118, 110, 104, 97, 92, 86, 81, 76, 71, 67, 63, 59, 56, 52, 49, 46, 43, 41, 38, 36, 34, 32, 30, 28, 26, 25, 23, 22, 20, 19, 18, 17, 16, 15, 14, 13, 12, 12, 11, 10, 10, 9, 9, 8, 8, 7, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static Q15_T exp_table_B[128] = {16384, 16376, 16368, 16360, 16352, 16344, 16336, 16328, 16320, 16312, 16304, 16296, 16288, 16280, 16272, 16264, 16256, 16249, 16241, 16233, 16225, 16217, 16209, 16201, 16193, 16185, 16177, 16169, 16162, 16154, 16146, 16138, 16130, 16122, 16114, 16106, 16099, 16091, 16083, 16075, 16067, 16059, 16051, 16044, 16036, 16028, 16020, 16012, 16004, 15997, 15989, 15981, 15973, 15965, 15958, 15950, 15942, 15934, 15927, 15919, 15911, 15903, 15895, 15888, 15880, 15872, 15864, 15857, 15849, 15841, 15833, 15826, 15818, 15810, 15803, 15795, 15787, 15779, 15772, 15764, 15756, 15749, 15741, 15733, 15726, 15718, 15710, 15703, 15695, 15687, 15680, 15672, 15664, 15657, 15649, 15641, 15634, 15626, 15618, 15611, 15603, 15596, 15588, 15580, 15573, 15565, 15558, 15550, 15542, 15535, 15527, 15520, 15512, 15504, 15497, 15489, 15482, 15474, 15467, 15459, 15452, 15444, 15437, 15429, 15421, 15414, 15406, 15399};
+
+static inline Q15_T exp_base_16(Q15_T inp, Q15_T scale) {
+  Q15_T val = (inp == -32768) ? 32767 : -inp;
+  Q15_T val1 = val % 128;
+  val >>= 7;
+  INTM_T ret = exp_table_A[val] * exp_table_B[val1];
+  return (Q15_T)((ret / scale) >> 14);
 }
 
 /**
@@ -124,8 +135,9 @@ void q15_v_hadamard(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len
  * @param[in]       sigmoid_limit  saturation limit for the Sigmoid activation
  * @param[in]       scale_in       scale factor of the input vector
  * @param[in]       scale_out      scale factor of the output vector
+ * @param[in]       use_tables     flag for using pre-computed (base 16) exp tables for calculating Sigmoid on the input
  * @return          none
- * @example         formula        = saturate(0, (vec_{i} / div) + add, sigmoid_limit) * 2^{scale_out - scale_in}
+ * @example         formula        = saturate(0, (vec_{i} / div) + add, sigmoid_limit) * 2^{scale_out - scale_in} (use_tables set to 0)
  *                  vec            = {-2772, -1358, -3028, -389, -1666, -2070, -608, -699}
  *                  len            = 8
  *                  div            = 2
@@ -136,24 +148,26 @@ void q15_v_hadamard(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len
  *                  ret            = {0, 2760, 0, 6640, 1528, 0, 5760, 5400}
  */
 void q15_v_sigmoid(const Q15_T* const vec, ITER_T len, Q15_T* const ret, Q15_T div,
-                   Q15_T add, Q15_T sigmoid_limit, SCALE_T scale_in, SCALE_T scale_out);
+                   Q15_T add, Q15_T sigmoid_limit, SCALE_T scale_in, SCALE_T scale_out,
+                   ITER_T use_tables);
 /**
  * @brief Compute the element-wise TanHyperbolic activation on the input vector.
- * @param[in]       vec       pointer to the input vector
- * @param[in]       len       length of the input vector
- * @param[out]      ret       pointer to the vector storing the output
- * @param[in]       scale_in  scale factor of the input vector
- * @param[in]       scale_out scale factor of the output vector
+ * @param[in]       vec            pointer to the input vector
+ * @param[in]       len            length of the input vector
+ * @param[out]      ret            pointer to the vector storing the output
+ * @param[in]       scale_in       scale factor of the input vector
+ * @param[in]       scale_out      scale factor of the output vector
+ * @param[in]       use_tables     flag for using pre-computed (base 16) exp tables for calculating TanH on the input
  * @return          none
- * @example         formula   = saturate(-2^{scale_in}, vec_{i}, 2^{scale_in}) * 2^{scale_out - scale_in}
- *                  vec       = {178, 1064, -4162, 1718, -1663, 851, 1244, 1282}
- *                  len       = 8
- *                  scale_in  = 11
- *                  scale_out = 11
- *                  ret       = {178, 1064, -2048, 1718, -1663, 851, 1244, 1282}
+ * @example         formula        = saturate(-2^{scale_in}, vec_{i}, 2^{scale_in}) * 2^{scale_out - scale_in} (use_tables set to 0)
+ *                  vec            = {178, 1064, -4162, 1718, -1663, 851, 1244, 1282}
+ *                  len            = 8
+ *                  scale_in       = 11
+ *                  scale_out      = 11
+ *                  ret            = {178, 1064, -2048, 1718, -1663, 851, 1244, 1282}
  */
 void q15_v_tanh(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
-                SCALE_T scale_in, SCALE_T scale_out);
+                SCALE_T scale_in, SCALE_T scale_out, ITER_T use_tables);
 /**
  * @brief Compute the addition of a scalar to every element of a vector.
  * @param[in]       scalar    the input scalar to be added to a vector
