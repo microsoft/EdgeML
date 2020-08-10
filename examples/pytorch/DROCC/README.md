@@ -72,7 +72,7 @@ python3  main_timeseries.py --hd 128 --lr 0.00001 --lamda 0.5 --gamma 2 --ascent
 
 ## CIFAR Experiments
 ```
-python3  main_cifar.py  --lamda 1  --radius 8 --lr 0.001 --gamma 1 --ascent_step_size 0.001 --batch_size 256 --epochs 40 --optim 0 --normal_class 0
+python3  main_cifar.py  --lamda 1  --radius 8 --lr 0.001 --gamma 1 --ascent_step_size 0.001 --batch_size 256 --epochs 100 --optim 0 --normal_class 0
 ```
 
 ## DROCC-LF MNIST Experiment
