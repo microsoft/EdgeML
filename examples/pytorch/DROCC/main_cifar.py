@@ -124,7 +124,7 @@ if __name__ == '__main__':
                         help='learning rate')
     parser.add_argument('--ascent_step_size', type=float, default=0.001, metavar='LR',
                         help='step size of gradient ascent')                        
-    parser.add_argument('--mom', type=float, default=0.99, metavar='M',
+    parser.add_argument('--mom', type=float, default=0.0, metavar='M',
                         help='momentum')
     parser.add_argument('--model_dir', default='log',
                         help='path where to save checkpoint')
