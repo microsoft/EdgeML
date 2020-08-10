@@ -116,7 +116,7 @@ if __name__ == '__main__':
                         help='number of epochs to train')
     parser.add_argument('-oce,', '--only_ce_epochs', type=int, default=50, metavar='N',
                         help='number of epochs to train with only CE loss')
-    parser.add_argument('--ascent_num_steps', type=int, default=50, metavar='N',
+    parser.add_argument('--ascent_num_steps', type=int, default=100, metavar='N',
                         help='Number of gradient ascent steps')                        
     parser.add_argument('--hd', type=int, default=128, metavar='N',
                         help='Num hidden nodes for LSTM model')
