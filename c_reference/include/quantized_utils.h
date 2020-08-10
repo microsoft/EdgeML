@@ -530,10 +530,10 @@ void q15_t_add_vec(const Q15_T* const ten, const Q15_T* const vec,
                    ITER_T nbatches, ITER_T nrows, ITER_T ncols,
                    ITER_T nchannels, Q15_T* const ret, SCALE_T scmat,
                    SCALE_T scvec, SCALE_T scret);
-void q7xq15_to_q15_t_add_vec(const Q7_T* const ten, const Q15_T* const vec,
-                   ITER_T nbatches, ITER_T nrows, ITER_T ncols,
-                   ITER_T nchannels, Q7_T* const ret, SCALE_T scmat,
-                   SCALE_T scvec, SCALE_T scret);
+void q7xq15_to_q7_t_add_vec(const Q7_T* const ten, const Q15_T* const vec,
+                            ITER_T nbatches, ITER_T nrows, ITER_T ncols,
+                            ITER_T nchannels, Q7_T* const ret, SCALE_T scmat,
+                            SCALE_T scvec, SCALE_T scret);
 /**
  * @brief Performs the channel-wise subtraction of a bias term from the input tensor.
  * dim(ten) = dim(ret) = [nbatches][nrows][ncols][nchannels]; dim(vec) = [nchannels].
@@ -583,7 +583,7 @@ void q15_t_sub_vec(const Q15_T* const ten, const Q15_T* const vec,
  *                  
  */
 void q7_t_relu(Q7_T* const ten, ITER_T nbatches, ITER_T nrows,
-               ITER_T ncols, ITER_T nchannels, Q31_T limit, Q7_T div);
+               ITER_T ncols, ITER_T nchannels, Q7_T limit, Q7_T div);
 /**
  * @brief Computes the L2-Norm for each channel of the input tensor, and divides each number in that channel by it.
  * dim(ten) = dim(ret) = [nbatches][nrows][ncols][nchannels].

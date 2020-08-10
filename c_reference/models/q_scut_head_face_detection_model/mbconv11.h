@@ -54,6 +54,9 @@ static Q31_T L11_Limit2 = 393216L;
   static L_SCALE_T L11_ShLU3 = 1; //2
   static L_SCALE_T L11_ShLB3 = 5; //32
   static L_SCALE_T L11_ShLW3 = 0; //1
+  static SCALE_T L11_Scten1 = 0;  //1
+  static SCALE_T L11_Scten2 = 0;  //1
+  static SCALE_T L11_Scret = 0;   //1
 #else
   static L_SCALE_T L11_ShRU1 = 4;
   static L_SCALE_T L11_ShRB1 = 1;
@@ -73,4 +76,7 @@ static Q31_T L11_Limit2 = 393216L;
   static L_SCALE_T L11_ShLU3 = 2;
   static L_SCALE_T L11_ShLB3 = 32;
   static L_SCALE_T L11_ShLW3 = 1;
+  static SCALE_T L11_Scten1 = 1;
+  static SCALE_T L11_Scten2 = 1;
+  static SCALE_T L11_Scret = 1;
 #endif

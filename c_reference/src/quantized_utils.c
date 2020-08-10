@@ -489,7 +489,7 @@ void q15_t_sub_vec(const Q15_T* const ten, const Q15_T* const vec,
 }
 
 void q7_t_relu(Q7_T* const ten, ITER_T nbatches, ITER_T nrows,
-               ITER_T ncols, ITER_T nchannels, Q31_T limit, Q7_T div) {
+               ITER_T ncols, ITER_T nchannels, Q7_T limit, Q7_T div) {
   ITER_T len = nbatches * nrows * ncols * nchannels;
   for (ITER_T i = 0; i < len; i++) {
     ten[i] = q7_relu(ten[i], limit) / div;
