@@ -7,7 +7,7 @@ from random import sample
 from abc import ABC, abstractmethod
 import torch
 from torch.utils.data import Subset
-from torchvision.datasets import CIFAR10
+from torchvision.datasets import MNIST
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 
@@ -48,47 +48,42 @@ class TorchvisionDataset(BaseADDataset):
                                  num_workers=num_workers)
         return train_loader, test_loader
 
-class CIFAR10_Dataset(TorchvisionDataset):
+class MNIST_Dataset(TorchvisionDataset):
 
-    def __init__(self, root: str, normal_class=5):
+    def __init__(self, root: str, normal_class=0):
         super().__init__(root)
-
+        #Loads only the digit 0 and digit 1 data
+        # for both train and test 
         self.n_classes = 2  # 0: normal, 1: outlier
-        self.normal_classes = tuple([normal_class])
-        self.outlier_classes = list(range(0, 10))
-        self.outlier_classes.remove(normal_class)
+        self.normal_classes = tuple([0])
+        self.train_classes = tuple([0,1])
+        self.test_class = tuple([0,1])
 
         transform = transforms.Compose([transforms.ToTensor(),
-                                        transforms.Normalize(mean=[0.4914, 0.4822, 0.4465],
-                                        std=[0.247, 0.243, 0.261])])
+                                                transforms.Normalize(mean=[0.1307],
+                                                std=[0.3081])])
+        
+        target_transform = transforms.Lambda(lambda x: int(x in self.normal_classes))
 
-        target_transform = transforms.Lambda(lambda x: int(x not in self.outlier_classes))
-
-        train_set = MyCIFAR10(root=self.root, train=True, download=True,
-                              transform=transform, target_transform=target_transform)
-
-        # Subset train set to normal class
-        train_idx_normal = get_target_label_idx(train_set.targets, self.normal_classes)
-        # train_idx_normal_train = sample(train_idx_normal, 4000)
-        # val_idx_normal = [x for x in train_idx_normal if x not in train_idx_normal_train]
-
-        # rest_train_classes = get_target_label_idx(train_set.train_labels, self.outlier_classes)
-        # rest_train_classes_subset = sample(rest_train_classes, 9000)
-        # val_idx = val_idx_normal + rest_train_classes_subset
+        train_set = MyMNIST(root=self.root, train=True, download=True,
+                            transform=transform, target_transform=target_transform)
+        # Subset train_set to normal class
+        train_idx_normal = get_target_label_idx(train_set.targets, self.train_classes)
         self.train_set = Subset(train_set, train_idx_normal)
-        # self.test_set = Subset(train_set, val_idx)
-        self.test_set = MyCIFAR10(root=self.root, train=False, download=True,
-                                  transform=transform, target_transform=target_transform)
 
- 
-class MyCIFAR10(CIFAR10):
-    """Torchvision CIFAR10 class with patch of __getitem__ method to also return the index of a data sample."""
+        test_set = MyMNIST(root=self.root, train=False, download=True,
+                                transform=transform, target_transform=target_transform)
+        test_idx_normal = get_target_label_idx(test_set.targets, self.test_class)
+        self.test_set = Subset(test_set, test_idx_normal)
+
+class MyMNIST(MNIST):
+    """Torchvision MNIST class with patch of __getitem__ method to also return the index of a data sample."""
 
     def __init__(self, *args, **kwargs):
-        super(MyCIFAR10, self).__init__(*args, **kwargs)
+        super(MyMNIST, self).__init__(*args, **kwargs)
 
     def __getitem__(self, index):
-        """Override the original method of the CIFAR10 class.
+        """Override the original method of the MNIST class.
         Args:
             index (int): Index
         Returns:
@@ -98,7 +93,7 @@ class MyCIFAR10(CIFAR10):
 
         # doing this so that it is consistent with all other datasets
         # to return a PIL Image
-        img = Image.fromarray(img)
+        img = Image.fromarray(img.numpy(), mode='L')
 
         if self.transform is not None:
             img = self.transform(img)
@@ -107,6 +102,7 @@ class MyCIFAR10(CIFAR10):
             target = self.target_transform(target)
 
         return img, target, index  # only line changed
+ 
 
 def get_target_label_idx(labels, targets):
     """

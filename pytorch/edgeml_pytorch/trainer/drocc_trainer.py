@@ -1,4 +1,5 @@
 import os
+import copy
 import numpy as np
 import torch
 import torch.optim as optim
@@ -20,7 +21,7 @@ class DROCCTrainer:
         ----------
         model: Torch neural network object
         optimizer: Total number of epochs for training.
-        lamda: Adversarial loss weight for input layer
+        lamda: Weight given to the adversarial loss
         radius: Radius of hypersphere to sample points from.
         gamma: Parameter to vary projection.
         device: torch.device object for device to use.
@@ -51,6 +52,8 @@ class DROCCTrainer:
                           generation of negative points.
         metric: Metric used for evaluation (AUC / F1).
         """
+        best_score = -np.inf
+        best_model = None
         self.ascent_num_steps = ascent_num_steps
         self.ascent_step_size = ascent_step_size
         for epoch in range(total_epochs): 
@@ -59,7 +62,7 @@ class DROCCTrainer:
             lr_scheduler(epoch, total_epochs, only_ce_epochs, learning_rate, self.optimizer)
             
             #Placeholder for the respective 2 loss values
-            epoch_adv_loss = torch.tensor([0]).type(torch.float32).detach()  #AdvLoss @ Input Layer
+            epoch_adv_loss = torch.tensor([0]).type(torch.float32).to(self.device)  #AdvLoss
             epoch_ce_loss = 0  #Cross entropy Loss
             
             batch_idx = -1
@@ -86,10 +89,10 @@ class DROCCTrainer:
                 if  epoch >= only_ce_epochs:
                     data = data[target == 1]
                     # AdvLoss 
-                    adv_loss_inp = self.one_class_adv_loss(data)
-                    epoch_adv_loss += adv_loss_inp
+                    adv_loss = self.one_class_adv_loss(data)
+                    epoch_adv_loss += adv_loss
 
-                    loss = ce_loss + adv_loss_inp * self.lamda
+                    loss = ce_loss + adv_loss * self.lamda
                 else: 
                     # If only CE based training has to be done
                     loss = ce_loss
@@ -99,13 +102,19 @@ class DROCCTrainer:
                 self.optimizer.step()
                     
             epoch_ce_loss = epoch_ce_loss/(batch_idx + 1)  #Average CE Loss
-            epoch_adv_loss = epoch_adv_loss/(batch_idx + 1) #Average AdvLoss @Input Layer
+            epoch_adv_loss = epoch_adv_loss/(batch_idx + 1) #Average AdvLoss
 
             test_score = self.test(val_loader, metric)
-            
+            if test_score > best_score:
+                best_score = test_score
+                best_model = copy.deepcopy(self.model)
             print('Epoch: {}, CE Loss: {}, AdvLoss: {}, {}: {}'.format(
                 epoch, epoch_ce_loss.item(), epoch_adv_loss.item(), 
                 metric, test_score))
+        self.model = copy.deepcopy(best_model)
+        print('\nBest test {}: {}'.format(
+            metric, best_score
+        ))
 
     def test(self, test_loader, metric):
         """Evaluate the model on the given test dataset.
@@ -128,7 +137,7 @@ class DROCCTrainer:
             logits = self.model(data)
             logits = torch.squeeze(logits, dim = 1)
             sigmoid_logits = torch.sigmoid(logits)
-            scores = sigmoid_logits
+            scores = logits
             label_score += list(zip(target.cpu().data.numpy().tolist(),
                                             scores.cpu().data.numpy().tolist()))
         # Compute test score
