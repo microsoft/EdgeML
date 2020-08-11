@@ -4,15 +4,12 @@
 #ifndef __QUANTIZED_FACE_DETECTION_H__
 #define __QUANTIZED_FACE_DETECTION_H__
 
-#include "quantized_datatypes.h"
-
 /**
- * @brief Compute the element-wise subtraction between two vectors.
- * @param[in]     input       pointer to the input tensor
- * @param[out]    output      pointer to the output tensor
- * @return        none
+ * @brief Routine for running the entire face detection model pipeline.
+ * @param[in, out]    mem_buf   pointer to the singleton memory buffer for input, intermediate computations and output, used for fragmentation invariance
+ * @return            none
  * @example
  */
-void q_face_detection(Q7_T* input, Q15_T* output);
+void q_face_detection(char* const mem_buf);
 
 #endif

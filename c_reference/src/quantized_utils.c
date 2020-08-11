@@ -230,18 +230,23 @@ void q15_v_argmax(const Q15_T* const vec, ITER_T len, ITER_T* const ret) {
   *ret = max_index;
 }
 
-void q15_v_relu(Q15_T* const vec, ITER_T len) {
+void q15_v_relu(const Q15_T* const vec, ITER_T len, Q15_T* const ret) {
   for (ITER_T i = 0; i < len; i++) {
-    if (vec[i] < 0) {
-      vec[i] = 0;
-    }
+    ret[i] = q15_relu(vec[i], Q15_TMAX);
   }
 }
 
 void q15_v_exp(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
-               SCALE_T scvec, SCALE_T scret) {
-  for (ITER_T i = 0; i < len; i++) {
-    ret[i] = ((Q15_T)(exp(((float)vec[i]) / scvec) * scret));
+               SCALE_T scvec, SCALE_T scret, ITER_T use_tables) {
+  if (use_tables) {
+    SCALE_T scale = scvec * scret;
+    for (ITER_T i = 0; i < len; i++) {
+      ret[i] = exp_base_16(vec[i], scale);
+    }
+  } else {
+    for (ITER_T i = 0; i < len; i++) {
+      ret[i] = ((Q15_T)(exp(((float)vec[i]) / scvec) * scret));
+    }
   }
 }
 
@@ -488,11 +493,12 @@ void q15_t_sub_vec(const Q15_T* const ten, const Q15_T* const vec,
   }
 }
 
-void q7_t_relu(Q7_T* const ten, ITER_T nbatches, ITER_T nrows,
-               ITER_T ncols, ITER_T nchannels, Q7_T limit, Q7_T div) {
+void q7_t_relu(const Q7_T* const ten, ITER_T nbatches, ITER_T nrows,
+               ITER_T ncols, ITER_T nchannels, Q7_T* const ret, Q7_T limit,
+               Q7_T div) {
   ITER_T len = nbatches * nrows * ncols * nchannels;
   for (ITER_T i = 0; i < len; i++) {
-    ten[i] = q7_relu(ten[i], limit) / div;
+    ret[i] = q7_relu(ten[i], limit) / div;
   }
 }
 

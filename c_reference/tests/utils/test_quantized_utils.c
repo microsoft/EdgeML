@@ -186,9 +186,10 @@ int test_q15_v_argmax() {
 int test_q15_v_relu() {
   Q15_T qvec_A[16] = {-3648, 648, -2147, -2348, 1468, -4348, 3648, 3648, -648, 9648, 3778, 4743, 7483, -243, 8, -21};
   const Q15_T expected[16] = {0, 648, 0, 0, 1468, 0, 3648, 3648, 0, 9648, 3778, 4743, 7483, 0, 8, 0};
+  Q15_T pred[16];
 
-  q15_v_relu(&qvec_A[0], 16);
-  return check_output(qvec_A, expected, 16);
+  q15_v_relu(&qvec_A[0], 16, &pred[0]);
+  return check_output(pred, expected, 16);
 }
 
 // Test q15_v_exp() function.
@@ -197,7 +198,7 @@ int test_q15_v_exp() {
   const Q15_T expected[16] = {40, 6832, 560, 635, 29493, 31, 1345, -22628, 18482, 31, 25215, 182, -24195, 1047, 3227, -22628};
   Q15_T pred[16];
 
-  q15_v_exp(&qvec_A[0], 16, &pred[0], 8, 8);
+  q15_v_exp(&qvec_A[0], 16, &pred[0], 8, 8, 0);
   return check_output(pred, expected, 16);
 }
 

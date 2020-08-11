@@ -4,10 +4,11 @@
 include ../config.mk
 
 INCLUDE_DIR=../include
+MODEL_DIR=../models
 SRC_DIR=../src
-IFLAGS = -I $(INCLUDE_DIR)
+IFLAGS = -I $(INCLUDE_DIR) -I $(MODEL_DIR)
 
-all: test_fastgrnn_lr test_rnnpool test_quantized_utils test_quantized_fastgrnn test_quantized_rnnpool test_quantized_mbconv
+all: test_fastgrnn_lr test_rnnpool test_quantized_utils test_quantized_fastgrnn test_quantized_rnnpool test_quantized_mbconv test_quantized_face_detection
 
 FASTGRNN_DIR=fastgrnn
 test_fastgrnn_lr: $(FASTGRNN_DIR)/test_fastgrnn_lr.c $(SRC_DIR)/utils.o $(SRC_DIR)/fastgrnn.o $(SRC_DIR)/classifier.o
@@ -29,10 +30,14 @@ MBCONV_DIR=mbconv
 test_quantized_mbconv: $(MBCONV_DIR)/test_quantized_mbconv.c $(SRC_DIR)/quantized_utils.o $(SRC_DIR)/quantized_mbconv.o
 	$(CC) -o $@ $^ $(IFLAGS) $(CFLAGS) -Wno-unused-result -lm
 
+FACE_DETECTION_DIR=face_detection
+test_quantized_face_detection: $(FACE_DETECTION_DIR)/test_quantized_face_detection.c $(SRC_DIR)/quantized_utils.o $(SRC_DIR)/quantized_mbconv.o $(MODEL_DIR)/quantized_face_detection.o
+	$(CC) -o $@ $^ $(IFLAGS) $(CFLAGS) -Wno-unused-result -lm
+
 .PHONY: clean cleanest
 
 clean: 
-	rm -f *.o *.gch test_fastgrnn_lr test_rnnpool test_quantized_utils test_quantized_fastgrnn test_quantized_rnnpool test_quantized_mbconv
+	rm -f *.o *.gch test_fastgrnn_lr test_rnnpool test_quantized_utils test_quantized_fastgrnn test_quantized_rnnpool test_quantized_mbconv test_quantized_face_detection
 
 cleanest: clean
 	rm *~

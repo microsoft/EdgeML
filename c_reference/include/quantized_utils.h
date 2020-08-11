@@ -270,14 +270,15 @@ void q15_v_argmax(const Q15_T* const vec, ITER_T len, ITER_T* const ret);
 /**
  * @brief Replace any negative element present in the vector with zero.
  * Note: No saturation is done here, and hence, the output might overflow with a large input.
- * @param[in, out]  vec       pointer to vector on which element-wise ReLU operation is to be applied
+ * @param[in]       vec       pointer to vector on which element-wise ReLU operation is to be applied
  * @param[in]       len       length of the input vector
+ * @param[out]      ret       pointer to the output vector
  * @return          none
  * @example         vec       = {1324, -5453, 3454, -3435, 8789}
  *                  len       = 4
  *                  vec       = {1324, 0, 3454, 0, 8789}
  */
-void q15_v_relu(Q15_T* const vec, ITER_T len);
+void q15_v_relu(const Q15_T* const vec, ITER_T len, Q15_T* const ret);
 /**
  * @brief Computes exponentiation of all elements in the vec (interpreted as a floating-point value) to the base e and stores the result in ret.
  * Note: No saturation is done here, and hence, the output might overflow with a large input.
@@ -295,7 +296,7 @@ void q15_v_relu(Q15_T* const vec, ITER_T len);
  *                  ret       = {40, 6832, 560, 635, 29493}
  */
 void q15_v_exp(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
-               SCALE_T scvec, SCALE_T scret);
+               SCALE_T scvec, SCALE_T scret, ITER_T use_tables);
 /**
  * @brief Performs element-wise up-scaling on a vector.
  * @param[in, out]  vec       pointer to the vector on which up-scaling is to be performed
@@ -569,11 +570,12 @@ void q15_t_sub_vec(const Q15_T* const ten, const Q15_T* const vec,
                    SCALE_T scvec, SCALE_T scret);
 /**
  * @brief Replace any negative element present in the tensor with zero and clips positive elements to the limit.
- * @param[in, out]  ten       pointer to tensor on which element-wise ReLU6 operation is to be applied
+ * @param[in]       ten       pointer to tensor on which element-wise ReLU6 operation is to be applied
  * @param[in]       nbatches  number of batches of the input tensor
  * @param[in]       nrows     number of rows of the input tensor
  * @param[in]       ncols     number of columns of the input tensor
  * @param[in]       nchannels number of channels of the input tensor
+ * @param[out]      ret       pointer to the output tensor
  * @param[in]       limit     upper threshold of the ReLU operation
  * @param[in]       div       scaling factor for the input tensor
  * @param[in]
@@ -582,8 +584,8 @@ void q15_t_sub_vec(const Q15_T* const ten, const Q15_T* const vec,
  *                  
  *                  
  */
-void q7_t_relu(Q7_T* const ten, ITER_T nbatches, ITER_T nrows,
-               ITER_T ncols, ITER_T nchannels, Q7_T limit, Q7_T div);
+void q7_t_relu(const Q7_T* const ten, ITER_T nbatches, ITER_T nrows, ITER_T ncols,
+               ITER_T nchannels, Q7_T* const ret, Q7_T limit, Q7_T div);
 /**
  * @brief Computes the L2-Norm for each channel of the input tensor, and divides each number in that channel by it.
  * dim(ten) = dim(ret) = [nbatches][nrows][ncols][nchannels].
