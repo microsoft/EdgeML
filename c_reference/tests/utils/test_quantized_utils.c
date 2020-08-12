@@ -45,10 +45,10 @@ int test_q15_v_add() {
 
   #ifdef SHIFT
     const Q15_T expected[8] = {-2773, -1359, -3028, -390, -1666, -2071, -608, -700};
-    q15_v_add(&qvec_A[0], &qvec_B[0], 8, &pred[0], 0, 3, 0);
+    q15_v_add(&qvec_A[0], &qvec_B[0], 8, &pred[0], 0, 3, 0, 0);
   #else
     const Q15_T expected[8] = {-2772, -1358, -3028, -389, -1666, -2070, -608, -699};
-    q15_v_add(&qvec_A[0], &qvec_B[0], 8, &pred[0], 1, 8, 1);
+    q15_v_add(&qvec_A[0], &qvec_B[0], 8, &pred[0], 1, 8, 1, 1);
   #endif
 
   return check_output(pred, expected, 8);
@@ -404,7 +404,7 @@ int test_q15_t_sub_vec() {
 }
 
 // Test q15_to_q15_maxpool() function.
-int test_q15_to_q15_maxpool() {
+int test_q15_maxpool() {
   const Q15_T qmat_A[2 * 2 * 2 * 2] = {11, 220,
                                        130, 40,
 
@@ -496,15 +496,15 @@ int test_q15_to_q15_maxpool() {
   Q15_T pred_A[2 * 1 * 1 * 2], pred_B[2 * 3 * 3 * 2], pred_C[2 * 2 * 2 * 2], pred_D[2 * 3 * 3 * 2];
 
   #ifdef SHIFT
-    q15_to_q15_maxpool(qmat_A, pred_A, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1);
-    q15_to_q15_maxpool(qmat_B, pred_B, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0);
-    q15_to_q15_maxpool(qmat_B, pred_C, 2, 2, 2, 2, 3, 3, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0);
-    q15_to_q15_maxpool(qmat_A, pred_D, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2, 2, 2, 2, 1, 1, 3, 3, 1, 1);
+    q15_maxpool(qmat_A, pred_A, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1);
+    q15_maxpool(qmat_B, pred_B, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0);
+    q15_maxpool(qmat_B, pred_C, 2, 2, 2, 2, 3, 3, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0);
+    q15_maxpool(qmat_A, pred_D, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2, 2, 2, 2, 1, 1, 3, 3, 1, 1);
   #else
-    q15_to_q15_maxpool(qmat_A, pred_A, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2);
-    q15_to_q15_maxpool(qmat_B, pred_B, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
-    q15_to_q15_maxpool(qmat_B, pred_C, 2, 2, 2, 2, 3, 3, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
-    q15_to_q15_maxpool(qmat_A, pred_D, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2);
+    q15_maxpool(qmat_A, pred_A, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2);
+    q15_maxpool(qmat_B, pred_B, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+    q15_maxpool(qmat_B, pred_C, 2, 2, 2, 2, 3, 3, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
+    q15_maxpool(qmat_A, pred_D, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2);
   #endif
   return (check_output(pred_A, expected_A, 4) || check_output(pred_B, expected_B, 36) || check_output(pred_C, expected_C, 8) || check_output(pred_D, expected_D, 36));
 }
@@ -524,16 +524,25 @@ int test_q15_convolution() {
                                        513, 514,
                                        715, 716};
   //Convolution Filters
-  const Q15_T qmat_B[2 * 2 * 1 * 1] = {0, 1,
-                                       1, 0};
-  const Q15_T qmat_C[2 * 2 * 2 * 1] = {0, 1,
-                                       1, 0,
+  const Q15_T qmat_B[2 * 2 * 2 * 1 * 1] = {0, 1,
+                                           1, 0,
 
-                                       1, 0,
-                                       0, 1};
-  const Q15_T qmat_D[3 * 3 * 1 * 1] = {0, 0, 1,
-                                       0, 1, 0,
-                                       1, 0, 0};
+
+                                           0, 1,
+                                           1, 0,};
+  const Q15_T qmat_C[1 * 2 * 2 * 2 * 1] = {0, 1,
+                                           1, 0,
+
+                                           1, 0,
+                                           0, 1};
+  const Q15_T qmat_D[2 * 3 * 3 * 1 * 1] = {0, 0, 1,
+                                           0, 1, 0,
+                                           1, 0, 0,
+
+
+                                           0, 0, 1,
+                                           0, 1, 0,
+                                           1, 0, 0};
 
   const Q15_T expected_A[2 * 1 * 1 * 2] = {44, 25,
 
@@ -593,6 +602,7 @@ int test_q15_convolution() {
     q15_convolution(qmat_A, qmat_D, pred_C, temp, 2, 2, 2, 2, 3, 3, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 0, 1, 1, 1);
     q15_convolution(qmat_A, qmat_B, pred_D, temp, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2, 2, 2, 2, 1, 1, 3, 3, 3, 0, 2, 2, 1);
   #endif
+
   return (check_output(pred_A, expected_A, 4) || check_output(pred_B, expected_B, 2) || check_output(pred_C, expected_C, 16) || check_output(pred_D, expected_D, 36));
 }
 
@@ -643,8 +653,8 @@ int main() {
     printf("Test Failure for q15_t_add_vec()!\n");
   } else if (test_q15_t_sub_vec()) {
     printf("Test Failure for q15_t_sub_vec()!\n");
-  } else if (test_q15_to_q15_maxpool()) {
-    printf("Test Failure for q15_to_q15_maxpool()!\n");
+  } else if (test_q15_maxpool()) {
+    printf("Test Failure for q15_maxpool()!\n");
   } else if (test_q15_convolution()) {
     printf("Test Failure for q15_convolution()!\n");
   } else {

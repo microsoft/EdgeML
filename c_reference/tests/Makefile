@@ -14,7 +14,7 @@ FASTGRNN_DIR=fastgrnn
 test_fastgrnn_lr: $(FASTGRNN_DIR)/test_fastgrnn_lr.c $(SRC_DIR)/utils.o $(SRC_DIR)/fastgrnn.o $(SRC_DIR)/classifier.o
 	$(CC) -o $@ $^ $(IFLAGS) $(CFLAGS) -lm
 test_quantized_fastgrnn: $(FASTGRNN_DIR)/test_quantized_fastgrnn.c $(SRC_DIR)/quantized_utils.o $(SRC_DIR)/quantized_fastgrnn.o
-	$(CC) -o $@ $^ $(IFLAGS) $(CFLAGS) -lm
+	$(CC) -o $@ $^ $(IFLAGS) $(CFLAGS) -Wno-unused-variable -lm
 
 RNNPOOL_DIR=rnnpool
 test_rnnpool: $(RNNPOOL_DIR)/test_rnnpool.c  $(SRC_DIR)/utils.o $(SRC_DIR)/fastgrnn.o $(SRC_DIR)/rnnpool.o
@@ -31,7 +31,7 @@ test_quantized_mbconv: $(MBCONV_DIR)/test_quantized_mbconv.c $(SRC_DIR)/quantize
 	$(CC) -o $@ $^ $(IFLAGS) $(CFLAGS) -Wno-unused-result -lm
 
 FACE_DETECTION_DIR=face_detection
-test_quantized_face_detection: $(FACE_DETECTION_DIR)/test_quantized_face_detection.c $(SRC_DIR)/quantized_utils.o $(SRC_DIR)/quantized_mbconv.o $(MODEL_DIR)/quantized_face_detection.o
+test_quantized_face_detection: $(FACE_DETECTION_DIR)/test_quantized_face_detection.c $(SRC_DIR)/quantized_utils.o $(SRC_DIR)/quantized_fastgrnn.o $(SRC_DIR)/quantized_rnnpool.o $(SRC_DIR)/quantized_mbconv.o $(MODEL_DIR)/quantized_face_detection.o
 	$(CC) -o $@ $^ $(IFLAGS) $(CFLAGS) -Wno-unused-result -lm
 
 .PHONY: clean cleanest

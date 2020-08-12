@@ -86,7 +86,7 @@ void q7_mbconv_block(const Q7_T* const input, const Q7_T* const filter1,
   SCALE_T shrU3, SCALE_T shrB3, SCALE_T shrW3, SCALE_T shlU1, SCALE_T shlB1,
   SCALE_T shlX1, SCALE_T shlU2, SCALE_T shlB2, SCALE_T shlX2, SCALE_T shlU3,
   SCALE_T shlB3, SCALE_T shlW3);
-void q7xq15_to_q15_mbconv_block(const Q7_T* const input, const Q15_T* const filter1,
+void q7xq15_q15_mbconv_block(const Q7_T* const input, const Q15_T* const filter1,
   const Q15_T* const BN1W, const Q15_T* const BN1B, const Q15_T* const filter2,
   const Q15_T* const BN2W, const Q15_T* const BN2B, const Q15_T* const filter3,
   const Q15_T* const BN3W, const Q15_T* const BN3B, Q15_T* const output,
@@ -100,7 +100,7 @@ void q7xq15_to_q15_mbconv_block(const Q7_T* const input, const Q15_T* const filt
   L_SCALE_T shlU1, L_SCALE_T shlB1, L_SCALE_T shlX1, L_SCALE_T shlU2,
   L_SCALE_T shlB2, L_SCALE_T shlX2, L_SCALE_T shlU3, L_SCALE_T shlB3,
   L_SCALE_T shlW3);
-void q15xq7_to_q7_mbconv_block(const Q15_T* const input, const Q7_T* const filter1,
+void q15xq7_q7_mbconv_block(const Q15_T* const input, const Q7_T* const filter1,
   const Q7_T* const BN1W, const Q7_T* const BN1B, const Q7_T* const filter2,
   const Q7_T* const BN2W, const Q7_T* const BN2B, const Q7_T* const filter3,
   const Q7_T* const BN3W, const Q7_T* const BN3B, Q7_T* const output,
@@ -114,7 +114,7 @@ void q15xq7_to_q7_mbconv_block(const Q15_T* const input, const Q7_T* const filte
   L_SCALE_T shlU1, L_SCALE_T shlB1, L_SCALE_T shlX1, L_SCALE_T shlU2,
   L_SCALE_T shlB2, L_SCALE_T shlX2, L_SCALE_T shlU3, L_SCALE_T shlB3,
   L_SCALE_T shlW3);
-void q15xq7_to_q15_mbconv_block(const Q15_T* const input, const Q7_T* const filter1,
+void q15xq7_q15_mbconv_block(const Q15_T* const input, const Q7_T* const filter1,
   const Q7_T* const BN1W, const Q7_T* const BN1B, const Q7_T* const filter2,
   const Q7_T* const BN2W, const Q7_T* const BN2B, const Q7_T* const filter3,
   const Q7_T* const BN3W, const Q7_T* const BN3B, Q15_T* const output,

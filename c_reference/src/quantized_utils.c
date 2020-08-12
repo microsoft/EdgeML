@@ -82,12 +82,24 @@ void q31_v_treesum(Q31_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2) {
 }
 
 void q15_v_add(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len,
-               Q15_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret) {
+               Q15_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret,
+               SCALE_T demote) {
   for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
-      ret[i] = ((vec1[i] >> (scvec1 + scret)) + (vec2[i] >> (scvec2 + scret)));
+      ret[i] = (((vec1[i] >> (scvec1 + scret)) + (vec2[i] >> (scvec2 + scret))) >> demote);
     #else
-      ret[i] = ((vec1[i] / scvec1) / scret) + ((vec2[i] / scvec2) / scret);
+      ret[i] = (((vec1[i] / scvec1) / scret) + ((vec2[i] / scvec2) / scret)) / demote;
+    #endif
+  }
+}
+
+void q7_v_sub(const Q7_T* const vec1, const Q7_T* const vec2, ITER_T len,
+              Q7_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret) {
+  for (ITER_T i = 0; i < len; i++) {
+    #ifdef SHIFT
+      ret[i] = ((vec1[i] >> (scvec1 + scret)) - (vec2[i] >> (scvec2 + scret)));
+    #else
+      ret[i] = ((vec1[i] / scvec1) / scret) - ((vec2[i] / scvec2) / scret);
     #endif
   }
 }
@@ -99,6 +111,17 @@ void q15_v_sub(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len,
       ret[i] = ((vec1[i] >> (scvec1 + scret)) - (vec2[i] >> (scvec2 + scret)));
     #else
       ret[i] = ((vec1[i] / scvec1) / scret) - ((vec2[i] / scvec2) / scret);
+    #endif
+  }
+}
+
+void q7_v_hadamard(const Q7_T* const vec1, const Q7_T* const vec2, ITER_T len,
+                   Q7_T* const ret, SCALE_T scvec1, SCALE_T scvec2) {
+  for (ITER_T i = 0; i < len; i++) {
+    #ifdef SHIFT
+      ret[i] = ((Q15_T)vec1[i] * (Q15_T)vec2[i]) >> (scvec1 + scvec2);
+    #else
+      ret[i] = ((((Q15_T)vec1[i] * (Q15_T)vec2[i]) / scvec1) / scvec2);
     #endif
   }
 }
@@ -147,13 +170,13 @@ void q15_v_tanh(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
                 SCALE_T scale_in, SCALE_T scale_out, ITER_T use_tables) {
   if (use_tables) {
     for (ITER_T i = 0; i < len; i++) {
-      Q15_T x = vec[i];
+      Q15_T x = q15_saturate(2 * vec[i]);
 
       if (x <= 0) {
-        Q31_T y = exp_base_16(2 * x, 1);
+        Q31_T y = exp_base_16(x, 1);
         ret[i] = (Q15_T)((((Q31_T)(y - 16384)) << 14) / (y + 16384));
       } else {
-        Q31_T y = exp_base_16(-2 * x, 1);
+        Q31_T y = exp_base_16(-x, 1);
         ret[i] = (Q15_T)((((Q31_T)(16384 - y)) << 14) / (y + 16384));
       }
     }
@@ -369,12 +392,12 @@ void q15_m_mulvec(const Q15_T* const mat, const Q15_T* const vec, ITER_T nrows,
   }
 }
 
-void q7xq15_to_q15_m_mulvec(const Q7_T* const mat, const Q15_T* const vec,
-                            ITER_T nrows, ITER_T ncols, Q15_T* const ret,
-                            SCALE_T scmat, SCALE_T scvec, SCALE_T H1, SCALE_T H2) {
+void q15xq7_q15_m_mulvec(const Q15_T* const mat, const Q7_T* const vec,
+                         ITER_T nrows, ITER_T ncols, Q15_T* const ret,
+                         SCALE_T scmat, SCALE_T scvec, SCALE_T H1, SCALE_T H2) {
   Q31_T treesumBuffer[ncols];
   for (ITER_T row = 0; row < nrows; row++) {
-    Q7_T* mat_offset = (Q7_T*)mat + row * ncols;
+    Q15_T* mat_offset = (Q15_T*)mat + row * ncols;
 
     for (ITER_T col = 0; col < ncols; col++) {
       treesumBuffer[col] = ((Q31_T)(*mat_offset++) * (Q31_T)vec[col]);
@@ -457,7 +480,7 @@ void q15_t_add_vec(const Q15_T* const ten, const Q15_T* const vec,
   }
 }
 
-void q7xq15_to_q7_t_add_vec(const Q7_T* const ten, const Q15_T* const vec,
+void q7xq15_q7_t_add_vec(const Q7_T* const ten, const Q15_T* const vec,
                             ITER_T nbatches, ITER_T nrows, ITER_T ncols,
                             ITER_T nchannels, Q7_T* const ret, SCALE_T scten,
                             SCALE_T scvec, SCALE_T scret) {
@@ -514,7 +537,7 @@ void q15_t_l2_norm(const Q15_T* const ten, ITER_T nbatches, ITER_T nrows,
 
     for (ITER_T c = 0; c < nchannels; c++) {
       Q31_T x = ten[j + c];
-      sum_square += (((x * x) >> scale_out) << scale_out);
+      sum_square += ((x * x) >> (2 * scale_out));
     }
 
     Q15_T low = 1;
@@ -543,16 +566,21 @@ void q15_t_l2_norm(const Q15_T* const ten, ITER_T nbatches, ITER_T nrows,
   }
 }
 
-void q15_to_q15_maxpool(const Q15_T* const input, Q15_T* const output, ITER_T N,
+void q15_maxpool(const Q15_T* const input, Q15_T* const output, ITER_T N,
   ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut,
   ITER_T HOut, ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD,
   S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride,
   ITER_T HDilation, ITER_T WDilation, SCALE_T scinput, SCALE_T scoutput) {
 
-  S_ITER_T HOffsetL = ((S_ITER_T)HDilation * (S_ITER_T)((HF - 1) >> 1)) - HPadU;
-  S_ITER_T WOffsetL = ((S_ITER_T)WDilation * (S_ITER_T)((WF - 1) >> 1)) - WPadL;
-  S_ITER_T HOffsetR = ((S_ITER_T)HDilation * (S_ITER_T)(HF >> 1)) - HPadD;
-  S_ITER_T WOffsetR = ((S_ITER_T)WDilation * (S_ITER_T)(WF >> 1)) - WPadR;
+  S_ITER_T HOffsetFL = ((HF - 1) >> 1);
+  S_ITER_T HOffsetFR = (HF >> 1);
+  S_ITER_T WOffsetFL = ((WF - 1) >> 1);
+  S_ITER_T WOffsetFR = (WF >> 1);
+
+  S_ITER_T HOffsetL = ((S_ITER_T)HDilation * HOffsetFL) - HPadU;
+  S_ITER_T WOffsetL = ((S_ITER_T)WDilation * WOffsetFL) - WPadL;
+  S_ITER_T HOffsetR = ((S_ITER_T)HDilation * HOffsetFR) - HPadD;
+  S_ITER_T WOffsetR = ((S_ITER_T)WDilation * WOffsetFR) - WPadR;
 
   ITER_T HOffsetIn = W * CIn;
   ITER_T NOffsetIn = H * HOffsetIn;
@@ -574,10 +602,10 @@ void q15_to_q15_maxpool(const Q15_T* const input, Q15_T* const output, ITER_T N,
           for (ITER_T c = 0; c < COut; c++) {
 
             Q15_T max = Q15_TMIN;
-            for (S_ITER_T hf = -((HF - 1) >> 1); hf <= (HF >> 1); hf++) {
+            for (S_ITER_T hf = -HOffsetFL; hf <= HOffsetFR; hf++) {
               S_ITER_T hoffset = h + ((S_ITER_T)HDilation * hf);
               ITER_T HIndexIn = ((ITER_T)hoffset) * HOffsetIn;
-              for (S_ITER_T wf = -((WF - 1) >> 1); wf <= (WF >> 1); wf++) {
+              for (S_ITER_T wf = -WOffsetFL; wf <= WOffsetFR; wf++) {
                 S_ITER_T woffset = w + ((S_ITER_T)WDilation * wf);
                 ITER_T WIndexIn = ((ITER_T)woffset) * CIn;
                 for (ITER_T cf = 0; cf < CF; cf++) {
@@ -615,15 +643,21 @@ void q15_convolution(const Q15_T* const input, const Q15_T* const filter,
   ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput, SCALE_T scoutput,
   SCALE_T demote) {
 
-  S_ITER_T HOffsetL = ((S_ITER_T)HDilation * (S_ITER_T)((HF - 1) >> 1)) - HPadU;
-  S_ITER_T WOffsetL = ((S_ITER_T)WDilation * (S_ITER_T)((WF - 1) >> 1)) - WPadL;
-  S_ITER_T HOffsetR = ((S_ITER_T)HDilation * (S_ITER_T)(HF >> 1)) - HPadD;
-  S_ITER_T WOffsetR = ((S_ITER_T)WDilation * (S_ITER_T)(WF >> 1)) - WPadR;
+  S_ITER_T HOffsetFL = ((HF - 1) >> 1);
+  S_ITER_T HOffsetFR = (HF >> 1);
+  S_ITER_T WOffsetFL = ((WF - 1) >> 1);
+  S_ITER_T WOffsetFR = (WF >> 1);
+
+  S_ITER_T HOffsetL = ((S_ITER_T)HDilation * HOffsetFL) - HPadU;
+  S_ITER_T WOffsetL = ((S_ITER_T)WDilation * WOffsetFL) - WPadL;
+  S_ITER_T HOffsetR = ((S_ITER_T)HDilation * HOffsetFR) - HPadD;
+  S_ITER_T WOffsetR = ((S_ITER_T)WDilation * WOffsetFR) - WPadR;
 
   ITER_T HOffsetIn = W * CIn;
   ITER_T NOffsetIn = H * HOffsetIn;
   ITER_T WOffsetF = CF * COut;
   ITER_T HOffsetF = WF * WOffsetF;
+  ITER_T GOffsetF = HF * HOffsetF;
   ITER_T WOffsetOut = (COut * G);
   ITER_T HOffsetOut = WOut * WOffsetOut;
   ITER_T NOffsetOut = HOut * HOffsetOut;
@@ -639,23 +673,24 @@ void q15_convolution(const Q15_T* const input, const Q15_T* const filter,
         for (ITER_T g = 0; g < G; g++) {
           ITER_T CIndexIn = g * CF;
           ITER_T CIndexOut = g * COut;
+          ITER_T GIndexF = g * GOffsetF;
           for (ITER_T c = 0; c < COut; c++) {
 
             ITER_T counter = 0;
-            for (S_ITER_T hf = -((HF - 1) >> 1); hf <= (HF >> 1); hf++) {
+            for (S_ITER_T hf = -HOffsetFL; hf <= HOffsetFR; hf++) {
               S_ITER_T hoffset = h + ((S_ITER_T)HDilation * hf);
               ITER_T HIndexIn = ((ITER_T)hoffset) * HOffsetIn;
-              ITER_T HIndexF = ((ITER_T)(hf + ((HF - 1) >> 1))) * HOffsetF;
-              for (S_ITER_T wf = -((WF - 1) >> 1); wf <= (WF >> 1); wf++) {
+              ITER_T HIndexF = ((ITER_T)(hf + HOffsetFL)) * HOffsetF;
+              for (S_ITER_T wf = -WOffsetFL; wf <= WOffsetFR; wf++) {
                 S_ITER_T woffset = w + ((S_ITER_T)WDilation * wf);
                 ITER_T WIndexIn = ((ITER_T)woffset) * CIn;
-                ITER_T WIndexF = ((ITER_T)(wf + ((WF - 1) >> 1))) * WOffsetF;
+                ITER_T WIndexF = ((ITER_T)(wf + WOffsetFL)) * WOffsetF;
                 for (ITER_T cf = 0; cf < CF; cf++) {
                   if ((hoffset < 0) || (hoffset >= (S_ITER_T)H) || (woffset < 0) || (woffset >= (S_ITER_T)W)) {
                     treesumBuffer[counter] = 0;
                   } else {
                     treesumBuffer[counter] = ((Q31_T)input[NIndexIn + HIndexIn + WIndexIn + (cf + CIndexIn)]) *
-                      ((Q31_T)filter[HIndexF + WIndexF + (c + cf * COut)]);
+                      ((Q31_T)filter[GIndexF + HIndexF + WIndexF + (c + cf * COut)]);
                   }
                   counter++;
                 }
@@ -675,7 +710,7 @@ void q15_convolution(const Q15_T* const input, const Q15_T* const filter,
   }
 }
 
-void q7xq15_to_q15_convolution(const Q7_T* const input, const Q15_T* const filter,
+void q7xq15_q15_convolution(const Q7_T* const input, const Q15_T* const filter,
   Q15_T* const output, Q31_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
   ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
   ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
@@ -683,15 +718,21 @@ void q7xq15_to_q15_convolution(const Q7_T* const input, const Q15_T* const filte
   ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput, SCALE_T scoutput,
   SCALE_T demote) {
 
-  S_ITER_T HOffsetL = ((S_ITER_T)HDilation * (S_ITER_T)((HF - 1) >> 1)) - HPadU;
-  S_ITER_T WOffsetL = ((S_ITER_T)WDilation * (S_ITER_T)((WF - 1) >> 1)) - WPadL;
-  S_ITER_T HOffsetR = ((S_ITER_T)HDilation * (S_ITER_T)(HF >> 1)) - HPadD;
-  S_ITER_T WOffsetR = ((S_ITER_T)WDilation * (S_ITER_T)(WF >> 1)) - WPadR;
+  S_ITER_T HOffsetFL = ((HF - 1) >> 1);
+  S_ITER_T HOffsetFR = (HF >> 1);
+  S_ITER_T WOffsetFL = ((WF - 1) >> 1);
+  S_ITER_T WOffsetFR = (WF >> 1);
+
+  S_ITER_T HOffsetL = ((S_ITER_T)HDilation * HOffsetFL) - HPadU;
+  S_ITER_T WOffsetL = ((S_ITER_T)WDilation * WOffsetFL) - WPadL;
+  S_ITER_T HOffsetR = ((S_ITER_T)HDilation * HOffsetFR) - HPadD;
+  S_ITER_T WOffsetR = ((S_ITER_T)WDilation * WOffsetFR) - WPadR;
 
   ITER_T HOffsetIn = W * CIn;
   ITER_T NOffsetIn = H * HOffsetIn;
   ITER_T WOffsetF = CF * COut;
   ITER_T HOffsetF = WF * WOffsetF;
+  ITER_T GOffsetF = HF * HOffsetF;
   ITER_T WOffsetOut = (COut * G);
   ITER_T HOffsetOut = WOut * WOffsetOut;
   ITER_T NOffsetOut = HOut * HOffsetOut;
@@ -707,23 +748,24 @@ void q7xq15_to_q15_convolution(const Q7_T* const input, const Q15_T* const filte
         for (ITER_T g = 0; g < G; g++) {
           ITER_T CIndexIn = g * CF;
           ITER_T CIndexOut = g * COut;
+          ITER_T GIndexF = g * GOffsetF;
           for (ITER_T c = 0; c < COut; c++) {
 
             ITER_T counter = 0;
-            for (S_ITER_T hf = -((HF - 1) >> 1); hf <= (HF >> 1); hf++) {
+            for (S_ITER_T hf = -HOffsetFL; hf <= HOffsetFR; hf++) {
               S_ITER_T hoffset = h + ((S_ITER_T)HDilation * hf);
               ITER_T HIndexIn = ((ITER_T)hoffset) * HOffsetIn;
-              ITER_T HIndexF = ((ITER_T)(hf + ((HF - 1) >> 1))) * HOffsetF;
-              for (S_ITER_T wf = -((WF - 1) >> 1); wf <= (WF >> 1); wf++) {
+              ITER_T HIndexF = ((ITER_T)(hf + HOffsetFL)) * HOffsetF;
+              for (S_ITER_T wf = -WOffsetFL; wf <= WOffsetFR; wf++) {
                 S_ITER_T woffset = w + ((S_ITER_T)WDilation * wf);
                 ITER_T WIndexIn = ((ITER_T)woffset) * CIn;
-                ITER_T WIndexF = ((ITER_T)(wf + ((WF - 1) >> 1))) * WOffsetF;
+                ITER_T WIndexF = ((ITER_T)(wf + WOffsetFL)) * WOffsetF;
                 for (ITER_T cf = 0; cf < CF; cf++) {
                   if ((hoffset < 0) || (hoffset >= (S_ITER_T)H) || (woffset < 0) || (woffset >= (S_ITER_T)W)) {
                     treesumBuffer[counter] = 0;
                   } else {
                     treesumBuffer[counter] = ((Q31_T)input[NIndexIn + HIndexIn + WIndexIn + (cf + CIndexIn)]) *
-                      ((Q31_T)filter[HIndexF + WIndexF + (c + cf * COut)]);
+                      ((Q31_T)filter[GIndexF + HIndexF + WIndexF + (c + cf * COut)]);
                   }
                   counter++;
                 }
@@ -743,7 +785,7 @@ void q7xq15_to_q15_convolution(const Q7_T* const input, const Q15_T* const filte
   }
 }
 
-void q7xq15_to_q7_convolution(const Q7_T* const input, const Q15_T* const filter,
+void q7xq15_q7_convolution(const Q7_T* const input, const Q15_T* const filter,
   Q7_T* const output, Q31_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
   ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
   ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
@@ -751,15 +793,21 @@ void q7xq15_to_q7_convolution(const Q7_T* const input, const Q15_T* const filter
   ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput, SCALE_T scoutput,
   SCALE_T demote) {
 
-  S_ITER_T HOffsetL = ((S_ITER_T)HDilation * (S_ITER_T)((HF - 1) >> 1)) - HPadU;
-  S_ITER_T WOffsetL = ((S_ITER_T)WDilation * (S_ITER_T)((WF - 1) >> 1)) - WPadL;
-  S_ITER_T HOffsetR = ((S_ITER_T)HDilation * (S_ITER_T)(HF >> 1)) - HPadD;
-  S_ITER_T WOffsetR = ((S_ITER_T)WDilation * (S_ITER_T)(WF >> 1)) - WPadR;
+  S_ITER_T HOffsetFL = ((HF - 1) >> 1);
+  S_ITER_T HOffsetFR = (HF >> 1);
+  S_ITER_T WOffsetFL = ((WF - 1) >> 1);
+  S_ITER_T WOffsetFR = (WF >> 1);
+
+  S_ITER_T HOffsetL = ((S_ITER_T)HDilation * HOffsetFL) - HPadU;
+  S_ITER_T WOffsetL = ((S_ITER_T)WDilation * WOffsetFL) - WPadL;
+  S_ITER_T HOffsetR = ((S_ITER_T)HDilation * HOffsetFR) - HPadD;
+  S_ITER_T WOffsetR = ((S_ITER_T)WDilation * WOffsetFR) - WPadR;
 
   ITER_T HOffsetIn = W * CIn;
   ITER_T NOffsetIn = H * HOffsetIn;
   ITER_T WOffsetF = CF * COut;
   ITER_T HOffsetF = WF * WOffsetF;
+  ITER_T GOffsetF = HF * HOffsetF;
   ITER_T WOffsetOut = (COut * G);
   ITER_T HOffsetOut = WOut * WOffsetOut;
   ITER_T NOffsetOut = HOut * HOffsetOut;
@@ -775,23 +823,24 @@ void q7xq15_to_q7_convolution(const Q7_T* const input, const Q15_T* const filter
         for (ITER_T g = 0; g < G; g++) {
           ITER_T CIndexIn = g * CF;
           ITER_T CIndexOut = g * COut;
+          ITER_T GIndexF = g * GOffsetF;
           for (ITER_T c = 0; c < COut; c++) {
 
             ITER_T counter = 0;
-            for (S_ITER_T hf = -((HF - 1) >> 1); hf <= (HF >> 1); hf++) {
+            for (S_ITER_T hf = -HOffsetFL; hf <= HOffsetFR; hf++) {
               S_ITER_T hoffset = h + ((S_ITER_T)HDilation * hf);
               ITER_T HIndexIn = ((ITER_T)hoffset) * HOffsetIn;
-              ITER_T HIndexF = ((ITER_T)(hf + ((HF - 1) >> 1))) * HOffsetF;
-              for (S_ITER_T wf = -((WF - 1) >> 1); wf <= (WF >> 1); wf++) {
+              ITER_T HIndexF = ((ITER_T)(hf + HOffsetFL)) * HOffsetF;
+              for (S_ITER_T wf = -WOffsetFL; wf <= WOffsetFR; wf++) {
                 S_ITER_T woffset = w + ((S_ITER_T)WDilation * wf);
                 ITER_T WIndexIn = ((ITER_T)woffset) * CIn;
-                ITER_T WIndexF = ((ITER_T)(wf + ((WF - 1) >> 1))) * WOffsetF;
+                ITER_T WIndexF = ((ITER_T)(wf + WOffsetFL)) * WOffsetF;
                 for (ITER_T cf = 0; cf < CF; cf++) {
                   if ((hoffset < 0) || (hoffset >= (S_ITER_T)H) || (woffset < 0) || (woffset >= (S_ITER_T)W)) {
                     treesumBuffer[counter] = 0;
                   } else {
                     treesumBuffer[counter] = ((Q31_T)input[NIndexIn + HIndexIn + WIndexIn + (cf + CIndexIn)]) *
-                      ((Q31_T)filter[HIndexF + WIndexF + (c + cf * COut)]);
+                      ((Q31_T)filter[GIndexF + HIndexF + WIndexF + (c + cf * COut)]);
                   }
                   counter++;
                 }

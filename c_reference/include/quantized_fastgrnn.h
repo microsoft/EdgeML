@@ -75,14 +75,17 @@ typedef struct Q15_FastGRNN_LR_Scales {
   SCALE_T mV2AddMV4;
   SCALE_T mV4AddMV2;
   SCALE_T mV2AddMV4Out;
+  SCALE_T mV2AddMV4Demote;
   SCALE_T pC1AddBg;
   SCALE_T Bg;
   SCALE_T pC1AddBgOut;
+  SCALE_T pC1AddBgDemote;
   SCALE_T sigmoidScaleIn;
   SCALE_T sigmoidScaleOut;
   SCALE_T pC1AddBh;
   SCALE_T Bh;
   SCALE_T pC1AddBhOut;
+  SCALE_T pC1AddBhDemote;
   SCALE_T tanhScaleIn;
   SCALE_T tanhScaleOut;
   SCALE_T gateHDHiddenState;
@@ -100,6 +103,7 @@ typedef struct Q15_FastGRNN_LR_Scales {
   SCALE_T pC3AddPC1;
   SCALE_T pC1AddPC3;
   SCALE_T hiddenStateOut;
+  SCALE_T hiddenStateDemote;
   Q15_T sigmoidLimit;
   Q15_T div;
   Q15_T add;
@@ -173,6 +177,17 @@ typedef struct Q15_FastGRNN_Params {
   Q15_T sigmoid_nu;
 } Q15_FastGRNN_Params;
 
+typedef struct Q7xQ15_FastGRNN_Params {
+  Q7_T* mean;
+  Q7_T* stdDev;
+  Q15_T* W;
+  Q15_T* U;
+  Q15_T* Bg;
+  Q15_T* Bh;
+  Q15_T sigmoid_zeta;
+  Q15_T sigmoid_nu;
+} Q7xQ15_FastGRNN_Params;
+
 /**
  * @brief Model scales for different inputs. The naming convention follows
  * two basic rules:
@@ -199,14 +214,17 @@ typedef struct Q15_FastGRNN_Scales {
   SCALE_T mV1AddMV2;
   SCALE_T mV2AddMV1;
   SCALE_T mV1AddMV2Out;
+  SCALE_T mV1AddMV2Demote;
   SCALE_T pC1AddBg;
   SCALE_T Bg;
   SCALE_T pC1AddBgOut;
+  SCALE_T pC1AddBgDemote;
   SCALE_T sigmoidScaleIn;
   SCALE_T sigmoidScaleOut;
   SCALE_T pC1AddBh;
   SCALE_T Bh;
   SCALE_T pC1AddBhOut;
+  SCALE_T pC1AddBhDemote;
   SCALE_T tanhScaleIn;
   SCALE_T tanhScaleOut;
   SCALE_T gateHDHiddenState;
@@ -224,6 +242,7 @@ typedef struct Q15_FastGRNN_Scales {
   SCALE_T pC3AddPC1;
   SCALE_T pC1AddPC3;
   SCALE_T hiddenStateOut;
+  SCALE_T hiddenStateDemote;
   Q15_T div;
   Q15_T add;
   Q15_T sigmoidLimit;
@@ -246,6 +265,13 @@ typedef struct Q15_FastGRNN_Buffers {
   Q15_T* normFeatures;
 } Q15_FastGRNN_Buffers;
 
+typedef struct Q7xQ15_FastGRNN_Buffers {
+  Q15_T* preComp1;
+  Q15_T* preComp2;
+  Q15_T* preComp3;
+  Q7_T* normFeatures;
+} Q7xQ15_FastGRNN_Buffers;
+
 /**
  * @brief Multi-step updates of a FastGRNN cell
  * @param[in,out]   hiddenState  pointer to initial hidden state and output hidden state
@@ -265,9 +291,11 @@ typedef struct Q15_FastGRNN_Buffers {
  *             <code>ERR_NORMFEAT_NOT_INIT</code> if normFeatures not allocated
  * @example          Please refer the file: c_reference/tests/fastgrnn/test_quantized_fastgrnn.c
  */
+int q7xq15_q15_fastgrnn(Q15_T* const hiddenState, ITER_T hiddenDims,
+  const Q7_T* const input, ITER_T inputDims, ITER_T steps, const void* params,
+  void* buffers, const void* scales, int backward, int normalize);
 int q15_fastgrnn(Q15_T* const hiddenState, ITER_T hiddenDims,
-               const Q15_T* const input, ITER_T inputDims, ITER_T steps,
-               const void* params, void* buffers, const void* scales,
-               int backward, int normalize);
+  const Q15_T* const input, ITER_T inputDims, ITER_T steps, const void* params,
+  void* buffers, const void* scales, int backward, int normalize);
 
 #endif

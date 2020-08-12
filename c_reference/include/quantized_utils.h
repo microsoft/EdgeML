@@ -59,7 +59,7 @@ static inline Q15_T exp_base_16(Q15_T inp, Q15_T scale) {
   Q15_T val = (inp == -32768) ? 32767 : -inp;
   Q15_T val1 = val % 128;
   val >>= 7;
-  Q31_T ret = exp_table_A[val] * exp_table_B[val1];
+  Q31_T ret = (Q31_T)exp_table_A[val] * (Q31_T)exp_table_B[val1];
   return (Q15_T)((ret / scale) >> 14);
 }
 
@@ -97,7 +97,8 @@ void q31_v_treesum(Q31_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2);
  *                  ret       = {-2772, -1358, -3028, -389, -1666, -2070, -608, -699}
  */
 void q15_v_add(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len,
-               Q15_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret);
+               Q15_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret,
+               SCALE_T demote);
 /**
  * @brief Compute the element-wise subtraction between two vectors.
  * @param[in]       vec1      pointer to the first input vector
@@ -116,6 +117,8 @@ void q15_v_add(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len,
  *                  scret     = 1
  *                  ret       = {1922, 1020, -4040, 1437, -3812, 2244, 712, 1283}
  */
+void q7_v_sub(const Q7_T* const vec1, const Q7_T* const vec2, ITER_T len,
+              Q7_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret);
 void q15_v_sub(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len,
                Q15_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret);
 /**
@@ -134,6 +137,8 @@ void q15_v_sub(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len,
  *                  scvec2    = 64
  *                  ret       = {1423, 7085, -16378, 8209, -12067, 6805, 6475, 6897}
  */
+void q7_v_hadamard(const Q7_T* const vec1, const Q7_T* const vec2, ITER_T len,
+                   Q7_T* const ret, SCALE_T scvec1, SCALE_T scvec2);
 void q15_v_hadamard(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len,
                     Q15_T* const ret, SCALE_T scvec1, SCALE_T scvec2);
 /**
@@ -441,9 +446,9 @@ void q15_m_sub_vec(const Q15_T* const mat, const Q15_T* const vec,
 void q15_m_mulvec(const Q15_T* const mat, const Q15_T* const vec, ITER_T nrows,
                   ITER_T ncols, Q15_T* const ret, SCALE_T scmat, SCALE_T scvec,
                   SCALE_T H1, SCALE_T H2);
-void q7xq15_to_q15_m_mulvec(const Q7_T* const mat, const Q15_T* const vec,
-                            ITER_T nrows, ITER_T ncols, Q15_T* const ret,
-                            SCALE_T scmat, SCALE_T scvec, SCALE_T H1, SCALE_T H2);
+void q15xq7_q15_m_mulvec(const Q15_T* const mat, const Q7_T* const vec,
+                         ITER_T nrows, ITER_T ncols, Q15_T* const ret,
+                         SCALE_T scmat, SCALE_T scvec, SCALE_T H1, SCALE_T H2);
 /**
  * @brief Performs sparse matrix multiplication of a matrix and a vector.
  * col_indices and mat_values combined are a sparse representation; dim(vec) = [ndims].
@@ -531,7 +536,7 @@ void q15_t_add_vec(const Q15_T* const ten, const Q15_T* const vec,
                    ITER_T nbatches, ITER_T nrows, ITER_T ncols,
                    ITER_T nchannels, Q15_T* const ret, SCALE_T scmat,
                    SCALE_T scvec, SCALE_T scret);
-void q7xq15_to_q7_t_add_vec(const Q7_T* const ten, const Q15_T* const vec,
+void q7xq15_q7_t_add_vec(const Q7_T* const ten, const Q15_T* const vec,
                             ITER_T nbatches, ITER_T nrows, ITER_T ncols,
                             ITER_T nchannels, Q7_T* const ret, SCALE_T scmat,
                             SCALE_T scvec, SCALE_T scret);
@@ -635,7 +640,7 @@ void q15_t_l2_norm(const Q15_T* const ten, ITER_T nbatches, ITER_T nrows,
  * @return          none
  * @example         Please refer the test-case: test_quantized_maxpool() in file: c_reference/tests/utils/test_quantized_utils.c
  */
-void q15_to_q15_maxpool(const Q15_T* const input, Q15_T* const output, ITER_T N,
+void q15_maxpool(const Q15_T* const input, Q15_T* const output, ITER_T N,
   ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut,
   ITER_T HOut, ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD,
   S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride,
@@ -681,14 +686,14 @@ void q15_convolution(const Q15_T* const input, const Q15_T* const filter,
   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, ITER_T HDilation,
   ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput, SCALE_T scoutput,
   SCALE_T demote);
-void q7xq15_to_q15_convolution(const Q7_T* const input, const Q15_T* const filter,
+void q7xq15_q15_convolution(const Q7_T* const input, const Q15_T* const filter,
   Q15_T* const output, Q31_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
   ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
   ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, ITER_T HDilation,
   ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput, SCALE_T scoutput,
   SCALE_T demote);
-void q7xq15_to_q7_convolution(const Q7_T* const input, const Q15_T* const filter,
+void q7xq15_q7_convolution(const Q7_T* const input, const Q15_T* const filter,
   Q7_T* const output, Q31_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
   ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
   ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,

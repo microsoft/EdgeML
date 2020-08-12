@@ -17,10 +17,15 @@ void q7_mbconv_block(const Q7_T* const input, const Q7_T* const filter1,
   SCALE_T shlX1, SCALE_T shlU2, SCALE_T shlB2, SCALE_T shlX2, SCALE_T shlU3,
   SCALE_T shlB3, SCALE_T shlW3) {
 
-  S_ITER_T HOffsetL = ((S_ITER_T)((HF - 1) >> 1)) - HPadU;
-  S_ITER_T WOffsetL = ((S_ITER_T)((WF - 1) >> 1)) - WPadL;
-  S_ITER_T HOffsetR = ((S_ITER_T)(HF >> 1)) - HPadD;
-  S_ITER_T WOffsetR = ((S_ITER_T)(WF >> 1)) - WPadR;
+  S_ITER_T HOffsetFL = (HF - 1) >> 1;
+  S_ITER_T WOffsetFL = (WF - 1) >> 1;
+  S_ITER_T HOffsetFR = HF >> 1;
+  S_ITER_T WOffsetFR = WF >> 1;
+
+  S_ITER_T HOffsetL = HOffsetFL - HPadU;
+  S_ITER_T WOffsetL = WOffsetFL - WPadL;
+  S_ITER_T HOffsetR = HOffsetFR - HPadD;
+  S_ITER_T WOffsetR = WOffsetFR - WPadR;
 
   for (ITER_T n = 0; n < N; n++) {
     ITER_T margin = 0, nstart = 0;
@@ -96,13 +101,13 @@ void q7_mbconv_block(const Q7_T* const input, const Q7_T* const filter1,
       for (S_ITER_T w = WOffsetL; w < ((S_ITER_T)W) - WOffsetR; wout++, w += ((S_ITER_T)WStride)) {
         for (ITER_T g = 0; g < CTemp; g++) {
           ITER_T counter = 0;
-          for (S_ITER_T hf = -((HF - 1) >> 1); hf <= (HF >> 1); hf++) {
-            for (S_ITER_T wf = -((WF - 1) >> 1); wf <= (WF >> 1); wf++) {
+          for (S_ITER_T hf = -HOffsetFL; hf <= HOffsetFR; hf++) {
+            for (S_ITER_T wf = -WOffsetFL; wf <= WOffsetFR; wf++) {
               if (((h + hf) < 0) || ((h + hf) >= (S_ITER_T)H) || ((w + wf) < 0) || ((w + wf) >= (S_ITER_T)W)) {
                 treesumBuffer[counter] = 0;
               } else {
                 treesumBuffer[counter] = ((Q15_T)convBuffer1[(((ITER_T)(h + hf)) % HF) * W * CTemp + ((ITER_T)(w + wf)) * CTemp + g]) *
-                                         ((Q15_T)filter2[g * HF * WF + ((ITER_T)(hf + ((HF - 1) >> 1))) * WF + ((ITER_T)(wf + ((WF - 1) >> 1)))]);
+                                         ((Q15_T)filter2[g * HF * WF + ((ITER_T)(hf + HOffsetFL)) * WF + ((ITER_T)(wf + WOffsetFL))]);
               }
               counter++;
             }
@@ -145,7 +150,7 @@ void q7_mbconv_block(const Q7_T* const input, const Q7_T* const filter1,
   }
 }
 
-void q7xq15_to_q15_mbconv_block(const Q7_T* const input, const Q15_T* const filter1,
+void q7xq15_q15_mbconv_block(const Q7_T* const input, const Q15_T* const filter1,
   const Q15_T* const BN1W, const Q15_T* const BN1B, const Q15_T* const filter2,
   const Q15_T* const BN2W, const Q15_T* const BN2B, const Q15_T* const filter3,
   const Q15_T* const BN3W, const Q15_T* const BN3B, Q15_T* const output,
@@ -160,10 +165,15 @@ void q7xq15_to_q15_mbconv_block(const Q7_T* const input, const Q15_T* const filt
   L_SCALE_T shlB2, L_SCALE_T shlX2, L_SCALE_T shlU3, L_SCALE_T shlB3,
   L_SCALE_T shlW3) {
 
-  S_ITER_T HOffsetL = ((S_ITER_T)((HF - 1) >> 1)) - HPadU;
-  S_ITER_T WOffsetL = ((S_ITER_T)((WF - 1) >> 1)) - WPadL;
-  S_ITER_T HOffsetR = ((S_ITER_T)(HF >> 1)) - HPadD;
-  S_ITER_T WOffsetR = ((S_ITER_T)(WF >> 1)) - WPadR;
+  S_ITER_T HOffsetFL = (HF - 1) >> 1;
+  S_ITER_T WOffsetFL = (WF - 1) >> 1;
+  S_ITER_T HOffsetFR = HF >> 1;
+  S_ITER_T WOffsetFR = WF >> 1;
+
+  S_ITER_T HOffsetL = HOffsetFL - HPadU;
+  S_ITER_T WOffsetL = WOffsetFL - WPadL;
+  S_ITER_T HOffsetR = HOffsetFR - HPadD;
+  S_ITER_T WOffsetR = WOffsetFR - WPadR;
 
   for (ITER_T n = 0; n < N; n++) {
     ITER_T margin = 0, nstart = 0;
@@ -239,13 +249,13 @@ void q7xq15_to_q15_mbconv_block(const Q7_T* const input, const Q15_T* const filt
       for (S_ITER_T w = WOffsetL; w < ((S_ITER_T)W) - WOffsetR; wout++, w += ((S_ITER_T)WStride)) {
         for (ITER_T g = 0; g < CTemp; g++) {
           ITER_T counter = 0;
-          for (S_ITER_T hf = -((HF - 1) >> 1); hf <= (HF >> 1); hf++) {
-            for (S_ITER_T wf = -((WF - 1) >> 1); wf <= (WF >> 1); wf++) {
+          for (S_ITER_T hf = -HOffsetFL; hf <= HOffsetFR; hf++) {
+            for (S_ITER_T wf = -WOffsetFL; wf <= WOffsetFR; wf++) {
               if (((h + hf) < 0) || ((h + hf) >= (S_ITER_T)H) || ((w + wf) < 0) || ((w + wf) >= (S_ITER_T)W)) {
                 treesumBuffer[counter] = 0;
               } else {
                 treesumBuffer[counter] = ((Q31_T)convBuffer1[(((ITER_T)(h + hf)) % HF) * W * CTemp + ((ITER_T)(w + wf)) * CTemp + g]) *
-                                         ((Q31_T)filter2[g * HF * WF + ((ITER_T)(hf + ((HF - 1) >> 1))) * WF + ((ITER_T)(wf + ((WF - 1) >> 1)))]);
+                                         ((Q31_T)filter2[g * HF * WF + ((ITER_T)(hf + HOffsetFL)) * WF + ((ITER_T)(wf + WOffsetFL))]);
               }
               counter++;
             }
@@ -288,7 +298,7 @@ void q7xq15_to_q15_mbconv_block(const Q7_T* const input, const Q15_T* const filt
   }
 }
 
-void q15xq7_to_q7_mbconv_block(const Q15_T* const input, const Q7_T* const filter1,
+void q15xq7_q7_mbconv_block(const Q15_T* const input, const Q7_T* const filter1,
   const Q7_T* const BN1W, const Q7_T* const BN1B, const Q7_T* const filter2,
   const Q7_T* const BN2W, const Q7_T* const BN2B, const Q7_T* const filter3,
   const Q7_T* const BN3W, const Q7_T* const BN3B, Q7_T* const output,
@@ -303,10 +313,15 @@ void q15xq7_to_q7_mbconv_block(const Q15_T* const input, const Q7_T* const filte
   L_SCALE_T shlB2, L_SCALE_T shlX2, L_SCALE_T shlU3, L_SCALE_T shlB3,
   L_SCALE_T shlW3) {
 
-  S_ITER_T HOffsetL = ((S_ITER_T)((HF - 1) >> 1)) - HPadU;
-  S_ITER_T WOffsetL = ((S_ITER_T)((WF - 1) >> 1)) - WPadL;
-  S_ITER_T HOffsetR = ((S_ITER_T)(HF >> 1)) - HPadD;
-  S_ITER_T WOffsetR = ((S_ITER_T)(WF >> 1)) - WPadR;
+  S_ITER_T HOffsetFL = (HF - 1) >> 1;
+  S_ITER_T WOffsetFL = (WF - 1) >> 1;
+  S_ITER_T HOffsetFR = HF >> 1;
+  S_ITER_T WOffsetFR = WF >> 1;
+
+  S_ITER_T HOffsetL = HOffsetFL - HPadU;
+  S_ITER_T WOffsetL = WOffsetFL - WPadL;
+  S_ITER_T HOffsetR = HOffsetFR - HPadD;
+  S_ITER_T WOffsetR = WOffsetFR - WPadR;
 
   for (ITER_T n = 0; n < N; n++) {
     ITER_T margin = 0, nstart = 0;
@@ -382,13 +397,13 @@ void q15xq7_to_q7_mbconv_block(const Q15_T* const input, const Q7_T* const filte
       for (S_ITER_T w = WOffsetL; w < ((S_ITER_T)W) - WOffsetR; wout++, w += ((S_ITER_T)WStride)) {
         for (ITER_T g = 0; g < CTemp; g++) {
           ITER_T counter = 0;
-          for (S_ITER_T hf = -((HF - 1) >> 1); hf <= (HF >> 1); hf++) {
-            for (S_ITER_T wf = -((WF - 1) >> 1); wf <= (WF >> 1); wf++) {
+          for (S_ITER_T hf = -HOffsetFL; hf <= HOffsetFR; hf++) {
+            for (S_ITER_T wf = -WOffsetFL; wf <= WOffsetFR; wf++) {
               if (((h + hf) < 0) || ((h + hf) >= (S_ITER_T)H) || ((w + wf) < 0) || ((w + wf) >= (S_ITER_T)W)) {
                 treesumBuffer[counter] = 0;
               } else {
                 treesumBuffer[counter] = ((Q31_T)convBuffer1[(((ITER_T)(h + hf)) % HF) * W * CTemp + ((ITER_T)(w + wf)) * CTemp + g]) *
-                                         ((Q31_T)filter2[g * HF * WF + ((ITER_T)(hf + ((HF - 1) >> 1))) * WF + ((ITER_T)(wf + ((WF - 1) >> 1)))]);
+                                         ((Q31_T)filter2[g * HF * WF + ((ITER_T)(hf + HOffsetFL)) * WF + ((ITER_T)(wf + WOffsetFL))]);
               }
               counter++;
             }
@@ -431,7 +446,7 @@ void q15xq7_to_q7_mbconv_block(const Q15_T* const input, const Q7_T* const filte
   }
 }
 
-void q15xq7_to_q15_mbconv_block(const Q15_T* const input, const Q7_T* const filter1,
+void q15xq7_q15_mbconv_block(const Q15_T* const input, const Q7_T* const filter1,
   const Q7_T* const BN1W, const Q7_T* const BN1B, const Q7_T* const filter2,
   const Q7_T* const BN2W, const Q7_T* const BN2B, const Q7_T* const filter3,
   const Q7_T* const BN3W, const Q7_T* const BN3B, Q15_T* const output,
@@ -446,10 +461,15 @@ void q15xq7_to_q15_mbconv_block(const Q15_T* const input, const Q7_T* const filt
   L_SCALE_T shlB2, L_SCALE_T shlX2, L_SCALE_T shlU3, L_SCALE_T shlB3,
   L_SCALE_T shlW3) {
 
-  S_ITER_T HOffsetL = ((S_ITER_T)((HF - 1) >> 1)) - HPadU;
-  S_ITER_T WOffsetL = ((S_ITER_T)((WF - 1) >> 1)) - WPadL;
-  S_ITER_T HOffsetR = ((S_ITER_T)(HF >> 1)) - HPadD;
-  S_ITER_T WOffsetR = ((S_ITER_T)(WF >> 1)) - WPadR;
+  S_ITER_T HOffsetFL = (HF - 1) >> 1;
+  S_ITER_T WOffsetFL = (WF - 1) >> 1;
+  S_ITER_T HOffsetFR = HF >> 1;
+  S_ITER_T WOffsetFR = WF >> 1;
+
+  S_ITER_T HOffsetL = HOffsetFL - HPadU;
+  S_ITER_T WOffsetL = WOffsetFL - WPadL;
+  S_ITER_T HOffsetR = HOffsetFR - HPadD;
+  S_ITER_T WOffsetR = WOffsetFR - WPadR;
 
   for (ITER_T n = 0; n < N; n++) {
     ITER_T margin = 0, nstart = 0;
@@ -525,13 +545,13 @@ void q15xq7_to_q15_mbconv_block(const Q15_T* const input, const Q7_T* const filt
       for (S_ITER_T w = WOffsetL; w < ((S_ITER_T)W) - WOffsetR; wout++, w += ((S_ITER_T)WStride)) {
         for (ITER_T g = 0; g < CTemp; g++) {
           ITER_T counter = 0;
-          for (S_ITER_T hf = -((HF - 1) >> 1); hf <= (HF >> 1); hf++) {
-            for (S_ITER_T wf = -((WF - 1) >> 1); wf <= (WF >> 1); wf++) {
+          for (S_ITER_T hf = -HOffsetFL; hf <= HOffsetFR; hf++) {
+            for (S_ITER_T wf = -WOffsetFL; wf <= WOffsetFR; wf++) {
               if (((h + hf) < 0) || ((h + hf) >= (S_ITER_T)H) || ((w + wf) < 0) || ((w + wf) >= (S_ITER_T)W)) {
                 treesumBuffer[counter] = 0;
               } else {
                 treesumBuffer[counter] = ((Q31_T)convBuffer1[(((ITER_T)(h + hf)) % HF) * W * CTemp + ((ITER_T)(w + wf)) * CTemp + g]) *
-                                         ((Q31_T)filter2[g * HF * WF + ((ITER_T)(hf + ((HF - 1) >> 1))) * WF + ((ITER_T)(wf + ((WF - 1) >> 1)))]);
+                                         ((Q31_T)filter2[g * HF * WF + ((ITER_T)(hf + HOffsetFL)) * WF + ((ITER_T)(wf + WOffsetFL))]);
               }
               counter++;
             }
@@ -589,10 +609,15 @@ void q15_mbconv_block(const Q15_T* const input, const Q15_T* const filter1,
   L_SCALE_T shlB2, L_SCALE_T shlX2, L_SCALE_T shlU3, L_SCALE_T shlB3,
   L_SCALE_T shlW3) {
 
-  S_ITER_T HOffsetL = ((S_ITER_T)((HF - 1) >> 1)) - HPadU;
-  S_ITER_T WOffsetL = ((S_ITER_T)((WF - 1) >> 1)) - WPadL;
-  S_ITER_T HOffsetR = ((S_ITER_T)(HF >> 1)) - HPadD;
-  S_ITER_T WOffsetR = ((S_ITER_T)(WF >> 1)) - WPadR;
+  S_ITER_T HOffsetFL = (HF - 1) >> 1;
+  S_ITER_T WOffsetFL = (WF - 1) >> 1;
+  S_ITER_T HOffsetFR = HF >> 1;
+  S_ITER_T WOffsetFR = WF >> 1;
+
+  S_ITER_T HOffsetL = HOffsetFL - HPadU;
+  S_ITER_T WOffsetL = WOffsetFL - WPadL;
+  S_ITER_T HOffsetR = HOffsetFR - HPadD;
+  S_ITER_T WOffsetR = WOffsetFR - WPadR;
 
   for (ITER_T n = 0; n < N; n++) {
     ITER_T margin = 0, nstart = 0;
@@ -668,13 +693,13 @@ void q15_mbconv_block(const Q15_T* const input, const Q15_T* const filter1,
       for (S_ITER_T w = WOffsetL; w < ((S_ITER_T)W) - WOffsetR; wout++, w += ((S_ITER_T)WStride)) {
         for (ITER_T g = 0; g < CTemp; g++) {
           ITER_T counter = 0;
-          for (S_ITER_T hf = -((HF - 1) >> 1); hf <= (HF >> 1); hf++) {
-            for (S_ITER_T wf = -((WF - 1) >> 1); wf <= (WF >> 1); wf++) {
+          for (S_ITER_T hf = -HOffsetFL; hf <= HOffsetFR; hf++) {
+            for (S_ITER_T wf = -WOffsetFL; wf <= WOffsetFR; wf++) {
               if (((h + hf) < 0) || ((h + hf) >= (S_ITER_T)H) || ((w + wf) < 0) || ((w + wf) >= (S_ITER_T)W)) {
                 treesumBuffer[counter] = 0;
               } else {
                 treesumBuffer[counter] = ((Q31_T)convBuffer1[(((ITER_T)(h + hf)) % HF) * W * CTemp + ((ITER_T)(w + wf)) * CTemp + g]) *
-                                         ((Q31_T)filter2[g * HF * WF + ((ITER_T)(hf + ((HF - 1) >> 1))) * WF + ((ITER_T)(wf + ((WF - 1) >> 1)))]);
+                                         ((Q31_T)filter2[g * HF * WF + ((ITER_T)(hf + HOffsetFL)) * WF + ((ITER_T)(wf + WOffsetFL))]);
               }
               counter++;
             }

@@ -31,18 +31,18 @@
 
 void q_face_detection(char* const mem_buf) {
   // Conv2D Sub-Pipeline
-  q7xq15_to_q7_convolution((Q7_T*)mem_buf, CBR1F, (Q7_T*)(mem_buf + 76800),
+  q7xq15_q7_convolution((Q7_T*)mem_buf, CBR1F, (Q7_T*)(mem_buf + 76800),
     (Q31_T*)(mem_buf + 153600), CONV2D_N, CBR1F_H, CBR1F_W, CBR1F_CIN, CBR1F_HF,
     CBR1F_WF, CBR1F_CF, CONV2D_COUT, CONV2D_HOUT, CONV2D_WOUT, CBR1F_G,
     CBR1F_HPADL, CBR1F_HPADR, CBR1F_WPADL, CBR1F_WPADR, CBR1F_HSTRIDE,
     CBR1F_WSTRIDE, CBR1F_HDILATION, CBR1F_WDILATION, CBR1F_H1, CBR1F_H2,
     CBR1F_Scinput, CBR1F_Scoutput, CBR1F_Demote);
 
-  q7xq15_to_q7_t_add_vec((Q7_T*)(mem_buf + 76800), CBR1B, CONV2D_N, CONV2D_HOUT,
+  q7xq15_q7_t_add_vec((Q7_T*)(mem_buf + 76800), CBR1B, CONV2D_N, CONV2D_HOUT,
     CONV2D_WOUT, CONV2D_COUT, (Q7_T*)mem_buf, CBR1B_Scten, CBR1B_Scvec,
     CBR1B_Scret);
 
-  q7xq15_to_q7_convolution((Q7_T*)mem_buf, CBR1W, (Q7_T*)mem_buf,
+  q7xq15_q7_convolution((Q7_T*)mem_buf, CBR1W, (Q7_T*)mem_buf,
     (Q31_T*)(mem_buf + 76800), CONV2D_N, CONV2D_HOUT, CONV2D_WOUT, CONV2D_COUT,
     CBR1W_HF, CBR1W_WF, CBR1W_CF, CBR1W_COUT, CONV2D_HOUT, CONV2D_WOUT, CBR1W_G,
     CBR1W_HPADL, CBR1W_HPADR, CBR1W_WPADL, CBR1W_WPADR, CBR1W_HSTRIDE,
@@ -52,12 +52,91 @@ void q_face_detection(char* const mem_buf) {
   q7_t_relu((Q7_T*)mem_buf, CONV2D_N, CONV2D_HOUT, CONV2D_WOUT, CONV2D_COUT,
     (Q7_T*)(mem_buf + 76800), CONV2D_Limit, CONV2D_Div);
 
+
+  Q7_T* mem_buf_offset_q7 = (Q7_T*)mem_buf;
+  Q15_T* mem_buf_offset_q15 = (Q15_T*)mem_buf;
   // RNNPool Sub-Pipeline
-  // TODO
+  // Instruction: 6 ::: init([1, 30, 40, 64], 0.000000)
+  memset(mem_buf, 0, sizeof(Q7_T) * 76800);
+  // Instruction: 7 ::: init([1, 1], 0.000000)
+  memset((mem_buf + 153600), 0, sizeof(Q15_T));
+  // Instruction: 8 ::: init([1, 1], 0.000000)
+  memset((mem_buf + 153602), 0, sizeof(Q15_T));
+
+  // Instruction: 9 ::: loop(patchX = [0, 29], accumulator4)
+  for (int patchX = 0; (patchX < 29); patchX++) {
+    // Instruction: 10 ::: loop(patchY = [0, 39], accumulator5)
+    for (int patchY = 0; (patchY < 39); patchY++) {
+      // Instruction: 12 ::: reshape(tmp30, (8, 8, 4), (1, 2, 3, 4
+      int tmp36 = 0;
+      int tmp37 = 0;
+      int tmp38 = 0;
+      for (int i3 = 0; (i3 < 8); i3++) {
+        for (int i4 = 0; (i4 < 8); i4++) {
+          for (int i5 = 0; (i5 < 4); i5++) {
+            int tmp32 = (i3 + (4 * patchX));
+            int tmp33 = (i4 + (4 * patchY));
+            mem_buf_offset_q7[154200 + (tmp36 * 32 + tmp37 * 4 + tmp38)] = mem_buf_offset_q7[76800 + (tmp32 * 640 + tmp33 * 4 + i5)];
+            tmp38++;
+            if (tmp38 == 4) {
+              tmp38 = 0;
+              tmp37++;
+              if (tmp37 == 8) {
+                tmp37 = 0;
+                tmp36++;
+              }
+            }
+          }
+        }
+      }
+
+      q7xq15_q15_rnnpool_block((Q7_T*)(mem_buf + 154200), INPUT_CHANNELS,
+        PATCH_DIM, PATCH_DIM, q7xq15_q15_fastgrnn, HIDDEN_DIM1,
+        (const void*)(&RNN1_PARAMS), (void*)(&RNN1_BUFFERS),
+        (const void*)(&RNN1_SCALES), q15_fastgrnn, HIDDEN_DIM2,
+        (const void*)(&RNN2_PARAMS), (void*)(&RNN2_BUFFERS),
+        (const void*)(&RNN2_SCALES), (Q15_T*)(mem_buf + 153750),
+        (Q15_T*)(mem_buf + 153900), ShR1, ShL1, ShR2, ShL2);
+
+      // Instruction: 83 ::: reshape(accumulator3, (1, 1, 1, 64), (1, 2
+      // Instruction: 84 ::: rnnOutput[tmp152][tmp153][tmp154][tmp155] = tmp147[i52][i53][i54][i55]
+      for (int i55 = 0; (i55 < 64); i55++) {
+        mem_buf_offset_q7[patchX * 2560 + patchY * 64 + i55] = (Q7_T)(mem_buf_offset_q15[76875 + i55]);
+      }
+
+      // Instruction: 85 ::: tmp156[i56][i57] = dummy3[tmp157][tmp158]
+      // Instruction: 86 ::: accumulator5[tmp159][tmp160] = tmp156[i58][i59]
+      mem_buf_offset_q15[76801] = mem_buf_offset_q15[76875];
+    }
+
+    // Instruction: 87 ::: tmp161[i60][i61] = dummy5[tmp162][tmp163]
+    // Instruction: 88 ::: accumulator4[tmp164][tmp165] = tmp161[i62][i63]
+    mem_buf_offset_q15[76800] = (mem_buf_offset_q15[76801] << 1);
+  }
+
+  // Instruction: 89 ::: tmp166[i64][i65][i66][i67] = rnnOutput[tmp167][tmp168][tmp169][tmp170]
+  // Instruction: 90 ::: rnnOutput[tmp171][tmp172][tmp173][tmp174] = tmp166[i68][i69][i70][i71]
+  for (int i70 = 0; i70 < 39; i70++) {
+    for (int i71 = 0; i71 < 64; i71++) {
+      int tmp168 = 28;
+      int tmp172 = 29;
+      mem_buf_offset_q7[(tmp172 * 2560 + i70 * 64 + i71)] = mem_buf_offset_q7[(tmp168 * 2560 + i70 * 64 + i71)];
+    }
+  }
+
+  // Instruction: 91 ::: tmp175[i72][i73][i74][i75] = rnnOutput[tmp176][tmp177][tmp178][tmp179]
+  // Instruction: 92 ::: rnnOutput[tmp180][tmp181][tmp182][tmp183] = tmp175[i76][i77][i78][i79]
+  for (int i77 = 0; i77 < 30; i77++) {
+    for (int i79 = 0; i79 < 64; i79++) {
+      int tmp178 = 38;
+      int tmp182 = 39;
+      mem_buf_offset_q7[(i77 * 2560 + tmp182 * 64 + i79)] = mem_buf_offset_q7[(i77 * 2560 + tmp178 * 64 + i79)];
+    }
+  }
 
   // MBConv Sub-Pipeline
   // MBConv Layer 1
-  q7xq15_to_q15_mbconv_block((Q7_T*)mem_buf, L1_F1, L1_W1, L1_B1, L1_F2, L1_W2,
+  q7xq15_q15_mbconv_block((Q7_T*)mem_buf, L1_F1, L1_W1, L1_B1, L1_F2, L1_W2,
     L1_B2, L1_F3, L1_W3, L1_B3, (Q15_T*)(mem_buf + 76800),
     (Q15_T*)(mem_buf + 153600), (Q15_T*)(mem_buf + 184500),
     (Q31_T*)(mem_buf + 184800), L1_N, L1_H, L1_W, L1_CIN, L1_CTEMP, L1_HF,
@@ -145,7 +224,44 @@ void q_face_detection(char* const mem_buf) {
   q15_t_add_vec((Q15_T*)(mem_buf + 153600), D1LB, L4_N, L4_HOUT, L4_WOUT,
     D1LW_COUT, (Q15_T*)(mem_buf + 153600), D1LW_Scten, D1LW_Scvec, D1LW_Scret);
 
-  //Reshaping Material Needed
+  // Instruction: 106 ::: init([1, 30, 40, 2], 0.000000)
+  memset((mem_buf_offset_q15 + 81600), 0, sizeof(Q15_T) * 2400);
+  // Instruction: 107 ::: init([1, 1], 0.000000)
+  memset(mem_buf_offset_q15, 0, sizeof(Q15_T) * 1);
+  // Instruction: 108 ::: init([1, 1], 0.000000)
+  memset((mem_buf_offset_q15 + 1), 0, sizeof(Q15_T) * 1);
+
+  // Instruction: 109 ::: loop(i1 = [0, 30], accumulator6)
+  for (int i1 = 0; i1 < 30; i1++) {
+    // Instruction: 110 ::: loop(i2 = [0, 40], accumulator7)
+    for (int i2 = 0; i2 < 40; i2++) {
+      // Instruction: 111 ::: tmp256[i80][i81][i82][i83] = CNraw[tmp257][tmp258][tmp259][tmp260]
+      // Instruction: 112 ::: reshape(tmp256, (1, 3), (1, 2, 3, 4
+      for (int i87 = 0; i87 < 3; i87++) {
+        mem_buf_offset_q15[9 + i87] = mem_buf_offset_q15[86400 + (i1 * 160 + i2 * 4 + i87)];
+      }
+
+      // Instruction: 113 ::: argmax(tmp261)
+      ITER_T index;
+      q15_v_argmax(&mem_buf_offset_q15[9], 3, &index);
+
+      // Instruction: 114 ::: tmp265[i88][i89][i90][i91] = CNraw[tmp266][tmp267][tmp268][tmp269]
+      // Instruction: 115 ::: CN0[tmp270][tmp271][tmp272][tmp273] = tmp265[i92][i93][i94][i95]
+      mem_buf_offset_q15[81600 + (i1 * 80 + i2 * 2)] = mem_buf_offset_q15[86400 + (i1 * 160 + i2 * 4 + index)];
+
+      // Instruction: 116 ::: tmp274[i96][i97][i98][i99] = CNraw[tmp275][tmp276][tmp277][tmp278]
+      // Instruction: 117 ::: CN0[tmp279][tmp280][tmp281][tmp282] = tmp274[i100][i101][i102][i103]
+      mem_buf_offset_q15[81600 + (i1 * 80 + i2 * 2 + 1)] = mem_buf_offset_q15[86400 + (i1 * 160 + i2 * 4 + 3)];
+      // Instruction: 118 ::: tmp283[i104][i105][i106][i107] = CN0[tmp284][tmp285][tmp286][tmp287]
+      // Instruction: 119 ::: reshape(tmp283, (1, 1), (1, 2, 3, 4
+      // Instruction: 120 ::: accumulator7[tmp291][tmp292] = tmp288[i112][i113]
+      mem_buf_offset_q15[1] = (mem_buf_offset_q15[81600] << 2);
+    }
+
+    // Instruction: 121 ::: tmp293[i114][i115] = accumulator7[tmp294][tmp295]
+    // Instruction: 122 ::: accumulator6[tmp296][tmp297] = tmp293[i116][i117]
+    mem_buf_offset_q15[0] = mem_buf_offset_q15[1];
+  }
 
   // MBConv Layer 5
   q15_mbconv_block((Q15_T*)(mem_buf + 76800), L5_F1, L5_W1, L5_B1, L5_F2, L5_W2,
@@ -250,7 +366,7 @@ void q_face_detection(char* const mem_buf) {
     L9_ShLU2, L9_ShLB2, L9_ShLX2, L9_ShLU3, L9_ShLB3, L9_ShLW3);
 
   // MBConv Layer 10
-  q15xq7_to_q15_mbconv_block((Q15_T*)mem_buf, L10_F1, L10_W1, L10_B1, L10_F2,
+  q15xq7_q15_mbconv_block((Q15_T*)mem_buf, L10_F1, L10_W1, L10_B1, L10_F2,
     L10_W2, L10_B2, L10_F3, L10_W3, L10_B3, (Q15_T*)(mem_buf + 96000),
     (Q15_T*)(mem_buf + 72961), (Q15_T*)(mem_buf + 58800),
     (Q31_T*)(mem_buf + 57600), L10_N, L10_H, L10_W, L10_CIN, L10_CTEMP, L10_HF,
@@ -265,7 +381,7 @@ void q_face_detection(char* const mem_buf) {
     L10_WOUT, L10_COUT, (Q15_T*)mem_buf, L10_Scten1, L10_Scten2, L10_Scret);
 
   // MBConv Layer 11
-  q15xq7_to_q15_mbconv_block((Q15_T*)mem_buf, L11_F1, L11_W1, L11_B1, L11_F2,
+  q15xq7_q15_mbconv_block((Q15_T*)mem_buf, L11_F1, L11_W1, L11_B1, L11_F2,
     L11_W2, L11_B2, L11_F3, L11_W3, L11_B3, (Q15_T*)(mem_buf + 96000),
     (Q15_T*)(mem_buf + 72961), (Q15_T*)(mem_buf + 58800),
     (Q31_T*)(mem_buf + 57600), L11_N, L11_H, L11_W, L11_CIN, L11_CTEMP, L11_HF,
@@ -316,7 +432,7 @@ void q_face_detection(char* const mem_buf) {
     D3LW_COUT, (Q15_T*)(mem_buf + 60000), D3LW_Scten, D3LW_Scvec, D3LW_Scret);
 
   // MBConv Layer 12
-  q15xq7_to_q7_mbconv_block((Q15_T*)mem_buf, L12_F1, L12_W1, L12_B1, L12_F2,
+  q15xq7_q7_mbconv_block((Q15_T*)mem_buf, L12_F1, L12_W1, L12_B1, L12_F2,
     L12_W2, L12_B2, L12_F3, L12_W3, L12_B3, (Q7_T*)(mem_buf + 76800),
     (Q15_T*)(mem_buf + 115200), (Q15_T*)(mem_buf + 62400),
     (Q31_T*)(mem_buf + 58800), L12_N, L12_H, L12_W, L12_CIN, L12_CTEMP, L12_HF,
@@ -357,19 +473,18 @@ void q_face_detection(char* const mem_buf) {
     L14_COUT, (Q7_T*)(mem_buf + 76800), L14_Scten1, L14_Scten2, L14_Scret);
 
   //
-  q7xq15_to_q7_convolution((Q7_T*)(mem_buf + 76800), D4CW,
-    (Q7_T*)(mem_buf + 4800), (Q31_T*)mem_buf, L14_N, L14_HOUT, L14_WOUT,
-    L14_COUT, D4CW_HF, D4CW_WF, D4CW_CF, D4CW_COUT, L14_HOUT, L14_WOUT, D4CW_G,
-    D4CW_HPADL, D4CW_HPADR, D4CW_WPADL, D4CW_WPADR, D4CW_HSTRIDE, D4CW_WSTRIDE,
-    D4CW_HDILATION, D4CW_WDILATION, D4CW_H1, D4CW_H2, D4CW_Scinput,
-    D4CW_Scoutput, D4CW_Demote);
+  q7xq15_q7_convolution((Q7_T*)(mem_buf + 76800), D4CW, (Q7_T*)(mem_buf + 4800),
+    (Q31_T*)mem_buf, L14_N, L14_HOUT, L14_WOUT, L14_COUT, D4CW_HF, D4CW_WF,
+    D4CW_CF, D4CW_COUT, L14_HOUT, L14_WOUT, D4CW_G, D4CW_HPADL, D4CW_HPADR,
+    D4CW_WPADL, D4CW_WPADR, D4CW_HSTRIDE, D4CW_WSTRIDE, D4CW_HDILATION,
+    D4CW_WDILATION, D4CW_H1, D4CW_H2, D4CW_Scinput, D4CW_Scoutput, D4CW_Demote);
 
   //
-  q7xq15_to_q7_t_add_vec((Q7_T*)(mem_buf + 4800), D4CB, L14_N, L14_HOUT,
+  q7xq15_q7_t_add_vec((Q7_T*)(mem_buf + 4800), D4CB, L14_N, L14_HOUT,
     L14_WOUT, D4CW_COUT, (Q7_T*)mem_buf, D4CW_Scten, D4CW_Scvec, D4CW_Scret);
 
   //
-  q7xq15_to_q15_convolution((Q7_T*)(mem_buf + 76800), D4LW,
+  q7xq15_q15_convolution((Q7_T*)(mem_buf + 76800), D4LW,
     (Q15_T*)(mem_buf + 2400), (Q31_T*)(mem_buf + 4800), L14_N, L14_HOUT,
     L14_WOUT, L14_COUT, D4LW_HF, D4LW_WF, D4LW_CF, D4LW_COUT, L14_HOUT,
     L14_WOUT, D4LW_G, D4LW_HPADL, D4LW_HPADR, D4LW_WPADL, D4LW_WPADR,
@@ -379,4 +494,55 @@ void q_face_detection(char* const mem_buf) {
   //
   q15_t_add_vec((Q15_T*)(mem_buf + 2400), D4LB, L14_N, L14_HOUT, L14_WOUT, D4LW_COUT,
     (Q15_T*)(mem_buf + 2400), D4LW_Scten, D4LW_Scvec, D4LW_Scret);
+
+  // Instruction: 157 ::: init([1, 18000], 0.000000)
+  memset((mem_buf_offset_q15 + 38400), 0, sizeof(int16_t) * 18000);
+
+  // Instruction: 158 ::: reshape(CN0, (1, 2400), (1, 2, 3, 4
+  // Instruction: 159 ::: answer[tmp478][tmp479] = tmp475[i122][i123]
+  for (int i123 = 0; i123 < 2400; i123++) {
+    mem_buf_offset_q15[38400 + i123] = mem_buf_offset_q15[81600 + i123];;
+  }
+
+  // Instruction: 160 ::: reshape(CN1, (1, 2400), (1, 2, 3, 4
+  // Instruction: 161 ::: answer[tmp483][tmp484] = tmp480[i128][i129]
+  for (int i129 = 0; i129 < 2400; i129++) {
+    mem_buf_offset_q15[38400 + (i129 + 2400)] = (mem_buf_offset_q15[84000 + i129] / 2);
+  }
+
+  // Instruction: 162 ::: reshape(CN2, (1, 600), (1, 2, 3, 4
+  // Instruction: 163 ::: answer[tmp488][tmp489] = tmp485[i134][i135]
+  for (int i135 = 0; i135 < 600; i135++) {
+    mem_buf_offset_q15[38400 + (i135 + 4800)] = (mem_buf_offset_q15[28800 + i135] / 2);
+  }
+
+  // Instruction: 164 ::: reshape(CN3, (1, 600), (1, 2, 3, 4
+  // Instruction: 165 ::: answer[tmp493][tmp494] = tmp490[i140][i141]
+  for (int i141 = 0; i141 < 600; i141++) {
+    mem_buf_offset_q15[38400 + (i141 + 5400)] = (((Q15_T)mem_buf_offset_q7[i141]) << 7);
+  }
+
+  // Instruction: 166 ::: reshape(LC0, (1, 4800), (1, 2, 3, 4
+  // Instruction: 167 ::: answer[tmp498][tmp499] = tmp495[i146][i147]
+  for (int i147 = 0; (i147 < 4800); i147++) {
+    mem_buf_offset_q15[38400 + (i147 + 6000)] = mem_buf_offset_q15[76800 + i147];
+  }
+
+  // Instruction: 168 ::: reshape(LC1, (1, 4800), (1, 2, 3, 4
+  // Instruction: 169 ::: answer[tmp503][tmp504] = tmp500[i152][i153]
+  for (int i153 = 0; i153 < 4800; i153++) {
+    mem_buf_offset_q15[38400 + i153 + 10800] = mem_buf_offset_q15[86400 + i153];
+  }
+
+  // Instruction: 170 ::: reshape(LC2, (1, 1200), (1, 2, 3, 4
+  // Instruction: 171 ::: answer[tmp508][tmp509] = tmp505[i158][i159]
+  for (int i159 = 0; i159 < 1200; i159++) {
+    mem_buf_offset_q15[38400 + i159 + 15600] = mem_buf_offset_q15[30000 + i159];
+  }
+
+  // Instruction: 172 ::: reshape(LC3, (1, 1200), (1, 2, 3, 4
+  // Instruction: 173 ::: answer[tmp513][tmp514] = tmp510[i164][i165]
+  for (int i165 = 0; (i165 < 1200); i165++) {
+    mem_buf_offset_q15[38400 + i165 + 16800] = (mem_buf_offset_q15[1200 + i165] / 2);
+  }
 }
