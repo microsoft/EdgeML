@@ -273,22 +273,24 @@ void q15_v_exp(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
   }
 }
 
-void q15_v_scale_up(Q15_T* const vec, ITER_T len, SCALE_T scvec) {
+void q15_v_scale_up(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
+                    SCALE_T scvec) {
   for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
-      vec[i] <<= scvec;
+      ret[i] = (vec[i] << scvec);
     #else
-      vec[i] *= scvec;
+      ret[i] = (vec[i] * scvec);
     #endif
   }
 }
 
-void q15_v_scale_down(Q15_T* const vec, ITER_T len, SCALE_T scvec) {
+void q15_v_scale_down(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
+                      SCALE_T scvec) {
   for (ITER_T i = 0; i < len; i++) {
     #ifdef SHIFT
-      vec[i] >>= scvec;
+      ret[i]= (vec[i] >> scvec);
     #else
-      vec[i] /= scvec;
+      ret[i] = (vec[i] / scvec);
     #endif
   }
 }

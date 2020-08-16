@@ -313,7 +313,8 @@ void q15_v_exp(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
  *                  scvec     = 10
  *                  mat       = {4230, -9870, -23420, 12320}
  */
-void q15_v_scale_up(Q15_T* const vec, ITER_T len, SCALE_T scvec);
+void q15_v_scale_up(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
+                    SCALE_T scvec);
 /**
  * @brief Performs element-wise down-scaling on a vector.
  * @param[in, out]  vec       pointer to the vector on which down-scaling is to be performed
@@ -325,7 +326,8 @@ void q15_v_scale_up(Q15_T* const vec, ITER_T len, SCALE_T scvec);
  *                  scvec     = 37
  *                  mat       = {114, -267, -63, 33}
  */
-void q15_v_scale_down(Q15_T* const vec, ITER_T len, SCALE_T scvec);
+void q15_v_scale_down(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
+                      SCALE_T scvec);
 
 /**
  * @brief Performs the transpose on the input matrix.

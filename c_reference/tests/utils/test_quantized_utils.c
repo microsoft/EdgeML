@@ -208,9 +208,9 @@ int test_q15_v_scale_up() {
   Q15_T expected[16] = {846, -1974, -4684, 2464, -648, 1686, 1964, 4684, 686, 1308, 1974, 1308, 1134, 5752, 1974, 2530};
 
   #ifdef SHIFT
-    q15_v_scale_up(&qvec_A[0], 16, 1);
+    q15_v_scale_up(&qvec_A[0], 16, &qvec_A[0], 1);
   #else
-    q15_v_scale_up(&qvec_A[0], 16, 2);
+    q15_v_scale_up(&qvec_A[0], 16, &qvec_A[0], 2);
   #endif
 
   return check_output(qvec_A, expected, 16);
@@ -222,10 +222,10 @@ int test_q15_v_scale_down() {
 
   #ifdef SHIFT
     const Q15_T expected[16] = {2116, -4940, -1171, 616, -1621, 4216, 4911, 1171, 171, 3271, 4938, 3271, 2837, 14382, 4938, 6327};
-    q15_v_scale_down(&qvec_A[0], 16, 1);
+    q15_v_scale_down(&qvec_A[0], 16, &qvec_A[0], 1);
   #else
     const Q15_T expected[16] = {2116, -4939, -1171, 616, -1621, 4216, 4911, 1171, 171, 3271, 4938, 3271, 2837, 14382, 4938, 6327};
-    q15_v_scale_down(&qvec_A[0], 16, 2);
+    q15_v_scale_down(&qvec_A[0], 16, &qvec_A[0], 2);
   #endif
 
   return check_output(qvec_A, expected, 16);

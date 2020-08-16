@@ -4,7 +4,7 @@
 #ifndef __QUANTIZED_RNNPOOL_H__
 #define __QUANTIZED_RNNPOOL_H__
 
-#include "quantized_datatypes.h"
+#include "quantized_utils.h"
 
 typedef int (*q7xq15_q15_rnn_t)(Q15_T* const, ITER_T, const Q7_T* const, ITER_T, ITER_T, const void*, void*, const void*, int, int);
 typedef int (*q15_rnn_t)(Q15_T* const, ITER_T, const Q15_T* const, ITER_T, ITER_T, const void*, void*, const void*, int, int);

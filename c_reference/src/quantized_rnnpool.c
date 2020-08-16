@@ -20,14 +20,8 @@ int q15_rnnpool_block(const Q15_T* const patch, ITER_T inputDims,
          inputDims, patchDim, rnn1_params, rnn1_buffers, rnn1_scales, 0, 0);
   }
 
-  for (ITER_T i = 0; i < patchDim * hiddenDims1; i++)
-  {
-    #ifdef SHIFT
-      buffer[i] = ((buffer[i] << ShL1) >> ShR1);
-    #else
-      buffer[i] = ((((Q31_T)buffer[i]) * ShL1) / ShR1);
-    #endif
-  }
+  q15_v_scale_up(buffer, patchDim * hiddenDims1, buffer, ShL1);
+  q15_v_scale_down(buffer, patchDim * hiddenDims1, buffer, ShR1);
 
   // Bi-directional vertical pass over the row summaries
   rnn2(output, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params,
@@ -45,14 +39,8 @@ int q15_rnnpool_block(const Q15_T* const patch, ITER_T inputDims,
     }
   }
 
-  for (ITER_T i = 0; i < patchDim * hiddenDims1; i++)
-  {
-    #ifdef SHIFT
-      buffer[i] = ((buffer[i] << ShL1) >> ShR1);
-    #else
-      buffer[i] = ((((Q31_T)buffer[i]) * ShL1) / ShR1);
-    #endif
-  }
+  q15_v_scale_up(buffer, patchDim * hiddenDims1, buffer, ShL1);
+  q15_v_scale_down(buffer, patchDim * hiddenDims1, buffer, ShR1);
 
   // Bi-directional horizontal pass over the columns summaries
   rnn2(output + 2 * hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim,
@@ -60,14 +48,8 @@ int q15_rnnpool_block(const Q15_T* const patch, ITER_T inputDims,
   rnn2(output + 3 * hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim,
        rnn2_params, rnn2_buffers, rnn2_scales, 1, 0);
 
-  for (ITER_T i = 0; i < 4 * hiddenDims2; i++)
-  {
-    #ifdef SHIFT
-      output[i] = ((output[i] << ShL2) >> ShR2);
-    #else
-      output[i] = ((((Q31_T)output[i]) * ShL2) / ShR2);
-    #endif
-  }
+  q15_v_scale_up(output, 4 * hiddenDims2, output, ShL2);
+  q15_v_scale_down(output, 4 * hiddenDims2, output, ShR2);
 
   return 0;
 }
@@ -88,14 +70,8 @@ int q7xq15_q15_rnnpool_block(const Q7_T* const patch, ITER_T inputDims,
          inputDims, patchDim, rnn1_params, rnn1_buffers, rnn1_scales, 0, 0);
   }
 
-  for (ITER_T i = 0; i < patchDim * hiddenDims1; i++)
-  {
-    #ifdef SHIFT
-      buffer[i] = ((buffer[i] << ShL1) >> ShR1);
-    #else
-      buffer[i] = ((((Q31_T)buffer[i]) * ShL1) / ShR1);
-    #endif
-  }
+  q15_v_scale_up(buffer, patchDim * hiddenDims1, buffer, ShL1);
+  q15_v_scale_down(buffer, patchDim * hiddenDims1, buffer, ShR1);
 
   // Bi-directional vertical pass over the row summaries
   rnn2(output, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params,
@@ -113,14 +89,8 @@ int q7xq15_q15_rnnpool_block(const Q7_T* const patch, ITER_T inputDims,
     }
   }
 
-  for (ITER_T i = 0; i < patchDim * hiddenDims1; i++)
-  {
-    #ifdef SHIFT
-      buffer[i] = ((buffer[i] << ShL1) >> ShR1);
-    #else
-      buffer[i] = ((((Q31_T)buffer[i]) * ShL1) / ShR1);
-    #endif
-  }
+  q15_v_scale_up(buffer, patchDim * hiddenDims1, buffer, ShL1);
+  q15_v_scale_down(buffer, patchDim * hiddenDims1, buffer, ShR1);
 
   // Bi-directional horizontal pass over the columns summaries
   rnn2(output + 2 * hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim,
@@ -128,14 +98,8 @@ int q7xq15_q15_rnnpool_block(const Q7_T* const patch, ITER_T inputDims,
   rnn2(output + 3 * hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim,
        rnn2_params, rnn2_buffers, rnn2_scales, 1, 0);
 
-  for (ITER_T i = 0; i < 4 * hiddenDims2; i++)
-  {
-    #ifdef SHIFT
-      output[i] = ((output[i] << ShL2) >> ShR2);
-    #else
-      output[i] = ((((Q31_T)output[i]) * ShL2) / ShR2);
-    #endif
-  }
+  q15_v_scale_up(output, 4 * hiddenDims2, output, ShL2);
+  q15_v_scale_down(output, 4 * hiddenDims2, output, ShR2);
 
   return 0;
 }
