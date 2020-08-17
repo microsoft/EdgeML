@@ -9,27 +9,27 @@
 #include "quantized_rnnpool.h"
 #include "quantized_mbconv.h"
 
-#include "q_scut_head_face_detection_model/conv2D.h"
-#include "q_scut_head_face_detection_model/rnn1.h"
-#include "q_scut_head_face_detection_model/rnn2.h"
-#include "q_scut_head_face_detection_model/mbconv1.h"
-#include "q_scut_head_face_detection_model/mbconv2.h"
-#include "q_scut_head_face_detection_model/mbconv3.h"
-#include "q_scut_head_face_detection_model/mbconv4.h"
-#include "q_scut_head_face_detection_model/detection1.h"
-#include "q_scut_head_face_detection_model/mbconv5.h"
-#include "q_scut_head_face_detection_model/mbconv6.h"
-#include "q_scut_head_face_detection_model/mbconv7.h"
-#include "q_scut_head_face_detection_model/mbconv8.h"
-#include "q_scut_head_face_detection_model/detection2.h"
-#include "q_scut_head_face_detection_model/mbconv9.h"
-#include "q_scut_head_face_detection_model/mbconv10.h"
-#include "q_scut_head_face_detection_model/mbconv11.h"
-#include "q_scut_head_face_detection_model/detection3.h"
-#include "q_scut_head_face_detection_model/mbconv12.h"
-#include "q_scut_head_face_detection_model/mbconv13.h"
-#include "q_scut_head_face_detection_model/mbconv14.h"
-#include "q_scut_head_face_detection_model/detection4.h"
+#include "q_scut_head_b_face2_model/conv2D.h"
+#include "q_scut_head_b_face2_model/rnn1.h"
+#include "q_scut_head_b_face2_model/rnn2.h"
+#include "q_scut_head_b_face2_model/mbconv1.h"
+#include "q_scut_head_b_face2_model/mbconv2.h"
+#include "q_scut_head_b_face2_model/mbconv3.h"
+#include "q_scut_head_b_face2_model/mbconv4.h"
+#include "q_scut_head_b_face2_model/detection1.h"
+#include "q_scut_head_b_face2_model/mbconv5.h"
+#include "q_scut_head_b_face2_model/mbconv6.h"
+#include "q_scut_head_b_face2_model/mbconv7.h"
+#include "q_scut_head_b_face2_model/mbconv8.h"
+#include "q_scut_head_b_face2_model/detection2.h"
+#include "q_scut_head_b_face2_model/mbconv9.h"
+#include "q_scut_head_b_face2_model/mbconv10.h"
+#include "q_scut_head_b_face2_model/mbconv11.h"
+#include "q_scut_head_b_face2_model/detection3.h"
+#include "q_scut_head_b_face2_model/mbconv12.h"
+#include "q_scut_head_b_face2_model/mbconv13.h"
+#include "q_scut_head_b_face2_model/mbconv14.h"
+#include "q_scut_head_b_face2_model/detection4.h"
 
 void q_face_detection(char* const mem_buf) {
   // Conv2D Sub-Pipeline
@@ -54,9 +54,9 @@ void q_face_detection(char* const mem_buf) {
   q7_t_relu((Q7_T*)mem_buf, CONV2D_N, CONV2D_HOUT, CONV2D_WOUT, CONV2D_COUT,
     (Q7_T*)(mem_buf + 76800), CONV2D_Limit, CONV2D_Div);
 
-
   Q7_T* mem_buf_offset_q7 = (Q7_T*)mem_buf;
   Q15_T* mem_buf_offset_q15 = (Q15_T*)mem_buf;
+
   // RNNPool Sub-Pipeline
   // Instruction: 6 ::: init([1, 30, 40, 64], 0.000000)
   memset(mem_buf, 0, sizeof(Q7_T) * 76800);
@@ -70,24 +70,12 @@ void q_face_detection(char* const mem_buf) {
     // Instruction: 10 ::: loop(patchY = [0, 39], accumulator5)
     for (int patchY = 0; (patchY < 39); patchY++) {
       // Instruction: 12 ::: reshape(tmp30, (8, 8, 4), (1, 2, 3, 4
-      int tmp36 = 0;
-      int tmp37 = 0;
-      int tmp38 = 0;
-      for (int i3 = 0; (i3 < 8); i3++) {
-        for (int i4 = 0; (i4 < 8); i4++) {
-          for (int i5 = 0; (i5 < 4); i5++) {
+      for (int i3 = 0; i3 < 8; i3++) {
+        for (int i4 = 0; i4 < 8; i4++) {
+          for (int i5 = 0; i5 < 4; i5++) {
             int tmp32 = (i3 + (4 * patchX));
             int tmp33 = (i4 + (4 * patchY));
-            mem_buf_offset_q7[154200 + (tmp36 * 32 + tmp37 * 4 + tmp38)] = mem_buf_offset_q7[76800 + (tmp32 * 640 + tmp33 * 4 + i5)];
-            tmp38++;
-            if (tmp38 == 4) {
-              tmp38 = 0;
-              tmp37++;
-              if (tmp37 == 8) {
-                tmp37 = 0;
-                tmp36++;
-              }
-            }
+            mem_buf_offset_q7[154200 + (i3 * 32 + i4 * 4 + i5)] = mem_buf_offset_q7[76800 + (tmp32 * 640 + tmp33 * 4 + i5)];
           }
         }
       }
@@ -102,7 +90,7 @@ void q_face_detection(char* const mem_buf) {
 
       // Instruction: 83 ::: reshape(accumulator3, (1, 1, 1, 64), (1, 2
       // Instruction: 84 ::: rnnOutput[tmp152][tmp153][tmp154][tmp155] = tmp147[i52][i53][i54][i55]
-      for (int i55 = 0; (i55 < 64); i55++) {
+      for (int i55 = 0; i55 < 64; i55++) {
         mem_buf_offset_q7[patchX * 2560 + patchY * 64 + i55] = (Q7_T)(mem_buf_offset_q15[76875 + i55]);
       }
 
@@ -526,7 +514,7 @@ void q_face_detection(char* const mem_buf) {
 
   // Instruction: 166 ::: reshape(LC0, (1, 4800), (1, 2, 3, 4
   // Instruction: 167 ::: answer[tmp498][tmp499] = tmp495[i146][i147]
-  for (int i147 = 0; (i147 < 4800); i147++) {
+  for (int i147 = 0; i147 < 4800; i147++) {
     mem_buf_offset_q15[38400 + (i147 + 6000)] = mem_buf_offset_q15[76800 + i147];
   }
 
