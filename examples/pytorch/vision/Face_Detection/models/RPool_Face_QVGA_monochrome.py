@@ -41,17 +41,16 @@ class S3FD(nn.Module):
         self.priors = Variable(self.priorbox.forward(), volatile=True)
         '''
         # SSD network
-        self.conv = ConvBNReLU(1, 8, stride=2)
+        self.conv = ConvBNReLU(1, 4, stride=2)
 
         self.unfold = nn.Unfold(kernel_size=(8,8),stride=(4,4))
 
-        self.rnn_model = RNNPool(8, 8, 16, 16, 8)#num_init_features)
-        # self.fold = nn.Fold(kernel_size=(1,1),output_size=(159,159))
-
+        self.rnn_model = RNNPool(8, 8, 16, 16, 4)#num_init_features)
+        
         self.mob = nn.ModuleList(base)
         # Layer learns to scale the l2 normalized features from conv4_3
         self.L2Norm3_3 = L2Norm(32, 10)
-        self.L2Norm4_3 = L2Norm(64, 8)
+        self.L2Norm4_3 = L2Norm(32, 8)
         self.L2Norm5_3 = L2Norm(96, 5)
 
 
@@ -60,9 +59,7 @@ class S3FD(nn.Module):
 
                 
         if self.phase == 'test':
-            self.softmax = nn.Softmax(dim=-1)
-            # self.detect = Detect(cfg)
- 
+            self.softmax = nn.Softmax(dim=-1) 
 
 
     def forward(self, x):
@@ -91,14 +88,12 @@ class S3FD(nn.Module):
 
         patches = self.unfold(x)
         patches = torch.cat(torch.unbind(patches,dim=2),dim=0)
-        patches = torch.reshape(patches,(-1,8,8,8))
+        patches = torch.reshape(patches,(-1,4,8,8))
 
         output_x = int((x.shape[2]-8)/4 + 1)
         output_y = int((x.shape[3]-8)/4 + 1)
 
         rnnX = self.rnn_model(patches, int(batch_size)*output_x*output_y)
-
-        # rnnX = torch.cat((rnnX[:,2*self.rnn_model.nHiddenDimsBiDir:], rnnX[:,:2*self.rnn_model.nHiddenDimsBiDir]), 1)
 
         x = torch.stack(torch.split(rnnX, split_size_or_sections=int(batch_size), dim=0),dim=2)
 
@@ -106,27 +101,25 @@ class S3FD(nn.Module):
 
         x = F.pad(x, (0,1,0,1), mode='replicate')
 
-        # apply vgg up to conv4_3 relu
-        for k in range(3):
+        for k in range(4):
             x = self.mob[k](x)
 
         s = self.L2Norm3_3(x)
         sources.append(s)
 
-        # apply vgg up to fc7
-        for k in range(3, 6):
+        for k in range(4, 8):
             x = self.mob[k](x)
 
         s = self.L2Norm4_3(x)
         sources.append(s)
 
-        for k in range(6, 9):
+        for k in range(8, 11):
             x = self.mob[k](x)
 
         s = self.L2Norm5_3(x)
         sources.append(s)
 
-        for k in range(9, 12):
+        for k in range(11, 14):
             x = self.mob[k](x)
         sources.append(x)
 
@@ -276,13 +269,12 @@ class MobileNetV2(nn.Module):
         super(MobileNetV2, self).__init__()
         block = InvertedResidual
         input_channel = 64
-        last_channel = 1280
 
         if inverted_residual_setting is None:
             inverted_residual_setting = [
                 # t, c, n, s               
                 [2, 32, 4, 1],
-                [2, 64, 4, 1],
+                [2, 32, 4, 1],
                 [2, 96, 3, 2],
                 [2, 128, 3, 1],              
             ]
@@ -324,25 +316,17 @@ def multibox(mobilenet, num_classes):
     loc_layers = []
     conf_layers = []
 
-    loc_layers += [nn.Conv2d(32, 4,
-                             kernel_size=3, padding=1)]
-    conf_layers += [nn.Conv2d(32,
-                              3 + (num_classes-1), kernel_size=3, padding=1)]
+    loc_layers += [nn.Conv2d(32, 4, kernel_size=3, padding=1)]
+    conf_layers += [nn.Conv2d(32, 3 + (num_classes-1), kernel_size=3, padding=1)]
 
-    loc_layers += [nn.Conv2d(64,
-                                 4, kernel_size=3, padding=1)]
-    conf_layers += [nn.Conv2d(64,
-                                  num_classes, kernel_size=3, padding=1)]
+    loc_layers += [nn.Conv2d(32, 4, kernel_size=3, padding=1)]
+    conf_layers += [nn.Conv2d(32, num_classes, kernel_size=3, padding=1)]
 
-    loc_layers += [nn.Conv2d(96,
-                                 4, kernel_size=3, padding=1)]
-    conf_layers += [nn.Conv2d(96,
-                                  num_classes, kernel_size=3, padding=1)]
+    loc_layers += [nn.Conv2d(96, 4, kernel_size=3, padding=1)]
+    conf_layers += [nn.Conv2d(96, num_classes, kernel_size=3, padding=1)]
 
-    loc_layers += [nn.Conv2d(128,
-                                 4, kernel_size=3, padding=1)]
-    conf_layers += [nn.Conv2d(128,
-                                  num_classes, kernel_size=3, padding=1)]
+    loc_layers += [nn.Conv2d(128, 4, kernel_size=3, padding=1)]
+    conf_layers += [nn.Conv2d(128, num_classes, kernel_size=3, padding=1)]
 
       
     return mobilenet, (loc_layers, conf_layers)
@@ -357,5 +341,5 @@ def build_s3fd(phase, num_classes=2):
 
 if __name__ == '__main__':
     net = build_s3fd('train', num_classes=2)
-    inputs = Variable(torch.randn(4, 3, 640, 640))
+    inputs = Variable(torch.randn(4, 1, 320, 320))
     output = net(inputs)
