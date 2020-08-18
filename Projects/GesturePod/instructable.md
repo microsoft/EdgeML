@@ -33,7 +33,7 @@ Twist, Twirl and Double Swipe. These gestures are then communicated to a
 smartphone over Bluetooth Low Energy(BLE).
 
 Don't have the time to build hardware - no worries! Try the
-[simulation](https://github.com/microsoft/EdgeML/tree/master/Applications/GesturePod/onComputer)
+[simulation](https://github.com/microsoft/EdgeML/tree/master/applications/GesturePod/onComputer)
 on your computer!
 
 In part 2 of this tutorial, you will see how you can train and develop a ML
@@ -112,7 +112,7 @@ We recommend running the ``testMPU.ino`` example to verify MPU6050 connection.
 
 ## Step 3: Components housing
 
-![video](video)
+<!-- ![video](video) -->
 
 After ensuring data can be polled from the MPU, you can now encapsulate the
 electronics into the casing that can be 3D printed using files provided
@@ -137,7 +137,7 @@ You are now just a step away from implementing gesture recognition on edge
 device..! 
 
 Download the code / clone the repository from
-[onMKR1000.ino](https://github.com/microsoft/EdgeML/tree/master/Applications/GesturePod/onMKR1000).
+[onMKR1000.ino](https://github.com/microsoft/EdgeML/tree/master/applications/GesturePod/onMKR1000).
 Build and upload the code using Arduino IDE. Remember to select MKR1000 as the
 Board.  Open your Serial monitor and set the *BAUD* rate to 115200.  You can
 now notice the predicted classes.  Perform the gestures as demonstrated in
