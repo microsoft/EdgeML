@@ -1,6 +1,3 @@
-## This code is built on https://github.com/yxlijun/S3FD.pytorch
-#-*- coding:utf-8 -*-
-
 from __future__ import division
 from __future__ import absolute_import
 from __future__ import print_function
@@ -108,14 +105,12 @@ class S3FD(nn.Module):
 
 
 
-        # apply vgg up to conv4_3 relu
         for k in range(2):
             x = self.mob[k](x)
 
         s = self.L2Norm3_3(x)
         sources.append(s)
 
-        # apply vgg up to fc7
         for k in range(2, 5):
             x = self.mob[k](x)
 
@@ -158,11 +153,6 @@ class S3FD(nn.Module):
             conf.append(self.conf[i](x).permute(0, 2, 3, 1).contiguous())
             loc.append(self.loc[i](x).permute(0, 2, 3, 1).contiguous())
 
-        '''
-        for (x, l, c) in zip(sources, self.loc, self.conf):
-            loc.append(l(x).permute(0, 2, 3, 1).contiguous())
-            conf.append(c(x).permute(0, 2, 3, 1).contiguous())
-        '''
 
         features_maps = []
         for i in range(len(loc)):
@@ -291,7 +281,6 @@ class MobileNetV2(nn.Module):
         super(MobileNetV2, self).__init__()
         block = InvertedResidual
         input_channel = 64
-        last_channel = 1280
 
         if inverted_residual_setting is None:
             inverted_residual_setting = [
@@ -306,7 +295,6 @@ class MobileNetV2(nn.Module):
                 [6, 320, 1, 2],
             ]
 
-        # only check the first element, assuming user knows t,c,n,s are required
         if len(inverted_residual_setting) == 0 or len(inverted_residual_setting[0]) != 4:
             raise ValueError("inverted_residual_setting should be non-empty "
                              "or a 4-element list, got {}".format(inverted_residual_setting))
@@ -322,16 +310,6 @@ class MobileNetV2(nn.Module):
                 stride = s if i == 0 else 1
                 self.layers.append(block(input_channel, output_channel, stride, expand_ratio=t))
                 input_channel = output_channel
-        # building last several layers
-        # features.append(ConvBNReLU(input_channel, self.last_channel, kernel_size=1))
-        # make it nn.Sequential
-        # self.features = nn.Sequential(*features)
-
-        # # building classifier
-        # self.classifier = nn.Sequential(
-        #     nn.Dropout(0.2),
-        #     nn.Linear(self.last_channel, num_classes),
-        # )
 
         # weight initialization
         for m in self.modules():
