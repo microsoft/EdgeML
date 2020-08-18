@@ -1,6 +1,3 @@
-## This code is built on https://github.com/yxlijun/S3FD.pytorch
-#-*- coding:utf-8 -*-
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
