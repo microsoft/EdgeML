@@ -64,31 +64,12 @@ if __name__ == '__main__':
     model_dict.update(checkpoint_dict) 
     model.load_state_dict(model_dict)
 
-
-    model.module.rnn_model.cell_rnn.cell.W = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_rnn.cell.W, 0, 1))
-    model.module.rnn_model.cell_rnn.cell.U = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_rnn.cell.U, 0, 1))
-
-
-    # model.module.rnn_model.cell_bidirrnn.cell_reverse.W = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.cell_reverse.W, 0, 1))
-    # model.module.rnn_model.cell_bidirrnn.cell_reverse.U = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.cell_reverse.U, 0, 1))
-    model.module.rnn_model.cell_bidirrnn.cell.W = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.cell.W, 0, 1))
-    model.module.rnn_model.cell_bidirrnn.cell.U = torch.nn.Parameter(torch.transpose(model.module.rnn_model.cell_bidirrnn.cell.U, 0, 1))
-
-
-
-    
-
     model.eval()
     img_path = args.image_folder
     img_list = [os.path.join(img_path, x)
                 for x in os.listdir(img_path) if x.endswith('bmp')]
     
     for path in sorted(img_list):
-        # img = skimage.io.imread(path)
-        # img = skimage.transform.rescale(img, scale=0.5)
-        # img = skimage.transform.rescale(img, scale=2.0)
-        # img = filters.unsharp_mask(img,amount=5.0, radius=2.0, multichannel=True)
-        # img  = Image.fromarray(img.astype('uint8'), mode='RGB')
         img = Image.open(path).convert('RGB')
         img = transform_test(img)
         img = (img.cuda())
