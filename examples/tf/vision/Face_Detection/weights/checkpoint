@@ -1,2 +1,0 @@
-model_checkpoint_path: "pt_tf_weights_smaller"
-all_model_checkpoint_paths: "pt_tf_weights_smaller"
