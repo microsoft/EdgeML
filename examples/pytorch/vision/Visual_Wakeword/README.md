@@ -13,12 +13,10 @@ to the object of interest (e.g. person) with the box area greater than a certain
 
 To download the COCO dataset use the script `download_coco.sh`
 ```bash
-bash scripts/download_mscoco.sh path-to-COCO-dataset year
+bash scripts/download_mscoco.sh path-to-mscoco-dataset
 ```
-Where `year` is an optional argument that can be either 2014 (default) or 2017.
 
-
-To create COCO annotation files that converts the 2014 or 2017 split to the minival split use:
+To create COCO annotation files that converts to the minival split use:
 `scripts/create_coco_train_minival_split.py`
 
 ```bash
@@ -30,7 +28,6 @@ python scripts/create_coco_train_minival_split.py \
   --val_annotations_file="${VAL_ANNOTATIONS_FILE}" \
   --output_dir="${DIR}"
 ```
-(2014 can be replaced by 2017 if you downloaded the 2017 dataset)
 
 
 To generate the new annotations, use the script `scripts/create_visualwakewords_annotations.py`.
@@ -53,6 +50,9 @@ python scripts/create_visualwakewords_annotations.py \
 python train_visualwakewords.py \
     --model_arch model_mobilenet_rnnpool \
     --lr 0.05 \
+    --epochs 900 \
+    --data "path-to-mscoco-dataset" \
+    --ann "new-path-to-visualwakewords-dataset"
 ```
 
 # Evaluation

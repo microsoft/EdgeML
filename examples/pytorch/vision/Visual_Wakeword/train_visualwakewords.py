@@ -25,16 +25,21 @@ torch.backends.cudnn.benchmark = True
 torch.backends.cudnn.enabled = True
 
 best_acc = 0  # best test accuracy
-start_epoch = 0  # start from epoch 0 or last checkpoint epoch
+start_epoch = 0 
 
 #Arg parser
 parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
 parser.add_argument('--lr', default=0.05, type=float, help='learning rate')
+parser.add_argument('--epochs', default=900, type=int, help='total epochs')
 parser.add_argument('--resume', default=None, type=str, help='load from checkpoint')
 parser.add_argument('--model_arch',
                     default='model_mobilenet_rnnpool', type=str,
                     choices=['model_mobilenet_rnnpool', 'model_mobilenet_2rnnpool'],
                     help='choose architecture among rpool variants')
+parser.add_argument('--ann', default=None, type=str, 
+    help='specify new-path-to-visualwakewords-dataset used in dataset creation step')
+parser.add_argument('--data', default=None, type=str, 
+    help='specify path-to-mscoco-dataset used in dataset creation step')
 args = parser.parse_args()
 
 
@@ -96,8 +101,6 @@ normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
 transform_train = transforms.Compose([
     # transforms.RandomAffine(10, translate=None, shear=(5,5,5,5), resample=False, fillcolor=0),
     transforms.RandomResizedCrop(size=(224,224), scale=(0.2,1.0)),
-    #transforms.Resize((256,256)),
-    # transforms.CenterCrop(224),
     transforms.RandomHorizontalFlip(),
     #transforms.RandomAffine(10, translate=None, shear=(5,5,5,5), resample=False, fillcolor=0),
     # transforms.ColorJitter(brightness=(0.6,1.4), saturation=(0.9,1.1), hue=(-0.1,0.1)),
@@ -116,15 +119,15 @@ transform_test = transforms.Compose([
 
 
 
-trainset = VisualWakeWordsClassification(root="/mnt/all", 
-                    annFile="./visualwakewords/annotations/instances_train.json", 
+trainset = VisualWakeWordsClassification(root=os.path.join(args.data,'all2014'), 
+                    annFile=os.path.join(args.ann, 'annotations/instances_train.json'), 
                     transform=transform_train, split='train')
 
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=256, shuffle=True, 
                                                 num_workers=32)
 
-testset = VisualWakeWordsClassification(root="/mnt/all", 
-                    annFile="./visualwakewords/annotations/instances_val.json", 
+testset = VisualWakeWordsClassification(root=os.path.join(args.data,'all2014'), 
+                    annFile=os.path.join(args.ann, 'annotations/instances_val.json'), 
                     transform=transform_test, split='val')
 
 testloader = torch.utils.data.DataLoader(testset, batch_size=256, shuffle=False, 
@@ -134,7 +137,7 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=256, shuffle=False,
 # Model
 
 module = import_module(args.model_arch)
-model = module.mobilenetv2_rnnpool(num_classes=2, width_mult=0.35, last_channel=96)
+model = module.mobilenetv2_rnnpool(num_classes=2, width_mult=0.35, last_channel=320)
 model = model.to(device)
 model = torch.nn.DataParallel(model)
 
@@ -149,8 +152,7 @@ if args.resume:
     start_epoch = checkpoint['epoch']
 
 criterion = nn.CrossEntropyLoss().cuda()
-#criterion = nn.BCEWithLogitsLoss()
-#criterion = LabelSmoothingLoss(2,0.1)
+
 optimizer = optim.SGD(model.parameters(), lr=0.05, momentum=0.9, weight_decay=4e-5)#, alpha=0.9)
   
 
@@ -239,6 +241,6 @@ def adjust_learning_rate(optimizer, epoch, iteration, num_iter):
         param_group['lr'] = lr
 
 
-for epoch in range(start_epoch, start_epoch+1000):
+for epoch in range(start_epoch, start_epoch+args.epochs):
     train(epoch)    
     test(epoch)
