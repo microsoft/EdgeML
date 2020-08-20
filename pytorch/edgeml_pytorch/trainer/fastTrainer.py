@@ -79,14 +79,14 @@ class FastTrainer:
             feats = self.RNN(input)
             logits = self.classifier(feats[-1, :])
 
-        return logits, feats[-1]
+        return logits, feats[:, -1]
 
     def optimizer(self):
         '''
         Optimizer for FastObj Params
         '''
         optimizer = torch.optim.Adam(
-            self.RNN.parameters(), lr=self.learningRate)
+            self.FastObj.parameters(), lr=self.learningRate)
 
         return optimizer
 
