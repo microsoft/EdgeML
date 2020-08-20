@@ -349,7 +349,7 @@ class FastTrainer:
         '''
         The Dense - IHT - Sparse Retrain Routine for FastCell Training
         '''
-        fileName = str('FastGRNNCUDA') + 'Results_pytorch.txt'
+        fileName = str(self.FastObj.cellType) + 'Results_pytorch.txt'
         resultFile = open(os.path.join(dataDir, fileName), 'a+')
         numIters = int(np.ceil(float(Xtrain.shape[0]) / float(batchSize)))
         totalBatches = numIters * totalEpochs
