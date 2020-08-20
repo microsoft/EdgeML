@@ -75,17 +75,6 @@ class WIDERDetection(data.Dataset):
             else:
                 index = random.randrange(0, self.num_samples)
 
-        
-        #img = Image.fromarray(img)
-        '''
-        draw = ImageDraw.Draw(img)
-        w,h = img.size
-        for bbox in sample_labels:
-            bbox = (bbox[1:] * np.array([w, h, w, h])).tolist()
-
-            draw.rectangle(bbox,outline='red')
-        img.save('image.jpg')
-        '''
 
         if self.mono_mode==True:
             im = 0.299 * img[0] + 0.587 * img[1] + 0.114 * img[2]
