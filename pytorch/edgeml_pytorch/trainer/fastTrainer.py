@@ -28,7 +28,7 @@ class FastTrainer:
         self.sU = sU
 
         self.numClasses = numClasses
-        # self.inputDims = self.FastObj.input_size
+        self.inputDims = self.FastObj.input_size
         if device is None:
             self.device = torch.device("cpu")
         else:
@@ -47,21 +47,19 @@ class FastTrainer:
             self.isDenseTraining = False
 
         self.assertInit()
-        self.numMatrices = [1,1] #self.FastObj.num_weight_matrices
+        self.numMatrices = self.FastObj.num_weight_matrices
         self.totalMatrices = self.numMatrices[0] + self.numMatrices[1]
-        self.RNN = BaseRNN(self.FastObj, batch_first=self.batch_first).to(self.device)
-
-        self.FC = nn.Parameter(torch.randn(
-            [32, self.numClasses])).to(self.device)
-        self.FCbias = nn.Parameter(torch.randn(
-            [self.numClasses])).to(self.device)
 
         self.optimizer = self.optimizer()
 
-        # self.timeSteps = 
-        self.inputDims = 16
+        self.RNN = BaseRNN(self.FastObj, batch_first=self.batch_first).to(self.device)
 
-        self.FastParams = self.RNN.getVars()
+        self.FC = nn.Parameter(torch.randn(
+            [self.FastObj.output_size, self.numClasses])).to(self.device)
+        self.FCbias = nn.Parameter(torch.randn(
+            [self.numClasses])).to(self.device)
+
+        self.FastParams = self.FastObj.getVars()
 
     def classifier(self, feats):
         '''
@@ -393,8 +391,6 @@ class FastTrainer:
                 k = shuffled[j * batchSize:(j + 1) * batchSize]
                 batchX = Xtrain[:, k, :]
                 batchY = Ytrain[k]
-                # import pdb;pdb.set_trace()
-                batchX = batchX.transpose(0,1)
 
                 self.optimizer.zero_grad()
                 logits, _ = self.computeLogits(batchX.to(self.device))
@@ -437,7 +433,7 @@ class FastTrainer:
                   " Train Accuracy: " + str(trainAcc),
                   file=self.outFile)
 
-            logits, _ = self.computeLogits(Xtest.transpose(0,1).to(self.device))
+            logits, _ = self.computeLogits(Xtest.to(self.device))
             testLoss = self.loss(logits, Ytest.to(self.device)).item()
             testAcc = self.accuracy(logits, Ytest.to(self.device)).item()
 
@@ -448,7 +444,7 @@ class FastTrainer:
                 if maxTestAcc <= testAcc:
                     maxTestAccEpoch = i
                     maxTestAcc = testAcc
-                    # self.saveParams(currDir)
+                    self.saveParams(currDir)
 
             print("Test Loss: " + str(testLoss) +
                   " Test Accuracy: " + str(testAcc), file=self.outFile)
