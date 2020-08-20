@@ -104,9 +104,6 @@ class MobileNetV2(nn.Module):
         if inverted_residual_setting is None:
             inverted_residual_setting = [
                 # t, c, n, s
-                # [1, 16, 1, 1],
-                # [6, 24, 2, 2],
-                #[3, 64, 1, 2],
                 [6, 64, 4, 2],
                 [6, 96, 3, 1],
                 [6, 160, 3, 2],
@@ -130,7 +127,7 @@ class MobileNetV2(nn.Module):
 
         self.rnn_model_end = RNNPool(7, 7, int(self.last_channel/4), int(self.last_channel/4), self.last_channel)
 
-        features=[] #ConvBNReLU(32, 16, kernel_size=1)]
+        features=[] 
 
         input_channel = 32
 
@@ -167,13 +164,7 @@ class MobileNetV2(nn.Module):
 
     def forward(self, x):
         batch_size = x.shape[0]
-        # for m in self.modules():
-        #     if isinstance(m, nn.BatchNorm2d):
-        #         nn.init.ones_(m.weight)
-        #         nn.init.zeros_(m.bias)
-        # import pdb; pdb.set_trace()
-        
-        # x = F.pad(x, (2,1,2,1), mode='replicate')
+
         x = self.features_init(x)
      
         patches = self.unfold(x)
@@ -194,7 +185,6 @@ class MobileNetV2(nn.Module):
 
         x = self.features(x)
         x = self.rnn_model_end(x, batch_size)
-        #x = x.mean([2, 3])
         x = self.classifier(x)
         return x
 

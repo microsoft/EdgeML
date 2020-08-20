@@ -103,9 +103,6 @@ class MobileNetV2(nn.Module):
         if inverted_residual_setting is None:
             inverted_residual_setting = [
                 # t, c, n, s
-                # [1, 16, 1, 1],
-                # [6, 24, 2, 2],
-                #[3, 64, 1, 2],
                 [6, 64, 4, 2],
                 [6, 96, 3, 1],
                 [6, 160, 3, 2],
@@ -128,7 +125,7 @@ class MobileNetV2(nn.Module):
         self.fold = nn.Fold(kernel_size=(1,1),output_size=(27,27))
 
 
-        features=[] #ConvBNReLU(32, 16, kernel_size=1)]
+        features=[]
 
         input_channel = 32
 
@@ -141,7 +138,6 @@ class MobileNetV2(nn.Module):
                 input_channel = output_channel
         # building last several layers
         features.append(ConvBNReLU(input_channel, self.last_channel, kernel_size=1))
-        # make it nn.Sequential
         self.features = nn.Sequential(*features)
 
         # building classifier

@@ -44,14 +44,6 @@ class RNNPool(nn.Module):
                         torch.zeros(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")),
                         torch.zeros(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")))
 
-        # stateList_reverse = tuple(reversed(stateList))
-
-        # outputs_reverse = self.cell_bidirrnn(torch.stack(stateList_reverse),
-        #                 (torch.randn(batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")),
-        #                 torch.randn(batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda"))))  
-
-        # finalHidden1 = torch.cat([outputs[-1],outputs_reverse[-1]],1)
-        
 
         ## across columns
         col_timestack = torch.cat(torch.unbind(inputs, dim=2),dim=0)
@@ -64,13 +56,6 @@ class RNNPool(nn.Module):
                         torch.zeros(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")),
                         torch.zeros(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")))
 
-        # stateList_reverse = tuple(reversed(stateList))
-
-        # outputs_reverse = self.cell_bidirrnn(torch.stack(stateList_reverse),
-        #                 (torch.randn(batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")),
-        #                 torch.randn(batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda"))))  
-
-        # finalHidden2 = torch.cat([outputs[-1],outputs_reverse[-1]],1)
 
 
         output = torch.cat([outputs_rows[-1],outputs_cols[-1]],1)

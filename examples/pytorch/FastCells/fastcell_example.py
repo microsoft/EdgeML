@@ -76,7 +76,6 @@ def main():
     else:
         sys.exit('Exiting: No Such Cell as ' + cell)
 
-    # import pdb;pdb.set_trace()
 
     FastCellTrainer = FastTrainer(FastCell, numClasses, sW=sW, sU=sU,
                                   learningRate=learningRate, outFile=outFile,
