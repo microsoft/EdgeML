@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
+
 from data import *
 from layers.modules import MultiBoxLoss
 import os

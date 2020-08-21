@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
+
 from .widerface import WIDERDetection
 
 from data.choose_config import cfg

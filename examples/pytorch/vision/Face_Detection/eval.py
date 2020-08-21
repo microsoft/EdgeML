@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
+
 import torch
 import torch.nn as nn
 import torch.utils.data as data

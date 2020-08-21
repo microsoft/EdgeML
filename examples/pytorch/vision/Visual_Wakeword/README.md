@@ -54,6 +54,7 @@ python train_visualwakewords.py \
     --data "path-to-mscoco-dataset" \
     --ann "new-path-to-visualwakewords-dataset"
 ```
+Specify the paths used for storing MS COCO dataset and the Visual Wakeword dataset as used in dataset creation steps in --data and --ann respectively. This script should reach a validation accuracy of about 89.57 upon completion.
 
 # Evaluation
 
