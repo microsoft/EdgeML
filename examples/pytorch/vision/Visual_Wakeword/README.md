@@ -65,7 +65,7 @@ python eval.py \
     --image_folder images \
 ```
 
-The weights argument is the saved checkpoint of the model trained with architecture which is passed in model_arch argument. The folder with images for evaluation has to be passed in image_folder argument
+The weights argument is the saved checkpoint of the model trained with architecture which is passed in model_arch argument. The folder with images for evaluation has to be passed in image_folder argument. This script will print 'Person present' or 'No person present' for each image in the folder specified.
 
 
 Dataset creation code is from https://github.com/Mxbonn/visualwakewords/
