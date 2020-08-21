@@ -76,7 +76,6 @@ def main():
     else:
         sys.exit('Exiting: No Such Cell as ' + cell)
 
-
     FastCellTrainer = FastTrainer(FastCell, numClasses, sW=sW, sU=sU,
                                   learningRate=learningRate, outFile=outFile,
                                   device=device, batch_first=batch_first)
