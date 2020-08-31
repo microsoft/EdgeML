@@ -158,12 +158,12 @@ void q7xq15_q15_mbconv_block(const Q7_T* const input, const Q15_T* const filter1
   ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T CTemp, ITER_T HF, ITER_T WF,
   ITER_T COut, ITER_T HOut, ITER_T WOut, S_ITER_T HPadU, S_ITER_T HPadD,
   S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, SCALE_T depth1,
-  SCALE_T depth2, SCALE_T depth3, Q31_T limit1, Q31_T limit2, L_SCALE_T shrU1,
-  L_SCALE_T shrB1, L_SCALE_T shrX1, L_SCALE_T shrU2, L_SCALE_T shrB2,
-  L_SCALE_T shrX2, L_SCALE_T shrU3, L_SCALE_T shrB3, L_SCALE_T shrW3,
-  L_SCALE_T shlU1, L_SCALE_T shlB1, L_SCALE_T shlX1, L_SCALE_T shlU2,
-  L_SCALE_T shlB2, L_SCALE_T shlX2, L_SCALE_T shlU3, L_SCALE_T shlB3,
-  L_SCALE_T shlW3) {
+  SCALE_T depth2, SCALE_T depth3, Q31_T limit1, Q31_T limit2, SCALE_T shrU1,
+  SCALE_T shrB1, SCALE_T shrX1, SCALE_T shrU2, SCALE_T shrB2,
+  SCALE_T shrX2, SCALE_T shrU3, SCALE_T shrB3, SCALE_T shrW3,
+  SCALE_T shlU1, SCALE_T shlB1, SCALE_T shlX1, SCALE_T shlU2,
+  SCALE_T shlB2, SCALE_T shlX2, SCALE_T shlU3, SCALE_T shlB3,
+  SCALE_T shlW3) {
 
   S_ITER_T HOffsetFL = (HF - 1) >> 1;
   S_ITER_T WOffsetFL = (WF - 1) >> 1;
@@ -306,12 +306,12 @@ void q15xq7_q7_mbconv_block(const Q15_T* const input, const Q7_T* const filter1,
   ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T CTemp, ITER_T HF, ITER_T WF,
   ITER_T COut, ITER_T HOut, ITER_T WOut, S_ITER_T HPadU, S_ITER_T HPadD,
   S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, SCALE_T depth1,
-  SCALE_T depth2, SCALE_T depth3, Q31_T limit1, Q31_T limit2, L_SCALE_T shrU1,
-  L_SCALE_T shrB1, L_SCALE_T shrX1, L_SCALE_T shrU2, L_SCALE_T shrB2,
-  L_SCALE_T shrX2, L_SCALE_T shrU3, L_SCALE_T shrB3, L_SCALE_T shrW3,
-  L_SCALE_T shlU1, L_SCALE_T shlB1, L_SCALE_T shlX1, L_SCALE_T shlU2,
-  L_SCALE_T shlB2, L_SCALE_T shlX2, L_SCALE_T shlU3, L_SCALE_T shlB3,
-  L_SCALE_T shlW3) {
+  SCALE_T depth2, SCALE_T depth3, Q31_T limit1, Q31_T limit2, SCALE_T shrU1,
+  SCALE_T shrB1, SCALE_T shrX1, SCALE_T shrU2, SCALE_T shrB2,
+  SCALE_T shrX2, SCALE_T shrU3, SCALE_T shrB3, SCALE_T shrW3,
+  SCALE_T shlU1, SCALE_T shlB1, SCALE_T shlX1, SCALE_T shlU2,
+  SCALE_T shlB2, SCALE_T shlX2, SCALE_T shlU3, SCALE_T shlB3,
+  SCALE_T shlW3) {
 
   S_ITER_T HOffsetFL = (HF - 1) >> 1;
   S_ITER_T WOffsetFL = (WF - 1) >> 1;
@@ -454,12 +454,12 @@ void q15xq7_q15_mbconv_block(const Q15_T* const input, const Q7_T* const filter1
   ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T CTemp, ITER_T HF, ITER_T WF,
   ITER_T COut, ITER_T HOut, ITER_T WOut, S_ITER_T HPadU, S_ITER_T HPadD,
   S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, SCALE_T depth1,
-  SCALE_T depth2, SCALE_T depth3, Q31_T limit1, Q31_T limit2, L_SCALE_T shrU1,
-  L_SCALE_T shrB1, L_SCALE_T shrX1, L_SCALE_T shrU2, L_SCALE_T shrB2,
-  L_SCALE_T shrX2, L_SCALE_T shrU3, L_SCALE_T shrB3, L_SCALE_T shrW3,
-  L_SCALE_T shlU1, L_SCALE_T shlB1, L_SCALE_T shlX1, L_SCALE_T shlU2,
-  L_SCALE_T shlB2, L_SCALE_T shlX2, L_SCALE_T shlU3, L_SCALE_T shlB3,
-  L_SCALE_T shlW3) {
+  SCALE_T depth2, SCALE_T depth3, Q31_T limit1, Q31_T limit2, SCALE_T shrU1,
+  SCALE_T shrB1, SCALE_T shrX1, SCALE_T shrU2, SCALE_T shrB2,
+  SCALE_T shrX2, SCALE_T shrU3, SCALE_T shrB3, SCALE_T shrW3,
+  SCALE_T shlU1, SCALE_T shlB1, SCALE_T shlX1, SCALE_T shlU2,
+  SCALE_T shlB2, SCALE_T shlX2, SCALE_T shlU3, SCALE_T shlB3,
+  SCALE_T shlW3) {
 
   S_ITER_T HOffsetFL = (HF - 1) >> 1;
   S_ITER_T WOffsetFL = (WF - 1) >> 1;
@@ -602,12 +602,12 @@ void q15_mbconv_block(const Q15_T* const input, const Q15_T* const filter1,
   ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T CTemp, ITER_T HF, ITER_T WF,
   ITER_T COut, ITER_T HOut, ITER_T WOut, S_ITER_T HPadU, S_ITER_T HPadD,
   S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, SCALE_T depth1,
-  SCALE_T depth2, SCALE_T depth3, Q31_T limit1, Q31_T limit2, L_SCALE_T shrU1,
-  L_SCALE_T shrB1, L_SCALE_T shrX1, L_SCALE_T shrU2, L_SCALE_T shrB2,
-  L_SCALE_T shrX2, L_SCALE_T shrU3, L_SCALE_T shrB3, L_SCALE_T shrW3,
-  L_SCALE_T shlU1, L_SCALE_T shlB1, L_SCALE_T shlX1, L_SCALE_T shlU2,
-  L_SCALE_T shlB2, L_SCALE_T shlX2, L_SCALE_T shlU3, L_SCALE_T shlB3,
-  L_SCALE_T shlW3) {
+  SCALE_T depth2, SCALE_T depth3, Q31_T limit1, Q31_T limit2, SCALE_T shrU1,
+  SCALE_T shrB1, SCALE_T shrX1, SCALE_T shrU2, SCALE_T shrB2,
+  SCALE_T shrX2, SCALE_T shrU3, SCALE_T shrB3, SCALE_T shrW3,
+  SCALE_T shlU1, SCALE_T shlB1, SCALE_T shlX1, SCALE_T shlU2,
+  SCALE_T shlB2, SCALE_T shlX2, SCALE_T shlU3, SCALE_T shlB3,
+  SCALE_T shlW3) {
 
   S_ITER_T HOffsetFL = (HF - 1) >> 1;
   S_ITER_T WOffsetFL = (WF - 1) >> 1;

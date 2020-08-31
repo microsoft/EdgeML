@@ -12,43 +12,45 @@
 #include "quantized_utils.h"
 
 /**
- * @brief Model paramters for low-rank FastGRNN
+ * @brief Model parameters for low-rank FastGRNN
  * @var       mean         pointer to mean of input vector for normalization, size inputDims
- * @var       stdDev       pointer to standard dev of input for normalization, size inputDims*steps
+ * @var       stdDev       pointer to standard dev of input for normalization, size inputDims * steps
  * @var       W1           pointer to first low-rank component of W
  * @var       W2           pointer to second low-rank component of W
  * @var       wRank        rank of W matrix
  * @var       U1           pointer to first low-rank component of U
  * @var       U2           pointer to second low-rank component of U
  * @var       uRank        rank of U matrix
- * @var       Bg           pointer to bias for sigmoid
- * @var       Bh           pointer to bias for tanh
+ * @var       Bg           pointer to bias for Sigmoid
+ * @var       Bh           pointer to bias for TanH
  * @var       sigmoid_zeta first weight parameter for update from input from next step
  * @var       sigmoid_nu   second weight parameter for update from input from next step
  */
 typedef struct Q15_FastGRNN_LR_Params {
-  Q15_T* mean;
-  Q15_T* stdDev;
-  Q15_T* W1;
-  Q15_T* W2;
+  const Q15_T* mean;
+  const Q15_T* stdDev;
+  const Q15_T* W1;
+  const Q15_T* W2;
   ITER_T wRank;
-  Q15_T* U1;
-  Q15_T* U2;
+  const Q15_T* U1;
+  const Q15_T* U2;
   ITER_T uRank;
-  Q15_T* Bg;
-  Q15_T* Bh;
+  const Q15_T* Bg;
+  const Q15_T* Bh;
   Q15_T sigmoid_zeta;
   Q15_T sigmoid_nu;
 } Q15_FastGRNN_LR_Params;
 
 /**
- * @brief Model scales for different inputs. The naming convention follows
- * two basic rules:
- * 1) If the matrix for which the scale is associated is used only once, name
+ * @brief Model scales and flags for different inputs. The naming convention
+ * follows three basic rules:
+ * 1) If the variable for which the scale is associated is used only once, name
  * the scale after the matrix.
- * 2) If the matrix for which the scale is associated is used only once, name
- * the scale after the matrix, the operation it is being used under and the
- * matrix it is being operated with.
+ * 2) If the variable for which the scale is associated is used more than once,
+ * name the scale after the matrix, the operation it is being used under and
+ * the matrix it is being operated with.
+ * 3) For flag variables, simply name them after the operation for which they
+ * are intended.
  */
 typedef struct Q15_FastGRNN_LR_Scales {
   SCALE_T input;
@@ -114,12 +116,12 @@ typedef struct Q15_FastGRNN_LR_Scales {
 
 /**
 * @brief Buffers required for computation of low-rank FastGRNN
-* @var   preComp1     pointer to buffer space, must be initalized to atleast hiddenDims size
-* @var   preComp2     pointer to buffer space, must be initalized to atleast hiddenDims size
-* @var   preComp3     pointer to buffer space, must be initalized to atleast hiddenDims size
-* @var   tempLRW      pointer to buffer space, must be initalized to atleast wRank size
-* @var   tempLRU      pointer to buffer space, must be initalized to atleast uRank size
-* @var   normFeatures pointer to buffer space, must be initalized to atleast inputDims size
+* @var   preComp1     pointer to buffer space, must be initialized to atleast hiddenDims size
+* @var   preComp2     pointer to buffer space, must be initialized to atleast hiddenDims size
+* @var   preComp3     pointer to buffer space, must be initialized to atleast hiddenDims size
+* @var   tempLRW      pointer to buffer space, must be initialized to atleast wRank size
+* @var   tempLRU      pointer to buffer space, must be initialized to atleast uRank size
+* @var   normFeatures pointer to buffer space, must be initialized to atleast inputDims size
 */
 typedef struct Q15_FastGRNN_LR_Buffers {
   Q15_T* preComp1;
@@ -131,10 +133,10 @@ typedef struct Q15_FastGRNN_LR_Buffers {
 } Q15_FastGRNN_LR_Buffers;
 
 /**
- * @brief Multi-step updates of a FastGRNN cell with low rank W, U(W=W1*W2; U=U1*U2)
+ * @brief Multi-step updates of a FastGRNN cell with low rank W, U (W = W1 * W2; U = U1 * U2)
  * @param[in,out]   hiddenState  pointer to initial hidden state and output hidden state
  * @param[in]       hiddenDims   dimension of hidden state of the FastGRNN cell
- * @param[in]       input        pointer to concatenated input vectors for all steps, size inputDims*steps
+ * @param[in]       input        pointer to concatenated input vectors for all steps, size inputDims * steps
  * @param[in]       inputDims    dimension of input vector for each step
  * @param[in]       steps        number of steps of FastGRNN cell
  * @param[in]       params       pointer to model parameter
@@ -156,46 +158,48 @@ int q15_fastgrnn_lr(Q15_T* const hiddenState, ITER_T hiddenDims,
                     int backward, int normalize);
 
 /**
- * @brief Model paramters for low-rank FastGRNN
+ * @brief Model paramters for FastGRNN
  * @var       mean         pointer to mean of input vector for normalization, size inputDims
- * @var       stdDev       pointer to standard dev of input for normalization, size inputDims*steps
+ * @var       stdDev       pointer to standard dev of input for normalization, size inputDims * steps
  * @var       W            pointer to W matrix
  * @var       U            pointer U matrix
- * @var       Bg           pointer to bias for sigmoid
- * @var       Bh           pointer to bias for tanh
+ * @var       Bg           pointer to bias for Sigmoid
+ * @var       Bh           pointer to bias for TanH
  * @var       sigmoid_zeta first weight parameter for update from input from next step
  * @var       sigmoid_nu   second weight parameter for update from input from next step
  */
 typedef struct Q15_FastGRNN_Params {
-  Q15_T* mean;
-  Q15_T* stdDev;
-  Q15_T* W;
-  Q15_T* U;
-  Q15_T* Bg;
-  Q15_T* Bh;
+  const Q15_T* mean;
+  const Q15_T* stdDev;
+  const Q15_T* W;
+  const Q15_T* U;
+  const Q15_T* Bg;
+  const Q15_T* Bh;
   Q15_T sigmoid_zeta;
   Q15_T sigmoid_nu;
 } Q15_FastGRNN_Params;
 
 typedef struct Q7xQ15_FastGRNN_Params {
-  Q7_T* mean;
-  Q7_T* stdDev;
-  Q15_T* W;
-  Q15_T* U;
-  Q15_T* Bg;
-  Q15_T* Bh;
+  const Q7_T* mean;
+  const Q7_T* stdDev;
+  const Q15_T* W;
+  const Q15_T* U;
+  const Q15_T* Bg;
+  const Q15_T* Bh;
   Q15_T sigmoid_zeta;
   Q15_T sigmoid_nu;
 } Q7xQ15_FastGRNN_Params;
 
 /**
- * @brief Model scales for different inputs. The naming convention follows
- * two basic rules:
- * 1) If the matrix for which the scale is associated is used only once, name
+ * @brief Model scales and flags for different inputs. The naming convention
+ * follows three basic rules:
+ * 1) If the variable for which the scale is associated is used only once, name
  * the scale after the matrix.
- * 2) If the matrix for which the scale is associated is used only once, name
- * the scale after the matrix, the operation it is being used under and the
- * matrix it is being operated with.
+ * 2) If the variable for which the scale is associated is used more than once,
+ * name the scale after the matrix, the operation it is being used under and
+ * the matrix it is being operated with.
+ * 3) For flag variables, simply name them after the operation for which they
+ * are intended.
  */
 typedef struct Q15_FastGRNN_Scales {
   SCALE_T input;
@@ -253,10 +257,10 @@ typedef struct Q15_FastGRNN_Scales {
 
 /**
 * @brief Buffers required for computation of FastGRNN
-* @var   preComp1     pointer to buffer space, must be initalized to atleast hiddenDims size
-* @var   preComp2     pointer to buffer space, must be initalized to atleast hiddenDims size
-* @var   preComp3     pointer to buffer space, must be initalized to atleast hiddenDims size
-* @var   normFeatures pointer to buffer space, must be initalized to atleast inputDims size
+* @var   preComp1     pointer to buffer space, must be initialized to atleast hiddenDims size
+* @var   preComp2     pointer to buffer space, must be initialized to atleast hiddenDims size
+* @var   preComp3     pointer to buffer space, must be initialized to atleast hiddenDims size
+* @var   normFeatures pointer to buffer space, must be initialized to atleast inputDims size
 */
 typedef struct Q15_FastGRNN_Buffers {
   Q15_T* preComp1;
@@ -276,7 +280,7 @@ typedef struct Q7xQ15_FastGRNN_Buffers {
  * @brief Multi-step updates of a FastGRNN cell
  * @param[in,out]   hiddenState  pointer to initial hidden state and output hidden state
  * @param[in]       hiddenDims   dimension of hidden state of the FastGRNN cell
- * @param[in]       input        pointer to concatenated input vectors for all steps, size inputDims*steps
+ * @param[in]       input        pointer to concatenated input vectors for all steps, size inputDims * steps
  * @param[in]       inputDims    dimension of input vector for each step
  * @param[in]       steps        number of steps of FastGRNN cell
  * @param[in]       params       pointer to model parameter
@@ -289,7 +293,7 @@ typedef struct Q7xQ15_FastGRNN_Buffers {
  *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp2 not allocated
  *             <code>ERR_PRECOMP_NOT_INIT</code> if preComp3 not allocated
  *             <code>ERR_NORMFEAT_NOT_INIT</code> if normFeatures not allocated
- * @example          Please refer the file: c_reference/tests/fastgrnn/test_quantized_fastgrnn.c
+ * @example         Please refer the file: c_reference/tests/fastgrnn/test_quantized_fastgrnn.c
  */
 int q7xq15_q15_fastgrnn(Q15_T* const hiddenState, ITER_T hiddenDims,
   const Q7_T* const input, ITER_T inputDims, ITER_T steps, const void* params,

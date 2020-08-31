@@ -58,7 +58,6 @@ float aggregate_error(float* errors, unsigned len) {
 int main(int argc, char **argv) {
   unsigned patches;
   SCALE_T XScale = -1, YScale = 12;
-
   FILE *xFile, *yFile, *floatResFile, *outputLog;
 
   if (argc != 6) {
@@ -194,7 +193,7 @@ int main(int argc, char **argv) {
 
   float aggregate = aggregate_error(allErrors, patches * OUTPUT_SIZE);
   fprintf(outputLog, "Aggregated 95th Percentile Error: %f\n", aggregate);
-  if (aggregate < 0.5916) {
+  if (aggregate < 0.8924) {
     fprintf(outputLog, "Quantized Face Detection Numerical Test Passed!\n");
   } else {
     fprintf(outputLog, "Quantized Face Detection Numerical Test Failed!\n");

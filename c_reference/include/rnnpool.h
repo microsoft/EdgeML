@@ -8,7 +8,7 @@ typedef int (*rnn_t)(float* const, unsigned, const float* const, unsigned, unsig
 
 /**
  * @param[in]        patch          pointer to activation of patch (row, col, channel)
- * @param[in]        inputDims      dimemsion of each input pixel
+ * @param[in]        inputDims      dimension of each input pixel
  * @param[in]        patchDim       number of rows and columns in a square patch
  * @param[in]        stride         stride length in the larger image to get to next row
  * @param[in]        rnn1           function pointer to RNN1

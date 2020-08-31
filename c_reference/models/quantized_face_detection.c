@@ -70,18 +70,8 @@ void q_face_detection(char* const mem_buf) {
     // Instruction: 10 ::: loop(patchY = [0, 39], accumulator5)
     for (int patchY = 0; (patchY < 39); patchY++) {
       // Instruction: 12 ::: reshape(tmp30, (8, 8, 4), (1, 2, 3, 4
-      for (int i3 = 0; i3 < 8; i3++) {
-        for (int i4 = 0; i4 < 8; i4++) {
-          for (int i5 = 0; i5 < 4; i5++) {
-            int tmp32 = (i3 + (4 * patchX));
-            int tmp33 = (i4 + (4 * patchY));
-            mem_buf_offset_q7[154200 + (i3 * 32 + i4 * 4 + i5)] = mem_buf_offset_q7[76800 + (tmp32 * 640 + tmp33 * 4 + i5)];
-          }
-        }
-      }
-
-      q7xq15_q15_rnnpool_block((Q7_T*)(mem_buf + 154200), INPUT_CHANNELS,
-        PATCH_DIM, PATCH_DIM, q7xq15_q15_fastgrnn, HIDDEN_DIM1,
+      q7xq15_q15_rnnpool_block((Q7_T*)(mem_buf + 76800 + ((2560 * patchX) + (16 * patchY))),
+        INPUT_CHANNELS, PATCH_DIM, CONV2D_WOUT, q7xq15_q15_fastgrnn, HIDDEN_DIM1,
         (const void*)(&RNN1_PARAMS), (void*)(&RNN1_BUFFERS),
         (const void*)(&RNN1_SCALES), q15_fastgrnn, HIDDEN_DIM2,
         (const void*)(&RNN2_PARAMS), (void*)(&RNN2_BUFFERS),

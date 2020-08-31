@@ -4,8 +4,8 @@
 #include <string.h>
 #include "quantized_rnnpool.h"
 
-int q15_rnnpool_block(const Q15_T* const patch, ITER_T inputDims,
-  ITER_T patchDim, ITER_T stride, q15_rnn_t rnn1, ITER_T hiddenDims1,
+int q7xq15_q15_rnnpool_block(const Q7_T* const patch, ITER_T inputDims,
+  ITER_T patchDim, ITER_T stride, q7xq15_q15_rnn_t rnn1, ITER_T hiddenDims1,
   const void* rnn1_params, void* rnn1_buffers, const void* rnn1_scales,
   q15_rnn_t rnn2, ITER_T hiddenDims2, const void* rnn2_params,
   void* rnn2_buffers, const void* rnn2_scales, Q15_T* const output,
@@ -54,8 +54,8 @@ int q15_rnnpool_block(const Q15_T* const patch, ITER_T inputDims,
   return 0;
 }
 
-int q7xq15_q15_rnnpool_block(const Q7_T* const patch, ITER_T inputDims,
-  ITER_T patchDim, ITER_T stride, q7xq15_q15_rnn_t rnn1, ITER_T hiddenDims1,
+int q15_rnnpool_block(const Q15_T* const patch, ITER_T inputDims,
+  ITER_T patchDim, ITER_T stride, q15_rnn_t rnn1, ITER_T hiddenDims1,
   const void* rnn1_params, void* rnn1_buffers, const void* rnn1_scales,
   q15_rnn_t rnn2, ITER_T hiddenDims2, const void* rnn2_params,
   void* rnn2_buffers, const void* rnn2_scales, Q15_T* const output,

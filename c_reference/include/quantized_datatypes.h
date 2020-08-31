@@ -10,13 +10,13 @@
 typedef int8_t Q7_T;
 typedef int16_t Q15_T;
 typedef int32_t Q31_T;
+typedef int64_t Q63_T;
 // Macro for unsigned iterator type.
 typedef uint32_t ITER_T;
 // Macro for signed iterator type.
 typedef int32_t S_ITER_T;
-// Macros for scale variable type.
-typedef int16_t SCALE_T;
-typedef int32_t L_SCALE_T;
+// Macro for scale variable type.
+typedef int32_t SCALE_T;
 // Macro for max value of input type.
 #define Q15_TMAX 32767
 // Macro for min value of input type.

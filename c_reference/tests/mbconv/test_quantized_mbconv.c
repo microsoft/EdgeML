@@ -48,7 +48,6 @@ float aggregate_error(float* errors, unsigned len) {
  */
 int main(int argc, char **argv) {
   SCALE_T XScale = 12, YScale = 14;
-
   FILE *xFile, *yFile, *floatResFile, *outputLog;
 
   if (argc != 5) {
