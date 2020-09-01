@@ -40,31 +40,27 @@ static const Q15_T CBR1F[CBR1F_G * CBR1F_HF * CBR1F_WF * CBR1F_CF * CONV2D_COUT]
 static const Q15_T CBR1W[CONV2D_COUT] = {28667, 22136, 26057, 27877};
 static const Q15_T CBR1B[CONV2D_COUT] = {-998, 21359, 10074, 5088};
 
-static const SCALE_T CBR1F_H1 = 4;
-static const SCALE_T CBR1F_H2 = 0;
-static const SCALE_T CBR1W_H1 = 0;
-static const SCALE_T CBR1W_H2 = 0;
 static const Q7_T CONV2D_Limit = 96;
 static const Q7_T CONV2D_Div = 1;
 
 #ifdef SHIFT
-  static const SCALE_T CBR1F_Scinput = 1;  //2
-  static const SCALE_T CBR1F_Scoutput = 2; //4
-  static const SCALE_T CBR1F_Demote = 7;   //128
-  static const SCALE_T CBR1B_Scten = 0;    //1
-  static const SCALE_T CBR1B_Scvec = 10;   //1024
-  static const SCALE_T CBR1B_Scret = 0;    //1
-  static const SCALE_T CBR1W_Scinput = 3;  //8
-  static const SCALE_T CBR1W_Scoutput = 4; //16
-  static const SCALE_T CBR1W_Demote = 8;   //256
+  static const SCALE_T CBR1F_Scinput = 1;    //2
+  static const SCALE_T CBR1F_Scoutput = 2;   //4
+  static const SCALE_T CBR1F_Demote = 7 + 4; //128 * 16
+  static const SCALE_T CBR1B_Scten = 0;      //1
+  static const SCALE_T CBR1B_Scvec = 10;     //1024
+  static const SCALE_T CBR1B_Scret = 0;      //1
+  static const SCALE_T CBR1W_Scinput = 3;    //8
+  static const SCALE_T CBR1W_Scoutput = 4;   //16
+  static const SCALE_T CBR1W_Demote = 8 + 0; //256 * 1
 #else
   static const SCALE_T CBR1F_Scinput = 2;
   static const SCALE_T CBR1F_Scoutput = 4;
-  static const SCALE_T CBR1F_Demote = 128;
+  static const SCALE_T CBR1F_Demote = 128 * 16;
   static const SCALE_T CBR1B_Scten = 1;
   static const SCALE_T CBR1B_Scvec = 1024;
   static const SCALE_T CBR1B_Scret = 1;
   static const SCALE_T CBR1W_Scinput = 8;
   static const SCALE_T CBR1W_Scoutput = 16;
-  static const SCALE_T CBR1W_Demote = 256;
+  static const SCALE_T CBR1W_Demote = 256 * 1;
 #endif

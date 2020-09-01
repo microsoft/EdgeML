@@ -649,12 +649,11 @@ void q15_maxpool(const Q15_T* const input, Q15_T* const output, ITER_T N,
 }
 
 void q7xq15_q7_convolution(const Q7_T* const input, const Q15_T* const filter,
-  Q7_T* const output, Q31_T* const treesumBuffer, ITER_T N, ITER_T H, ITER_T W,
-  ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut,
-  ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
-  S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, ITER_T HDilation,
-  ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput, SCALE_T scoutput,
-  SCALE_T demote) {
+  Q7_T* const output, ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF,
+  ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G,
+  S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR,
+  ITER_T HStride, ITER_T WStride, ITER_T HDilation, ITER_T WDilation,
+  SCALE_T scinput, SCALE_T scoutput, SCALE_T demote) {
 
   S_ITER_T HOffsetFL = ((HF - 1) >> 1);
   S_ITER_T HOffsetFR = (HF >> 1);
@@ -674,47 +673,54 @@ void q7xq15_q7_convolution(const Q7_T* const input, const Q15_T* const filter,
   ITER_T WOffsetOut = (COut * G);
   ITER_T HOffsetOut = WOut * WOffsetOut;
   ITER_T NOffsetOut = HOut * HOffsetOut;
+
+  Q31_T sum;
+  #ifdef SHIFT
+    SCALE_T scale = scinput + scoutput + demote;
+  #else
+    SCALE_T scale = scinput * scoutput * demote;
+  #endif
   for (ITER_T n = 0; n < N; n++) {
     ITER_T hout = 0;
     ITER_T NIndexIn = n * NOffsetIn;
     ITER_T NIndexOut = n * NOffsetOut;
     for (S_ITER_T h = HOffsetL; h < (S_ITER_T)H - HOffsetR; h += (S_ITER_T)HStride, hout++) {
       ITER_T wout = 0;
-      ITER_T HIndexOut = hout * HOffsetOut;
+      ITER_T HIndexOut = hout * HOffsetOut + NIndexOut;
       for (S_ITER_T w = WOffsetL; w < (S_ITER_T)W - WOffsetR; w += (S_ITER_T)WStride, wout++) {
-        ITER_T WIndexOut = wout * WOffsetOut;
+        ITER_T WIndexOut = wout * WOffsetOut + HIndexOut;
         for (ITER_T g = 0; g < G; g++) {
-          ITER_T CIndexIn = g * CF;
-          ITER_T CIndexOut = g * COut;
+          ITER_T CIndexIn = g * CF + NIndexIn;
+          ITER_T CIndexOut = g * COut + WIndexOut;
           ITER_T GIndexF = g * GOffsetF;
           for (ITER_T c = 0; c < COut; c++) {
 
-            ITER_T counter = 0;
+            sum = 0;
             for (S_ITER_T hf = -HOffsetFL; hf <= HOffsetFR; hf++) {
               S_ITER_T hoffset = h + ((S_ITER_T)HDilation * hf);
-              ITER_T HIndexIn = ((ITER_T)hoffset) * HOffsetIn;
-              ITER_T HIndexF = ((ITER_T)(hf + HOffsetFL)) * HOffsetF;
+              if ((hoffset < 0) || (hoffset >= (S_ITER_T)H)) {
+                continue;
+              }
+              ITER_T HIndexIn = ((ITER_T)hoffset) * HOffsetIn + CIndexIn;
+              ITER_T HIndexF = ((ITER_T)(hf + HOffsetFL)) * HOffsetF + GIndexF + c;
               for (S_ITER_T wf = -WOffsetFL; wf <= WOffsetFR; wf++) {
                 S_ITER_T woffset = w + ((S_ITER_T)WDilation * wf);
-                ITER_T WIndexIn = ((ITER_T)woffset) * CIn;
-                ITER_T WIndexF = ((ITER_T)(wf + WOffsetFL)) * WOffsetF;
+                if ((woffset < 0) || (woffset >= (S_ITER_T)W)) {
+                  continue;
+                }
+                ITER_T WIndexIn = ((ITER_T)woffset) * CIn + HIndexIn;
+                ITER_T WIndexF = ((ITER_T)(wf + WOffsetFL)) * WOffsetF + HIndexF;
                 for (ITER_T cf = 0; cf < CF; cf++) {
-                  if ((hoffset < 0) || (hoffset >= (S_ITER_T)H) || (woffset < 0) || (woffset >= (S_ITER_T)W)) {
-                    treesumBuffer[counter] = 0;
-                  } else {
-                    treesumBuffer[counter] = ((Q31_T)input[NIndexIn + HIndexIn + WIndexIn + (cf + CIndexIn)]) *
-                      ((Q31_T)filter[GIndexF + HIndexF + WIndexF + (c + cf * COut)]);
-                  }
-                  counter++;
+                  sum += ((Q31_T)input[WIndexIn + cf]) *
+                         ((Q31_T)filter[WIndexF + (cf * COut)]);
                 }
               }
             }
 
-            q31_v_treesum(&treesumBuffer[0], HF * WF * CF, H1, H2);
             #ifdef SHIFT
-              output[NIndexOut + HIndexOut + WIndexOut + (c + CIndexOut)] = (treesumBuffer[0] >> (scinput + scoutput + demote));
+              output[CIndexOut + c] = (sum >> scale);
             #else
-              output[NIndexOut + HIndexOut + WIndexOut + (c + CIndexOut)] = (((treesumBuffer[0] / scinput) / scoutput) / demote);
+              output[CIndexOut + c] = (sum / scale);
             #endif
           }
         }
@@ -724,12 +730,11 @@ void q7xq15_q7_convolution(const Q7_T* const input, const Q15_T* const filter,
 }
 
 void q7xq15_q15_convolution(const Q7_T* const input, const Q15_T* const filter,
-  Q15_T* const output, Q31_T* const treesumBuffer, ITER_T N, ITER_T H,
-  ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut,
-  ITER_T HOut, ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD,
-  S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride,
-  ITER_T HDilation, ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput,
-  SCALE_T scoutput, SCALE_T demote) {
+  Q15_T* const output, ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF,
+  ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G,
+  S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR,
+  ITER_T HStride, ITER_T WStride, ITER_T HDilation, ITER_T WDilation,
+  SCALE_T scinput, SCALE_T scoutput, SCALE_T demote) {
 
   S_ITER_T HOffsetFL = ((HF - 1) >> 1);
   S_ITER_T HOffsetFR = (HF >> 1);
@@ -749,47 +754,54 @@ void q7xq15_q15_convolution(const Q7_T* const input, const Q15_T* const filter,
   ITER_T WOffsetOut = (COut * G);
   ITER_T HOffsetOut = WOut * WOffsetOut;
   ITER_T NOffsetOut = HOut * HOffsetOut;
+
+  Q31_T sum;
+  #ifdef SHIFT
+    SCALE_T scale = scinput + scoutput + demote;
+  #else
+    SCALE_T scale = scinput * scoutput * demote;
+  #endif
   for (ITER_T n = 0; n < N; n++) {
     ITER_T hout = 0;
     ITER_T NIndexIn = n * NOffsetIn;
     ITER_T NIndexOut = n * NOffsetOut;
     for (S_ITER_T h = HOffsetL; h < (S_ITER_T)H - HOffsetR; h += (S_ITER_T)HStride, hout++) {
       ITER_T wout = 0;
-      ITER_T HIndexOut = hout * HOffsetOut;
+      ITER_T HIndexOut = hout * HOffsetOut + NIndexOut;
       for (S_ITER_T w = WOffsetL; w < (S_ITER_T)W - WOffsetR; w += (S_ITER_T)WStride, wout++) {
-        ITER_T WIndexOut = wout * WOffsetOut;
+        ITER_T WIndexOut = wout * WOffsetOut + HIndexOut;
         for (ITER_T g = 0; g < G; g++) {
-          ITER_T CIndexIn = g * CF;
-          ITER_T CIndexOut = g * COut;
+          ITER_T CIndexIn = g * CF + NIndexIn;
+          ITER_T CIndexOut = g * COut + WIndexOut;
           ITER_T GIndexF = g * GOffsetF;
           for (ITER_T c = 0; c < COut; c++) {
 
-            ITER_T counter = 0;
+            sum = 0;
             for (S_ITER_T hf = -HOffsetFL; hf <= HOffsetFR; hf++) {
               S_ITER_T hoffset = h + ((S_ITER_T)HDilation * hf);
-              ITER_T HIndexIn = ((ITER_T)hoffset) * HOffsetIn;
-              ITER_T HIndexF = ((ITER_T)(hf + HOffsetFL)) * HOffsetF;
+              if ((hoffset < 0) || (hoffset >= (S_ITER_T)H)) {
+                continue;
+              }
+              ITER_T HIndexIn = ((ITER_T)hoffset) * HOffsetIn + CIndexIn;
+              ITER_T HIndexF = ((ITER_T)(hf + HOffsetFL)) * HOffsetF + GIndexF + c;
               for (S_ITER_T wf = -WOffsetFL; wf <= WOffsetFR; wf++) {
                 S_ITER_T woffset = w + ((S_ITER_T)WDilation * wf);
-                ITER_T WIndexIn = ((ITER_T)woffset) * CIn;
-                ITER_T WIndexF = ((ITER_T)(wf + WOffsetFL)) * WOffsetF;
+                if ((woffset < 0) || (woffset >= (S_ITER_T)W)) {
+                  continue;
+                }
+                ITER_T WIndexIn = ((ITER_T)woffset) * CIn + HIndexIn;
+                ITER_T WIndexF = ((ITER_T)(wf + WOffsetFL)) * WOffsetF + HIndexF;
                 for (ITER_T cf = 0; cf < CF; cf++) {
-                  if ((hoffset < 0) || (hoffset >= (S_ITER_T)H) || (woffset < 0) || (woffset >= (S_ITER_T)W)) {
-                    treesumBuffer[counter] = 0;
-                  } else {
-                    treesumBuffer[counter] = ((Q31_T)input[NIndexIn + HIndexIn + WIndexIn + (cf + CIndexIn)]) *
-                      ((Q31_T)filter[GIndexF + HIndexF + WIndexF + (c + cf * COut)]);
-                  }
-                  counter++;
+                  sum += ((Q31_T)input[WIndexIn + cf]) *
+                         ((Q31_T)filter[WIndexF + (cf * COut)]);
                 }
               }
             }
 
-            q31_v_treesum(&treesumBuffer[0], HF * WF * CF, H1, H2);
             #ifdef SHIFT
-              output[NIndexOut + HIndexOut + WIndexOut + (c + CIndexOut)] = (treesumBuffer[0] >> (scinput + scoutput + demote));
+              output[CIndexOut + c] = (sum >> scale);
             #else
-              output[NIndexOut + HIndexOut + WIndexOut + (c + CIndexOut)] = (((treesumBuffer[0] / scinput) / scoutput) / demote);
+              output[CIndexOut + c] = (sum / scale);
             #endif
           }
         }
@@ -799,12 +811,11 @@ void q7xq15_q15_convolution(const Q7_T* const input, const Q15_T* const filter,
 }
 
 void q15_convolution(const Q15_T* const input, const Q15_T* const filter,
-  Q15_T* const output, Q31_T* const treesumBuffer, ITER_T N, ITER_T H,
-  ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut,
-  ITER_T HOut, ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD,
-  S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride,
-  ITER_T HDilation, ITER_T WDilation, SCALE_T H1, SCALE_T H2, SCALE_T scinput,
-  SCALE_T scoutput, SCALE_T demote) {
+  Q15_T* const output, ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF,
+  ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G,
+  S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR,
+  ITER_T HStride, ITER_T WStride, ITER_T HDilation, ITER_T WDilation,
+  SCALE_T scinput, SCALE_T scoutput, SCALE_T demote) {
 
   S_ITER_T HOffsetFL = ((HF - 1) >> 1);
   S_ITER_T HOffsetFR = (HF >> 1);
@@ -824,47 +835,54 @@ void q15_convolution(const Q15_T* const input, const Q15_T* const filter,
   ITER_T WOffsetOut = (COut * G);
   ITER_T HOffsetOut = WOut * WOffsetOut;
   ITER_T NOffsetOut = HOut * HOffsetOut;
+
+  Q63_T sum;
+  #ifdef SHIFT
+    SCALE_T scale = scinput + scoutput + demote;
+  #else
+    SCALE_T scale = scinput * scoutput * demote;
+  #endif
   for (ITER_T n = 0; n < N; n++) {
     ITER_T hout = 0;
     ITER_T NIndexIn = n * NOffsetIn;
     ITER_T NIndexOut = n * NOffsetOut;
     for (S_ITER_T h = HOffsetL; h < (S_ITER_T)H - HOffsetR; h += (S_ITER_T)HStride, hout++) {
       ITER_T wout = 0;
-      ITER_T HIndexOut = hout * HOffsetOut;
+      ITER_T HIndexOut = hout * HOffsetOut + NIndexOut;
       for (S_ITER_T w = WOffsetL; w < (S_ITER_T)W - WOffsetR; w += (S_ITER_T)WStride, wout++) {
-        ITER_T WIndexOut = wout * WOffsetOut;
+        ITER_T WIndexOut = wout * WOffsetOut + HIndexOut;
         for (ITER_T g = 0; g < G; g++) {
-          ITER_T CIndexIn = g * CF;
-          ITER_T CIndexOut = g * COut;
+          ITER_T CIndexIn = g * CF + NIndexIn;
+          ITER_T CIndexOut = g * COut + WIndexOut;
           ITER_T GIndexF = g * GOffsetF;
           for (ITER_T c = 0; c < COut; c++) {
 
-            ITER_T counter = 0;
+            sum = 0;
             for (S_ITER_T hf = -HOffsetFL; hf <= HOffsetFR; hf++) {
               S_ITER_T hoffset = h + ((S_ITER_T)HDilation * hf);
-              ITER_T HIndexIn = ((ITER_T)hoffset) * HOffsetIn;
-              ITER_T HIndexF = ((ITER_T)(hf + HOffsetFL)) * HOffsetF;
+              if ((hoffset < 0) || (hoffset >= (S_ITER_T)H)) {
+                continue;
+              }
+              ITER_T HIndexIn = ((ITER_T)hoffset) * HOffsetIn + CIndexIn;
+              ITER_T HIndexF = ((ITER_T)(hf + HOffsetFL)) * HOffsetF + GIndexF + c;
               for (S_ITER_T wf = -WOffsetFL; wf <= WOffsetFR; wf++) {
                 S_ITER_T woffset = w + ((S_ITER_T)WDilation * wf);
-                ITER_T WIndexIn = ((ITER_T)woffset) * CIn;
-                ITER_T WIndexF = ((ITER_T)(wf + WOffsetFL)) * WOffsetF;
+                if ((woffset < 0) || (woffset >= (S_ITER_T)W)) {
+                  continue;
+                }
+                ITER_T WIndexIn = ((ITER_T)woffset) * CIn + HIndexIn;
+                ITER_T WIndexF = ((ITER_T)(wf + WOffsetFL)) * WOffsetF + HIndexF;
                 for (ITER_T cf = 0; cf < CF; cf++) {
-                  if ((hoffset < 0) || (hoffset >= (S_ITER_T)H) || (woffset < 0) || (woffset >= (S_ITER_T)W)) {
-                    treesumBuffer[counter] = 0;
-                  } else {
-                    treesumBuffer[counter] = ((Q31_T)input[NIndexIn + HIndexIn + WIndexIn + (cf + CIndexIn)]) *
-                      ((Q31_T)filter[GIndexF + HIndexF + WIndexF + (c + cf * COut)]);
-                  }
-                  counter++;
+                  sum += ((Q31_T)input[WIndexIn + cf]) *
+                         ((Q31_T)filter[WIndexF + (cf * COut)]);
                 }
               }
             }
 
-            q31_v_treesum(&treesumBuffer[0], HF * WF * CF, H1, H2);
             #ifdef SHIFT
-              output[NIndexOut + HIndexOut + WIndexOut + (c + CIndexOut)] = (treesumBuffer[0] >> (scinput + scoutput + demote));
+              output[CIndexOut + c] = (sum >> scale);
             #else
-              output[NIndexOut + HIndexOut + WIndexOut + (c + CIndexOut)] = (((treesumBuffer[0] / scinput) / scoutput) / demote);
+              output[CIndexOut + c] = (sum / scale);
             #endif
           }
         }

@@ -544,14 +544,14 @@ int test_q15_convolution() {
                                            0, 1, 0,
                                            1, 0, 0};
 
-  const Q15_T expected_A[2 * 1 * 1 * 2] = {44, 25,
+  const Q15_T expected_A[2 * 1 * 1 * 2] = {45, 25,
 
 
-                                           230, 206};
-  const Q15_T expected_B[2 * 1 * 1 * 1] = {58,
+                                           231, 206};
+  const Q15_T expected_B[2 * 1 * 1 * 1] = {59,
 
 
-                                           317};
+                                           318};
   const Q15_T expected_C[2 * 2 * 2 * 2] = {1, 27,
                                            22, 12,
 
@@ -589,18 +589,17 @@ int test_q15_convolution() {
                                            0, 0,
                                            0, 0};
   Q15_T pred_A[2 * 1 * 1 * 2], pred_B[2 * 1 * 1 * 1], pred_C[2 * 2 * 2 * 2], pred_D[2 * 3 * 3 * 2];
-  Q31_T temp[16];
 
   #ifdef SHIFT
-    q15_convolution(qmat_A, qmat_B, pred_A, temp, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 0, 0, 0, 0);
-    q15_convolution(qmat_A, qmat_C, pred_B, temp, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 3, 0, 0, 0, 0);
-    q15_convolution(qmat_A, qmat_D, pred_C, temp, 2, 2, 2, 2, 3, 3, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 0, 0, 0, 0);
-    q15_convolution(qmat_A, qmat_B, pred_D, temp, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2, 2, 2, 2, 1, 1, 3, 3, 3, 0, 1, 1, 0);
+    q15_convolution(qmat_A, qmat_B, pred_A, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 2);
+    q15_convolution(qmat_A, qmat_C, pred_B, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 3);
+    q15_convolution(qmat_A, qmat_D, pred_C, 2, 2, 2, 2, 3, 3, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 3);
+    q15_convolution(qmat_A, qmat_B, pred_D, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2, 2, 2, 2, 1, 1, 3, 3, 1, 1, 3);
   #else
-    q15_convolution(qmat_A, qmat_B, pred_A, temp, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 0, 0, 0, 0, 1, 1, 1, 1, 2, 0, 1, 1, 1);
-    q15_convolution(qmat_A, qmat_C, pred_B, temp, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 3, 0, 1, 1, 1);
-    q15_convolution(qmat_A, qmat_D, pred_C, temp, 2, 2, 2, 2, 3, 3, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 3, 0, 1, 1, 1);
-    q15_convolution(qmat_A, qmat_B, pred_D, temp, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2, 2, 2, 2, 1, 1, 3, 3, 3, 0, 2, 2, 1);
+    q15_convolution(qmat_A, qmat_B, pred_A, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 4);
+    q15_convolution(qmat_A, qmat_C, pred_B, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 8);
+    q15_convolution(qmat_A, qmat_D, pred_C, 2, 2, 2, 2, 3, 3, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 8);
+    q15_convolution(qmat_A, qmat_B, pred_D, 2, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2, 2, 2, 2, 1, 1, 3, 3, 2, 2, 8);
   #endif
 
   return (check_output(pred_A, expected_A, 4) || check_output(pred_B, expected_B, 2) || check_output(pred_C, expected_C, 16) || check_output(pred_D, expected_D, 36));
