@@ -134,7 +134,6 @@ int main(int argc, char **argv) {
   Q15_T* output_test = malloc(N * HOUT * WOUT * COUT * sizeof(Q15_T));
   Q15_T* X = malloc(HF * W * CTEMP * sizeof(Q15_T));
   Q15_T* T = malloc(CTEMP * sizeof(Q15_T));
-  Q31_T* U = malloc(CTEMP * sizeof(Q31_T));
   float* xLine = malloc(N * H * W * CIN * sizeof(float));
   float* yLine = malloc(N * HOUT * WOUT * COUT * sizeof(float));
   float* allErrors = malloc(N * HOUT * WOUT * COUT * (sizeof(float)));
@@ -150,11 +149,9 @@ int main(int argc, char **argv) {
   double time_spent = 0.0;
   clock_t begin = clock();
   q15_mbconv_block(reshapedXLine, F1, W1, B1, F2, W2, B2, F3, W3, B3,
-                   output_test, X, T, U, N, H, W, CIN, CTEMP, HF, WF,
-                   COUT, HOUT, WOUT, HPADL, HPADR, WPADL, WPADR, HSTRIDE,
-                   WSTRIDE, D1, D2, D3, Limit1, Limit2, ShRU1, ShRB1, ShRX1,
-                   ShRU2, ShRB2, ShRX2, ShRU3, ShRB3, ShRW3, ShLU1, ShLB1,
-                   ShLX1, ShLU2, ShLB2, ShLX2, ShLU3, ShLB3, ShLW3);
+    output_test, X, T, N, H, W, CIN, CTEMP, HF, WF, COUT, HOUT, WOUT, HPADL,
+    HPADR, WPADL, WPADR, HSTRIDE, WSTRIDE, Limit1, Limit2, ShRU1, ShRX1, ShRU2,
+    ShRX2, ShRU3, ShRW3, ShLU1, ShLX1, ShLU2, ShLX2, ShLU3, ShLW3);
   clock_t end = clock();
   time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
   fprintf(outputLog, "Time elapsed is %f seconds\n", time_spent);
@@ -162,9 +159,11 @@ int main(int argc, char **argv) {
   fprintf(outputLog, "Maximum Observed Deviation: %f percent\n", max_diff);
 
   for (unsigned j = 0; j < N * HOUT * WOUT * COUT; j++) {
+    printf("%d, ", output_test[j]);
     float val = ((float)output_test[j]) / pow(2, YScale);
     fwrite((char*)&val, sizeof(float), 1, yFile);
   }
+  printf("\n");
 
   fclose(xFile);
   fclose(yFile);
@@ -172,7 +171,7 @@ int main(int argc, char **argv) {
 
   float aggregate = aggregate_error(allErrors, N * HOUT * WOUT * COUT);
   fprintf(outputLog, "Aggregated 95th Percentile Error: %f\n", aggregate);
-  if (aggregate < 1.419) {
+  if (aggregate < 1.415) {
     fprintf(outputLog, "Quantized MBConv Numerical Test Passed!\n");
   } else {
     fprintf(outputLog, "Quantized MBConv Numerical Test Failed!\n");
@@ -193,7 +192,6 @@ int main(int argc, char **argv) {
   free(output_test);
   free(X);
   free(T);
-  free(U);
   free(xLine);
   free(yLine);
   free(allErrors);

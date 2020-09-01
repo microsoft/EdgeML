@@ -107,13 +107,11 @@ void q_face_detection_fast(char* const mem_buf) {
   // MBConv Layer 1
   q7xq15_q15_mbconv_block((Q7_T*)mem_buf, L1_F1, L1_W1, L1_B1, L1_F2, L1_W2,
     L1_B2, L1_F3, L1_W3, L1_B3, (Q15_T*)(mem_buf + 19200),
-    (Q15_T*)(mem_buf + 38400), (Q15_T*)(mem_buf + 54272),
-    (Q31_T*)(mem_buf + 53760), L1_N, L1_H, L1_W, L1_CIN, L1_CTEMP, L1_HF,
-    L1_WF, L1_COUT, L1_HOUT, L1_WOUT, L1_HPADL, L1_HPADR, L1_WPADL, L1_WPADR,
-    L1_HSTRIDE, L1_WSTRIDE, L1_D1, L1_D2, L1_D3, L1_Limit1, L1_Limit2, L1_ShRU1,
-    L1_ShRB1, L1_ShRX1, L1_ShRU2, L1_ShRB2, L1_ShRX2, L1_ShRU3, L1_ShRB3,
-    L1_ShRW3, L1_ShLU1, L1_ShLB1, L1_ShLX1, L1_ShLU2, L1_ShLB2, L1_ShLX2,
-    L1_ShLU3, L1_ShLB3, L1_ShLW3);
+    (Q15_T*)(mem_buf + 38400), (Q15_T*)(mem_buf + 54272), L1_N, L1_H, L1_W,
+    L1_CIN, L1_CTEMP, L1_HF, L1_WF, L1_COUT, L1_HOUT, L1_WOUT, L1_HPADL,
+    L1_HPADR, L1_WPADL, L1_WPADR, L1_HSTRIDE, L1_WSTRIDE, L1_Limit1, L1_Limit2,
+    L1_ShRU1, L1_ShRX1, L1_ShRU2, L1_ShRX2, L1_ShRU3, L1_ShRW3, L1_ShLU1,
+    L1_ShLX1, L1_ShLU2, L1_ShLX2, L1_ShLU3, L1_ShLW3);
 
   //
   q15_t_l2_norm((Q15_T*)(mem_buf + 19200), L1_N, L1_HOUT, L1_WOUT, L1_COUT,
@@ -192,14 +190,13 @@ void q_face_detection_fast(char* const mem_buf) {
   }
 
   // MBConv Layer 2
-  q15_mbconv_block((Q15_T*)(mem_buf + 19200), L2_F1, L2_W1, L2_B1, L2_F2, L2_W2,
-    L2_B2, L2_F3, L2_W3, L2_B3, (Q15_T*)(mem_buf + 38400), (Q15_T*)(mem_buf + 6000),
-    (Q15_T*)(mem_buf + 256), (Q31_T*)mem_buf, L2_N, L2_H, L2_W,
+  q15_mbconv_block((Q15_T*)(mem_buf + 19200), L2_F1, L2_W1, L2_B1, L2_F2,
+    L2_W2, L2_B2, L2_F3, L2_W3, L2_B3, (Q15_T*)(mem_buf + 38400),
+    (Q15_T*)(mem_buf + 6000), (Q15_T*)(mem_buf + 256), L2_N, L2_H, L2_W,
     L2_CIN, L2_CTEMP, L2_HF, L2_WF, L2_COUT, L2_HOUT, L2_WOUT, L2_HPADL,
-    L2_HPADR, L2_WPADL, L2_WPADR, L2_HSTRIDE, L2_WSTRIDE, L2_D1, L2_D2, L2_D3,
-    L2_Limit1, L2_Limit2, L2_ShRU1, L2_ShRB1, L2_ShRX1, L2_ShRU2, L2_ShRB2,
-    L2_ShRX2, L2_ShRU3, L2_ShRB3, L2_ShRW3, L2_ShLU1, L2_ShLB1, L2_ShLX1,
-    L2_ShLU2, L2_ShLB2, L2_ShLX2, L2_ShLU3, L2_ShLB3, L2_ShLW3);
+    L2_HPADR, L2_WPADL, L2_WPADR, L2_HSTRIDE, L2_WSTRIDE, L2_Limit1, L2_Limit2,
+    L2_ShRU1, L2_ShRX1, L2_ShRU2, L2_ShRX2, L2_ShRU3, L2_ShRW3, L2_ShLU1,
+    L2_ShLX1, L2_ShLU2, L2_ShLX2, L2_ShLU3, L2_ShLW3);
 
   //
   q15_t_l2_norm((Q15_T*)(mem_buf + 38400), L2_N, L2_HOUT, L2_WOUT, L2_COUT,
@@ -238,28 +235,26 @@ void q_face_detection_fast(char* const mem_buf) {
     D2LW_COUT, (Q15_T*)(mem_buf + 6000), D2LB_Scten, D2LB_Scvec, D2LB_Scret);
 
   // MBConv Layer 3
-  q15xq7_q15_mbconv_block((Q15_T*)(mem_buf + 38400), L3_F1, L3_W1, L3_B1, L3_F2, L3_W2,
-    L3_B2, L3_F3, L3_W3, L3_B3, (Q15_T*)(mem_buf + 96000), (Q15_T*)(mem_buf + 8400),
-    (Q15_T*)(mem_buf + 1968), (Q31_T*)(mem_buf + 1200), L3_N, L3_H, L3_W,
+  q15xq7_q15_mbconv_block((Q15_T*)(mem_buf + 38400), L3_F1, L3_W1, L3_B1,
+    L3_F2, L3_W2, L3_B2, L3_F3, L3_W3, L3_B3, (Q15_T*)(mem_buf + 96000),
+    (Q15_T*)(mem_buf + 8400), (Q15_T*)(mem_buf + 1968), L3_N, L3_H, L3_W,
     L3_CIN, L3_CTEMP, L3_HF, L3_WF, L3_COUT, L3_HOUT, L3_WOUT, L3_HPADL,
-    L3_HPADR, L3_WPADL, L3_WPADR, L3_HSTRIDE, L3_WSTRIDE, L3_D1, L3_D2, L3_D3,
-    L3_Limit1, L3_Limit2, L3_ShRU1, L3_ShRB1, L3_ShRX1, L3_ShRU2, L3_ShRB2,
-    L3_ShRX2, L3_ShRU3, L3_ShRB3, L3_ShRW3, L3_ShLU1, L3_ShLB1, L3_ShLX1,
-    L3_ShLU2, L3_ShLB2, L3_ShLX2, L3_ShLU3, L3_ShLB3, L3_ShLW3);
+    L3_HPADR, L3_WPADL, L3_WPADR, L3_HSTRIDE, L3_WSTRIDE, L3_Limit1, L3_Limit2,
+    L3_ShRU1, L3_ShRX1, L3_ShRU2, L3_ShRX2, L3_ShRU3, L3_ShRW3, L3_ShLU1,
+    L3_ShLX1, L3_ShLU2, L3_ShLX2, L3_ShLU3, L3_ShLW3);
 
   // MBConv2 + MBConv3
   q15_t_add((Q15_T*)(mem_buf + 38400), (Q15_T*)(mem_buf + 96000), L3_N, L3_HOUT,
     L3_WOUT, L3_COUT, (Q15_T*)(mem_buf + 8400), L3_Scten1, L3_Scten2, L3_Scret);
 
   // MBConv Layer 4
-  q15xq7_q15_mbconv_block((Q15_T*)(mem_buf + 8400), L4_F1, L4_W1, L4_B1, L4_F2, L4_W2,
-    L4_B2, L4_F3, L4_W3, L4_B3, (Q15_T*)(mem_buf + 66000), (Q15_T*)(mem_buf + 142800),
-    (Q15_T*)(mem_buf + 1968), (Q31_T*)(mem_buf + 1200), L4_N, L4_H, L4_W,
+  q15xq7_q15_mbconv_block((Q15_T*)(mem_buf + 8400), L4_F1, L4_W1, L4_B1, L4_F2,
+    L4_W2, L4_B2, L4_F3, L4_W3, L4_B3, (Q15_T*)(mem_buf + 66000),
+    (Q15_T*)(mem_buf + 142800), (Q15_T*)(mem_buf + 1968), L4_N, L4_H, L4_W,
     L4_CIN, L4_CTEMP, L4_HF, L4_WF, L4_COUT, L4_HOUT, L4_WOUT, L4_HPADL,
-    L4_HPADR, L4_WPADL, L4_WPADR, L4_HSTRIDE, L4_WSTRIDE, L4_D1, L4_D2, L4_D3,
-    L4_Limit1, L4_Limit2, L4_ShRU1, L4_ShRB1, L4_ShRX1, L4_ShRU2, L4_ShRB2,
-    L4_ShRX2, L4_ShRU3, L4_ShRB3, L4_ShRW3, L4_ShLU1, L4_ShLB1, L4_ShLX1,
-    L4_ShLU2, L4_ShLB2, L4_ShLX2, L4_ShLU3, L4_ShLB3, L4_ShLW3);
+    L4_HPADR, L4_WPADL, L4_WPADR, L4_HSTRIDE, L4_WSTRIDE, L4_Limit1, L4_Limit2,
+    L4_ShRU1, L4_ShRX1, L4_ShRU2, L4_ShRX2, L4_ShRU3, L4_ShRW3, L4_ShLU1,
+    L4_ShLX1, L4_ShLU2, L4_ShLX2, L4_ShLU3, L4_ShLW3);
 
   //
   q15_t_l2_norm((Q15_T*)(mem_buf + 66000), L4_N, L4_HOUT, L4_WOUT, L4_COUT,
