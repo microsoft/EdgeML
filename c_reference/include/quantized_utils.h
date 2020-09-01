@@ -8,7 +8,7 @@
 #include "quantized_datatypes.h"
 
 // Function for saturating the input to the required format.
-// This function isn't used currently because of SeeDot generated scales
+// This function isn't used actively because of SeeDot generated scales
 // ensuring the overflows aren't a possibility.
 static inline Q15_T q15_saturate(Q31_T inp) {
     if (inp > Q15_TMAX){
@@ -64,21 +64,6 @@ static inline Q15_T exp_base_16(Q15_T inp, Q15_T scale) {
 }
 
 /**
- * @brief Compute TreeSum from a given vector holding intermediate multiplications, and store the result in the first index of the input vector.
- * @param[in, out]  vec       pointer to vector on which TreeSum operation is to be computed
- * @param[in]       len       length of the input vector
- * @param[in]       H1        depth parameter for division-by-two used in TreeSum
- * @param[in]       H2        depth parameter for direct sum used in TreeSum
- * @return          none
- * @example         vec       = {-425, -169, -3534, 524, -2739, 87, 52, 292}
- *                  len       = 8
- *                  H1        = 3
- *                  H2        = 0
- *                  vec[0]    = {-738}
- */
-void q15_v_treesum(Q15_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2);
-void q31_v_treesum(Q31_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2);
-/**
  * @brief Compute the element-wise addition between two vectors.
  * @param[in]       vec1      pointer to the first input vector
  * @param[in]       vec2      pointer to the second input vector
@@ -98,9 +83,8 @@ void q31_v_treesum(Q31_T* const vec, ITER_T len, SCALE_T H1, SCALE_T H2);
  *                  demote    = 1
  *                  ret       = {-2772, -1358, -3028, -389, -1666, -2070, -608, -699}
  */
-void q15_v_add(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len,
-               Q15_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret,
-               SCALE_T demote);
+void q15_v_add(const Q15_T* vec1, const Q15_T* vec2, ITER_T len, Q15_T* ret,
+               SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret, SCALE_T demote);
 /**
  * @brief Compute the element-wise subtraction between two vectors.
  * @param[in]       vec1      pointer to the first input vector
@@ -119,10 +103,10 @@ void q15_v_add(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len,
  *                  scret     = 1
  *                  ret       = {1922, 1020, -4040, 1437, -3812, 2244, 712, 1283}
  */
-void q7_v_sub(const Q7_T* const vec1, const Q7_T* const vec2, ITER_T len,
-              Q7_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret);
-void q15_v_sub(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len,
-               Q15_T* const ret, SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret);
+void q7_v_sub(const Q7_T* vec1, const Q7_T* vec2, ITER_T len, Q7_T* ret,
+              SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret);
+void q15_v_sub(const Q15_T* vec1, const Q15_T* vec2, ITER_T len, Q15_T* ret,
+               SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret);
 /**
  * @brief Compute the element-wise product (also known as Hadamard product) between two vectors.
  * @param[in]       vec1      pointer to the first input vector
@@ -139,10 +123,10 @@ void q15_v_sub(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len,
  *                  scvec2    = 64
  *                  ret       = {1423, 7085, -16378, 8209, -12067, 6805, 6475, 6897}
  */
-void q7_v_hadamard(const Q7_T* const vec1, const Q7_T* const vec2, ITER_T len,
-                   Q7_T* const ret, SCALE_T scvec1, SCALE_T scvec2);
-void q15_v_hadamard(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len,
-                    Q15_T* const ret, SCALE_T scvec1, SCALE_T scvec2);
+void q7_v_hadamard(const Q7_T* vec1, const Q7_T* vec2, ITER_T len, Q7_T* ret,
+                   SCALE_T scvec1, SCALE_T scvec2);
+void q15_v_hadamard(const Q15_T* vec1, const Q15_T* vec2, ITER_T len, Q15_T* ret,
+                    SCALE_T scvec1, SCALE_T scvec2);
 /**
  * @brief Compute the element-wise Sigmoid activation on the input vector.
  * @param[in]       vec            pointer to the input vector
@@ -166,9 +150,9 @@ void q15_v_hadamard(const Q15_T* const vec1, const Q15_T* const vec2, ITER_T len
  *                  use_tables     = 0
  *                  ret            = {0, 2760, 0, 6640, 1528, 0, 5760, 5400}
  */
-void q15_v_sigmoid(const Q15_T* const vec, ITER_T len, Q15_T* const ret, Q15_T div,
-                   Q15_T add, Q15_T sigmoid_limit, SCALE_T scale_in, SCALE_T scale_out,
-                   ITER_T use_tables);
+void q15_v_sigmoid(const Q15_T* vec, ITER_T len, Q15_T* ret, Q15_T div,
+                   Q15_T add, Q15_T sigmoid_limit, SCALE_T scale_in,
+                   SCALE_T scale_out, ITER_T use_tables);
 /**
  * @brief Compute the element-wise TanHyperbolic activation on the input vector.
  * @param[in]       vec            pointer to the input vector
@@ -186,8 +170,8 @@ void q15_v_sigmoid(const Q15_T* const vec, ITER_T len, Q15_T* const ret, Q15_T d
  *                  use_tables     = 0
  *                  ret            = {178, 1064, -2048, 1718, -1663, 851, 1244, 1282}
  */
-void q15_v_tanh(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
-                SCALE_T scale_in, SCALE_T scale_out, ITER_T use_tables);
+void q15_v_tanh(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scale_in,
+                SCALE_T scale_out, ITER_T use_tables);
 /**
  * @brief Compute the addition of a scalar to every element of a vector.
  * @param[in]       scalar    the input scalar to be added to a vector
@@ -206,9 +190,8 @@ void q15_v_tanh(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
  *                  scret     = 1
  *                  ret       = {16378, 13638, 16378, 9787, 14861, 16378, 10661, 11018}
  */
-void q15_v_scalar_add(Q15_T scalar, const Q15_T* const vec, ITER_T len,
-                      Q15_T* const ret, SCALE_T scscalar, SCALE_T scvec,
-                      SCALE_T scret);
+void q15_v_scalar_add(Q15_T scalar, const Q15_T* vec, ITER_T len, Q15_T* ret,
+                      SCALE_T scscalar, SCALE_T scvec, SCALE_T scret);
 /**
  * @brief Compute the subtraction of every element of a vector (B) from a scalar (a). The resultant vector has elements C_{i} = a - B_{i}.
  * @param[in]       scalar    the input scalar
@@ -227,29 +210,8 @@ void q15_v_scalar_add(Q15_T scalar, const Q15_T* const vec, ITER_T len,
  *                  scret     = 1
  *                  ret       = {16384, 13624, 16384, 9744, 14856, 16384, 10624, 10984}
  */
-void q15_v_scalar_sub(Q15_T scalar, const Q15_T* const vec, ITER_T len,
-                      Q15_T* const ret, SCALE_T scscalar, SCALE_T scvec, SCALE_T scret);
-/**
- * @brief Compute the subtraction of a scalar (b) from  every element of a vector (A). The resultant vector has elements C_{i} = A_{i} - b.
- * @param[in]       vec       pointer to the input vector
- * @param[in]       scalar    the input scalar to be subtracted
- * @param[in]       len       length of the input vector
- * @param[out]      ret       pointer to the vector storing the output
- * @param[in]       scvec     scale factor of the input vector
- * @param[in]       scscalar  scale factor of the input scalar
- * @param[in]       scret     scale factor of the output vector
- * @return          none
- * @example         vec       = {0, 2760, 0, 6640, 1528, 0, 5760, 5400}
- *                  scalar    = 16384
- *                  len       = 8
- *                  scvec     = 1
- *                  scscalar  = 1
- *                  scret     = 1
- *                  ret       = {-16384, -13624, -16384, -9744, -14856, -16384, -10624, -10984}
- */
-void q15_v_sub_scalar(const Q15_T* const vec, Q15_T scalar, ITER_T len,
-                      Q15_T* const ret, SCALE_T scvec, SCALE_T scscalar,
-                      SCALE_T scret);
+void q15_v_scalar_sub(Q15_T scalar, const Q15_T* vec, ITER_T len, Q15_T* ret,
+                      SCALE_T scscalar, SCALE_T scvec, SCALE_T scret);
 /**
  * @brief Compute the multiplication of a scalar to every element of a vector.
  * @param[in]       scalar    the input scalar to be multiplied
@@ -266,8 +228,8 @@ void q15_v_sub_scalar(const Q15_T* const vec, Q15_T scalar, ITER_T len,
  *                  scvec     = 256
  *                  ret       = {16261, 13521, 16261, 9670, 14744, 16261, 10544, 10901}
  */
-void q15_v_scalar_mul(Q15_T scalar, const Q15_T* const vec, ITER_T len,
-                      Q15_T* const ret, SCALE_T scscalar, SCALE_T scvec);
+void q15_v_scalar_mul(Q15_T scalar, const Q15_T* vec, ITER_T len, Q15_T* ret,
+                      SCALE_T scscalar, SCALE_T scvec);
 /**
  * @brief Finds the index of largest element in a vector.
  * @param[in]       vec       pointer to input vector
@@ -280,38 +242,6 @@ void q15_v_scalar_mul(Q15_T scalar, const Q15_T* const vec, ITER_T len,
  */
 void q15_v_argmax(const Q15_T* const vec, ITER_T len, ITER_T* const ret);
 /**
- * @brief Replace any negative element present in the vector with zero.
- * Note: No saturation is done here, and hence, the output might overflow with a large input.
- * @param[in]       vec       pointer to vector on which element-wise ReLU operation is to be applied
- * @param[in]       len       length of the input vector
- * @param[out]      ret       pointer to the output vector
- * @return          none
- * @example         vec       = {1324, -5453, 3454, -3435, 8789}
- *                  len       = 4
- *                  ret       = {1324, 0, 3454, 0, 8789}
- */
-void q15_v_relu(const Q15_T* const vec, ITER_T len, Q15_T* const ret);
-/**
- * @brief Computes exponentiation of all elements in vec (interpreted as a floating-point value) to the base e and stores the results in ret.
- * Note: No saturation is done here, and hence, the output might overflow with a large input.
- * @param[in]       vec        pointer to vector whose exponential scaling is to be performed
- * @param[in]       len        length of the vector
- * @param[out]      ret        pointer to the output vector
- * @param[in]       scvec      scaling factor for input vector
- * @param[in]       scret      scaling factor for output vector
- * @param[in]       use_tables flag for using pre-computed (base 16) exp tables for calculating Exp on the input
- * @return          none
- * @example         formula    = exp((float)vec_{i} / scvec) * scret (use_tables set to 0)
- *                  vec        = {13, 54, 34, 35, 87}
- *                  len        = 5
- *                  scvec      = 8
- *                  scret      = 8
- *                  use_tables = 0
- *                  ret        = {40, 6832, 560, 635, 29493}
- */
-void q15_v_exp(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
-               SCALE_T scvec, SCALE_T scret, ITER_T use_tables);
-/**
  * @brief Performs element-wise up-scaling on a vector.
  * @param[in]       vec       pointer to the vector on which up-scaling is to be performed
  * @param[in]       len       length of the vector
@@ -323,8 +253,7 @@ void q15_v_exp(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
  *                  scvec     = 10
  *                  ret       = {4230, -9870, -23420, 12320}
  */
-void q15_v_scale_up(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
-                    SCALE_T scvec);
+void q15_v_scale_up(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scvec);
 /**
  * @brief Performs element-wise down-scaling on a vector.
  * @param[in]       vec       pointer to the vector on which down-scaling is to be performed
@@ -337,99 +266,8 @@ void q15_v_scale_up(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
  *                  scvec     = 37
  *                  ret       = {114, -267, -63, 33}
  */
-void q15_v_scale_down(const Q15_T* const vec, ITER_T len, Q15_T* const ret,
-                      SCALE_T scvec);
+void q15_v_scale_down(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scvec);
 
-/**
- * @brief Performs the transpose on the input matrix.
- * @param[in]       mat       pointer to the input matrix which is to be transposed
- * @param[in]       nrows     number of rows of output matrix
- * @param[in]       ncols     number of columns of output matrix
- * @param[out]      ret       pointer to the output matrix which will hold the transpose
- * @return          none
- * @example         mat       = { {1, 2},
- *                                {4, 5} }
- *                  nrows     = 2
- *                  ncols     = 2
- *                  ret       = { {1, 4},
- *                                {2, 5} }
- *
- * @example         mat       = { {1, 2, 3},
- *                                {4, 5, 6} }
- *                  nrows     = 3
- *                  ncols     = 2
- *                  ret       = { {1,  4},
- *                                {2,  5},
- *                                {3,  6} }
- */
-void q15_m_transpose(const Q15_T* const mat, ITER_T nrows, ITER_T ncols,
-                     Q15_T* const ret);
-/**
- * @brief Performs the row-order or the column-order reversal of the 2-D input matrix.
- * @param[in]       mat       pointer to the (row / column-major) input matrix on which reversal is to be performed
- * @param[in]       nrows     number of rows of the input matrix
- * @param[in]       ncols     number of columns of the input matrix
- * @param[in]       axis      axis of reversal; 0 for reversal along rows and 1 for reversal along columns
- * @param[out]      ret       pointer to the output matrix
- * @return          none
- * @example         mat       = { {1, 2},
- *                                {4, 5} }
- *                  nrows     = 2
- *                  ncols     = 2
- *                  axis      = 0
- *                  ret       = { {4, 5},
- *                                {1, 2} }
- */
-void q15_m_reverse(const Q15_T* const mat, ITER_T nrows, ITER_T ncols,
-                   ITER_T axis, Q15_T* const ret);
-/**
- * @brief Performs the column-wise addition of a bias term to the input matrix.
- * dim(mat) = dim(ret) = [nrows][ncols]; dim(vec) = [ncols].
- * @param[in]       mat       pointer to the input matrix on which addition is to be performed
- * @param[in]       vec       pointer to the bias vector which is to be added
- * @param[in]       nrows     number of rows of the input matrix
- * @param[in]       ncols     number of columns of the input matrix
- * @param[out]      ret       pointer to the output matrix
- * @param[in]       scmat     scaling factor for the input matrix
- * @param[in]       scvec     scaling factor for the bias vector
- * @param[in]       scret     scaling factor for the output matrix
- * @return          none
- * @example         mat       = {1324, 5453, 3454, 3435, 8789, 3411, 5412, 8934}
- *                  vec       = {8452, 2341, 9383, 2353}
- *                  nrows     = 4
- *                  ncols     = 2
- *                  scmat     = 1
- *                  scvec     = 2
- *                  scret     = 2
- *                  ret       = {2775, 3311, 4072, 2305, 6507, 2290, 5051, 5055}
- */
-void q15_m_add_vec(const Q15_T* const mat, const Q15_T* const vec,
-                   ITER_T nrows, ITER_T ncols, Q15_T* const ret,
-                   SCALE_T scmat, SCALE_T scvec, SCALE_T scret);
-/**
- * @brief Performs the column-wise subtraction of a bias term from the input matrix.
- * dim(mat) = dim(ret) = [nrows][ncols]; dim(vec) = [ncols].
- * @param[in]       mat       pointer to the input matrix from which subtraction is to be performed
- * @param[in]       vec       pointer to the bias vector which is to be subtracted
- * @param[in]       nrows     number of rows of the input matrix
- * @param[in]       ncols     number of columns of the input matrix
- * @param[out]      ret       pointer to the output matrix
- * @param[in]       scmat     scaling factor for the input matrix
- * @param[in]       scvec     scaling factor for the bias vector
- * @param[in]       scret     scaling factor for the output matrix
- * @return          none
- * @example         mat       = {1324, 5453, 3454, 3435, 8789, 3411, 5412, 8934}
- *                  vec       = {8452, 2341, 9383, 2353}
- *                  nrows     = 4
- *                  ncols     = 2
- *                  scmat     = 1
- *                  scvec     = 2
- *                  scret     = 2
- *                  ret       = {-1451, 2141, -618, 1129, 2281, 1120, 361, 3879}
- */
-void q15_m_sub_vec(const Q15_T* const mat, const Q15_T* const vec,
-                   ITER_T nrows, ITER_T ncols, Q15_T* const ret,
-                   SCALE_T scmat, SCALE_T scvec, SCALE_T scret);
 /**
  * @brief Performs the matrix multiplication of a matrix and a vector.
  * @param[in]       mat       pointer to input matrix in row-major order
@@ -460,42 +298,12 @@ void q15_m_sub_vec(const Q15_T* const mat, const Q15_T* const vec,
  *                  H2        = 0
  *                  ret       = {-425, -169, -3534, 524, -2739, 87, 52, 292}
  */
-void q15xq7_q15_m_mulvec(const Q15_T* const mat, const Q7_T* const vec,
-                         ITER_T nrows, ITER_T ncols, Q15_T* const ret,
-                         SCALE_T scmat, SCALE_T scvec, SCALE_T H1, SCALE_T H2);
-void q15_m_mulvec(const Q15_T* const mat, const Q15_T* const vec, ITER_T nrows,
-                  ITER_T ncols, Q15_T* const ret, SCALE_T scmat, SCALE_T scvec,
+void q15xq7_q15_m_mulvec(const Q15_T* mat, const Q7_T* const vec, ITER_T nrows,
+                         ITER_T ncols, Q15_T* ret, SCALE_T scmat,
+                         SCALE_T scvec, SCALE_T H1, SCALE_T H2);
+void q15_m_mulvec(const Q15_T* mat, const Q15_T* const vec, ITER_T nrows,
+                  ITER_T ncols, Q15_T* ret, SCALE_T scmat, SCALE_T scvec,
                   SCALE_T H1, SCALE_T H2);
-/**
- * @brief Performs sparse matrix multiplication of a matrix and a vector.
- * col_indices and mat_values combined are a sparse representation; dim(vec) = [ndims].
- * mat_values[i] is the i^th non-zero value of the input matrix, and col_indices[i] encodes the location of mat_values[i].
- * Number of zeroes before col_indices[i] : row of mat_values[i]
- * col_indices[i - l] where l is the number of zeroes before col_indices[i]: column of mat_values[i]
- * @param[in]       col_indices  pointer to input matrix which stores the column indices of non-zero values of matrix A
- * @param[in]       mat_values   pointer to input matrix which stores the non-zero values of matrix A
- * @param[in]       vec          pointer to the input vector
- * @param[in]       ndims        dimension of the multiplication vector
- * @param[out]      ret          pointer to the output vector
- * @param[in]       scmat        scale factor of the input matrix
- * @param[in]       scvec        scale factor of the input vector
- * @param[in]       scret        scale factor of the output matrix
- * @return          none
- * @example         mat          = { {10, 20, 30, 40, 50, 60, 70, 0, 0, 0, 0, 0, 0, 0},
- *                                   {0, 80, 0, 90, 0, 100, 0, 110, 0, 120, 0, 130, 0, 140} }
- *                  col_indices  = {1, 2, 3, 4, 5, 6, 7, 0, 2, 4, 6, 8, 10, 12, 14, 0}
- *                  mat_values   = {10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140}
- *                  vec          = {1, 2}
- *                  ndims        = 2
- *                  scmat        = 1
- *                  scvec        = 2
- *                  scret        = 4
- *                  ret          = {1, 22, 3, 27, 6, 32, 8, 27, 0, 30, 0, 32, 0, 35}
- */
-void q15_m_sparse_mulvec(const ITER_T* const col_indices,
-                         const Q15_T* const mat_values, const Q15_T* const vec,
-                         ITER_T ndims, Q15_T* const ret, SCALE_T scmat,
-                         SCALE_T scvec, SCALE_T scret);
 
 /**
  * @brief Performs the element-wise addition of two input tensors.
@@ -531,13 +339,12 @@ void q15_m_sparse_mulvec(const ITER_T* const col_indices,
  *                              { { {6894, 1210}, {6790, 5424} },
  *                                { {8976, 4538}, {9348, 9320} } }
  */
-void q7_t_add(const Q7_T* const ten1, const Q7_T* const ten2, ITER_T nbatches,
-              ITER_T nrows, ITER_T ncols, ITER_T nchannels, Q7_T* const ret,
+void q7_t_add(const Q7_T* ten1, const Q7_T* ten2, ITER_T nbatches,
+              ITER_T nrows, ITER_T ncols, ITER_T nchannels, Q7_T* ret,
               SCALE_T scten1, SCALE_T scten2, SCALE_T scret);
-void q15_t_add(const Q15_T* const ten1, const Q15_T* const ten2,
-               ITER_T nbatches, ITER_T nrows, ITER_T ncols, ITER_T nchannels,
-               Q15_T* const ret, SCALE_T scten1, SCALE_T scten2,
-               SCALE_T scret);
+void q15_t_add(const Q15_T* ten1, const Q15_T* ten2, ITER_T nbatches,
+               ITER_T nrows, ITER_T ncols, ITER_T nchannels, Q15_T* ret,
+               SCALE_T scten1, SCALE_T scten2, SCALE_T scret);
 /**
  * @brief Performs the channel-wise addition of a bias term to the input tensor.
  * dim(ten) = dim(ret) = [nbatches][nrows][ncols][nchannels]; dim(vec) = [nchannels].
@@ -569,49 +376,13 @@ void q15_t_add(const Q15_T* const ten1, const Q15_T* const ten2,
  *                              { { {5560, 1190}, {5740, 3300} },
  *                                { {6601, 2854}, {7019, 5248} } }
  */
-void q7xq15_q7_t_add_vec(const Q7_T* const ten, const Q15_T* const vec,
+void q7xq15_q7_t_add_vec(const Q7_T* ten, const Q15_T* const vec,
                          ITER_T nbatches, ITER_T nrows, ITER_T ncols,
-                         ITER_T nchannels, Q7_T* const ret, SCALE_T scmat,
+                         ITER_T nchannels, Q7_T* ret, SCALE_T scmat,
                          SCALE_T scvec, SCALE_T scret);
-void q15_t_add_vec(const Q15_T* const ten, const Q15_T* const vec,
-                   ITER_T nbatches, ITER_T nrows, ITER_T ncols,
-                   ITER_T nchannels, Q15_T* const ret, SCALE_T scmat,
-                   SCALE_T scvec, SCALE_T scret);
-/**
- * @brief Performs the channel-wise subtraction of a bias term from the input tensor.
- * dim(ten) = dim(ret) = [nbatches][nrows][ncols][nchannels]; dim(vec) = [nchannels].
- * @param[in]       ten       pointer to the input tensor from which subtraction is to be performed
- * @param[in]       vec       pointer to the bias vector which is to be subtracted
- * @param[in]       nbatches  number of batches of the input tensor
- * @param[in]       nrows     number of rows of the input tensor
- * @param[in]       ncols     number of columns of the input tensor
- * @param[in]       nchannels number of channels of the input tensor
- * @param[out]      ret       pointer to the output tensor
- * @param[in]       scten     scaling factor for the input tensor
- * @param[in]       scvec     scaling factor for the bias vector
- * @param[in]       scret     scaling factor for the output tensor
- * @return          none
- * @example         ten       = { { {1324, 5453}, {3454, 3435} },
- *                                { {8789, 3411}, {5412, 8934} } },
- *                              { { {6895, 1211}, {6790, 5425} },
- *                                { {8976, 4539}, {9348, 9321} } }
- *                  vec       = {8452, 2341}
- *                  nbatches  = 2
- *                  nrows     = 2
- *                  ncols     = 2
- *                  nchannels = 2
- *                  scten     = 1
- *                  scvec     = 2
- *                  scret     = 2
- *                  ret       = { { {-1451, 2141}, {-618, 1129} },
- *                                { {2281, 1120}, {361, 3879} } },
- *                              { { {1334, 20}, {1050, 2124} },
- *                                { {2375, 1684}, {2329, 4072} } }
- */
-void q15_t_sub_vec(const Q15_T* const ten, const Q15_T* const vec,
-                   ITER_T nbatches, ITER_T nrows, ITER_T ncols,
-                   ITER_T nchannels, Q15_T* const ret, SCALE_T scten,
-                   SCALE_T scvec, SCALE_T scret);
+void q15_t_add_vec(const Q15_T* ten, const Q15_T* const vec, ITER_T nbatches,
+                   ITER_T nrows, ITER_T ncols, ITER_T nchannels, Q15_T* ret,
+                   SCALE_T scmat, SCALE_T scvec, SCALE_T scret);
 /**
  * @brief Replace any negative element present in the tensor with zero and clips positive elements to the limit.
  * @param[in]       ten       pointer to tensor on which element-wise ReLU6 operation is to be applied
@@ -639,9 +410,8 @@ void q15_t_sub_vec(const Q15_T* const ten, const Q15_T* const vec,
  *                              { { {6895, 1211}, {6790, 5425} },
  *                                { {8192, 4539}, {8192, 8192} } }
  */
-void q7_t_relu(const Q7_T* const ten, ITER_T nbatches, ITER_T nrows,
-               ITER_T ncols, ITER_T nchannels, Q7_T* const ret, Q7_T limit,
-               Q7_T div);
+void q7_t_relu(const Q7_T* ten, ITER_T nbatches, ITER_T nrows, ITER_T ncols,
+               ITER_T nchannels, Q7_T* ret, Q7_T limit, Q7_T div);
 /**
  * @brief Computes the L2-Norm for each channel of the input tensor, and divides each number in that channel by it.
  * dim(ten) = dim(ret) = [nbatches][nrows][ncols][nchannels].
@@ -666,42 +436,9 @@ void q7_t_relu(const Q7_T* const ten, ITER_T nbatches, ITER_T nrows,
  *                  scale_out = 1
  *                  ret       = TODO
  */
-void q15_t_l2_norm(const Q15_T* const ten, ITER_T nbatches, ITER_T nrows,
-                   ITER_T ncols, ITER_T nchannels, Q15_T* const ret,
+void q15_t_l2_norm(const Q15_T* ten, ITER_T nbatches, ITER_T nrows,
+                   ITER_T ncols, ITER_T nchannels, Q15_T* ret,
                    SCALE_T scale_in, SCALE_T scale_out);
-/**
- * @brief Computes the maxpool operation on the input tensor with the given parameters.
- * @param[in]       input      pointer to the tensor on which max-pooling is to be performed
- * @param[out]      output     pointer to the output tensor
- * @param[in]       N          number of batches of the input tensor
- * @param[in]       H          number of rows of the input tensor
- * @param[in]       W          number of columns of the input tensor
- * @param[in]       CIn        number of channels of the input tensor
- * @param[in]       HF         number of rows of the pooling filter
- * @param[in]       WF         number of columns of the pooling filter
- * @param[in]       CF         number of channels of the pooling filter
- * @param[in]       COut       number of channels of the output tensor
- * @param[in]       HOut       number of rows of the output tensor
- * @param[in]       WOut       number of columns of the output tensor
- * @param[in]       G          number of groups of pooling filters
- * @param[in]       HPadU      padding over the top row
- * @param[in]       HPadD      padding under the bottom row
- * @param[in]       WPadL      padding before the leftmost column
- * @param[in]       WPadR      padding after the rightmost column
- * @param[in]       HStride    stride of the pooling filter along the rows, used for moving the receptive field horizontally within the larger image
- * @param[in]       WStride    stride of the pooling filter along the columns, used for moving the receptive field vertically within the larger image
- * @param[in]       HDilation  dilation of the convolution filter along the rows (number of skipped input rows between two consecutive filter rows is HDilation - 1)
- * @param[in]       WDilation  dilation of the convolution filter along the columns (number of skipped input columns between two consecutive filter rows is WDilation - 1)
- * @param[in]       scinput    scale of the input tensor
- * @param[in]       scoutput   scale of the output tensor
- * @return          none
- * @example         Please refer the test-case: test_q15_maxpool() in file: c_reference/tests/utils/test_quantized_utils.c
- */
-void q15_maxpool(const Q15_T* const input, Q15_T* const output, ITER_T N,
-  ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF, ITER_T WF, ITER_T CF, ITER_T COut,
-  ITER_T HOut, ITER_T WOut, ITER_T G, S_ITER_T HPadU, S_ITER_T HPadD,
-  S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride,
-  ITER_T HDilation, ITER_T WDilation, SCALE_T scinput, SCALE_T scoutput);
 
 /**
  * @brief Computes the maxpool operation on the input tensor with the given parameters.

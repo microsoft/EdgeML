@@ -159,11 +159,9 @@ int main(int argc, char **argv) {
   fprintf(outputLog, "Maximum Observed Deviation: %f percent\n", max_diff);
 
   for (unsigned j = 0; j < N * HOUT * WOUT * COUT; j++) {
-    printf("%d, ", output_test[j]);
     float val = ((float)output_test[j]) / pow(2, YScale);
     fwrite((char*)&val, sizeof(float), 1, yFile);
   }
-  printf("\n");
 
   fclose(xFile);
   fclose(yFile);
