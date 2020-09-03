@@ -191,7 +191,7 @@ void q15_v_sigmoid(const Q15_T* vec, ITER_T len, Q15_T* ret, Q15_T div,
                    SCALE_T scale_out, ITER_T use_tables) {
   if (use_tables) {
     #ifdef LOOP_UNROLL
-      ITER_T len_unroll = len / 4;
+      ITER_T len_unroll = len >> 2;
       len = len % 4;
       while (len_unroll--) {
         Q15_T w = *vec++;
@@ -255,7 +255,7 @@ void q15_v_tanh(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scale_in,
                 SCALE_T scale_out, ITER_T use_tables) {
   if (use_tables) {
     #ifdef LOOP_UNROLL
-      ITER_T len_unroll = len / 4;
+      ITER_T len_unroll = len >> 2;
       len = len % 4;
       while (len_unroll--) {
         Q15_T w = q15_saturate(2 * (*vec++));
@@ -672,7 +672,7 @@ void q7xq15_q7_t_add_vec(const Q7_T* ten, const Q15_T* const vec,
     const Q15_T* vec_offset = (const Q15_T*)vec;
 
     #ifdef LOOP_UNROLL
-      ITER_T len_unroll = channels / 4;
+      ITER_T len_unroll = channels >> 2;
       channels = channels % 4;
       while (len_unroll--) {
         #ifdef SHIFT
@@ -717,7 +717,7 @@ void q15_t_add_vec(const Q15_T* ten, const Q15_T* const vec,
     const Q15_T* vec_offset = (const Q15_T*)vec;
 
     #ifdef LOOP_UNROLL
-      ITER_T len_unroll = channels / 4;
+      ITER_T len_unroll = channels >> 2;
       channels = channels % 4;
       while (len_unroll--) {
         #ifdef SHIFT
@@ -778,7 +778,7 @@ void q15_t_l2_norm(const Q15_T* ten, ITER_T nbatches, ITER_T nrows,
     const Q15_T* ten_offset = ten;
 
     #ifdef LOOP_UNROLL
-      ITER_T len_unroll = channels / 4;
+      ITER_T len_unroll = channels >> 2;
       channels = channels % 4;
 
       while (len_unroll--) {
@@ -815,7 +815,7 @@ void q15_t_l2_norm(const Q15_T* ten, ITER_T nbatches, ITER_T nrows,
 
     channels = nchannels;
     #ifdef LOOP_UNROLL
-      len_unroll = channels / 4;
+      len_unroll = channels >> 2;
       channels = channels % 4;
 
       while (len_unroll--) {
@@ -907,7 +907,7 @@ void q7xq15_q7_convolution(const Q7_T* const input, const Q15_T* const filter,
                 ITER_T channels = CF;
 
                 #ifdef LOOP_UNROLL
-                  ITER_T len_unroll = CF / 4;
+                  ITER_T len_unroll = CF >> 2;
                   channels = CF % 4;
                   while (len_unroll--) {
                     sum += ((Q31_T)(*input_offset++)) * ((Q31_T)(*filter_offset));
@@ -1004,7 +1004,7 @@ void q7xq15_q15_convolution(const Q7_T* const input, const Q15_T* const filter,
                 ITER_T channels = CF;
 
                 #ifdef LOOP_UNROLL
-                  ITER_T len_unroll = CF / 4;
+                  ITER_T len_unroll = CF >> 2;
                   channels = CF % 4;
                   while (len_unroll--) {
                     sum += ((Q31_T)(*input_offset++)) * ((Q31_T)(*filter_offset));
@@ -1101,7 +1101,7 @@ void q15_convolution(const Q15_T* const input, const Q15_T* const filter,
                 ITER_T channels = CF;
 
                 #ifdef LOOP_UNROLL
-                  ITER_T len_unroll = CF / 4;
+                  ITER_T len_unroll = CF >> 2;
                   channels = CF % 4;
                   while (len_unroll--) {
                     sum += ((Q31_T)(*input_offset++)) * ((Q31_T)(*filter_offset));
