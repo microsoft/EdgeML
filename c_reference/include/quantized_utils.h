@@ -395,20 +395,20 @@ void q15_t_add_vec(const Q15_T* ten, const Q15_T* const vec, ITER_T nbatches,
  * @param[in]       div       scaling factor for the input tensor
  * @param[in]
  * @return          none
- * @example         ten       = { { {1324, 5453}, {3454, 3435} },
- *                                { {8789, 3411}, {5412, 8934} } },
- *                              { { {6895, 1211}, {6790, 5425} },
- *                                { {8976, 4539}, {9348, 9321} } }
+ * @example         ten       = { { {124, 53}, {45, 35} },
+ *                                { {87, -11}, {54, 89} } },
+ *                              { { {95, -12}, {90, 42} },
+ *                                { {76, 39}, {93, 21} } }
  *                  nbatches  = 2
  *                  nrows     = 2
  *                  ncols     = 2
  *                  nchannels = 2
- *                  limit     = 8192
+ *                  limit     = 64
  *                  div       = 1
- *                  ret       = { { {1324, 5453}, {3454, 3435} },
- *                                { {8192, 3411}, {5412, 8192} } },
- *                              { { {6895, 1211}, {6790, 5425} },
- *                                { {8192, 4539}, {8192, 8192} } }
+ *                  ret       = { { {64, 53}, {45, 35} },
+ *                                { {64, 0}, {54, 64} } },
+ *                              { { {64, 0}, {64, 42} },
+ *                                { {64, 39}, {64, 21} } }
  */
 void q7_t_relu(const Q7_T* ten, ITER_T nbatches, ITER_T nrows, ITER_T ncols,
                ITER_T nchannels, Q7_T* ret, Q7_T limit, Q7_T div);
@@ -434,7 +434,10 @@ void q7_t_relu(const Q7_T* ten, ITER_T nbatches, ITER_T nrows, ITER_T ncols,
  *                  nchannels = 2
  *                  scale_in  = 1
  *                  scale_out = 1
- *                  ret       = TODO
+ *                  ret       = { { {662, 2726}, {1727, 1717} },
+ *                                { {4394, 1705}, {2706, 4467} } },
+ *                              { { {3447, 605}, {3395, 2712} },
+ *                                { {4488, 2269}, {4674, 4660} } }
  */
 void q15_t_l2_norm(const Q15_T* ten, ITER_T nbatches, ITER_T nrows,
                    ITER_T ncols, ITER_T nchannels, Q15_T* ret,
