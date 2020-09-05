@@ -9,6 +9,14 @@ import edgeml_pytorch.utils as utils
 from edgeml_pytorch.graph.rnn import *
 import numpy as np
 
+class SimpleFC(nn.Module):
+    def __init__(self, input_size, num_classes, name="SimpleFC"):
+        super(SimpleFC, self).__init__()
+        self.FC = nn.Parameter(torch.randn([input_size, num_classes]))
+        self.FCbias = nn.Parameter(torch.randn([num_classes]))
+
+    def forward(self, input):
+        return torch.matmul(input, self.FC) + self.FCbias
 
 class FastTrainer:
 
@@ -50,23 +58,17 @@ class FastTrainer:
         self.numMatrices = self.FastObj.num_weight_matrices
         self.totalMatrices = self.numMatrices[0] + self.numMatrices[1]
 
-        self.optimizer = self.optimizer()
-
         self.RNN = BaseRNN(self.FastObj, batch_first=self.batch_first).to(self.device)
-
-        self.FC = nn.Parameter(torch.randn(
-            [self.FastObj.output_size, self.numClasses])).to(self.device)
-        self.FCbias = nn.Parameter(torch.randn(
-            [self.numClasses])).to(self.device)
-
+        self.simpleFC = SimpleFC(self.FastObj.output_size, self.numClasses).to(self.device)
         self.FastParams = self.FastObj.getVars()
+        self.optimizer = self.optimizer()
 
     def classifier(self, feats):
         '''
         Can be raplaced by any classifier
         TODO: Make this a separate class if needed
         '''
-        return torch.matmul(feats, self.FC) + self.FCbias
+        return self.simpleFC(feats)
 
     def computeLogits(self, input):
         '''
@@ -74,19 +76,23 @@ class FastTrainer:
         '''
         if self.FastObj.cellType == "LSTMLR":
             feats, _ = self.RNN(input)
-            logits = self.classifier(feats[-1, :])
         else:
             feats = self.RNN(input)
-            logits = self.classifier(feats[-1, :])
 
-        return logits, feats[:, -1]
+        if self.batch_first:
+                logits = self.classifier(feats[:, -1])
+                return logits, feats[:, -1]
+        else:
+                logits = self.classifier(feats[-1, :])
+                return logits, feats[-1, :]
 
     def optimizer(self):
         '''
         Optimizer for FastObj Params
         '''
+        paramList = list(self.FastObj.parameters()) + list(self.simpleFC.parameters())
         optimizer = torch.optim.Adam(
-            self.FastObj.parameters(), lr=self.learningRate)
+            paramList, lr=self.learningRate)
 
         return optimizer
 
@@ -168,12 +174,12 @@ class FastTrainer:
             hasSparse = hasSparse or sparseFlag
 
         # Replace this with classifier class call
-        nnz, size, sparseFlag = utils.estimateNNZ(self.FC, 1.0)
+        nnz, size, sparseFlag = utils.estimateNNZ(self.simpleFC.FC, 1.0)
         totalnnZ += nnz
         totalSize += size
         hasSparse = hasSparse or sparseFlag
 
-        nnz, size, sparseFlag = utils.estimateNNZ(self.FCbias, 1.0)
+        nnz, size, sparseFlag = utils.estimateNNZ(self.simpleFC.FCbias, 1.0)
         totalnnZ += nnz
         totalSize += size
         hasSparse = hasSparse or sparseFlag
@@ -341,8 +347,8 @@ class FastTrainer:
             np.save(os.path.join(currDir, "Bo.npy"),
                     self.FastParams[self.totalMatrices + 3].data.cpu())
 
-        np.save(os.path.join(currDir, "FC.npy"), self.FC.data.cpu())
-        np.save(os.path.join(currDir, "FCbias.npy"), self.FCbias.data.cpu())
+        np.save(os.path.join(currDir, "FC.npy"), self.simpleFC.FC.data.cpu())
+        np.save(os.path.join(currDir, "FCbias.npy"), self.simpleFC.FCbias.data.cpu())
 
     def train(self, batchSize, totalEpochs, Xtrain, Xtest, Ytrain, Ytest,
               decayStep, decayRate, dataDir, currDir):
@@ -351,7 +357,13 @@ class FastTrainer:
         '''
         fileName = str(self.FastObj.cellType) + 'Results_pytorch.txt'
         resultFile = open(os.path.join(dataDir, fileName), 'a+')
-        numIters = int(np.ceil(float(Xtrain.shape[0]) / float(batchSize)))
+        if self.batch_first:
+                self.timeSteps = Xtrain.shape[1]
+                self.numPoints = Xtrain.shape[0]
+        else:
+                self.timeSteps = Xtrain.shape[0]
+                self.numPoints = Xtrain.shape[1]
+        numIters = int(np.ceil(float(self.numPoints) / float(batchSize)))
         totalBatches = numIters * totalEpochs
 
         counter = 0
@@ -362,11 +374,6 @@ class FastTrainer:
             ihtDone = 1
             maxTestAcc = -10000
         header = '*' * 20
-        self.timeSteps = int(Xtest.shape[1] / self.inputDims)
-        Xtest = Xtest.reshape((-1, self.timeSteps, self.inputDims))
-        Xtest = np.swapaxes(Xtest, 0, 1)
-        Xtrain = Xtrain.reshape((-1, self.timeSteps, self.inputDims))
-        Xtrain = np.swapaxes(Xtrain, 0, 1)
 
         for i in range(0, totalEpochs):
             print("\nEpoch Number: " + str(i), file=self.outFile)
@@ -376,7 +383,7 @@ class FastTrainer:
                 for param_group in self.optimizer.param_groups:
                     param_group['lr'] = self.learningRate
 
-            shuffled = list(range(Xtrain.shape[1]))
+            shuffled = list(range(self.numPoints))
             np.random.shuffle(shuffled)
             trainAcc = 0.0
             trainLoss = 0.0
@@ -389,9 +396,12 @@ class FastTrainer:
                           (header, msg, header), file=self.outFile)
 
                 k = shuffled[j * batchSize:(j + 1) * batchSize]
-                batchX = Xtrain[:, k, :]
+                if self.batch_first:
+                        batchX = Xtrain[k, :, :]
+                else:
+                        batchX = Xtrain[:, k, :]
+                
                 batchY = Ytrain[k]
-
                 self.optimizer.zero_grad()
                 logits, _ = self.computeLogits(batchX.to(self.device))
                 batchLoss = self.loss(logits, batchY.to(self.device))
