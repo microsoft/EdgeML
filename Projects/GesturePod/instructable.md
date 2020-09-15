@@ -20,9 +20,7 @@ example, you can answer an incoming call with a double swipe.
 The design of the pod and the schematics for the electronic subsystem is shared
 here[yet to hyperlink]. The algorithm is open sourced under MIT license
 [here](https://github.com/microsoft/EdgeML/blob/master/License.txt) and the
-training data for the 5 gestures - described in the [Microsoft Research
-Technical
-Report](https://www.microsoft.com/en-us/research/publication/gesturepod-programmable-gesture-recognition-augmenting-assistive-devices/)
+training data for the 5 gestures - described in our [UIST'19 publication](https://github.com/microsoft/EdgeML/blob/master/docs/publications/GesturePod-UIST19.pdf)
 \- is available
 [here](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar-5b058a4590168.gz) 
 
@@ -33,11 +31,16 @@ Twist, Twirl and Double Swipe. These gestures are then communicated to a
 smartphone over Bluetooth Low Energy(BLE).
 
 Don't have the time to build hardware - no worries! Try the
-[simulation](https://github.com/microsoft/EdgeML/tree/master/Applications/GesturePod/onComputer)
+[simulation](https://github.com/microsoft/EdgeML/tree/master/applications/GesturePod/onComputer)
 on your computer!
 
 In part 2 of this tutorial, you will see how you can train and develop a ML
 model to detect your own gestures.
+
+Pictures speak a thousand words and videos even more! Here are three short video tutorials to help you:
+1. [Video: Raw set-up](https://drive.google.com/file/d/13BYBcYroHY_c4nu1DdYQr4B14SrqJtRL/view?usp=sharing)
+2. [Video: Stand-alone GesturePod](https://drive.google.com/file/d/1JnsX-Kr7Nm77E2ReGSzVNo0cjskrdD8r/view?usp=sharing)
+3. [Video: Integrating GesturePod with cane](https://drive.google.com/file/d/14WoAWmu-wqKG7axfIvB3j3IzGcxNTYqB/view?usp=sharing)
 
 ### Components and Tools
 
@@ -54,7 +57,7 @@ Bluetooth consumes more power than Bluetooth Low Energy (BLE).
 
 #### Mechanical Casing
 
-1. The above electronics will be housed in a casing that can be 3D printed from the design files provided here. 
+1. The above electronics will be housed in a casing that can be 3D printed from the design files provided [here](https://drive.google.com/drive/folders/12WCF7AjGkNXSlXDj9md3rvfvUyPVR4sQ?usp=sharing). 
 2. Metallic clamps to robustly clamp the pod to the cane.
 3. Screws to hold the casing together.
 4. Toggle Switch - To turn the system on/off.
@@ -84,8 +87,8 @@ Tools:
 
 We provide video instructions for two types of setup: a) raw set-up, and b) a
 stand-alone full-fledged GesturePod. Instructions for the raw set-up is
-described in video_1. The full fledged pod builds upon the raw set-up and is
-described in video-2.
+described in the [first video](https://drive.google.com/file/d/13BYBcYroHY_c4nu1DdYQr4B14SrqJtRL/view?usp=sharing). The full fledged pod builds upon the raw set-up and is
+described in the [second video](https://drive.google.com/file/d/1JnsX-Kr7Nm77E2ReGSzVNo0cjskrdD8r/view?usp=sharing).
 
 * The raw set-up will enable you to implement the full Machine Learning
   Algorithm without any loss in functionality. The connections are described
@@ -112,15 +115,15 @@ We recommend running the ``testMPU.ino`` example to verify MPU6050 connection.
 
 ## Step 3: Components housing
 
-![video](video)
+<!-- ![video](video) -->
 
 After ensuring data can be polled from the MPU, you can now encapsulate the
 electronics into the casing that can be 3D printed using files provided
-[here](3Dprint files). Ensure you have the following 3 parts:
+[here](https://drive.google.com/drive/folders/12WCF7AjGkNXSlXDj9md3rvfvUyPVR4sQ?usp=sharing). Ensure you have the following 3 parts:
 * Pod Base 
 * Pod Cap 
 * Clamp Support 
-Video_3 demonstrates Step 3.
+
 First, the MPU is housed in the cavity in the pod base. The MKR1000 is then
 placed on top of the MPU6050 on the columnar supports. Finally, the HM-10 BLE
 module is suspended between the projections in the pod cap. The cap and the
@@ -137,18 +140,19 @@ You are now just a step away from implementing gesture recognition on edge
 device..! 
 
 Download the code / clone the repository from
-[onMKR1000.ino](https://github.com/microsoft/EdgeML/tree/master/Applications/GesturePod/onMKR1000).
+[onMKR1000.ino](https://github.com/microsoft/EdgeML/tree/master/applications/GesturePod/onMKR1000).
 Build and upload the code using Arduino IDE. Remember to select MKR1000 as the
 Board.  Open your Serial monitor and set the *BAUD* rate to 115200.  You can
 now notice the predicted classes.  Perform the gestures as demonstrated in
-video_3 and the corresponding gestures will be predicted.
+the [Integrating with cane](https://drive.google.com/file/d/14WoAWmu-wqKG7axfIvB3j3IzGcxNTYqB/view?usp=sharing) 
+video and the corresponding gestures will be predicted.
 
 The gesture detected are also transmitted over BLE. You can use [nrF Connect
 app](https://play.google.com/store/apps/details?id=no.nordicsemi.android.mcp&hl=en_IN)
 to connect over BLE, and receive the gestures on your phone. To use the
 gestures detected to trigger corresponding actions on the phone, you can
 download and install the "Interactive Cane" app from [Coming Soon..!]. Remember
-to give all necessary permissions and turn the Bluetooth on. 
+to give all necessary permissions and turn the Bluetooth and location services on. 
 
 *Note:* If you are using BLE then it is necessary to have a phone that supports BLE.
 
@@ -156,8 +160,12 @@ to give all necessary permissions and turn the Bluetooth on.
 
 This tutorial focused on building the GesturePod, and deploying a pre-trianed
 machine learning model to recognize gestures.  The next tutorial will teach you
-- how to train, and deploy a machine learning model to recognize your own
-gestures.  
+\- how to train, and deploy a machine learning model to recognize your own
+gestures. Know enough to get started already? Head over to [here](https://github.com/microsoft/EdgeML/tree/master/applications/GesturePod/training) to start training a new model to recognize your custom gestures.
+
+## The Things Network Conference - A shorter tutorial
+
+[Paul Foster](https://github.com/PaulDFoster) created a [shorter _(and better !?)_ tutorial](https://github.com/PaulDFoster/GesturePod) for the hands on workshop at The Things Network Conference, UK (2019). An Adafruit Trinket M0 is used instead of the MKR1000. Further, this basic GesturePod indicates gestures recognised _(respecting the British-English spelling, considering the event was held in the UK :D)_ by using the RGB LED on the Adafruit Trinket M0, rather than via Bluetooth as in the full GesturePod implementation. The tutorial also guides you on how to train a new model for custom gestures.
 
 ---
 
