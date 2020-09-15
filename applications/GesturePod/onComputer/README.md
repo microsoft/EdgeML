@@ -28,7 +28,7 @@ used as a basis for porting GesturePod to other  platforms.
 2. Clone the repo and navigate to this directory
 	```
 	git clone https://github.com/microsoft/EdgeML.git
-	cd EdgeML/Applications/GesturePod/onComputer
+	cd EdgeML/applications/GesturePod/onComputer
 	```
 3. Compile and build the code
 	```

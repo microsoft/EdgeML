@@ -52,9 +52,10 @@ the ICML '17 publications on [Bonsai](/docs/publications/Bonsai.pdf) and
 the NeurIPS '18 publications on [EMI-RNN](/docs/publications/emi-rnn-nips18.pdf) and
 [FastGRNN](/docs/publications/FastGRNN.pdf),
 the PLDI '19 publication on [SeeDot compiler](/docs/publications/SeeDot.pdf),
-the UIST '19 publication on [Gesturepod](/docs/publications/ICane-UIST19.pdf), 
+the UIST '19 publication on [Gesturepod](/docs/publications/GesturePod-UIST19.pdf), 
 the BuildSys '19 publication on [MSC-RNN](/docs/publications/MSCRNN.pdf),
-and the NeurIPS '19 publication on [Shallow RNNs](/docs/publications/Sha-RNN.pdf).
+the NeurIPS '19 publication on [Shallow RNNs](/docs/publications/Sha-RNN.pdf),
+and the ICML '20 publication on [DROCC](/docs/publications/drocc.pdf).
 
 
 Also checkout the [ELL](https://github.com/Microsoft/ELL) project which can

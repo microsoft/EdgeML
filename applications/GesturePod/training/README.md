@@ -29,7 +29,7 @@ Accelorometer and gyroscope values from the MPU6050 sensor is collected.
 Connect the GesturePod to computer over Serial COM Port.
 
 1. Refer
-   [here](https://github.com/microsoft/EdgeML/blob/master/Applications/GesturePod/onMKR1000/README.md#quick-start)
+   [here](https://github.com/microsoft/EdgeML/blob/master/applications/GesturePod/onMKR1000/README.md#quick-start)
 to set up the required dependencies for the MKR1000 platform.
 		
 2. Compile, Build and Upload
@@ -87,9 +87,9 @@ This will generate a `train.csv` and `test.csv` files that should be used to gen
 Using the TensorFlow / PyTorch / cpp implementation of the ProtoNN algorithm from the EdgeML repository, train a
 model on the ```train.csv``` file generated above.  Extract W, B, Z, and gamma
 values from the trained ProtoNN model. Update these values in
-```EdgeML/Applications/GesturePod/onMKR1000/src/data.h``` to deploy the model on
+```EdgeML/applications/GesturePod/onMKR1000/src/data.h``` to deploy the model on
 the GesturePod. Alternately, update
-```EdgeML/Applications/GesturePod/onComputer/src/data.h``` to simulate inference
+```EdgeML/applications/GesturePod/onComputer/src/data.h``` to simulate inference
 of the new model on your computer.
 
 Alternatively, to generate a `data.h`, you could: 
