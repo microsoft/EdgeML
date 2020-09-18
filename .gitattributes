@@ -21,3 +21,35 @@
 *.jpg binary
 *.pdf binary
 *.ipynb binary
+
+c_reference/models/q_scut_head_b_face3_model/mbconv1.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face3_model/mbconv3.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face3_model/mbconv4.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face3_model/rnn1.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face3_model/conv2D.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face3_model/detection1.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face3_model/detection2.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face3_model/detection3.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face3_model/mbconv2.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face3_model/rnn2.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/detection4.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/mbconv10.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/mbconv11.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/mbconv2.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/mbconv5.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/mbconv6.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/detection1.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/detection3.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/rnn2.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/mbconv7.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/mbconv8.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/mbconv9.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/mbconv14.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/mbconv4.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/rnn1.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/conv2D.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/mbconv3.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/mbconv13.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/mbconv1.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/detection2.h filter=lfs diff=lfs merge=lfs -text
+c_reference/models/q_scut_head_b_face2_model/mbconv12.h filter=lfs diff=lfs merge=lfs -text
