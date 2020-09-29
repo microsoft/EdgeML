@@ -7,17 +7,17 @@
 #include "quantized_fastgrnn.h"
 #include "../rnnpool/q_wider_regression_model/rnn1.h"
 
+const Q15_T patch[INPUT_CHANNELS] = {1040, 1919, 4254, 4024};
+#ifdef SHIFT
+  const Q15_T expected[HIDDEN_DIM1] = {1415, 7082, -16378, 8216, -12075, 6805, 6475, 6902};
+#else
+  const Q15_T expected[HIDDEN_DIM1] = {1423, 7085, -16378, 8209, -12067, 6805, 6475, 6897};
+#endif
+
 // Simple test for comparing Seedot's quantized FastGRNN output with our
 // implementation. All values generated from Seedot on Wider Regression dataset.
 // By default, all tests run without using bit-shifting operations.
 int main() {
-  const Q15_T patch[INPUT_CHANNELS] = {1040, 1919, 4254, 4024};
-  #ifdef SHIFT
-    const Q15_T expected[HIDDEN_DIM1] = {1415, 7082, -16378, 8216, -12075, 6805, 6475, 6902};
-  #else
-    const Q15_T expected[HIDDEN_DIM1] = {1423, 7085, -16378, 8209, -12067, 6805, 6475, 6897};
-  #endif
-
   Q15_T buffer[HIDDEN_DIM1];
   memset(buffer, 0, sizeof(Q15_T) * HIDDEN_DIM1);
 

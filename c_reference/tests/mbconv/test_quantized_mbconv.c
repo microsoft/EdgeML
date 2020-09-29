@@ -52,6 +52,7 @@ int main(int argc, char **argv) {
 
   if (argc != 5) {
     printf("Improper Number of Arguments Provided!\n");
+    fprintf(stderr, "Usage: %s <input_file.npy> <output_file.npy> <expected_output_file.npy> <log_file.txt>\n", argv[0]);
     return -1;
   } else {
     xFile = fopen(argv[1], "rb");
@@ -61,19 +62,19 @@ int main(int argc, char **argv) {
   }
 
   if (xFile == NULL) {
-    printf("An error occured while opening the input file.\n");
+    fprintf(stderr, "An error occured while opening the input file.\n");
     return -1;
   }
   if (yFile == NULL) {
-    printf("An error occured while opening the predicted output file.\n");
+    fprintf(stderr, "An error occured while opening the predicted output file.\n");
     return -1;
   }
   if (floatResFile == NULL) {
-    printf("An error occured while opening the expected output file.\n");
+    fprintf(stderr, "An error occured while opening the expected output file.\n");
     return -1;
   }
   if (outputLog == NULL) {
-    printf("An error occured while opening the output log file.\n");
+    fprintf(stderr, "An error occured while opening the output log file.\n");
     return -1;
   }
 
