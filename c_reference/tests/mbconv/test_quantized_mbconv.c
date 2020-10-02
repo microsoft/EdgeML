@@ -19,7 +19,7 @@ int compare_floats(const void *a, const void *b) {
 
 // Function for computing the deviation from the expected floating point
 // result and returning the largest such deviation found.
-float compute_error(const INT_T* const pred, const float* const label,
+float compute_error(const Q15_T* const pred, const float* const label,
                     float* const errors, SCALE_T scl) {
   float epsilon = 0.00001;
   float agg_diff = 0.0;
@@ -41,18 +41,20 @@ float aggregate_error(float* errors, unsigned len) {
   return errors[index];
 }
 
-/** Run this test using the following command:
- * $: ./test_quantized_mbconv <input.npy> <output.npy> <expected_output.npy>
- *    <log.txt>
+/**
  *  By default, all tests run without using bit-shifting operations.
  */
 int main(int argc, char **argv) {
   SCALE_T XScale = 12, YScale = 14;
-
   FILE *xFile, *yFile, *floatResFile, *outputLog;
 
   if (argc != 5) {
     printf("Improper Number of Arguments Provided!\n");
+    fprintf(stderr, "Usage: %s <input_file.npy> <output_file.npy> <expected_output_file.npy> <log_file.txt>\n\n", argv[0]);
+    fprintf(stderr, "<input_file.npy> : File containing a single input image in a numpy array of dimension (1, input_channels * input_width * input_height).\n");
+    fprintf(stderr, "<output_file.npy> : File to write the generated output in a numpy array of dimension (1, output_channels * output_width * output_height).\n");
+    fprintf(stderr, "<expected_output_file.npy> : File containing the expected output in a numpy array of dimension (1, output_channels * output_width * output_height).\n");
+    fprintf(stderr, "<log_file.txt> : File to write the error metrics and the results from the runtime analysis of the layer.\n");
     return -1;
   } else {
     xFile = fopen(argv[1], "rb");
@@ -62,19 +64,19 @@ int main(int argc, char **argv) {
   }
 
   if (xFile == NULL) {
-    printf("An error occured while opening the input file.\n");
+    fprintf(stderr, "An error occured while opening the input file.\n");
     return -1;
   }
   if (yFile == NULL) {
-    printf("An error occured while opening the predicted output file.\n");
+    fprintf(stderr, "An error occured while opening the predicted output file.\n");
     return -1;
   }
   if (floatResFile == NULL) {
-    printf("An error occured while opening the expected output file.\n");
+    fprintf(stderr, "An error occured while opening the expected output file.\n");
     return -1;
   }
   if (outputLog == NULL) {
-    printf("An error occured while opening the output log file.\n");
+    fprintf(stderr, "An error occured while opening the output log file.\n");
     return -1;
   }
 
@@ -131,11 +133,10 @@ int main(int argc, char **argv) {
   fputs(numpyHeader3, yFile);
   fputs(numpyHeader4, yFile);
 
-  INT_T* reshapedXLine = malloc(N * H * W * CIN * sizeof(INT_T));
-  INT_T* output_test = malloc(N * HOUT * WOUT * COUT * sizeof(INT_T));
-  INT_T* X = malloc(HF * W * CTEMP * sizeof(INT_T));
-  INT_T* T = malloc(CTEMP * sizeof(INT_T));
-  INTM_T* U = malloc(CTEMP * sizeof(INTM_T));
+  Q15_T* reshapedXLine = malloc(N * H * W * CIN * sizeof(Q15_T));
+  Q15_T* output_test = malloc(N * HOUT * WOUT * COUT * sizeof(Q15_T));
+  Q15_T* X = malloc(HF * W * CTEMP * sizeof(Q15_T));
+  Q15_T* T = malloc(CTEMP * sizeof(Q15_T));
   float* xLine = malloc(N * H * W * CIN * sizeof(float));
   float* yLine = malloc(N * HOUT * WOUT * COUT * sizeof(float));
   float* allErrors = malloc(N * HOUT * WOUT * COUT * (sizeof(float)));
@@ -144,18 +145,16 @@ int main(int argc, char **argv) {
   fread(yLine, sizeof(float), N * HOUT * WOUT * COUT, floatResFile);
 
   for (unsigned i = 0; i < N * H * W * CIN; i++) {
-    reshapedXLine[i] = (INT_T)((xLine[i]) * pow(2, XScale));
+    reshapedXLine[i] = (Q15_T)((xLine[i]) * pow(2, XScale));
   }
 
   fprintf(outputLog, "Running Quantized MBConv\n");
   double time_spent = 0.0;
   clock_t begin = clock();
-  q_mbconv_block(reshapedXLine, F1, W1, B1, F2, W2, B2, F3, W3, B3,
-                 output_test, X, T, U, N, H, W, CIN, CTEMP, HF, WF,
-                 COUT, HOUT, WOUT, HPADL, HPADR, WPADL, WPADR, HSTRIDE,
-                 WSTRIDE, D1, D2, D3, Limit1, Limit2, ShRU1, ShRB1, ShRX1,
-                 ShRU2, ShRB2, ShRX2, ShRU3, ShRB3, ShRW3, ShLU1, ShLB1,
-                 ShLX1, ShLU2, ShLB2, ShLX2, ShLU3, ShLB3, ShLW3);
+  q15_mbconv_block(reshapedXLine, F1, W1, B1, F2, W2, B2, F3, W3, B3,
+    output_test, X, T, N, H, W, CIN, CTEMP, HF, WF, COUT, HOUT, WOUT, HPADL,
+    HPADR, WPADL, WPADR, HSTRIDE, WSTRIDE, Limit1, Limit2, ShRU1, ShRX1, ShRU2,
+    ShRX2, ShRU3, ShRW3, ShLU1, ShLX1, ShLU2, ShLX2, ShLU3, ShLW3);
   clock_t end = clock();
   time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
   fprintf(outputLog, "Time elapsed is %f seconds\n", time_spent);
@@ -173,7 +172,7 @@ int main(int argc, char **argv) {
 
   float aggregate = aggregate_error(allErrors, N * HOUT * WOUT * COUT);
   fprintf(outputLog, "Aggregated 95th Percentile Error: %f\n", aggregate);
-  if (aggregate < 1.419) {
+  if (aggregate < 1.415) {
     fprintf(outputLog, "Quantized MBConv Numerical Test Passed!\n");
   } else {
     fprintf(outputLog, "Quantized MBConv Numerical Test Failed!\n");
@@ -194,7 +193,6 @@ int main(int argc, char **argv) {
   free(output_test);
   free(X);
   free(T);
-  free(U);
   free(xLine);
   free(yLine);
   free(allErrors);

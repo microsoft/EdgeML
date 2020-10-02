@@ -22,7 +22,7 @@ int compare_floats(const void *a, const void *b) {
 
 // Function for computing the deviation from the expected floating point
 // result and returning the largest such deviation found.
-float compute_error(INT_T pred[4 * HIDDEN_DIM2], float label[4 * HIDDEN_DIM2],
+float compute_error(Q15_T pred[4 * HIDDEN_DIM2], float label[4 * HIDDEN_DIM2],
                    float* const errors, SCALE_T scl) {
   float epsilon = 0.01;
   float agg_diff = 0.0;
@@ -44,19 +44,22 @@ float aggregate_error(float* errors, unsigned len) {
   return errors[index];
 }
 
-/** Run this test using the following command:
- * $: ./test_quantized_rnnpool <num_patches> <input.npy> <output.npy>
- *    <expected_output.npy> <log.txt>
+/**
  *  By default, all tests run without using bit-shifting operations.
  */
 int main(int argc, char **argv) {
   unsigned patches;
   SCALE_T XScale = 12, YScale = 14;
-
   FILE *xFile, *yFile, *floatResFile, *outputLog;
 
   if (argc != 6) {
-    printf("Improper Number of Arguments Provided!\n");
+    fprintf(stderr, "Improper Number of Arguments Provided!\n");
+    fprintf(stderr, "Usage : %s <num_patches> <input_file.npy> <output_file.npy> <expected_output_file.npy> <log_file.txt>\n\n", argv[0]);
+    fprintf(stderr, "<num_patches> : Number of image patches in the input file. RNNPool operator is run individually on each patch.\n");
+    fprintf(stderr, "<input_file.npy> : File containing the image patches in a numpy array of dimension (num_patches, input_channels, input_width, input_height).\n");
+    fprintf(stderr, "<output_file.npy> : File to write the generated output in a numpy array of dimension (num_patches, 1, 4 * hidden_dimension_2).\n");
+    fprintf(stderr, "<expected_output_file.npy> : File containing the expected output in a numpy array of dimension (num_patches, 1, 4 * hidden_dimension_2).\n");
+    fprintf(stderr, "<log_file.txt> : File to write the error metrics and the results from the runtime analysis of the layer.\n");
     return -1;
   } else {
     patches = atoi(argv[1]);
@@ -67,19 +70,19 @@ int main(int argc, char **argv) {
   }
 
   if (xFile == NULL) {
-    printf("An error occured while opening the input file.\n");
+    fprintf(stderr, "An error occured while opening the input file.\n");
     return -1;
   }
   if (yFile == NULL) {
-    printf("An error occured while opening the predicted output file.\n");
+    fprintf(stderr, "An error occured while opening the predicted output file.\n");
     return -1;
   }
   if (floatResFile == NULL) {
-    printf("An error occured while opening the expected output file.\n");
+    fprintf(stderr, "An error occured while opening the expected output file.\n");
     return -1;
   }
   if (outputLog == NULL) {
-    printf("An error occured while opening the output log file.\n");
+    fprintf(stderr, "An error occured while opening the output log file.\n");
     return -1;
   }
 
@@ -136,156 +139,8 @@ int main(int argc, char **argv) {
   fputs(numpyHeader3, yFile);
   fputs(numpyHeader4, yFile);
 
-  Q_FastGRNN_Params rnn1_params = {
-    .mean = NULL,
-    .stdDev = NULL,
-    .W = W1,
-    .U = U1,
-    .Bg = Bg1,
-    .Bh = Bh1,
-    .sigmoid_zeta = sigmoid_zeta1,
-    .sigmoid_nu = sigmoid_nu1
-  };
-
-  Q_FastGRNN_Params rnn2_params = {
-    .mean = NULL,
-    .stdDev = NULL,
-    .W = W2,
-    .U = U2,
-    .Bg = Bg2,
-    .Bh = Bh2,
-    .sigmoid_zeta = sigmoid_zeta2,
-    .sigmoid_nu = sigmoid_nu2
-  };
-
-  INT_T preComp11[HIDDEN_DIM1];
-  INT_T preComp12[HIDDEN_DIM1];
-  INT_T preComp13[HIDDEN_DIM1];
-  INT_T normFeatures1[INPUT_CHANNELS];
-  memset(preComp11, 0, sizeof(INT_T) * HIDDEN_DIM1);
-  memset(preComp12, 0, sizeof(INT_T) * HIDDEN_DIM1);
-  memset(preComp13, 0, sizeof(INT_T) * HIDDEN_DIM1);
-  memset(normFeatures1, 0, sizeof(INT_T) * INPUT_CHANNELS);
-  Q_FastGRNN_Buffers rnn1_buffers = {
-  	.preComp1 = preComp11,
-    .preComp2 = preComp12,
-    .preComp3 = preComp13,
-    .normFeatures = normFeatures1
-  };
-
-  INT_T preComp21[HIDDEN_DIM2];
-  INT_T preComp22[HIDDEN_DIM2];
-  INT_T preComp23[HIDDEN_DIM2];
-  INT_T normFeatures2[HIDDEN_DIM1];
-  memset(preComp21, 0, sizeof(INT_T) * HIDDEN_DIM2);
-  memset(preComp22, 0, sizeof(INT_T) * HIDDEN_DIM2);
-  memset(preComp23, 0, sizeof(INT_T) * HIDDEN_DIM2);
-  memset(normFeatures2, 0, sizeof(INT_T) * HIDDEN_DIM1);
-  Q_FastGRNN_Buffers rnn2_buffers = {
-    .preComp1 = preComp21,
-    .preComp2 = preComp22,
-    .preComp3 = preComp23,
-    .normFeatures = normFeatures2
-  };
-
-  Q_FastGRNN_Scales rnn1_scales = {
-    .input = input1,
-    .mean = meanScale1,
-    .meanSub = meanSub1,
-    .stdDev = stdDevScale1,
-    .normFeaturesHDStdDev = normFeaturesHDStdDev1,
-    .W = WScale1,
-    .normFeaturesMVW = normFeaturesMVW1,
-    .H1W = H1W1,
-    .H2W = H2W1,
-    .U = UScale1,
-    .hiddenStateMVU = hiddenStateMVU1,
-    .H1U = H1U1,
-    .H2U = H2U1,
-    .mV1AddMV2 = mV1AddMV21,
-    .mV2AddMV1 = mV2AddMV11,
-    .mV1AddMV2Out = mV1AddMV2Out1,
-    .pC1AddBg = pC1AddBg1,
-    .Bg = BgScale1,
-    .pC1AddBgOut = pC1AddBgOut1,
-    .sigmoidLimit = sigmoidLimit1,
-    .sigmoidScaleIn = sigmoidScaleIn1,
-    .sigmoidScaleOut = sigmoidScaleOut1,
-    .pC1AddBh = pC1AddBh1,
-    .Bh = BhScale1,
-    .pC1AddBhOut = pC1AddBhOut1,
-    .tanhScaleIn = tanhScaleIn1,
-    .tanhScaleOut = tanhScaleOut1,
-    .gateHDHiddenState = gateHDHiddenState1,
-    .hiddenStateHDGate = hiddenStateHDGate1,
-    .qOneScale = qOneScale1,
-    .qOneSubGate = qOneSubGate1,
-    .qOneSubGateOut = qOneSubGateOut1,
-    .sigmoidZeta = sigmoidZetaScale1,
-    .sigmoidZetaMulQOneSubGate = sigmoidZetaMulQOneSubGate1,
-    .sigmoidNu = sigmoidNuScale1,
-    .sigmoidNuAddQOneSubGate = sigmoidNuAddQOneSubGate1,
-    .sigmoidNuAddQOneSubGateOut = sigmoidNuAddQOneSubGateOut1,
-    .sigmoidNuAddQOneSubGateHDUpdate = sigmoidNuAddQOneSubGateHDUpdate1,
-    .updateHDSigmoidNuAddQOneSubGate = updateHDSigmoidNuAddQOneSubGate1,
-    .pC3AddPC1 = pC3AddPC11,
-    .pC1AddPC3 = pC1AddPC31,
-    .hiddenStateOut = hiddenStateOut1,
-    .div = div1,
-    .add = add1,
-    .qOne = qOne1
-  };
-
-  Q_FastGRNN_Scales rnn2_scales = {
-    .input = input2,
-    .mean = meanScale2,
-    .meanSub = meanSub2,
-    .stdDev = stdDevScale2,
-    .normFeaturesHDStdDev = normFeaturesHDStdDev2,
-    .W = WScale2,
-    .normFeaturesMVW = normFeaturesMVW2,
-    .H1W = H1W2,
-    .H2W = H2W2,
-    .U = UScale2,
-    .hiddenStateMVU = hiddenStateMVU2,
-    .H1U = H1U2,
-    .H2U = H2U2,
-    .mV1AddMV2 = mV1AddMV22,
-    .mV2AddMV1 = mV2AddMV12,
-    .mV1AddMV2Out = mV1AddMV2Out2,
-    .pC1AddBg = pC1AddBg2,
-    .Bg = BgScale2,
-    .pC1AddBgOut = pC1AddBgOut2,
-    .sigmoidLimit = sigmoidLimit2,
-    .sigmoidScaleIn = sigmoidScaleIn2,
-    .sigmoidScaleOut = sigmoidScaleOut2,
-    .pC1AddBh = pC1AddBh2,
-    .Bh = BhScale2,
-    .pC1AddBhOut = pC1AddBhOut2,
-    .tanhScaleIn = tanhScaleIn2,
-    .tanhScaleOut = tanhScaleOut2,
-    .gateHDHiddenState = gateHDHiddenState2,
-    .hiddenStateHDGate = hiddenStateHDGate2,
-    .qOneScale = qOneScale2,
-    .qOneSubGate = qOneSubGate2,
-    .qOneSubGateOut = qOneSubGateOut2,
-    .sigmoidZeta = sigmoidZetaScale2,
-    .sigmoidZetaMulQOneSubGate = sigmoidZetaMulQOneSubGate2,
-    .sigmoidNu = sigmoidNuScale2,
-    .sigmoidNuAddQOneSubGate = sigmoidNuAddQOneSubGate2,
-    .sigmoidNuAddQOneSubGateOut = sigmoidNuAddQOneSubGateOut2,
-    .sigmoidNuAddQOneSubGateHDUpdate = sigmoidNuAddQOneSubGateHDUpdate2,
-    .updateHDSigmoidNuAddQOneSubGate = updateHDSigmoidNuAddQOneSubGate2,
-    .pC3AddPC1 = pC3AddPC12,
-    .pC1AddPC3 = pC1AddPC32,
-    .hiddenStateOut = hiddenStateOut2,
-    .div = div2,
-    .add = add2,
-    .qOne = qOne2
-  };
-
-  INT_T output_test[4 * HIDDEN_DIM2];
-  INT_T buffer[HIDDEN_DIM1 * PATCH_DIM];
+  Q15_T output_test[4 * HIDDEN_DIM2];
+  Q15_T buffer[HIDDEN_DIM1 * PATCH_DIM];
   float xLine[INPUT_CHANNELS * PATCH_DIM * PATCH_DIM];
   float yLine[4 * HIDDEN_DIM2];
   float* allErrors = malloc(patches * 4 * HIDDEN_DIM2 * (sizeof(float)));
@@ -294,25 +149,25 @@ int main(int argc, char **argv) {
   for (unsigned i = 0; i < patches; i++) {
     fread(&xLine[0], sizeof(float), INPUT_CHANNELS * PATCH_DIM * PATCH_DIM, xFile);
     fread(&yLine[0], sizeof(float), 4 * HIDDEN_DIM2, floatResFile);
-    INT_T reshapedXLine[INPUT_CHANNELS * PATCH_DIM * PATCH_DIM];
+    Q15_T reshapedXLine[INPUT_CHANNELS * PATCH_DIM * PATCH_DIM];
 
     for (unsigned a = 0; a < INPUT_CHANNELS; a ++) {
       for (unsigned b = 0; b < PATCH_DIM; b++) {
         for (unsigned c = 0; c < PATCH_DIM; c++) {
           reshapedXLine[b * PATCH_DIM * INPUT_CHANNELS + c * INPUT_CHANNELS + a] =
-          (INT_T)((xLine[a * PATCH_DIM * PATCH_DIM + b * PATCH_DIM + c]) * pow(2, XScale));
+          (Q15_T)((xLine[a * PATCH_DIM * PATCH_DIM + b * PATCH_DIM + c]) * pow(2, XScale));
         }
       }
     }
 
     fprintf(outputLog, "Running Quantized RNNPool on Patch %d\n", i + 1);
     clock_t begin = clock();
-    q_rnnpool_block(reshapedXLine, INPUT_CHANNELS, PATCH_DIM, PATCH_DIM,
-                    q_fastgrnn, HIDDEN_DIM1, (const void*)(&rnn1_params),
-                    (void*)(&rnn1_buffers), (const void*)(&rnn1_scales),
-                    q_fastgrnn, HIDDEN_DIM2, (const void*)(&rnn2_params),
-                    (void*)(&rnn2_buffers), (const void*)(&rnn2_scales),
-                    output_test, buffer);
+    q15_rnnpool_block(reshapedXLine, INPUT_CHANNELS, PATCH_DIM, PATCH_DIM,
+                      q15_fastgrnn, HIDDEN_DIM1, (const void*)(&rnn1_params),
+                      (void*)(&rnn1_buffers), (const void*)(&rnn1_scales),
+                      q15_fastgrnn, HIDDEN_DIM2, (const void*)(&rnn2_params),
+                      (void*)(&rnn2_buffers), (const void*)(&rnn2_scales),
+                      output_test, buffer, ShR1, ShL1, ShR2, ShL2);
     clock_t end = clock();
     time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
     fprintf(outputLog, "Time elapsed is %f seconds\n", time_spent);
