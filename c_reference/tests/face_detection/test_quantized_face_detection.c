@@ -54,9 +54,7 @@ double aggregate_error(double* errors, unsigned len) {
   return errors[index];
 }
 
-/** Run this test using the following command:
- * $: ./test_quantized_face_detection <num_patches> <input.npy> <output.npy>
- *    <expected_output.npy> <log.txt>
+/**
  *  By default, all tests run without using bit-shifting operations.
  */
 int main(int argc, char **argv) {
@@ -66,7 +64,12 @@ int main(int argc, char **argv) {
 
   if (argc != 6) {
     printf("Improper Number of Arguments Provided!\n");
-    fprintf(stderr, "Usage: %s <num_patches> <input_file.npy> <output_file.npy> <expected_output_file.npy> <log_file.txt>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <num_images> <input_file.npy> <output_file.npy> <expected_output_file.npy> <log_file.txt>\n\n", argv[0]);
+    fprintf(stderr, "<num_images> : Number of images in the input file. The entire model is run individually on each image.\n");
+    fprintf(stderr, "<input_file.npy> : File containing the images in a numpy array of dimension (num_images, input_channels * input_width * input_height).\n");
+    fprintf(stderr, "<output_file.npy> : File to write the generated output in a numpy array of dimension (num_images, confidence + location box outputs).\n");
+    fprintf(stderr, "<expected_output_file.npy> : File containing the expected output in a numpy array of dimension (num_images, confidence + location box outputs).\n");
+    fprintf(stderr, "<log_file.txt> : File to write the error metrics and the results from the runtime analysis of the model.\n");
     return -1;
   } else {
     patches = atoi(argv[1]);

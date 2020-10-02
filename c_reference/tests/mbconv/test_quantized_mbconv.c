@@ -41,9 +41,7 @@ float aggregate_error(float* errors, unsigned len) {
   return errors[index];
 }
 
-/** Run this test using the following command:
- * $: ./test_quantized_mbconv <input.npy> <output.npy> <expected_output.npy>
- *    <log.txt>
+/**
  *  By default, all tests run without using bit-shifting operations.
  */
 int main(int argc, char **argv) {
@@ -52,7 +50,11 @@ int main(int argc, char **argv) {
 
   if (argc != 5) {
     printf("Improper Number of Arguments Provided!\n");
-    fprintf(stderr, "Usage: %s <input_file.npy> <output_file.npy> <expected_output_file.npy> <log_file.txt>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <input_file.npy> <output_file.npy> <expected_output_file.npy> <log_file.txt>\n\n", argv[0]);
+    fprintf(stderr, "<input_file.npy> : File containing a single input image in a numpy array of dimension (1, input_channels * input_width * input_height).\n");
+    fprintf(stderr, "<output_file.npy> : File to write the generated output in a numpy array of dimension (1, output_channels * output_width * output_height).\n");
+    fprintf(stderr, "<expected_output_file.npy> : File containing the expected output in a numpy array of dimension (1, output_channels * output_width * output_height).\n");
+    fprintf(stderr, "<log_file.txt> : File to write the error metrics and the results from the runtime analysis of the layer.\n");
     return -1;
   } else {
     xFile = fopen(argv[1], "rb");

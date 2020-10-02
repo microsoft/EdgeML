@@ -44,9 +44,7 @@ float aggregate_error(float* errors, unsigned len) {
   return errors[index];
 }
 
-/** Run this test using the following command:
- * $: ./test_quantized_rnnpool <num_patches> <input.npy> <output.npy>
- *    <expected_output.npy> <log.txt>
+/**
  *  By default, all tests run without using bit-shifting operations.
  */
 int main(int argc, char **argv) {
@@ -56,7 +54,12 @@ int main(int argc, char **argv) {
 
   if (argc != 6) {
     fprintf(stderr, "Improper Number of Arguments Provided!\n");
-    fprintf(stderr, "Usage: %s <num_patches> <input_file.npy> <output_file.npy> <expected_output_file.npy> <log_file.txt>\n", argv[0]);
+    fprintf(stderr, "Usage : %s <num_patches> <input_file.npy> <output_file.npy> <expected_output_file.npy> <log_file.txt>\n\n", argv[0]);
+    fprintf(stderr, "<num_patches> : Number of image patches in the input file. RNNPool operator is run individually on each patch.\n");
+    fprintf(stderr, "<input_file.npy> : File containing the image patches in a numpy array of dimension (num_patches, input_channels, input_width, input_height).\n");
+    fprintf(stderr, "<output_file.npy> : File to write the generated output in a numpy array of dimension (num_patches, 1, 4 * hidden_dimension_2).\n");
+    fprintf(stderr, "<expected_output_file.npy> : File containing the expected output in a numpy array of dimension (num_patches, 1, 4 * hidden_dimension_2).\n");
+    fprintf(stderr, "<log_file.txt> : File to write the error metrics and the results from the runtime analysis of the layer.\n");
     return -1;
   } else {
     patches = atoi(argv[1]);
