@@ -22,16 +22,19 @@ for these algorithms are in `edgeml_pytorch.trainer`.
     training routine for FastRNN and FastGRNN is decoupled from the custom cells to enable plug and
     play behaviour of the custom RNN cells in other architectures (NMT, Encoder-Decoder etc.).
     Additionally, numerically equivalent CUDA-based implementations `FastRNNCUDACell` and 
-    `FastGRNNCUDACell` are provided for faster training. `edgeml_pytorch.graph.rnn`.
+    `FastGRNNCUDACell` are provided for faster training. 
     `edgeml_pytorch.graph.rnn.Fast(G)RNN(CUDA)` provides unrolled RNNs equivalent to `nn.LSTM` and `nn.GRU`.
     `edgeml_pytorch.trainer.fastmodel` presents a sample multi-layer RNN + multi-class classifier model.
 4. [S-RNN](https://github.com/microsoft/EdgeML/blob/master/docs/publications/SRNN.pdf): `edgeml_pytorch.graph.rnn.SRNN2` implements a 
-    2 layer SRNN network which can be instantied with a choice of RNN cell. The training
+    2 layer SRNN network which can be instantiated with a choice of RNN cell. The training
     routine for SRNN is in `edgeml_pytorch.trainer.srnnTrainer`.
 5. [DROCC & DROCC-LF](https://github.com/microsoft/EdgeML/blob/master/docs/publications/drocc.pdf): `edgeml_pytorch.trainer.drocc_trainer` implements 
     a DROCC meta-trainer for training any given model architecture
-    for one-class classification on the supplied dataset. `edgeml_pytorch.trainer.drocclf_trainer` implements the DROCC-LF varaint
+    for one-class classification on the supplied dataset. `edgeml_pytorch.trainer.drocclf_trainer` implements the DROCC-LF variant
     for training models for one-class classification with limited negatives.
+6. [RNNPool](https://github.com/microsoft/EdgeML/blob/master/docs/publications/RNNPool.pdf): `edgeml_pytorch.graph.RNNPool` implements
+   the RNNPool pooling layer which can be instantiated with the dimensions of the input patch
+   and the hidden states. Currently only the inference code is implemented.
 
 Usage directions and examples notebooks for this package are provided [here](https://github.com/microsoft/EdgeML/blobl/master/examples/pytorch).
 
