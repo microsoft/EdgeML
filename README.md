@@ -69,6 +69,7 @@ Code for algorithms, applications and tools contributed by:
   - [Sachin Goyal](https://saching007.github.io/)
   - [Chirag Gupta](https://aigen.github.io/)
   - [Moksh Jain](https://github.com/MJ10)
+  - [Shikhar Jaiswal](https://shikharj.github.io/)
   - [Ashish Kumar](https://ashishkumar1993.github.io/)
   - [Aditya Kusupati](https://adityakusupati.github.io/)
   - [Chris Lovett](https://github.com/lovettchris)
@@ -83,13 +84,14 @@ Please [email us](mailto:edgeml@microsoft.com) your comments, criticism, and que
 If you use software from this library in your work, please use the BibTex entry below for citation.
 
 ```
-@software{edgeml03,
+@software{edgeml04,
    author = {{Dennis, Don Kurian and Gaurkar, Yash and Gopinath, Sridhar and Goyal, Sachin 
-              and Gupta, Chirag and Jain, Moksh and Kumar, Ashish and Kusupati, Aditya and 
-              Lovett, Chris and Patil, Shishir G and Saha, Oindrila and Simhadri, Harsha Vardhan}},
+              and Gupta, Chirag and Jain, Moksh and Jaiswal, Shikhar and Kumar, Ashish and
+              Kusupati, Aditya and  Lovett, Chris and Patil, Shishir G and Saha, Oindrila and
+              Simhadri, Harsha Vardhan}},
    title = {{EdgeML: Machine Learning for resource-constrained edge devices}},
    url = {https://github.com/Microsoft/EdgeML},
-   version = {0.3},
+   version = {0.4},
 }
 ```
 
