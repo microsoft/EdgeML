@@ -261,6 +261,40 @@ int test_q15_m_mulvec() {
   return check_output_q15(pred, expected, 8);
 }
 
+// Test q15xq7_q15_m_sparse_mulvec() function.
+int test_q15xq7_q15_m_sparse_mulvec() {
+  const ITER_T qrow_indices[7] = {1, 3, 0, 1, 0, 2, 0};
+  const Q15_T qmat_values[4] = {23, 48, 32, 1};
+  const Q7_T qvec_A[3] = {1, 2, 3};
+  const Q15_T expected[3] = {87, 3, 48};
+  Q15_T pred[3];
+
+  #ifdef SHIFT
+    q15xq7_q15_m_sparse_mulvec(&qrow_indices[0], &qmat_values[0], &qvec_A[0], 3, 3, &pred[0], 0, 0, 0, 0);
+  #else
+    q15xq7_q15_m_sparse_mulvec(&qrow_indices[0], &qmat_values[0], &qvec_A[0], 3, 3, &pred[0], 1, 1, 1, 0);
+  #endif
+
+  return check_output_q15(pred, expected, 3);
+}
+
+// Test q15_m_sparse_mulvec() function.
+int test_q15_m_sparse_mulvec() {
+  const ITER_T qrow_indices[7] = {1, 3, 0, 1, 0, 2, 0};
+  const Q15_T qmat_values[4] = {23, 48, 32, 1};
+  const Q15_T qvec_A[3] = {1, 2, 3};
+  const Q15_T expected[3] = {87, 3, 48};
+  Q15_T pred[3];
+
+  #ifdef SHIFT
+    q15_m_sparse_mulvec(&qrow_indices[0], &qmat_values[0], &qvec_A[0], 3, 3, &pred[0], 0, 0, 0, 0);
+  #else
+    q15_m_sparse_mulvec(&qrow_indices[0], &qmat_values[0], &qvec_A[0], 3, 3, &pred[0], 1, 1, 1, 0);
+  #endif
+
+  return check_output_q15(pred, expected, 3);
+}
+
 // Test q7_t_add() function.
 int test_q7_t_add() {
   const Q7_T qten_A[2 * 2 * 2 * 2] = {124, 55,
@@ -816,9 +850,13 @@ int main() {
     printf("Test Failure for q15_v_scale_down()!\n");
   } else if (test_q15xq7_q15_m_mulvec()) {
     printf("Test Failure for q15xq7_q15_m_mulvec()!\n");
-  }  else if (test_q15_m_mulvec()) {
+  } else if (test_q15_m_mulvec()) {
     printf("Test Failure for q15_m_mulvec()!\n");
-  } else if (test_q7_t_add()) {
+  } else if (test_q15xq7_q15_m_sparse_mulvec()) {
+    printf("Test Failure for q15xq7_q15_m_sparse_mulvec()!\n");
+  } else if (test_q15_m_sparse_mulvec()) {
+    printf("Test Failure for q15_m_sparse_mulvec()!\n");
+  }else if (test_q7_t_add()) {
     printf("Test Failure for q7_t_add()!\n");
   } else if (test_q15_t_add()) {
     printf("Test Failure for q15_t_add()!\n");

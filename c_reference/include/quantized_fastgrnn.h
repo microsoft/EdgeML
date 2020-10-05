@@ -172,7 +172,11 @@ typedef struct Q15_FastGRNN_Params {
   const Q15_T* mean;
   const Q15_T* stdDev;
   const Q15_T* W;
+  const ITER_T* Wids;
+  const Q15_T* Wvals;
   const Q15_T* U;
+  const ITER_T* Uids;
+  const Q15_T* Uvals;
   const Q15_T* Bg;
   const Q15_T* Bh;
   Q15_T sigmoid_zeta;
@@ -183,7 +187,11 @@ typedef struct Q7xQ15_FastGRNN_Params {
   const Q7_T* mean;
   const Q7_T* stdDev;
   const Q15_T* W;
+  const ITER_T* Wids;
+  const Q15_T* Wvals;
   const Q15_T* U;
+  const ITER_T* Uids;
+  const Q15_T* Uvals;
   const Q15_T* Bg;
   const Q15_T* Bh;
   Q15_T sigmoid_zeta;
