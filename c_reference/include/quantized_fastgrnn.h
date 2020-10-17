@@ -159,10 +159,15 @@ int q15_fastgrnn_lr(Q15_T* const hiddenState, ITER_T hiddenDims,
 
 /**
  * @brief Model paramters for FastGRNN
+ * Note: Wids, Wvals, Uids, Uvals can be set to NULL for non-sparse mode operation
  * @var       mean         pointer to mean of input vector for normalization, size inputDims
  * @var       stdDev       pointer to standard dev of input for normalization, size inputDims * steps
  * @var       W            pointer to W matrix
+ * @var       Wids         pointer to the matrix storing row-indices of non-zero elements of W
+ * @var       Wvals        pointer to the matrix storing the non-zero elements of W
  * @var       U            pointer U matrix
+ * @var       Uids         pointer to the matrix storing row-indices of non-zero elements of U
+ * @var       Uvals        pointer to the matrix storing the non-zero elements of U
  * @var       Bg           pointer to bias for Sigmoid
  * @var       Bh           pointer to bias for TanH
  * @var       sigmoid_zeta first weight parameter for update from input from next step
