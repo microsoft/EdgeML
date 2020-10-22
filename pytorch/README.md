@@ -34,7 +34,9 @@ for these algorithms are in `edgeml_pytorch.trainer`.
     for training models for one-class classification with limited negatives.
 6. [RNNPool](https://github.com/microsoft/EdgeML/blob/master/docs/publications/RNNPool.pdf): `edgeml_pytorch.graph.RNNPool` implements
    the RNNPool pooling layer which can be instantiated with the dimensions of the input patch
-   and the hidden states. Currently only the inference code is implemented.
+   and the hidden states. Currently only the inference code is implemented, as training routines
+   are written individually for specific use cases. Please checkout the [RNNPool examples](https://github.com/microsoft/EdgeML/tree/master/examples/pytorch/vision) for reference implementations
+   of the trainer modules.
 
 Usage directions and examples notebooks for this package are provided [here](https://github.com/microsoft/EdgeML/blobl/master/examples/pytorch).
 
