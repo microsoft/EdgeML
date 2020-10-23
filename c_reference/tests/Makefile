@@ -41,7 +41,7 @@ test_quantized_face_detection_sparse: $(FACE_DETECTION_DIR)/test_quantized_face_
 .PHONY: clean cleanest
 
 clean: 
-	rm -f *.o *.gch test_fastgrnn_lr test_rnnpool test_quantized_utils test_quantized_fastgrnn test_quantized_rnnpool test_quantized_mbconv test_quantized_face_detection test_quantized_face_detection_fast
+	rm -f *.o *.gch test_fastgrnn_lr test_rnnpool test_quantized_utils test_quantized_fastgrnn test_quantized_rnnpool test_quantized_mbconv test_quantized_face_detection test_quantized_face_detection_fast test_quantized_face_detection_sparse
 
 cleanest: clean
 	rm *~
