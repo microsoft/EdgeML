@@ -111,7 +111,7 @@ void q_face_detection_fast(char* const mem_buf) {
     D1LW_COUT, (Q15_T*)(mem_buf + 2400), D1LB_Scten, D1LB_Scvec, D1LB_Scret);
 
   memset((mem_buf_offset_q15 + 2400), 0, sizeof(Q15_T) * 600);
-  memset(mem_buf_offset_q15 + 3000, 0, sizeof(Q15_T) * 1);
+  memset((mem_buf_offset_q15 + 3000), 0, sizeof(Q15_T) * 1);
   memset((mem_buf_offset_q15 + 3001), 0, sizeof(Q15_T) * 1);
 
   for (ITER_T i = 0; i < 15; i++) {

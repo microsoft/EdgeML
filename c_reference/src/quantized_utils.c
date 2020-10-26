@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 #include <stddef.h>
+#include <string.h>
 #include "quantized_utils.h"
 
 void q15_v_add(const Q15_T* vec1, const Q15_T* vec2, ITER_T len, Q15_T* ret,
@@ -572,6 +573,69 @@ void q15_m_mulvec(const Q15_T* mat, const Q15_T* const vec, ITER_T nrows,
     #else
       *ret++ = (sum / scale);
     #endif
+  }
+}
+
+void q15xq7_q15_m_sparse_mulvec(const ITER_T* row_indices,
+                                const Q15_T* mat_values, const Q7_T* vec,
+                                ITER_T nrows, ITER_T ncols, Q15_T* ret,
+                                SCALE_T scmat, SCALE_T scvec, SCALE_T H1,
+                                SCALE_T H2) {
+  ITER_T index;
+  Q31_T vec_offset;
+  memset(ret, 0, nrows * sizeof(Q15_T));
+  #ifdef SHIFT
+    SCALE_T scale = scmat + scvec + H1;
+  #else
+    // Be careful, the below implementation would not work if the denominator
+    // exceeds the range of Q31_T range. In such a case, cast the denominator
+    // to int64_t.
+    SCALE_T scale = scmat * scvec * H1;
+  #endif
+
+  while (ncols--) {
+    index = *row_indices++;
+    vec_offset = *vec++;
+
+    while (index != 0) {
+      #ifdef SHIFT
+        ret[index - 1] += ((*mat_values++) * vec_offset) >> scale;
+      #else
+        ret[index - 1] += ((*mat_values++) * vec_offset) / scale;
+      #endif
+      index = *row_indices++;
+    }
+  }
+}
+
+void q15_m_sparse_mulvec(const ITER_T* row_indices, const Q15_T* mat_values,
+                         const Q15_T* vec, ITER_T nrows, ITER_T ncols,
+                         Q15_T* ret, SCALE_T scmat, SCALE_T scvec, SCALE_T H1,
+                         SCALE_T H2) {
+  ITER_T index;
+  Q31_T vec_offset;
+  memset(ret, 0, nrows * sizeof(Q15_T));
+  #ifdef SHIFT
+    SCALE_T scale = scmat + scvec + H1;
+  #else
+    // Be careful, the below implementation would not work if the denominator
+    // exceeds the range of Q31_T range. In such a case, cast the denominator
+    // to int64_t.
+    SCALE_T scale = scmat * scvec * H1;
+  #endif
+
+  while (ncols--) {
+    index = *row_indices++;
+    vec_offset = *vec++;
+
+    while (index != 0) {
+      #ifdef SHIFT
+        ret[index - 1] += ((*mat_values++) * vec_offset) >> scale;
+      #else
+        ret[index - 1] += ((*mat_values++) * vec_offset) / scale;
+      #endif
+      index = *row_indices++;
+    }
   }
 }
 

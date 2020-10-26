@@ -81,7 +81,7 @@ void q_face_detection(char* const mem_buf) {
   for (ITER_T i = 0; i < 30; i++) {
     memcpy(&mem_buf_offset_q7[39 * 64 + i * 2560],
            &mem_buf_offset_q7[38 * 64 + i * 2560], 64 * sizeof(Q7_T));
-  } 
+  }
 
   // MBConv Sub-Pipeline
   // MBConv Layer 1

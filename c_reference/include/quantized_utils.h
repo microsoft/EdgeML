@@ -304,6 +304,45 @@ void q15xq7_q15_m_mulvec(const Q15_T* mat, const Q7_T* const vec, ITER_T nrows,
 void q15_m_mulvec(const Q15_T* mat, const Q15_T* const vec, ITER_T nrows,
                   ITER_T ncols, Q15_T* ret, SCALE_T scmat, SCALE_T scvec,
                   SCALE_T H1, SCALE_T H2);
+/**
+ * @brief Performs sparse matrix multiplication of a matrix and a vector.
+ * row_indices and mat_values combined are a sparse representation; dim(vec) = [ncols].
+ * mat_values[i] is the i^th non-zero value of the input matrix, and row_indices[i] encodes the (1-indexed) row location of mat_values[i].
+ * If number of zeroes before row_indices[i] is l, then l is the column location of the (i-l)th matrix value.
+ * @param[in]       row_indices  pointer to input matrix which stores the row indices of non-zero values of matrix A
+ * @param[in]       mat_values   pointer to input matrix which stores the non-zero values of matrix A
+ * @param[in]       vec          pointer to the input vector
+ * @param[in]       nrows        number of rows of the input matrix
+ * @param[in]       ncols        number of columns of the input matrix
+ * @param[out]      ret          pointer to the output vector
+ * @param[in]       scmat        scale factor of the input matrix
+ * @param[in]       scvec        scale factor of the input vector
+ * @param[in]       H1           depth parameter for division-by-two used in TreeSum
+ * @param[in]       H2           depth parameter for direct sum used in TreeSum
+ * @return          none
+ * @example         mat          = { {23, 32, 0},
+ *                                   {0, 0, 1},
+ *                                   {48, 0, 0}}
+ *                  row_indices  = {1, 3, 0, 1, 0, 2, 0}
+ *                  mat_values   = {23, 48, 32, 1}
+ *                  vec          = {1, 2, 3}
+ *                  nrows        = 3
+ *                  ncols        = 3
+ *                  scmat        = 1
+ *                  scvec        = 1
+ *                  H1           = 1
+ *                  H2           = 0
+ *                  ret          = {87, 3, 48}
+ */
+void q15xq7_q15_m_sparse_mulvec(const ITER_T* row_indices,
+                                const Q15_T* mat_values, const Q7_T* vec,
+                                ITER_T nrows, ITER_T ncols, Q15_T* ret,
+                                SCALE_T scmat, SCALE_T scvec, SCALE_T H1,
+                                SCALE_T H2);
+void q15_m_sparse_mulvec(const ITER_T* row_indices, const Q15_T* mat_values,
+                         const Q15_T* vec, ITER_T nrows, ITER_T ncols,
+                         Q15_T* ret, SCALE_T scmat, SCALE_T scvec, SCALE_T H1,
+                         SCALE_T H2);
 
 /**
  * @brief Performs the element-wise addition of two input tensors.
