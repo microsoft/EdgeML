@@ -1,4 +1,4 @@
-# Generated from seedot.g4 by ANTLR 4.7
+# Generated from ..\compiler\antlr\seedot.g4 by ANTLR 4.7
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .seedotParser import seedotParser
@@ -14,6 +14,11 @@ class seedotVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by seedotParser#init.
+    def visitInit(self, ctx:seedotParser.InitContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by seedotParser#bop2.
     def visitBop2(self, ctx:seedotParser.Bop2Context):
         return self.visitChildren(ctx)
@@ -21,6 +26,11 @@ class seedotVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by seedotParser#decl.
     def visitDecl(self, ctx:seedotParser.DeclContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by seedotParser#splice.
+    def visitSplice(self, ctx:seedotParser.SpliceContext):
         return self.visitChildren(ctx)
 
 
@@ -41,6 +51,11 @@ class seedotVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by seedotParser#float.
     def visitFloat(self, ctx:seedotParser.FloatContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by seedotParser#reverse.
+    def visitReverse(self, ctx:seedotParser.ReverseContext):
         return self.visitChildren(ctx)
 
 
@@ -69,8 +84,23 @@ class seedotVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by seedotParser#loop.
+    def visitLoop(self, ctx:seedotParser.LoopContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by seedotParser#uop.
     def visitUop(self, ctx:seedotParser.UopContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by seedotParser#convolution.
+    def visitConvolution(self, ctx:seedotParser.ConvolutionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by seedotParser#mbconv.
+    def visitMbconv(self, ctx:seedotParser.MbconvContext):
         return self.visitChildren(ctx)
 
 
@@ -91,6 +121,16 @@ class seedotVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by seedotParser#maxpool.
     def visitMaxpool(self, ctx:seedotParser.MaxpoolContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by seedotParser#name.
+    def visitName(self, ctx:seedotParser.NameContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by seedotParser#leftSplice.
+    def visitLeftSplice(self, ctx:seedotParser.LeftSpliceContext):
         return self.visitChildren(ctx)
 
 

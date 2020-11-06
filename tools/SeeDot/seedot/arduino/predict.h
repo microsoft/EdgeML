@@ -4,5 +4,5 @@
 #pragma once
 
 int predict();
-MYINT getIntFeature(MYINT);
+int32_t getIntFeature(MYITE);
 float getFloatFeature(MYINT);
