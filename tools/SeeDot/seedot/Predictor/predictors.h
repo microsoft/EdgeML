@@ -3,8 +3,8 @@
 
 #pragma once
 
-int seedotFixed(MYINT **X);
+void seedotFixed(MYINT **X, int32_t* res);
+void seedotFloat(float **X, float* res);
+void seedotFixedSwitch(int i, MYINT** X, int32_t* res);
 
-int bonsaiFloat(float *X);
-int lenetFloat(float *X);
-int protonnFloat(float *X);
+extern const int switches;

@@ -1,0 +1,32 @@
+let W1   = (30, 8)  in [-0.1, 0.1] in
+let W2   = (8, 64)  in [-0.1, 0.1] in
+let U1   = (64, 8)  in [-0.1, 0.1] in
+let U2   = (8, 64)  in [-0.1, 0.1] in
+let Bg   = (1, 64)  in [-0.1, 0.1] in
+let Bh   = (1, 64)  in [-0.1, 0.1] in
+let FC1   = (64, 20)  in [-0.1, 0.1] in
+let FC2   = (20, 72)  in [-0.1, 0.1] in
+let FCBias   = (1, 72)  in [-0.1, 0.1] in
+
+let X    = (210,1)   in [-0.1, 0.1] in
+
+let XX = reshape(X, (7,1,30), (1,2)) in
+
+let zeta = 0.15637416 in
+let nu = 0.01094334 in
+
+let H    = init([1, 64], 0.0) in
+
+let res = loop(i = [0:7], H)
+(
+	let a = (XX[i] * W1) * W2 in
+	let b = (H * U1) * U2 in
+	let c = a + b in
+	let g = sigmoid(c + Bg) in
+	let h = tanh(c + Bh) in
+	let H = (g <*> H) + (zeta * (1.0 - g) + nu) <*> h in 
+	H
+) in
+
+let score = ((res * FC1) * FC2) + FCBias in
+argmax(score)

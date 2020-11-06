@@ -32,6 +32,27 @@ class ASTBuilder(SeeDotVisitor):
             ctx.FloatConst(1).getText())
         return AST.Decl(shape, range)
 
+    def visitSplice(self, ctx: SeeDotParser.SpliceContext):
+        exprs = [self.visit(expr) for expr in ctx.expr()]
+        var = exprs[0]
+        startIndices = exprs[1:]
+        Sizes = [int(size.getText()) for size in ctx.IntConst()]
+        return AST.Splice(var, startIndices, Sizes)
+
+    # when splice is on the LHS 
+    def visitLeftSplice(self, ctx: SeeDotParser.LeftSpliceContext):
+        exprs = [self.visit(expr) for expr in ctx.expr()]
+        var = ctx.Id().getText()
+        startIndices = exprs
+        Sizes = [int(size.getText()) for size in ctx.IntConst()]
+        return AST.LeftSplice(var, startIndices, Sizes)    
+
+    def visitInit(self, ctx: SeeDotParser.InitContext):
+        shape = [int(IntConst.getText())
+                 for IntConst in ctx.intConstList().IntConst()]
+        value = float(ctx.FloatConst().getText())
+        return AST.Init(shape, value)
+
     def visitTransp(self, ctx: SeeDotParser.TranspContext):
         expr = self.visit(ctx.expr())
         return AST.Transp(expr)
@@ -46,8 +67,15 @@ class ASTBuilder(SeeDotVisitor):
 
     def visitMaxpool(self, ctx: SeeDotParser.MaxpoolContext):
         expr = self.visit(ctx.expr())
-        dim = int(ctx.IntConst().getText())
-        return AST.Maxpool(expr, dim)
+        kernelSize = [int(ctx.IntConst(i).getText()) for i in range(0, 2)]
+        padding = [int(ctx.IntConst(i).getText()) for i in range(2, 6)]
+        stride = [int(ctx.IntConst(i).getText()) for i in range(6, 8)]
+        return AST.Maxpool(expr, kernelSize, padding, stride)
+
+    def visitReverse(self, ctx: SeeDotParser.MaxpoolContext):
+        expr = self.visit(ctx.expr())
+        axis = int(ctx.IntConst().getText())
+        return AST.Reverse(expr, axis)    
 
     def visitIndex(self, ctx: SeeDotParser.IndexContext):
         expr = self.visit(ctx.expr(0))
@@ -76,6 +104,30 @@ class ASTBuilder(SeeDotVisitor):
         expr2 = self.visit(ctx.expr(1))
         return AST.Bop2(expr1, op, expr2)
 
+    def visitMbconv(self, ctx: SeeDotParser.MbconvContext):
+        expr1 = self.visit(ctx.expr(0))
+        exprF1 = self.visit(ctx.expr(1))
+        exprW1 = self.visit(ctx.expr(2))
+        exprB1 = self.visit(ctx.expr(3))
+        exprF2 = self.visit(ctx.expr(4))
+        exprW2 = self.visit(ctx.expr(5))
+        exprB2 = self.visit(ctx.expr(6))
+        exprF3 = self.visit(ctx.expr(7))
+        exprW3 = self.visit(ctx.expr(8))
+        exprB3 = self.visit(ctx.expr(9))
+        stride = [int(ctx.IntConst(i).getText()) for i in range(0, 2)]
+        padding = [int(ctx.IntConst(i).getText()) for i in range(2, 6)]
+        return AST.MBConv(expr1, exprF1, exprW1, exprB1, exprF2, exprW2, exprB2, exprF3, exprW3, exprB3, stride, padding)
+
+    def visitConvolution(self, ctx: SeeDotParser.ConvolutionContext):
+        expr1 = self.visit(ctx.expr(0))
+        expr2 = self.visit(ctx.expr(1))
+        stride = [int(ctx.IntConst(i).getText()) for i in range(0, 2)]
+        padding = [int(ctx.IntConst(i).getText()) for i in range(2, 6)]
+        dilation = [int(ctx.IntConst(i).getText()) for i in range(6, 8)]
+        groups = int(ctx.IntConst(8).getText())
+        return AST.Convolution(expr1, expr2, stride, padding, dilation, groups)
+
     def visitFunc(self, ctx: SeeDotParser.FuncContext):
         op = ctx.specialFunc().getChild(0).symbol.type
         expr = self.visit(ctx.expr())
@@ -88,6 +140,14 @@ class ASTBuilder(SeeDotVisitor):
         expr = self.visit(ctx.expr())
         return AST.Sum(name, start, end, expr)
 
+    def visitLoop(self, ctx: SeeDotParser.LoopContext):
+        name = ctx.Id().getText()
+        start = int(ctx.IntConst(0).getText())
+        end = int(ctx.IntConst(1).getText())
+        mutableVar = self.visit(ctx.expr(0))
+        expr = self.visit(ctx.expr(1))
+        return AST.Loop(name, start, end, mutableVar, expr)
+
     def visitCond(self, ctx: SeeDotParser.CondContext):
         expr = self.visit(ctx.expr(0))
         # Currently Cond node is used only to check sign of the expression
@@ -99,9 +159,15 @@ class ASTBuilder(SeeDotVisitor):
         return AST.Cond(expr, num, trueBlock, falseBlock)
 
     def visitLet(self, ctx: SeeDotParser.LetContext):
-        name = ctx.Id().getText()
+        name = ctx.lhs().Id().getText()
         decl = self.visit(ctx.expr(0))
         expr = self.visit(ctx.expr(1))
+
+        # In case it is left splicing we need to visit the left splicing node
+        if isinstance(ctx.lhs(), SeeDotParser.LeftSpliceContext):
+            leftSplice = self.visit(ctx.lhs())
+            return AST.Let(name, decl, expr, leftSplice)
+
         return AST.Let(name, decl, expr)
 
     def visitParen(self, ctx: SeeDotParser.ParenContext):
