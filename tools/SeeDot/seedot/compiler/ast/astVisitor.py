@@ -19,12 +19,20 @@ class ASTVisitor:
             return self.visitId(node)
         elif isinstance(node, AST.Decl):
             return self.visitDecl(node)
+        elif isinstance(node, AST.Splice):
+            return self.visitSplice(node)
+        elif isinstance(node, AST.LeftSplice):
+            return self.visitLeftSplice(node)    
+        elif isinstance(node, AST.Init):
+            return self.visitInit(node)
         elif isinstance(node, AST.Transp):
             return self.visitTransp(node)
         elif isinstance(node, AST.Reshape):
             return self.visitReshape(node)
         elif isinstance(node, AST.Maxpool):
             return self.visitMaxpool(node)
+        elif isinstance(node, AST.Reverse):
+            return self.visitReverse(node)    
         elif isinstance(node, AST.Index):
             return self.visitIndex(node)
         elif isinstance(node, AST.FuncCall):
@@ -35,10 +43,16 @@ class ASTVisitor:
             return self.visitBop1(node)
         elif isinstance(node, AST.Bop2):
             return self.visitBop2(node)
+        elif isinstance(node, AST.MBConv):
+            return self.visitMbconv(node)
+        elif isinstance(node, AST.Convolution):
+            return self.visitConvolution(node)
         elif isinstance(node, AST.Func):
             return self.visitFunc(node)
         elif isinstance(node, AST.Sum):
             return self.visitSum(node)
+        elif isinstance(node, AST.Loop):
+            return self.visitLoop(node)
         elif isinstance(node, AST.Cond):
             return self.visitCond(node)
         elif isinstance(node, AST.Let):
