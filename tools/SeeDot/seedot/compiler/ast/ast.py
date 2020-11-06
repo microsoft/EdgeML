@@ -8,6 +8,8 @@ For a given program, the nodes of the AST is created based on the operators pres
 
 
 class ASTNode:
+    mtdKeyTFOpName = "TFOpName"
+    mtdKeyTFNodeName = "TFNodeName"
 
     def __init__(self):
         self.printLevel = 0
@@ -43,12 +45,35 @@ class Decl(ASTNode):
         self.range = range
 
 
+class Init(ASTNode):
+    def __init__(self, shape: list, value: Float):
+        super().__init__()
+        self.shape = shape
+        self.value = value
+
+
 class Transp(ASTNode):
 
     def __init__(self, expr):
         super().__init__()
         self.expr = expr
 
+
+class Splice(ASTNode):
+
+    def __init__(self, expr, vars, sizes):
+        super().__init__()
+        self.expr = expr
+        self.vars = vars
+        self.sizes = sizes
+
+class LeftSplice(ASTNode):
+
+    def __init__(self, expr, vars, sizes):
+        super().__init__()
+        self.expr = expr
+        self.vars = vars
+        self.sizes = sizes
 
 class Reshape(ASTNode):
 
@@ -61,10 +86,12 @@ class Reshape(ASTNode):
 
 class Maxpool(ASTNode):
 
-    def __init__(self, expr, dim: int):
+    def __init__(self, expr, kernelSize: list, padding: list, stride: list):
         super().__init__()
         self.expr = expr
-        self.dim = dim
+        self.kernelSize = kernelSize
+        self.padding = padding
+        self.stride = stride
 
 
 class Index(ASTNode):
@@ -109,6 +136,35 @@ class Bop2(ASTNode):
         self.expr2 = expr2
 
 
+class MBConv(ASTNode):
+
+    def __init__(self, expr1, exprF1, exprW1, exprB1, exprF2, exprW2, exprB2, exprF3, exprW3, exprB3, stride, padding):
+        self.expr1 = expr1
+        self.exprF1 = exprF1
+        self.exprW1 = exprW1
+        self.exprB1 = exprB1
+        self.exprF2 = exprF2
+        self.exprW2 = exprW2
+        self.exprB2 = exprB2
+        self.exprF3 = exprF3
+        self.exprW3 = exprW3
+        self.exprB3 = exprB3
+        self.stride = stride
+        self.padding = padding
+        
+
+class Convolution(ASTNode):
+
+    def __init__(self, expr1, expr2, stride, padding, dilation, groups):
+        super().__init__()
+        self.expr1 = expr1
+        self.expr2 = expr2
+        self.stride = stride
+        self.padding = padding
+        self.dilation = dilation
+        self.groups = groups
+
+
 class Func(ASTNode):
 
     def __init__(self, op, expr):
@@ -127,6 +183,17 @@ class Sum(ASTNode):
         self.expr = expr
 
 
+class Loop(ASTNode):
+
+    def __init__(self, name, start, end, mutableVar, expr):
+        super().__init__()
+        self.name = name
+        self.start = start
+        self.end = end
+        self.mutableVar = mutableVar
+        self.expr = expr
+
+
 class Cond(ASTNode):
 
     def __init__(self, expr, num, trueBlock, falseBlock):
@@ -139,8 +206,16 @@ class Cond(ASTNode):
 
 class Let(ASTNode):
 
-    def __init__(self, name, decl, expr):
+    def __init__(self, name, decl, expr, leftSplice = None):
         super().__init__()
         self.name = name
         self.decl = decl
         self.expr = expr
+        self.leftSplice = leftSplice
+
+class Reverse(ASTNode):
+
+    def __init__(self, expr, axis):
+        super().__init__()
+        self.expr = expr
+        self.axis = axis
