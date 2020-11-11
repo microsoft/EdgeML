@@ -10,6 +10,7 @@ import sys
 import operator
 import tempfile
 import traceback
+import numpy as np
 
 from seedot.compiler.converter.converter import Converter
 
@@ -244,9 +245,9 @@ class Main:
                 for offset in offsetToCodeId:
                     codeId = offsetToCodeId[offset]
                     print("Offset %d (Code ID %d): Accuracy %.3f%%, Disagreement Count %d, Reduced Disagreement Count %d\n" %(offset, codeId, execMap[str(codeId)][0], execMap[str(codeId)][1], execMap[str(codeId)][2]))
+            self.varDemoteDetails += allVars
             if not doNotSort:
-                allVars.sort(key=getMaximisingMetricValue, reverse=True)
-            self.varDemoteDetails = allVars
+                self.varDemoteDetails.sort(key=getMaximisingMetricValue, reverse=True)
         return True, False
 
     # Iterate over multiple scaling factors and store their accuracies
@@ -406,62 +407,92 @@ class Main:
                 print("Scales computed in native bitwidth. Starting exploration over other bitwidths.")
 
                 attemptToDemote = [var for var in self.variableToBitwidthMap if (var[-3:] != "val" and var not in self.demotedVarsList)]
-                numCodes = 3 * len(attemptToDemote) + (6 if 'X' in attemptToDemote else 0) # 9 offsets tried for X while 3 tried for other variables
+                numCodes = config.offsetsPerDemotedVariable * len(attemptToDemote) + ((9 - config.offsetsPerDemotedVariable) if 'X' in attemptToDemote else 0) # 9 offsets tried for X while 'offsetsPerDemotedVariable' tried for other variables
                 
-                self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, True, None, -1 if len(attemptToDemote) > 0 else 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
-                codeId = 0
-                contentToCodeIdMap = {}
-                for demoteVar in attemptToDemote:
-                    newbitwidths = dict(self.variableToBitwidthMap)
-                    newbitwidths[demoteVar] = config.wordLength // 2
-                    if demoteVar + "val" in newbitwidths:
-                        newbitwidths[demoteVar + "val"] = config.wordLength // 2
-                    for alreadyDemotedVars in self.demotedVarsList: # In subsequent iterations during fixed point compilation, this variable will have the variables demoted during the previous runs
-                        newbitwidths[alreadyDemotedVars] = config.wordLength // 2
-                    demotedVarsList = [i for i in newbitwidths.keys() if newbitwidths[i] != config.wordLength]
-                    demotedVarsOffsets = {}
-                    for key in self.demotedVarsList:
-                        demotedVarsOffsets[key] = self.demotedVarsOffsets[key]
+                batchSize = int(np.ceil(50 / np.ceil(len(attemptToDemote) / 50)))
 
-                    contentToCodeIdMap[tuple(demotedVarsList)] = {}
-                    for demOffset in ([0, -1, -2] if demoteVar != 'X' else [0, -1, -2, -3, -4, -5, -6, -7, -8]):
-                        codeId += 1
-                        for k in demotedVarsList:
-                            if k not in self.demotedVarsList:
-                                demotedVarsOffsets[k] = demOffset
-                        contentToCodeIdMap[tuple(demotedVarsList)][demOffset] = codeId
-                        compiled = self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, False, codeId, -1 if codeId != numCodes else codeId, dict(newbitwidths), list(demotedVarsList), dict(demotedVarsOffsets))
-                        if compiled == False:
-                            print("Variable Bitwidth exploration resulted in a compilation error")
-                            return False
+                redBatchSize = np.max((batchSize, 16)) / config.offsetsPerDemotedVariable
                 
-                res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, None, contentToCodeIdMap)
+                totalSize = len(attemptToDemote)
+                numBatches = int(np.ceil(totalSize / redBatchSize))
 
-                self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, True, None, -1 if len(attemptToDemote) > 0 else 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
-                contentToCodeIdMap = {}
+                self.varDemoteDetails = []
+                for i in range(numBatches):
+                    print("=====\nBatch %i out of %d\n=====" %(i + 1, numBatches))
+
+                    firstVarIndex = (totalSize * i) // numBatches
+                    lastVarIndex = (totalSize * (i + 1)) // numBatches
+                    demoteBatch = [attemptToDemote[i] for i in range(firstVarIndex, lastVarIndex)]
+                    numCodes = config.offsetsPerDemotedVariable * len(demoteBatch) + ((9 - config.offsetsPerDemotedVariable) if 'X' in demoteBatch else 0) # 9 offsets tried for X while 'config.offsetsPerDemotedVariable' tried for other variables
+
+                    self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, True, None, -1 if len(demoteBatch) > 0 else 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
+                    codeId = 0
+                    contentToCodeIdMap = {}
+                    for demoteVar in demoteBatch:
+                        newbitwidths = dict(self.variableToBitwidthMap)
+                        newbitwidths[demoteVar] = config.wordLength // 2
+                        if demoteVar + "val" in newbitwidths:
+                            newbitwidths[demoteVar + "val"] = config.wordLength // 2
+                        for alreadyDemotedVars in self.demotedVarsList: # In subsequent iterations during fixed point compilation, this variable will have the variables demoted during the previous runs
+                            newbitwidths[alreadyDemotedVars] = config.wordLength // 2
+                        demotedVarsList = [i for i in newbitwidths.keys() if newbitwidths[i] != config.wordLength]
+                        demotedVarsOffsets = {}
+                        for key in self.demotedVarsList:
+                            demotedVarsOffsets[key] = self.demotedVarsOffsets[key]
+
+                        contentToCodeIdMap[tuple(demotedVarsList)] = {}
+                        for demOffset in ([0, -1, -2] if demoteVar != 'X' else [0, -1, -2, -3, -4, -5, -6, -7, -8]):
+                            codeId += 1
+                            for k in demotedVarsList:
+                                if k not in self.demotedVarsList:
+                                    demotedVarsOffsets[k] = demOffset
+                            contentToCodeIdMap[tuple(demotedVarsList)][demOffset] = codeId
+                            compiled = self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, False, codeId, -1 if codeId != numCodes else codeId, dict(newbitwidths), list(demotedVarsList), dict(demotedVarsOffsets))
+                            if compiled == False:
+                                print("Variable Bitwidth exploration resulted in a compilation error")
+                                return False
+                    
+                    res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, None, contentToCodeIdMap)
+
+                redBatchSize *= config.offsetsPerDemotedVariable
+                totalSize = len(self.varDemoteDetails)
+                numBatches = int(np.ceil(totalSize / redBatchSize))
+
+                sortedVars = [i for (i, j) in self.varDemoteDetails]
+
+                self.varDemoteDetails = []
                 demotedVarsOffsets = dict(self.demotedVarsOffsets)
                 demotedVarsList = list(self.demotedVarsList)
-                codeId = 0
-                numCodes = len(attemptToDemote)
                 demotedVarsListToOffsets = {}
-                for ((demoteVars, offset), metrics) in self.varDemoteDetails:
-                    newbitwidths = dict(self.variableToBitwidthMap)   
-                    for var in demoteVars:
-                        if var not in self.demotedVarsList:
-                            newbitwidths[var] = config.wordLength // 2
-                            demotedVarsOffsets[var] = offset
-                        if var not in demotedVarsList:
-                            demotedVarsList.append(var)
-                    codeId += 1
-                    contentToCodeIdMap[tuple(demotedVarsList)] = {}
-                    contentToCodeIdMap[tuple(demotedVarsList)][offset] = codeId
-                    demotedVarsListToOffsets[tuple(demotedVarsList)] = dict(demotedVarsOffsets)
-                    compiled = self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, False, codeId, -1 if codeId != numCodes else codeId, dict(newbitwidths), list(demotedVarsList), dict(demotedVarsOffsets))
-                    if compiled == False:
-                        print("Variable Bitwidth exploration resulted in another compilation error")
-                        return False
+                for i in range(numBatches):
+                    print("=====\nBatch %i out of %d\n=====" %(i + 1, numBatches))
 
-                res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, None, contentToCodeIdMap, True)
+                    firstVarIndex = (totalSize * i) // numBatches
+                    lastVarIndex = (totalSize * (i+1)) // numBatches
+                    demoteBatch = [sortedVars[i] for i in range(firstVarIndex, lastVarIndex)]
+
+                    self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, True, None, -1 if len(attemptToDemote) > 0 else 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
+                    contentToCodeIdMap = {}
+                    codeId = 0
+                    numCodes = len(demoteBatch)
+                    for (demoteVars, offset) in demoteBatch:
+                        newbitwidths = dict(self.variableToBitwidthMap)   
+                        for var in demoteVars:
+                            if var not in self.demotedVarsList:
+                                newbitwidths[var] = config.wordLength // 2
+                                demotedVarsOffsets[var] = offset
+                            if var not in demotedVarsList:
+                                demotedVarsList.append(var)
+                        codeId += 1
+                        contentToCodeIdMap[tuple(demotedVarsList)] = {}
+                        contentToCodeIdMap[tuple(demotedVarsList)][offset] = codeId
+                        demotedVarsListToOffsets[tuple(demotedVarsList)] = dict(demotedVarsOffsets)
+                        compiled = self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, False, codeId, -1 if codeId != numCodes else codeId, dict(newbitwidths), list(demotedVarsList), dict(demotedVarsOffsets))
+                        if compiled == False:
+                            print("Variable Bitwidth exploration resulted in another compilation error")
+                            return False
+
+                    res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, None, contentToCodeIdMap, True)
 
                 if exit == True or res == False:
                     return False
