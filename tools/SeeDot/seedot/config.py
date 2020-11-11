@@ -29,6 +29,8 @@ higherOffsetBias = True
 
 fixedPointVbwIteration = False
 
+offsetsPerDemotedVariable = 3
+
 class MaximisingMetric:
     accuracy = "acc"
     disagreements = "disagree"
