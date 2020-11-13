@@ -470,7 +470,6 @@ void SparseMatMulX(const MYINT *Aidx, const MYINT *Aval, MYINT **B, MYINT *C, in
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++)
 	{
-		// MYINT b = getIntFeature(k);
 		MYINT b = B[k * 1][0];
 #ifdef FASTAPPROX
 		b = b / shrB;
@@ -510,7 +509,6 @@ void SparseMatMul(const MYINT *Aidx, const MYINT *Aval, MYINT *B, MYINT *C, int1
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++)
 	{
-		// MYINT b = getIntFeature(k);
 		MYINT b = B[k];
 #ifdef FASTAPPROX
 		b = b / shrB;
