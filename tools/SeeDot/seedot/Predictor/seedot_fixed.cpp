@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserve.
+// Licensed under the MIT license.
+
 #include <iostream>
 #include <cstring>
 #include <cmath>
