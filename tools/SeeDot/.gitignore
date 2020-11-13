@@ -1,6 +1,6 @@
 model/
 datasets/
 arduinodump/
-m3/
+m3dump/
 temp/
 seedot/Predictor/*.o
