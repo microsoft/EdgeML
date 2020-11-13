@@ -42,9 +42,7 @@ class Quantizer:
             ast = process_onnx.get_seedot_ast(inputFile)
             return ast
         else:    
-            ast = TFMain.main()
-            # with open(inputFile, 'rb') as file:
-            #	ast = pic    
+            ast = TFMain.main()  
 
     def buildParams(self, source):
         ast = self.genAST(getInputFile(), source)
@@ -70,7 +68,6 @@ class Quantizer:
 
     def readModel(self):
         for param in self.params:
-            #param.data = readFileAsMat(os.path.join(getModelDir(), param.name), "\t", float)
             param.data = np.load(os.path.join(
                 getModelDir(), param.name + ".npy"))
 
@@ -117,7 +114,7 @@ class Quantizer:
         self.writeHeader()
 
         if forArduino() and dumpDataset():
-            scaleOfX = self.allScales['X'] #computeScale(*self.trainDatasetRange)
+            scaleOfX = self.allScales['X'] 
             Xint, _ = scaleList(self.X[0], scaleOfX)
 
             writeListAsArray(self.X[0], 'X', self.headerFile, None, self.varsForBitwidth['X'])
@@ -289,26 +286,6 @@ class QuantizerFixed(Quantizer):
     # Quantize the matrices
     def transformModel(self):
         for param in self.params:
-            #data = list(param.data)
-
-            # print(param.name)
-
-            # if data[0] is list:
-            #	beforeRange = matRange(data)
-            # else:
-            #	beforeRange = listRange(data)
-
-            #scale_old = computeScale(*beforeRange)
-            #data, _ = trimMatrix(data)
-            # if data[0] is list:
-            #	afterRange = matRange(data)
-            # else:
-            #	afterRange = listRange(data)
-            #scale_new = computeScale(*afterRange)
-
-            #print("Old range = ", beforeRange, "Old scale = ", scale_old)
-            #print("New range = ", afterRange, "New scale = ", scale_new)
-            # print()
 
             if forArduino() or forM3():
                 scale = self.allScales[param.name]

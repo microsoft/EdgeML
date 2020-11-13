@@ -43,4 +43,4 @@ extern MYINT tmp33[20];
 extern MYINT tmp35[1][1];
 extern MYINT tmp36[1][1];
 extern MYINT tmp37;
-} // namespace vars_fixed
+} 

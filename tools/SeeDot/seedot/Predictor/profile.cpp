@@ -81,34 +81,6 @@ void dumpProfile() {
 		string key = min_i->first;
 		outfile << key << "," << min_all[key] << "," << max_all[key] << endl;
 		min_i++;
-		
-		// sort(all_values[key].begin(), all_values[key].end());
-		// float sum = 0.0;
-		// for(auto iter = all_values[key].begin(); iter != all_values[key].end(); iter++) {
-		// 	sum += *iter;
-		// }
-		// float mean = sum / all_values[key].size();
-		// float variance = 0.0;
-		// for(auto iter = all_values[key].begin(); iter != all_values[key].end(); iter++) {
-		// 	variance += (*iter - mean)*(*iter - mean);
-		// }
-		// variance /= all_values[key].size();
-		// float stddev = sqrt(variance);
-		// int n = 3;
-		// float minVal, maxVal;
-		// bool minAssigned = false, maxAssigned = false;
-		// for(auto iter = all_values[key].begin(); iter != all_values[key].end(); iter++) {
-		// 	if(minAssigned == false && *iter >= mean - n*stddev && *iter >= min_all[key]) {
-		// 		minVal = *iter;
-		// 		minAssigned = true;
-		// 	}
-		// 	if(maxAssigned == false && *iter <= mean + n*stddev && *iter <= max_all[key]) {
-		// 		maxVal = *iter;
-		// 	} else {
-		// 		maxAssigned = true;
-		// 	}
-		// }
-		// outfile << key << "," << minVal << "," << maxVal << endl;
 	}
 	outfile.close();
 }
@@ -224,7 +196,6 @@ void diff(float *A, MYINT *B, MYINT scale, MYINT I, MYINT J)
 			float a = A[i * J + j];
 
 			MYINT b = B[i * J + j];
-			//float b_float = float(b) / scale;
 			float b_float = float(ldexp(double(b), scale));
 
 			float diff = abs(a - b_float);
@@ -271,7 +242,6 @@ void diff(float *A, MYINT *B, MYINT scale, MYINT I, MYINT J, MYINT K)
 				float a = A[i * J * K + j * K + k];
 
 				MYINT b = B[i * J * K + j * K + k];
-				//float b_float = float(b) / scale;
 				float b_float = float(ldexp(double(b), scale));
 
 				float diff = abs(a - b_float);

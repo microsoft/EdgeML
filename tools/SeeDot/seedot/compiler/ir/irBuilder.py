@@ -283,8 +283,6 @@ class IRBuilder(ASTVisitor):
 
         expr_out = self.getTempVar()
 
-        # self.notScratch.append(expr_out.idf)
-
         if forFixed():
             self.varsForBitwidth[expr_out.idf] = bw_out
             if self.varsForBitwidth[expr_out.idf] != config.wordLength:
@@ -344,9 +342,6 @@ class IRBuilder(ASTVisitor):
         for prog in progs_in:
             prog_out = IRUtil.concatPrograms(prog_out, prog)
         prog_out = IRUtil.concatPrograms(prog_out, prog_splice)
-
-        # if forFloat() and self.ddsEnabled:
-        #     self.substitutions[expr_out.idf] = expr_in.idf #Scale and bitwidth will be conserved for input and output
 
         # Update context
         self.varDeclarations[expr_out.idf] = type_out
@@ -453,9 +448,6 @@ class IRBuilder(ASTVisitor):
         self.updateLiveRange([expr_in, expr_out])
 
         prog_out = IRUtil.concatPrograms(prog_in, prog_reshape)
-
-        # if forFloat() and self.ddsEnabled:
-        #     self.substitutions[expr_out.idf] = expr_in.idf #Scale and bitwidth will be conserved for input and output
 
         # Update context
         self.varDeclarations[expr_out.idf] = type_out
@@ -769,10 +761,6 @@ class IRBuilder(ASTVisitor):
         prog_out = IRUtil.concatPrograms(prog_in_A, prog_in_B)
         expr_out = IRUtil.mul(expr_in_A, expr_in_B)
 
-        # Not incrementing as this is not a function call. this expression appears inline with others
-        # self.counter_inst += 1
-        # self.updateLiveRange([expr_in_A, expr_in_B, expr_out])
-
         # Just to be safe, check that the scaling factor of the integer variables is never tracked
         if isinstance(expr_in_A, IR.Var):
             assert expr_in_A.idf not in self.varScales and expr_in_A.idf not in self.varIntervals
@@ -802,14 +790,11 @@ class IRBuilder(ASTVisitor):
             bitwidth_out = config.wordLength // 2 if expr_out.idf in self.demotedVarsList else config.wordLength
             scale_out, scale_temp = None, None
             bitwidth_temp = bitwidth_out
-        #scale_in_A, scale_in_B = self.varScales[expr_in_A.idf], self.varScales[expr_in_B.idf]
         intv_in_A, intv_in_B = self.varIntervals[expr_in_A.idf], self.varIntervals[expr_in_B.idf]
 
-        #[shr_A, shr_B] = self.getShrForMul(scale_in_A, scale_in_B)
-
+        
         shr_A, shr_B, H1, H2, demote, scale_out = self.getShrTreeSumAndDemoteParamsForMul(bitwidth_in_A, scale_in_A, bitwidth_in_B, scale_in_B, bitwidth_temp, scale_temp, bitwidth_out, scale_out, 1)
 
-        #scale_out = self.getScaleForMul(scale_in_A, shr_A, scale_in_B, shr_B)
         intv_out = self.getIntvervalForMul(intv_in_A, shr_A, intv_in_B, shr_B)
 
         if type_in_A.dim == 0:
@@ -912,22 +897,11 @@ class IRBuilder(ASTVisitor):
         type_treeSum = Type.Tensor([J])
 
         # Compute scales
-        #scale_in_A, scale_in_B = self.varScales[expr_in_A.idf], self.varScales[expr_in_B.idf]
         intv_in_A, intv_in_B = self.varIntervals[expr_in_A.idf], self.varIntervals[expr_in_B.idf]
 
         shr_A, shr_B, H1, H2, demote, scale_out = self.getShrTreeSumAndDemoteParamsForMul(bitwidth_in_A, scale_in_A, bitwidth_in_B, scale_in_B, bitwidth_temp, scale_temp, bitwidth_out, scale_out, J)
 
-        #[shr_A, shr_B] = self.getShrForMul(scale_in_A, scale_in_B)
-
-        #scale_treeSum = self.getScaleForMul(
-        #    scale_in_A, shr_A, scale_in_B, shr_B)
-        #intv_treeSum = self.getIntvervalForMul(
-        #    intv_in_A, shr_A, intv_in_B, shr_B)
-
-        #(scale_out, height_shr, height_noshr) = self.getScaleForTreeSum(
-        #    scale_treeSum, J)
-        intv_out = (0,0) #self.getIntervalForTreeSum(
-        #    intv_treeSum, J, height_shr, height_noshr)
+        intv_out = (0,0)
 
         shr_A = self.formatShr(shr_A)
         shr_B = self.formatShr(shr_B)
@@ -971,7 +945,6 @@ class IRBuilder(ASTVisitor):
             shr_B: "shrB",
             IR.Int(H1): "H1",
             IR.Int(H2): "H2"
-            # , {expr_treeSum.idf: type_treeSum}
         }) if not self.vbwEnabled else IR.FuncCall("MatMul" + c + ("<int%d_t, int%d_t, int%d_t, int%d_t>"%(bitwidth_in_A, bitwidth_in_B, bitwidth_mul, bitwidth_out)), {
             expr_in_A: "A",
             expr_in_B: "B",
@@ -985,7 +958,6 @@ class IRBuilder(ASTVisitor):
             IR.Int(H1): "H1",
             IR.Int(H2): "H2",
             IR.Int(demote): "demote"
-            # , {expr_treeSum.idf: type_treeSum}
         })
 
         self.counter_inst += 1
@@ -1011,9 +983,6 @@ class IRBuilder(ASTVisitor):
         self.varDeclarations[expr_treeSum.idf] = type_treeSum
         self.varScales[expr_treeSum.idf] = scale_temp
         self.varIntervals[expr_treeSum.idf] = (0, 0)
-
-        #self.varDeclarations[expr_treeSum.idf] = type_treeSum
-        # self.notScratch.append(expr_treeSum.idf)
 
         self.log.print(comment.msg)
         self.log.print("\tInput1: scale = %d, interval = [%d, %d]" % (
@@ -1051,22 +1020,10 @@ class IRBuilder(ASTVisitor):
             scale_out, scale_temp = None, None
             bitwidth_temp = bitwidth_out
 
-        #scale_in_A, scale_in_B = self.varScales[expr_in_A.idf], self.varScales[expr_in_B.idf]
         intv_in_A, intv_in_B = self.varIntervals[expr_in_A.idf], self.varIntervals[expr_in_B.idf]
 
         shr_A, shr_B, H1, H2, demote, scale_out = self.getShrTreeSumAndDemoteParamsForMul(bitwidth_in_A, scale_in_A, bitwidth_in_B, scale_in_B, bitwidth_temp, scale_temp, bitwidth_out, scale_out, Q)
-
-        #[shr_A, shr_B] = self.getShrForMul(scale_in_A, scale_in_B)
-
-        #scale_treeSum = self.getScaleForMul(
-        #    scale_in_A, shr_A, scale_in_B, shr_B)
-        #intv_treeSum = self.getIntvervalForMul(
-        #    intv_in_A, shr_A, intv_in_B, shr_B)
-
-        #(scale_out, height_shr, height_noshr) = self.getScaleForTreeSum(
-        #    scale_treeSum, Q)
-        intv_out = (0, 0) #self.getIntervalForTreeSum(
-        #    intv_treeSum, Q, H1, H2)
+        intv_out = (0, 0) 
 
         in_A_idx = IR.Var(expr_in_A.idf +
                           'idx', expr_in_A.idx, inputVar=True)
@@ -1178,7 +1135,6 @@ class IRBuilder(ASTVisitor):
             scale_out, scale_temp = None, None
             bitwidth_temp = bitwidth_out
 
-        #scale_in_A, scale_in_B = self.varScales[expr_in_A.idf], self.varScales[expr_in_B.idf]
         intv_in_A, intv_in_B = self.varIntervals[expr_in_A.idf], self.varIntervals[expr_in_B.idf]
 
         shr_A, shr_B, H1, H2, demote, scale_raw = self.getShrTreeSumAndDemoteParamsForMul(bitwidth_in_A, scale_in_A, bitwidth_in_B, scale_in_B, bitwidth_temp, scale_temp, bitwidth_out, scale_out, 1)
@@ -1204,9 +1160,6 @@ class IRBuilder(ASTVisitor):
         else:
             scale_out = scale_raw
 
-        #[shr_A, shr_B] = self.getShrForMul(scale_in_A, scale_in_B)
-
-        #scale_out = self.getScaleForMul(scale_in_A, shr_A, scale_in_B, shr_B)
         intv_out = self.getIntvervalForMul(intv_in_A, shr_A, intv_in_B, shr_B)
 
         shr_A = self.formatShr(shr_A)
@@ -1436,11 +1389,6 @@ class IRBuilder(ASTVisitor):
             self.varsForBitwidth[expr_bufT.idf] = bitwidth_t
             self.varsForBitwidth[expr_bufX.idf] = bitwidth_x
 
-        # if Config.faceDetectionHacks:
-        # self.notScratch.append(expr_bufX.idf)
-        # self.notScratch.append(expr_bufT.idf)
-        # self.notScratch.append(expr_treeSum.idf)
-
         comment = IR.Comment('MBconv(%s)' %(expr_in_A.idf), self.counter_inst+1)
         self.allDepths[self.counter_inst+1] = self.curDepth
 
@@ -1497,10 +1445,10 @@ class IRBuilder(ASTVisitor):
 
         localVarMap = {expr_treeSum.idf: type_treeSum, expr_bufX.idf: type_bufX, expr_bufT.idf: type_bufT}
         if forFloat():
-            funcCall = IR.FuncCall("MBConv", argMap) #, localVarMap)
+            funcCall = IR.FuncCall("MBConv", argMap) 
         else:
             templateArgs = ("<int%s_t" + (", int%s_t" * 16) + ">") % (bitwidth_in_A, bitwidth_in_F1, bitwidth_in_W1, bitwidth_in_B1, bitwidth_in_F2, bitwidth_in_W2, bitwidth_in_B2, bitwidth_in_F3, bitwidth_in_W3, bitwidth_in_B3, bitwidth_out, bitwidth_x, bitwidth_t, bitwidth_u, bitwidth_mul1_code, bitwidth_mul2_code, bitwidth_mul3_code)
-            funcCall = IR.FuncCall("MBConv" + templateArgs, argMap) #, localVarMap)
+            funcCall = IR.FuncCall("MBConv" + templateArgs, argMap) 
 
         self.counter_inst += 1
         self.updateLiveRange([expr_in_A, expr_in_F1, expr_in_F2, expr_in_F3, expr_in_W1, expr_in_W2, expr_in_W3, expr_in_B1, expr_in_B2, expr_in_B3, expr_out, expr_treeSum, expr_bufX, expr_bufT])
@@ -1622,15 +1570,13 @@ class IRBuilder(ASTVisitor):
             argMap[IR.Int(demote)] = "demote"
 
         if not self.vbwEnabled:
-            funcCall = IR.FuncCall("Convolution", argMap) #, {expr_treeSum.idf: type_treeSum})
+            funcCall = IR.FuncCall("Convolution", argMap) 
         else:
             funcCall = IR.FuncCall("Convolution" + ("<int%d_t, int%d_t, int%d_t, int%d_t>"%(bitwidth_in_A, bitwidth_in_B, bitwidth_mul, bitwidth_out)), argMap) #, {expr_treeSum.idf: type_treeSum})
 
         self.counter_inst += 1
         self.updateLiveRange([expr_in_A, expr_in_B, expr_out, expr_treeSum])
 
-        # if Config.faceDetectionHacks and Hf == Wf == CinF == CoutF == 1:        #quick fix for face detection
-        #         self.updateLiveRange([expr_in_A], self.counter_inst - 1)
         if Hf == Wf == CinF == CoutF == 1 and bitwidth_in_A == bitwidth_out:
             self.setMemorySharableVariables(expr_in_A, expr_out)
 
@@ -1648,8 +1594,6 @@ class IRBuilder(ASTVisitor):
         prog_conv = IR.Prog([comment, funcCall, profile] if forFloat() and self.ddsEnabled else [comment, funcCall])
 
         prog_out = IRUtil.concatPrograms(prog_in_A, prog_in_B, prog_conv)
-
-        # self.notScratch.append(expr_treeSum.idf)
 
         # Update context for output variable
         self.varDeclarations[expr_out.idf] = type_out
@@ -1734,7 +1678,6 @@ class IRBuilder(ASTVisitor):
             shr_B: "shrB",
             IR.Int(H1): "H1",
             IR.Int(H2): "H2"
-            # , {expr_treeSum.idf: type_treeSum}
         }) if not self.vbwEnabled else IR.FuncCall("Conv" + ("<int%d_t, int%d_t, int%d_t, int%d_t>"%(bitwidth_in_A, bitwidth_in_B, bitwidth_mul, bitwidth_out)), {
             expr_in_A: "A",
             expr_in_B: "B",
@@ -1752,7 +1695,6 @@ class IRBuilder(ASTVisitor):
             IR.Int(H1): "H1",
             IR.Int(H2): "H2",
             IR.Int(demote): "demote"
-            # , {expr_treeSum.idf: type_treeSum}
         })
 
         self.counter_inst += 1
@@ -1806,8 +1748,6 @@ class IRBuilder(ASTVisitor):
 
         assert op_fn == operator.add, "Compiler currently does not support convolution-like subtraction."
 
-        #assert False, "Not handled"
-
         expr_out = self.getTempVar()
 
         bitwidth_in_A, scale_in_A = self.getBitwidthAndScale(expr_in_A.idf)
@@ -1823,8 +1763,6 @@ class IRBuilder(ASTVisitor):
         (scale_out_unadjusted, intv_out, [shr_A, shr_B, shr_out]) = self.getScaleForAddAndSub(scale_in_A, scale_in_B, scale_out, op_fn)
         if scale_out is None:
             scale_out = scale_out_unadjusted
-        # (scale_out, intv_out, [shr_A, shr_B, shr_out]) = self.getScaleAndIntervalForAddAndSub(
-        #     scale_in_A, scale_in_B, intv_in_A, intv_in_B, op_fn)
 
         demoteLog = shr_out - 8 if shr_out >= 8 else 0
         shr_out = min(shr_out, 8)
@@ -1917,8 +1855,6 @@ class IRBuilder(ASTVisitor):
         self.counter_inst += 1
         self.updateLiveRange([expr_in_A, expr_in_B, expr_out])
 
-        # if Config.faceDetectionHacks:        #quick fix for face detection
-        #     self.updateLiveRange([expr_in_A], self.counter_inst - 1)
         if bitwidth_in_A == bitwidth_out:
             self.setMemorySharableVariables(expr_in_A, expr_out)
 
@@ -2043,11 +1979,7 @@ class IRBuilder(ASTVisitor):
             if scale_out is None:
                     scale_out = scale_out_unadjusted
 
-            #scale_in_A, scale_in_B = self.varScales[expr_in_A.idf], self.varScales[expr_in_B.idf]
             intv_in_A, intv_in_B = self.varIntervals[expr_in_A.idf], self.varIntervals[expr_in_B.idf]
-
-            #(scale_out, intv_out, [shr_A, shr_B, shr_out]) = #self.getScaleAndIntervalForAddAndSub(
-            #    scale_in_A, scale_in_B, intv_in_A, intv_in_B, op_fn)
 
             demoteLog = shr_out - 8 if shr_out >= 8 else 0
             shr_out = min(shr_out, 8)
@@ -2071,10 +2003,6 @@ class IRBuilder(ASTVisitor):
             comment = IR.Comment(expr_in_A.idf + ' ' +
                                  op_ir.name + ' ' + expr_in_B.idf, self.counter_inst+1)
             self.allDepths[self.counter_inst+1] = self.curDepth
-
-            # if type_out.dim == 4:
-            #     self.substitutions[expr_out.idf] = expr_in_A.idf
-            #     expr_out.idf = expr_in_A.idf
 
             if type_out.dim == 2:
                 funcCall = IR.FuncCall(funcName + c, {
@@ -2126,8 +2054,6 @@ class IRBuilder(ASTVisitor):
             self.counter_inst += 1
             self.updateLiveRange([expr_in_A, expr_in_B, expr_out])
 
-            # if Config.faceDetectionHacks and type_out.dim == 4:        #quick fix for face detection
-            #     self.updateLiveRange([expr_in_A], self.counter_inst - 1)
             if type_out.dim == 4:
                 if expr_in_A.idf not in self.globalVars and bitwidth_in_A == bitwidth_out:
                     self.setMemorySharableVariables(expr_in_A, expr_out)
@@ -2311,8 +2237,6 @@ class IRBuilder(ASTVisitor):
         self.counter_inst += 1
         self.updateLiveRange([expr_in, expr_out])
 
-        # if Config.faceDetectionHacks and expr_out.idf == 'tmp311':
-        #     self.updateLiveRange([expr_in], self.counter_inst-1)
         self.setMemorySharableVariables(expr_in, expr_out)
         
         prog_func = IR.Prog([comment, funcCall])
@@ -2332,7 +2256,6 @@ class IRBuilder(ASTVisitor):
         (prog_in, expr_in) = self.visit(node.expr)
         intv_out = (0, 0)
 
-        # TODO: Temp computation for POC. Remove later.
         scale_in = self.varScales[expr_in.idf]
 
         expr_in.inputVar = False
@@ -2370,8 +2293,7 @@ class IRBuilder(ASTVisitor):
 
         return (prog_out, expr_in)
 
-        # out = relu(in)
-
+    # out = relu(in)
     def visitRelu6(self, node: AST.Func):
 
         (prog_in, expr_in) = self.visit(node.expr)
@@ -2381,7 +2303,6 @@ class IRBuilder(ASTVisitor):
 
         expr_out = self.getTempVar()
 
-        # TODO: Temp computation for POC. Remove later.
         bitwidth_in, scale_in = self.getBitwidthAndScale(expr_in.idf)
         bitwidth_out, scale_out = bitwidth_in, scale_in
         
@@ -2538,7 +2459,6 @@ class IRBuilder(ASTVisitor):
 
         type_in = node.expr.type
 
-        #scale_in = self.varScales[expr_in.idf]
         bitwidth_in, scale_in = self.getBitwidthAndScale(expr_in.idf)
 
         '''
@@ -2549,7 +2469,6 @@ class IRBuilder(ASTVisitor):
 
         expr_out = self.getTempVar()
 
-        #scale_out = self.getScale(maxExp)
         if self.ddsEnabled:
             bitwidth_out, _ = self.getBitwidthAndScale(expr_out.idf)
         else:
@@ -2723,7 +2642,6 @@ class IRBuilder(ASTVisitor):
         max = int(np.ldexp(M - m, -p))
         shl = self.getShl(max)
 
-        #alpha_count = self.getAlphaCount(max, shl)
         alpha_count = table_n
         beta_count = table_n
 
@@ -2774,7 +2692,6 @@ class IRBuilder(ASTVisitor):
                 data.append(row)
 
         [min_exp, max_exp] = data[1]
-        #[min_exp, max_exp] = [0.022, 15.012]
 
         assert max_exp >= min_exp >= 0, "The range of values for exp() is not as expected."
 
@@ -2873,7 +2790,6 @@ class IRBuilder(ASTVisitor):
 
         expr_out = self.getTempVar()
 
-        #scale_in = self.varScales[expr_in.idf]
         bitwidth_in, scale_in = self.getBitwidthAndScale(expr_in.idf)
         intv_in = self.varIntervals[expr_in.idf]
 
@@ -2892,7 +2808,6 @@ class IRBuilder(ASTVisitor):
             scale_in, config.tanhLimit, config.tanhLimit)
         intv_out = self.updateTanhIntv(intv_in, tanh_intv)
 
-        # TODO: Temp computation for POC. Remove later.
         scale_new = self.getScale(config.tanhLimit)
         print("Scale changes in TanH operation: old = %d, new = %d, diff = %d" % (
             scale_in, scale_new, abs(scale_in - scale_new)))
@@ -3044,21 +2959,13 @@ class IRBuilder(ASTVisitor):
         M_new = max(min((M / denominator) + addition_int.n,
                         sigmoid_limit_int.n), 0)
         assert m_new <= M_new, "The range of sigmoid has changed. Re-check the assertion."
-        # if m_new > M_new:
-        #m_new, M_new = M_new, m_new
 
         intv_out = (m_new, M_new)
 
         scale_out = self.getScale(1.5) + ((config.wordLength // 2 + self.demotedVarsOffsets[expr_in.idf]) if expr_in.idf in self.demotedVarsList else 0)
 
-        # Compute new scale
-        # TODO: Temp computation for POC. Remove later.
         max_val = max(abs(m_new), abs(M_new))
         max_val_f = np.ldexp(max_val, scale_in)
-        # useless
-        # scale_new = self.getScale(max_val_f) 
-        # print("Scale changes in Sigmoid operation: old = %d, new = %d, diff = %d" % (
-        #     scale_in, scale_new, abs(scale_in - scale_new)))
 
         if forFloat():
             addition_ir = IR.Float(addition)
@@ -3196,8 +3103,6 @@ class IRBuilder(ASTVisitor):
             progs_in.append(part_prog_in)
             vars_in.append(part_expr_in)
 
-        #assert expr_in.idf in self.varDeclarations #variable must have been declared before
-
         expr_out = IR.Var(node.expr) 
 
         bw_in, scale_in = self.getBitwidthAndScale(expr_in.idf)
@@ -3311,7 +3216,6 @@ class IRBuilder(ASTVisitor):
         var_iter = self.getTempIterator()
         iters = self.getTempIterators(type_out.dim)
 
-        #scale_in = self.varScales[expr_in.idf]
         bitwidth_in, scale_in = self.getBitwidthAndScale(expr_in.idf)
         if self.ddsEnabled:
             bitwidth_out, scale_out = self.getBitwidthAndScale(expr_out.idf)
@@ -3325,10 +3229,8 @@ class IRBuilder(ASTVisitor):
         else:
             (scale_out, height_shr, height_noshr) = self.getScaleForTreeSum(
             scale_in, end - start)
-        intv_out = (0,0) #self.getIntervalForTreeSum(
-        #    intv_in, end - start, height_shr, height_noshr)
+        intv_out = (0,0) 
 
-        # Tree sum to sum output of each iteration
         expr_in_idx = IRUtil.addIndex(expr_in, iters)
         expr_out_idx = IRUtil.addIndex(expr_out, iters)
 
@@ -3410,13 +3312,6 @@ class IRBuilder(ASTVisitor):
         self.curDepth -=1
 
         forDecls = {}
-        # for key in self.varDeclarations.keys():
-        #     if key not in prevVarDecls and not(key in self.intConstants or key in self.floatConstants or key in self.internalVars):
-        #         forDecls[key] = self.varDeclarations[key]
-
-        # for key in forDecls.keys():
-        #     del self.varDeclarations[key]
-        #     self.varDeclarationsLocal[key] = forDecls[key]
 
         assert start == 0, "'loop' operator currently supports only iterations starting from 0."
 
@@ -3480,7 +3375,6 @@ class IRBuilder(ASTVisitor):
             expr_out = self.getTempVar()
             iters = self.getTempIterators(type_in_A.dim)
 
-            #scale_in_A, scale_in_B = self.varScales[expr_in_A.idf], self.varScales[expr_in_B.idf]
             bitwidth_in_A, scale_in_A = self.getBitwidthAndScale(expr_in_A.idf)
             bitwidth_in_B, scale_in_B = self.getBitwidthAndScale(expr_in_B.idf)
             intv_in_A, intv_in_B = self.varIntervals[expr_in_A.idf], self.varIntervals[expr_in_B.idf]
@@ -3613,8 +3507,6 @@ class IRBuilder(ASTVisitor):
 
                 diff_scale = 2 ** (curr_scale - new_scale) if curr_scale > new_scale else 2 ** (new_scale - curr_scale)
 
-                #assert diff_scale == 0, "I did NOT see this coming"
-
                 [I, J] = type_decl.shape
                 bitwidth_decl, scale_decl = self.getBitwidthAndScale(expr_decl.idf)
                 adjust = []
@@ -3668,7 +3560,6 @@ class IRBuilder(ASTVisitor):
             # TODO: When is this triggered and why is this required?
             if forFixed() and idf in self.mutableVars:
                 print("TODO: Fix this if condition")
-                #expr_decl.idf = idf
                 idfs = idf
                 while idfs in self.substitutions.keys():
                     idfs = self.substitutions[idfs]
@@ -3807,7 +3698,6 @@ class IRBuilder(ASTVisitor):
         minVal_out = (minVal_A >> shr_all[0]) + (minVal_B >> shr_all[1])
         maxVal_out = (maxVal_A >> shr_all[0]) + (maxVal_B >> shr_all[1])
 
-        # if max(abs(minVal_out), abs(maxVal_out)) >= (1 << (config.wordLength - 2)) and scale_common < self.MAX_SCALE:
         if scale_common < self.MAX_SCALE:
             shr_all[2] = 1
             scale_common += 1
@@ -3926,7 +3816,7 @@ class IRBuilder(ASTVisitor):
     def formatShr(self, num, shrt=getShrType(), saturate=True):
         assert num >= 0
     
-        shrType = shrt #getShrType()
+        shrType = shrt 
         if shrType == "shr" or shrType == "shr+":
             return IR.Int(num)
         elif shrType == "div":
@@ -4072,11 +3962,6 @@ class IRBuilder(ASTVisitor):
             return 0,0
 
         if self.ddsEnabled or self.vbwEnabled: #If not enabled, all scales statically computed
-            # while varName not in self.independentBitwidthVars:
-            #     if varName in self.substitutions:
-            #         varName = self.substitutions[varName]
-            #     else:
-            #         break
             while varName in self.substitutions:
                 varName = self.substitutions[varName]      
 
