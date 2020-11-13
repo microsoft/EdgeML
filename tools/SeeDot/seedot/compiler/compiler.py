@@ -89,15 +89,10 @@ class Compiler:
             return ast
         else:    
             ast = TFMain.main()
-            # with open(inputFile, 'rb') as file:
-            #	ast = pickle.load(file)
             return ast
 
     def run(self):
         ast = self.genAST(self.input)
-
-        # Pretty printing AST
-        # printAST.PrintAST().visit(ast)
 
         # Perform type inference
         type.InferType().visit(ast)

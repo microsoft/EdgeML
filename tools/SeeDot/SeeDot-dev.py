@@ -98,8 +98,6 @@ class MainDriver:
                 self.args.tempdir), "Scratch directory doesn't exist"
             config.tempdir = self.args.tempdir
         else:
-            # config.tempdir = os.path.join(tempfile.gettempdir(
-            # ), "SeeDot", datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
             config.tempdir = "temp"
             if os.path.exists(config.tempdir):
                 shutil.rmtree(config.tempdir)
@@ -153,9 +151,6 @@ class MainDriver:
 
         for iter in product(self.args.algo, self.args.version, self.args.dataset, self.args.target, self.args.maximisingMetric, [16]):
             algo, version, dataset, target, maximisingMetric, wordLength = iter
-
-            #config.wordLength = wordLength
-            #config.maxScaleRange = 0, -wordLength
 
             print("\n========================================")
             print("Executing on %s %s %s %s" %
@@ -253,10 +248,8 @@ class MainDriver:
 
             if acc != expectedAcc:
                 print("FAIL: Expected accuracy %f%%" % (expectedAcc))
-                # return
             elif version == config.Version.fixed and obj.sf != bestScale:
                 print("FAIL: Expected best scale %d" % (bestScale))
-                # return
             else:
                 print("PASS")
 
@@ -267,7 +260,6 @@ class MainDriver:
             print("\nGenerating code for " + algo + " " + target + "...")
 
             inputFile = os.path.join("input", algo + ".sd")
-            #inputFile = os.path.join("input", algo + ".pkl")
             profileLogFile = os.path.join("input", "profile.txt")
 
             outputDir = os.path.join("output")
@@ -315,9 +307,6 @@ class MainDriver:
 
             print("\nGenerating input files for \"" + algo + " " +
                   version + " " + dataset + " " + datasetType + "\"...")
-
-            #outputDir = os.path.join("..", "Predictor", algo, version + "-testing")
-            #datasetOutputDir = os.path.join("..", "Predictor", algo, version + "-" + datasetType)
 
             if version == config.Version.fixed:
                 outputDir = os.path.join(

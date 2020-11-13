@@ -43,4 +43,4 @@ extern float tmp33[20];
 extern float tmp35[1][1];
 extern float tmp36[1][1];
 extern MYINT tmp37;
-} // namespace vars_float
+} 
