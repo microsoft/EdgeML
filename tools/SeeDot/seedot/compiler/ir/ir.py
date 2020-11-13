@@ -346,11 +346,8 @@ class DataType:
             x_np = DataType.intType[target][wordLen * 2](x)
             if x_np != x:
                 print('Warning: Integer overflow for %d' % (x))
-                # traceback.print_stack()
-                #assert False
             else:
                 print('Integer overflow for %d handled' % (x))
-                # traceback.print_stack()
         return x_np
 
     @staticmethod

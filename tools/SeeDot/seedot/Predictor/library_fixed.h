@@ -716,16 +716,12 @@ void SparseMatMulX(const TypeAidx* Aidx, const TypeA* Aval, TypeB** B, TypeC* C,
 
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
-		// MYINT b = getIntFeature(k);
 		TypeTemp b = (TypeTemp)B[k * 1][0];
-		//b = b / shrB;
 
 		MYITE idx = Aidx[ite_idx];
 		while (idx != 0) {
 			TypeTemp a = (TypeTemp)Aval[ite_val];
-			//a = a / shrA;
 			TypeTemp c = (TypeTemp)(a * b);
-			//c = c / shrC;
 
 			C[idx - 1] += Saturate<TypeC>((((c / shrA) / shrB) / shrC) / demote);
 
@@ -745,15 +741,12 @@ void SparseMatMul(const TypeAidx* Aidx, const TypeA* Aval, TypeB* B, TypeC* C, i
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
 		TypeTemp b = (TypeTemp)B[k];
-		//b = b / shrB;
-
+		
 		MYITE idx = Aidx[ite_idx];
 		while (idx != 0) {
 			TypeTemp a = (TypeTemp)Aval[ite_val];
-			//a = a / shrA;
 			TypeTemp c = (TypeTemp)(a * b);
-			//c = c / shrC;
-
+		
 			C[idx - 1] += Saturate<TypeC>((((c / shrA) / shrB) / shrC) / demote);
 
 			ite_idx++;
@@ -797,7 +790,6 @@ void Confidence(TypeA* A, MYINT I, MYINT J, MYITE* index, float* confidence) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			TypeA x = A[i * J + j];
-			//sum += x;
 			if (max < x) {
 				maxIndex = counter;
 				max = x;

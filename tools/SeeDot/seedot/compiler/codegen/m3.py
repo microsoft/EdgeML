@@ -51,8 +51,6 @@ class M3(CodegenBase):
 
         self.printCincludes()
 
-        # self.printVarDecls()
-
         self.printCHeader()
 
         self.computeScratchLocationsFirstFitPriority()
@@ -250,10 +248,6 @@ class M3(CodegenBase):
                         x = -1
                 else:
                     x = 0
-
-                # if forFixed():
-                #     typeCast = ("(Q%d_T*)" % (self.varsForBitwidth[arg.idf] - 1)) if x > 0 else ""
-                #     self.out.printf(typeCast)
                 
                 if not (isinstance(arg, IR.Var) and arg.idf in self.scratchSubs[self.currentMemMap]):
                     if x != 0:
@@ -694,7 +688,6 @@ class M3(CodegenBase):
                 revArgList["C"] : "output",
                 revArgList["X"] : "convBuffer1",
                 revArgList["T"] : "convBuffer2",
-                # revArgList["U"] : "treesumBuffer",
                 revArgList["N"] : "N",
                 revArgList["H"] : "H",
                 revArgList["W"] : "W",
@@ -711,28 +704,19 @@ class M3(CodegenBase):
                 revArgList["WPADR"] : "WPadR",
                 revArgList["HSTR"] : "HStride",
                 revArgList["WSTR"] : "WStride",
-                # revArgList["D1"] : "depth1",
-                # revArgList["D2"] : "depth2",
-                # revArgList["D3"] : "depth3",
                 revArgList["SIX_1"] : "limit1",
                 revArgList["SIX_2"] : "limit2",
-                shr1 : "shrU1", #revArgList["shr1"] : "shrU1",
-                # revArgList["shr2"] : "shrB1",
+                shr1 : "shrU1", 
                 revArgList["shr3"] : "shrX1",
-                shr4 : "shrU2", #revArgList["shr4"] : "shrU2",
-                # revArgList["shr5"] : "shrB2",
+                shr4 : "shrU2", 
                 revArgList["shr6"] : "shrX2",
-                shr7 : "shrU3", #revArgList["shr7"] : "shrU3",
-                # revArgList["shr8"] : "shrB3",
+                shr7 : "shrU3", 
                 revArgList["shr9"] : "shrX3",
                 revArgList["shl1"] : "shlU1",
-                # revArgList["shl2"] : "shlB1",
                 revArgList["shl3"] : "shlX1",
                 revArgList["shl4"] : "shlU2",
-                # revArgList["shl5"] : "shlB2",
                 revArgList["shl6"] : "shlX2",
                 revArgList["shl7"] : "shlU3",
-                # revArgList["shl8"] : "shlB3",
                 revArgList["shl9"] : "shlX3",
             }
             if bwA == bwB == bwC:

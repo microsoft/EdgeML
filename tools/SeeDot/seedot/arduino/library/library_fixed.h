@@ -951,7 +951,6 @@ inline __attribute__((always_inline)) void SparseMatMulX(const MYINT *Aidx, cons
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
 		MYINT b = getIntFeature(k);
-		//MYINT b = B[k * 1][0];
 #ifdef FASTAPPROX
 		b = b / shrB;
 #endif
@@ -1062,8 +1061,6 @@ inline __attribute__((always_inline)) void SparseMatMulX(const TypeAidx* Aidx, c
 	for (MYITE k = 0; k < K; k++) {
 		TypeTemp b = (TypeTemp)getIntFeature(k);
 		
-		//b = b / shrB;
-
 		TypeAidx idx;
 		if (isSame<TypeAidx, int8_t>()) {
 			idx = (TypeAidx)pgm_read_byte_near(&Aidx[ite_idx]);
@@ -1085,10 +1082,8 @@ inline __attribute__((always_inline)) void SparseMatMulX(const TypeAidx* Aidx, c
 			else if (isSame<TypeTemp, int32_t>()) {
 				a = (TypeA)pgm_read_dword_near(&Aval[ite_val]);
 			}
-			//a = a / shrA;
 			TypeTemp c = (TypeTemp)(a * b);
-			//c = c / shrC;
-
+			
 			C[idx - 1] += Saturate<TypeC>((((c / shrA) / shrB) / shrC) / demote);
 
 			ite_idx++;
@@ -1118,7 +1113,6 @@ inline __attribute__((always_inline)) void SparseMatMul(const TypeAidx* Aidx, co
 	for (MYITE k = 0; k < K; k++) {
 		TypeTemp b = (TypeTemp)B[k];
 		
-		//b = b / shrB;
 
 		TypeAidx idx;
 		if (isSame<TypeAidx, int8_t>()) {
@@ -1141,10 +1135,8 @@ inline __attribute__((always_inline)) void SparseMatMul(const TypeAidx* Aidx, co
 			else if (isSame<TypeTemp, int32_t>()) {
 				a = (TypeA)pgm_read_dword_near(&Aval[ite_val]);
 			}
-			//a = a / shrA;
 			TypeTemp c = (TypeTemp)(a * b);
-			//c = c / shrC;
-
+			
 			C[idx - 1] += Saturate<TypeC>((((c / shrA) / shrB) / shrC) / demote);
 
 			ite_idx++;

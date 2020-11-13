@@ -398,7 +398,6 @@ void SparseMatMulX(const MYINT *Aidx, const float *Aval, float **B, float *C, in
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++)
 	{
-		// float b = getIntFeature(k);
 		float b = B[k * 1][0];
 
 		MYINT idx = Aidx[ite_idx];

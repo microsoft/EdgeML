@@ -7,7 +7,7 @@ import subprocess
 import seedot.config as config
 import seedot.util as Util
 
-# Program to build and run the predictor project using msbuild
+# Program to build and run the predictor project using msbuild (C++ build tool for windows)
 # The accuracy and other statistics are written to the output file specified
 
 
