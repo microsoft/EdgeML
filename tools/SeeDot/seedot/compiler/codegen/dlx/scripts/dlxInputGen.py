@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
-
-# Program to generate DLX input from memalloc input
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
 
 import sys
 import math

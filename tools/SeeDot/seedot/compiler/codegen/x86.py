@@ -72,8 +72,6 @@ class X86(CodegenBase):
 
             self.printExpTables()
 
-            # self.printVarDecls()
-
         self.printCHeader()
 
         self.computeScratchLocationsFirstFitPriority()
@@ -102,8 +100,6 @@ class X86(CodegenBase):
         self.out.printf('using namespace std;\n', indent=True)
         self.out.printf('using namespace seedot_%s;\n' %
                         (getVersion()), indent=True)
-        # self.out.printf('using namespace vars_%s;\n\n' %
-        #                 (getVersion()), indent=True)
 
     def printExpTables(self):
         for exp, [table, [tableVarA, tableVarB]] in self.expTables.items():
@@ -326,34 +322,6 @@ class X86(CodegenBase):
         else:
             assert False, "Illegal type of program output"
 
-
-
-        # if Type.isInt(type):
-        #     self.out.printf('return ', indent=True)
-        #     self.print(expr)
-        #     self.out.printf(';\n')
-        # elif Type.isTensor(type):
-        #     idfr = expr.idf
-        #     exponent = self.scales[expr.idf]
-        #     num = 2 ** exponent
-
-        #     if type.dim == 0:
-        #         self.out.printf('cout << ', indent=True)
-        #         self.out.printf('float(' + idfr + ')*' + str(num))
-        #         self.out.printf(' << endl;\n')
-        #     else:
-        #         iters = []
-        #         for i in range(type.dim):
-        #             s = chr(ord('i') + i)
-        #             tempVar = IR.Var(s)
-        #             iters.append(tempVar)
-        #         expr_1 = IRUtil.addIndex(expr, iters)
-        #         cmds = IRUtil.loop(type.shape, iters, [
-        #                            IR.PrintAsFloat(expr_1, exponent)])
-        #         self.print(IR.Prog(cmds))
-        # else:
-        #     assert False
-
         self.out.decreaseIndent()
         self.out.printf('}\n', indent=True)
 
@@ -383,10 +351,8 @@ class X86(CodegenBase):
         self.out.close()
 
     def printFor(self, ir):
-        #if not Config.x86MemoryOptimize or forFloat():
         super().printFor(ir)
-        #else:
-
+        
     def printFuncCall(self, ir):
         if not Config.x86MemoryOptimize or forFloat():
             super().printFuncCall(ir)
@@ -424,7 +390,6 @@ class X86(CodegenBase):
                         self.out.printf("[0]" * x)
                 else:
                     self.printVar(arg, isPointer=True)
-                    # self.out.printf("(scratch + %d)"%(self.scratchSubs[self.currentMemMap][arg.idf]))
                 if i != len(keys) - 1:
                     self.out.printf(", ")
 

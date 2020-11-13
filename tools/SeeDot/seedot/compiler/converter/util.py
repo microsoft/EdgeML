@@ -24,7 +24,7 @@ class Config:
     trimHighestDecile = config.trimHighestDecile
 
 
-# Bonsai or Protonn
+# Bonsai or Protonn or FastGRNN
 def getAlgo():
     return Config.algo
 

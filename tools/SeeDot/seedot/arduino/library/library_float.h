@@ -325,7 +325,6 @@ inline __attribute__((always_inline)) void SparseMatMulX(const MYINT * Aidx, con
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
 		float b = getFloatFeature(k);
-		//float b = B[k * 1][0];
 
 		#ifdef INT16
 		MYINT idx = ((MYINT) pgm_read_word_near(&Aidx[ite_idx]));
