@@ -113,7 +113,7 @@ class MainDriver:
             if self.args.target == [config.Target.arduino]:
                 config.outdir = os.path.join("arduinodump", "arduino")
             elif self.args.target == [config.Target.m3]:
-                config.outdir = os.path.join("m3")
+                config.outdir = os.path.join("m3dump")
             else:
                 config.outdir = os.path.join(config.tempdir, "arduino")
             os.makedirs(config.outdir, exist_ok=True)
