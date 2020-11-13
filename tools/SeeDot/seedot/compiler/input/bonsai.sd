@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 let W1   = (30, 8)  in [-0.1, 0.1] in
 let W2   = (8, 64)  in [-0.1, 0.1] in
 let U1   = (64, 8)  in [-0.1, 0.1] in
