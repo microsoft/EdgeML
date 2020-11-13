@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
+
 import seedot.compiler.ast.ast as AST
 from seedot.compiler.ast.astVisitor import ASTVisitor
 
