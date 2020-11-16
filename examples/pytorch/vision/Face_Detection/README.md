@@ -39,7 +39,7 @@ IS_QVGA_MONO=0 python train.py --batch_size 32 --model_arch RPool_Face_Quant --c
 For QVGA:
 ```shell
 
-IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_QVGA_monochrome --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 
+IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_M4 --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 
 
 ```
 This will save checkpoints after every '--save_frequency' number of iterations in a weight file with 'checkpoint.pth' at the end and weights for the best state in a file with 'best_state.pth' at the end. These will be saved in '--save_folder'. For resuming training from a checkpoint, use '--resume <checkpoint_name>.pth' with the above command. For example, 
@@ -56,7 +56,7 @@ If IS_QVGA_MONO is 1 then training input images will be 320x320 and converted to
 
 Input images for training models are cropped and reshaped to square to maintain consistency with [S3FD](https://arxiv.org/abs/1708.05237). However testing can be done on any size of images, thus we resize testing input image size to have area equal to VGA (640x480)/QVGA (320x240), so that aspect ratio is not changed.
 
-The architecture RPool_Face_QVGA_monochrome is for QVGA monochrome format while RPool_Face_C and RPool_Face_Quant are for VGA RGB format.
+The architecture RPool_Face_QVGA_monochrome and RPool_Face_M4 is for QVGA monochrome format while RPool_Face_C and RPool_Face_Quant are for VGA RGB format.
 
 
 ## Test
@@ -72,7 +72,7 @@ IS_QVGA_MONO=0 python eval.py --model_arch RPool_Face_Quant --model ./weights/RP
 
 For QVGA:
 ```shell
-IS_QVGA_MONO=1 python eval.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
+IS_QVGA_MONO=1 python eval.py --model_arch RPool_Face_M4 --model ./weights/RPool_Face_M4_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
 ```
 
 This will save images in <your_save_folder> with bounding boxes around faces, where the confidence is high. Here is an example image with a single bounding box.
@@ -94,7 +94,7 @@ IS_QVGA_MONO=0 python wider_test.py --model_arch RPool_Face_Quant --model ./weig
 
 For QVGA:
 ```shell
-IS_QVGA_MONO=1 python wider_test.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --save_folder rpool_face_qvgamono_val --subset val
+IS_QVGA_MONO=1 python wider_test.py --model_arch RPool_Face_M4 --model ./weights/RPool_Face_M4_best_state.pth --save_folder rpool_face_m4_val --subset val
 ```
 
 The above command generates predictions for each image in the "validation" dataset. For each image, a separate prediction file is provided (image_name.txt file in appropriate folder). The first line of the prediction file contains the total number of boxes identified. 
@@ -102,7 +102,7 @@ Then each line in the file corresponds to an identified box. For each box, five 
 
 If IS_QVGA_MONO=1 then testing is done by converting images to monochrome and QVGA, else if IS_QVGA_MONO=0 then testing is done on VGA RGB images.
 
-The architecture RPool_Face_QVGA_monochrome is for QVGA monochrome format while RPool_Face_C and RPool_Face_Quant are for VGA RGB format.
+The architectures RPool_Face_QVGA_monochrome and RPool_Face_M4 are for QVGA monochrome format while RPool_Face_C and RPool_Face_Quant are for VGA RGB format.
 
 ###### For calculating MAP scores:
 Now using these boxes, we can compute the standard MAP score that is widely used in this literature (see [here](https://medium.com/@jonathan_hui/map-mean-average-precision-for-object-detection-45c121a31173) for more details) as follows:
@@ -139,7 +139,7 @@ This script should output the MAP for the WIDER-easy, WIDER-medium, and WIDER-ha
 To save model weights and/or input output pairs for each patch through RNNPool in numpy format use the command below. Put images which you want to save traces for in <your_image_folder> . Specify output folder for saving model weights in numpy format in <your_save_model_numpy_folder>. Specify output folder for saving input output traces of RNNPool in numpy format in <your_save_traces_numpy_folder>. Note that input traces will be saved in a folder named 'inputs' and output traces in a folder named 'outputs' inside <your_save_traces_numpy_folder>.
 
 ```shell
-python3 dump_model.py --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --model_arch RPool_Face_Quant --image_folder <your_image_folder> --save_model_npy_dir <your_save_model_numpy_folder> --save_traces_npy_dir <your_save_traces_numpy_folder>
+python3 dump_model.py --model ./weights/RPool_Face_M4_best_state.pth --model_arch RPool_Face_M4 --image_folder <your_image_folder> --save_model_npy_dir <your_save_model_numpy_folder> --save_traces_npy_dir <your_save_traces_numpy_folder>
 ```
 If you wish to save only model weights, do not specify --save_traces_npy_dir. If you wish to save only traces do not specify --save_model_npy_dir.
 
