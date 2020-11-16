@@ -10,7 +10,7 @@
 #include "quantized_datatypes.h"
 #include "quantized_face_detection_sparse.h"
 
-#define MEM_BUF_SIZE 188160
+#define MEM_BUF_SIZE 185088
 #define INPUT_IMG_HEIGHT 240
 #define INPUT_IMG_WIDTH 320
 #define OUTPUT_SIZE 18000
