@@ -530,12 +530,12 @@ void q15_m_reverse(const Q15_T *const mat, ITER_T nrows, ITER_T ncols,
 
 void q15xq7_q15_m_mulvec(const Q15_T *mat, const Q7_T *const vec, ITER_T nrows,
                          ITER_T ncols, Q15_T *ret, SCALE_T scmat,
-                         SCALE_T scvec, SCALE_T H1, SCALE_T H2) {
+                         SCALE_T scvec, SCALE_T scret) {
   Q31_T sum;
   #ifdef SHIFT
-    SCALE_T scale = scmat + scvec + H1;
+    SCALE_T scale = scmat + scvec + scret;
   #else
-    SCALE_T scale = scmat * scvec * H1;
+    SCALE_T scale = scmat * scvec * scret;
   #endif
 
   while (nrows--) {
@@ -568,15 +568,15 @@ void q15xq7_q15_m_mulvec(const Q15_T *mat, const Q7_T *const vec, ITER_T nrows,
 
 void q15_m_mulvec(const Q15_T *mat, const Q15_T *const vec, ITER_T nrows,
                   ITER_T ncols, Q15_T *ret, SCALE_T scmat, SCALE_T scvec,
-                  SCALE_T H1, SCALE_T H2) {
+                  SCALE_T scret) {
   Q63_T sum;
   #ifdef SHIFT
-    SCALE_T scale = scmat + scvec + H1;
+    SCALE_T scale = scmat + scvec + scret;
   #else
     // Be careful, the below implementation would not work if the denominator
     // exceeds the range of Q31_T range. In such a case, cast the denominator
     // to int64_t.
-    SCALE_T scale = scmat * scvec * H1;
+    SCALE_T scale = scmat * scvec * scret;
   #endif
 
   while (nrows--) {

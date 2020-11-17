@@ -41,31 +41,28 @@ int q15_fastgrnn_lr(Q15_T* const hiddenState, ITER_T hiddenDims,
 
     // Process the new input and previous hidden state
     q15_m_mulvec(tparams->W1, tbuffers->normFeatures, tparams->wRank,
-      inputDims, tbuffers->tempLRW, tscales->W1, tscales->normFeaturesMVW1,
-      tscales->H1W1, tscales->H2W1);
+      inputDims, tbuffers->tempLRW, tscales->w1, tscales->normFeaturesMVW1,
+      tscales->mVW1Out);
     q15_m_mulvec(tparams->W2, tbuffers->tempLRW, hiddenDims, tparams->wRank,
-      tbuffers->preComp1, tscales->W2, tscales->tempLRW, tscales->H1W2,
-      tscales->H2W2);
+      tbuffers->preComp1, tscales->w2, tscales->tempLRW, tscales->mVW2Out);
     q15_m_mulvec(tparams->U1, hiddenState, tparams->uRank, hiddenDims,
-      tbuffers->tempLRU, tscales->U1, tscales->hiddenStateMVU1,tscales->H1U1,
-      tscales->H2U1);
+      tbuffers->tempLRU, tscales->u1, tscales->hiddenStateMVU1,tscales->mVU1Out);
     q15_m_mulvec(tparams->U2, tbuffers->tempLRU, hiddenDims, tparams->uRank,
-      tbuffers->preComp2, tscales->U2, tscales->tempLRU, tscales->H1U2,
-      tscales->H2U2);
+      tbuffers->preComp2, tscales->u2, tscales->tempLRU, tscales->mVU2Out);
     q15_v_add(tbuffers->preComp1, tbuffers->preComp2, hiddenDims,
       tbuffers->preComp1, tscales->mV2AddMV4, tscales->mV4AddMV2,
       tscales->mV2AddMV4Out, tscales->mV2AddMV4Demote);
 
     // Apply the gate to generate the new hidden state
     q15_v_add(tbuffers->preComp1, tparams->Bg, hiddenDims, tbuffers->preComp2,
-      tscales->pC1AddBg, tscales->Bg, tscales->pC1AddBgOut,
+      tscales->pC1AddBg, tscales->bg, tscales->pC1AddBgOut,
       tscales->pC1AddBgDemote);
     q15_v_sigmoid(tbuffers->preComp2, hiddenDims, tbuffers->preComp2,
       tscales->div, tscales->add, tscales->sigmoidLimit,
       tscales->sigmoidScaleIn, tscales->sigmoidScaleOut,
       tscales->useTableSigmoid);
     q15_v_add(tbuffers->preComp1, tparams->Bh, hiddenDims, tbuffers->preComp1,
-      tscales->pC1AddBh, tscales->Bh, tscales->pC1AddBhOut,
+      tscales->pC1AddBh, tscales->bh, tscales->pC1AddBhOut,
       tscales->pC1AddBhDemote);
     q15_v_tanh(tbuffers->preComp1, hiddenDims, tbuffers->preComp1,
       tscales->tanhScaleIn, tscales->tanhScaleOut, tscales->useTableTanH);
@@ -128,17 +125,16 @@ int q7xq15_q15_fastgrnn(Q15_T* const hiddenState, ITER_T hiddenDims,
     #ifdef SPARSE
       q15xq7_q15_m_sparse_mulvec(tparams->Wids, tparams->Wvals,
         tbuffers->normFeatures, hiddenDims, inputDims, tbuffers->preComp1,
-        tscales->W, tscales->normFeaturesMVW, tscales->H1W, tscales->H2W);
+        tscales->w, tscales->normFeaturesMVW, tscales->mVWOut);
       q15_m_sparse_mulvec(tparams->Uids, tparams->Uvals, hiddenState,
-        hiddenDims, hiddenDims, tbuffers->preComp2, tscales->U,
-        tscales->hiddenStateMVU, tscales->H1U, tscales->H2U);
+        hiddenDims, hiddenDims, tbuffers->preComp2, tscales->u,
+        tscales->hiddenStateMVU, tscales->mVUOut);
     #else
       q15xq7_q15_m_mulvec(tparams->W, tbuffers->normFeatures, hiddenDims,
-        inputDims, tbuffers->preComp1, tscales->W, tscales->normFeaturesMVW,
-        tscales->H1W, tscales->H2W);
+        inputDims, tbuffers->preComp1, tscales->w, tscales->normFeaturesMVW,
+        tscales->mVWOut);
       q15_m_mulvec(tparams->U, hiddenState, hiddenDims, hiddenDims,
-        tbuffers->preComp2, tscales->U, tscales->hiddenStateMVU, tscales->H1U,
-        tscales->H2U);
+        tbuffers->preComp2, tscales->u, tscales->hiddenStateMVU, tscales->mVUOut);
     #endif
     q15_v_add(tbuffers->preComp1, tbuffers->preComp2, hiddenDims,
       tbuffers->preComp1, tscales->mV1AddMV2, tscales->mV2AddMV1,
@@ -146,14 +142,14 @@ int q7xq15_q15_fastgrnn(Q15_T* const hiddenState, ITER_T hiddenDims,
 
     // Apply the gate to generate the new hidden state
     q15_v_add(tbuffers->preComp1, tparams->Bg, hiddenDims, tbuffers->preComp2,
-      tscales->pC1AddBg, tscales->Bg, tscales->pC1AddBgOut,
+      tscales->pC1AddBg, tscales->bg, tscales->pC1AddBgOut,
       tscales->pC1AddBgDemote);
     q15_v_sigmoid(tbuffers->preComp2, hiddenDims, tbuffers->preComp2,
       tscales->div, tscales->add, tscales->sigmoidLimit,
       tscales->sigmoidScaleIn, tscales->sigmoidScaleOut,
       tscales->useTableSigmoid);
     q15_v_add(tbuffers->preComp1, tparams->Bh, hiddenDims, tbuffers->preComp1,
-      tscales->pC1AddBh, tscales->Bh, tscales->pC1AddBhOut,
+      tscales->pC1AddBh, tscales->bh, tscales->pC1AddBhOut,
       tscales->pC1AddBhDemote);
     q15_v_tanh(tbuffers->preComp1, hiddenDims, tbuffers->preComp1,
       tscales->tanhScaleIn, tscales->tanhScaleOut, tscales->useTableTanH);
@@ -215,18 +211,16 @@ int q15_fastgrnn(Q15_T* const hiddenState, ITER_T hiddenDims,
     // Process the new input and previous hidden state
     #ifdef SPARSE
       q15_m_sparse_mulvec(tparams->Wids, tparams->Wvals, tbuffers->normFeatures,
-        hiddenDims, inputDims, tbuffers->preComp1, tscales->W,
-        tscales->normFeaturesMVW, tscales->H1W, tscales->H2W);
+        hiddenDims, inputDims, tbuffers->preComp1, tscales->w,
+        tscales->normFeaturesMVW, tscales->mVWOut);
       q15_m_sparse_mulvec(tparams->Uids, tparams->Uvals, hiddenState,
-        hiddenDims, hiddenDims, tbuffers->preComp2, tscales->U,
-        tscales->hiddenStateMVU, tscales->H1U, tscales->H2U);
+        hiddenDims, hiddenDims, tbuffers->preComp2, tscales->u,
+        tscales->hiddenStateMVU, tscales->mVUOut);
     #else
       q15_m_mulvec(tparams->W, tbuffers->normFeatures, hiddenDims, inputDims,
-        tbuffers->preComp1, tscales->W, tscales->normFeaturesMVW, tscales->H1W,
-        tscales->H2W);
+        tbuffers->preComp1, tscales->w, tscales->normFeaturesMVW, tscales->mVWOut);
       q15_m_mulvec(tparams->U, hiddenState, hiddenDims, hiddenDims,
-        tbuffers->preComp2, tscales->U, tscales->hiddenStateMVU, tscales->H1U,
-        tscales->H2U);
+        tbuffers->preComp2, tscales->u, tscales->hiddenStateMVU, tscales->mVUOut);
     #endif
     q15_v_add(tbuffers->preComp1, tbuffers->preComp2, hiddenDims,
       tbuffers->preComp1, tscales->mV1AddMV2, tscales->mV2AddMV1,
@@ -234,14 +228,14 @@ int q15_fastgrnn(Q15_T* const hiddenState, ITER_T hiddenDims,
 
     // Apply the gate to generate the new hidden state
     q15_v_add(tbuffers->preComp1, tparams->Bg, hiddenDims, tbuffers->preComp2,
-      tscales->pC1AddBg, tscales->Bg, tscales->pC1AddBgOut,
+      tscales->pC1AddBg, tscales->bg, tscales->pC1AddBgOut,
       tscales->pC1AddBgDemote);
     q15_v_sigmoid(tbuffers->preComp2, hiddenDims, tbuffers->preComp2,
       tscales->div, tscales->add, tscales->sigmoidLimit,
       tscales->sigmoidScaleIn, tscales->sigmoidScaleOut,
       tscales->useTableSigmoid);
     q15_v_add(tbuffers->preComp1, tparams->Bh, hiddenDims, tbuffers->preComp1,
-      tscales->pC1AddBh, tscales->Bh, tscales->pC1AddBhOut,
+      tscales->pC1AddBh, tscales->bh, tscales->pC1AddBhOut,
       tscales->pC1AddBhDemote);
     q15_v_tanh(tbuffers->preComp1, hiddenDims, tbuffers->preComp1,
       tscales->tanhScaleIn, tscales->tanhScaleOut, tscales->useTableTanH);
