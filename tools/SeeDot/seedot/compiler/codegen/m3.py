@@ -507,8 +507,7 @@ class M3(CodegenBase):
                     revArgList["C"] : "ret",
                     shrB : "scmat", #revArgList["shrB"]: "scmat",
                     scvec : "scvec",
-                    revArgList["H1"] : "H1",
-                    revArgList["H2"] : "H2",
+                    revArgList["H1"] : "scret",
                 }
                 if bwA == bwB == bwC == 16: #Note the order of inputs is reversed
                     bwString = "q15"
