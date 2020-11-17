@@ -1,5 +1,4 @@
-# Copyright (c) Microsoft Corporation. All rights reserved.
-# Licensed under the MIT license.
+#-*- coding:utf-8 -*-
 
 from __future__ import absolute_import
 from __future__ import division
@@ -14,10 +13,7 @@ import types
 from PIL import Image, ImageEnhance, ImageDraw
 import math
 import six
-
-import sys; sys.path.append('../')
-from data.choose_config import cfg
-cfg = cfg.cfg
+from data.config_320240 import cfg
 import random
 
 
@@ -273,7 +269,6 @@ def generate_batch_random_samples(batch_sampler, bbox_labels, image_width,
 def data_anchor_sampling(sampler, bbox_labels, image_width, image_height,
                          scale_array, resize_width, resize_height):
     num_gt = len(bbox_labels)
-    # np.random.randint range: [low, high)
     rand_idx = np.random.randint(0, num_gt) if num_gt != 0 else 0
 
     if num_gt != 0:
@@ -301,7 +296,6 @@ def data_anchor_sampling(sampler, bbox_labels, image_width, image_height,
         if range_size == 0:
             rand_idx_size = 0
         else:
-            # np.random.randint range: [low, high)
             rng_rand_size = np.random.randint(0, range_size + 1)
             rand_idx_size = rng_rand_size % (range_size + 1)
 
@@ -451,7 +445,6 @@ def crop_image_sampling(img, bbox_labels, sample_bbox, image_width,
     cross_x2 = int(cross_xmin + cross_width)
 
     sample_img = np.zeros((height, width, 3))
-    # print(sample_img.shape)
     sample_img[roi_y1 : roi_y2, roi_x1 : roi_x2] = \
         img[cross_y1: cross_y2, cross_x1: cross_x2]
     sample_img = cv2.resize(
@@ -562,6 +555,9 @@ def to_chw_bgr(image):
     return image
 
 
+
+
+
 def anchor_crop_image_sampling(img,
                                bbox_labels,
                                scale_array,
@@ -577,16 +573,13 @@ def anchor_crop_image_sampling(img,
     labels = bbox_labels[:, 0]
 
     boxArea = (boxes[:, 2] - boxes[:, 0] + 1) * (boxes[:, 3] - boxes[:, 1] + 1)
-    # argsort = np.argsort(boxArea)
-    # rand_idx = random.randint(min(len(argsort),6))
-    # print('rand idx',rand_idx)
+
     rand_idx = np.random.randint(len(boxArea))
     rand_Side = boxArea[rand_idx] ** 0.5
-    # rand_Side = min(boxes[rand_idx,2] - boxes[rand_idx,0] + 1,
-    # boxes[rand_idx,3] - boxes[rand_idx,1] + 1)
+ 
 
     distance = infDistance
-    anchor_idx = 5
+    anchor_idx = 3
     for i, anchor in enumerate(scale_array):
         if abs(anchor - rand_Side) < distance:
             distance = abs(anchor - rand_Side)
@@ -619,7 +612,7 @@ def anchor_crop_image_sampling(img,
     bw = (boxes[rand_idx, 2] - boxes[rand_idx, 0] + 1)
     bh = (boxes[rand_idx, 3] - boxes[rand_idx, 1] + 1)
 
-    w = h = cfg.INPUT_SIZE
+    w = h = 320
 
     for _ in range(50):
         if w < max(height, width):
@@ -664,7 +657,6 @@ def anchor_crop_image_sampling(img,
     if len(sample_boxes) > 0:
         choice_idx = np.random.randint(len(sample_boxes))
         choice_box = sample_boxes[choice_idx]
-        # print('crop the box :',choice_box)
         centers = (boxes[:, :2] + boxes[:, 2:]) / 2.0
         m1 = (choice_box[0] < centers[:, 0]) * \
             (choice_box[1] < centers[:, 1])
@@ -775,62 +767,108 @@ def anchor_crop_image_sampling(img,
 
         return image, sampled_labels
 
+def reduce_image(img, bbox_labels, img_width, img_height):
+    bbox_labels = np.array(bbox_labels)
+    scale = np.array([img_width, img_height, img_width, img_height])
+
+    boxes = bbox_labels[:, 1:5] * scale
+
+    boxArea = (boxes[:, 2] - boxes[:, 0] + 1) * (boxes[:, 3] - boxes[:, 1] + 1)
+    boxArea_max = np.amax(boxArea)
+
+    if boxArea_max > 48*48:
+        reduce_ratio = (boxArea_max/(48*48))**(0.5)
+        height = int(img_height / reduce_ratio)
+        width = int(img_width / reduce_ratio)
+
+        img = img.resize((width, height),
+                     resample=Image.LANCZOS)
+
+        boxes = boxes//reduce_ratio
+        new_scale = np.array([width, height, width, height])
+        boxes = (boxes[:, 0:4]/new_scale)
+
+        bbox_labels[:,1:5] = boxes
+
+        bbox_labels = bbox_labels.tolist()
+
+        img_height = height
+        img_width = width
+
+        ratio_h = img_height/320
+        ratio_w = img_width/320
+        if ratio_h > 1 and ratio_w > 1:
+            expand_ratio = 1
+        else: 
+            expand_ratio = 1/(min(ratio_h,ratio_w))
+
+        height = int(img_height * expand_ratio)
+        width = int(img_width * expand_ratio)
+        h_off = math.floor(np.random.uniform(0, height - img_height))
+        w_off = math.floor(np.random.uniform(0, width - img_width))
+        expand_bbox = bbox(-w_off / img_width, -h_off / img_height,
+                           (width - w_off) / img_width,
+                           (height - h_off) / img_height)
+        expand_img = np.ones((height, width, 3))
+        expand_img = np.uint8(expand_img * np.squeeze(cfg.img_mean))
+        expand_img = Image.fromarray(expand_img)
+        expand_img.paste(img, (int(w_off), int(h_off)))
+        bbox_labels = transform_labels(bbox_labels, expand_bbox)
+        return expand_img, bbox_labels, width, height
+    return img, bbox_labels.tolist(), img_width, img_height
+
+
+def precrop(img, bbox_labels):
+    img_height, img_width = img.size[1], img.size[0]
+    scale = np.array([img_width, img_height, img_width, img_height])
+    bbox_labels = np.array(bbox_labels)
+    bbox_labels[:, 1:5] = bbox_labels[:, 1:5] * scale
+
+    if img_width-20 > img_height:
+        height_max, height_min = img_width + 20, img_width - 20
+        new_height = np.random.randint(height_min, height_max)
+        expand_img = np.ones((new_height, img_width, 3))
+        expand_img = np.uint8(expand_img * np.squeeze(cfg.img_mean))
+        expand_img = Image.fromarray(expand_img)
+        expand_img.paste(img, (int(0), int(0)))
+        img_height, img_width = new_height, img_width
+        img = expand_img
+
+    elif img_height-20 > img_width:
+        width_max, width_min = img_height + 20, img_height - 20
+        new_width = np.random.randint(width_min, width_max)
+        expand_img = np.ones((img_height, new_width, 3))
+        expand_img = np.uint8(expand_img * np.squeeze(cfg.img_mean))
+        expand_img = Image.fromarray(expand_img)
+        expand_img.paste(img, (int(0), int(0)))
+        img_height, img_width = img_height, new_width
+        img = expand_img
+
+    scale = np.array([img_width, img_height, img_width, img_height])
+    bbox_labels[:, 1:5] = bbox_labels[:, 1:5] / scale
+    return img, bbox_labels.tolist(), img_width, img_height
+
 
 def preprocess(img, bbox_labels, mode, image_path):
     img_width, img_height = img.size
     sampled_labels = bbox_labels
     if mode == 'train':
+
+        img, bbox_labels, img_width, img_height = precrop(img, bbox_labels)
+
         if cfg.apply_distort:
             img = distort_image(img)
-        if cfg.apply_expand:
-            img, bbox_labels, img_width, img_height = expand_image(
+
+        scale_array = np.array([8, 16, 32, 48])
+
+        img, bbox_labels, img_width, img_height = reduce_image(
                 img, bbox_labels, img_width, img_height)
 
-        batch_sampler = []
-        prob = np.random.uniform(0., 1.)
-        if prob > cfg.data_anchor_sampling_prob and cfg.anchor_sampling:
-            scale_array = np.array(cfg.ANCHOR_SIZES)#[16, 32, 64, 128, 256, 512])
-            '''
-            batch_sampler.append(
-                sampler(1, 50, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.6, 0.0, True))
-            sampled_bbox = generate_batch_random_samples(
-                batch_sampler, bbox_labels, img_width, img_height, scale_array,
-                cfg.resize_width, cfg.resize_height)
-            '''
-            img = np.array(img)
-            img, sampled_labels = anchor_crop_image_sampling(
-                img, bbox_labels, scale_array, img_width, img_height)
-            '''
-            if len(sampled_bbox) > 0:
-                idx = int(np.random.uniform(0, len(sampled_bbox)))
-                img, sampled_labels = crop_image_sampling(
-                    img, bbox_labels, sampled_bbox[idx], img_width, img_height,
-                    cfg.resize_width, cfg.resize_height, cfg.min_face_size)
-            '''
-            img = img.astype('uint8')
-            img = Image.fromarray(img)
-        else:
-            batch_sampler.append(sampler(1, 50, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0,
-                                         0.0, True))
-            batch_sampler.append(sampler(1, 50, 0.3, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0,
-                                         0.0, True))
-            batch_sampler.append(sampler(1, 50, 0.3, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0,
-                                         0.0, True))
-            batch_sampler.append(sampler(1, 50, 0.3, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0,
-                                         0.0, True))
-            batch_sampler.append(sampler(1, 50, 0.3, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0,
-                                         0.0, True))
-            sampled_bbox = generate_batch_samples(
-                batch_sampler, bbox_labels, img_width, img_height)
+        img = np.array(img)
+        sampled_labels = bbox_labels
 
-            img = np.array(img)
-            if len(sampled_bbox) > 0:
-                idx = int(np.random.uniform(0, len(sampled_bbox)))
-                img, sampled_labels = crop_image(
-                    img, bbox_labels, sampled_bbox[idx], img_width, img_height,
-                    cfg.resize_width, cfg.resize_height, cfg.min_face_size)
-
-            img = Image.fromarray(img)
+        img = img.astype('uint8')
+        img = Image.fromarray(img)
 
     interp_mode = [
         Image.BILINEAR, Image.HAMMING, Image.NEAREST, Image.BICUBIC,
@@ -852,11 +890,9 @@ def preprocess(img, bbox_labels, mode, image_path):
                 sampled_labels[i][1] = 1 - sampled_labels[i][3]
                 sampled_labels[i][3] = 1 - tmp
 
-    #img = Image.fromarray(img)
     img = to_chw_bgr(img)
     img = img.astype('float32')
     img -= cfg.img_mean
     img = img[[2, 1, 0], :, :]  # to RGB
-    #img = img * cfg.scale
 
     return img, sampled_labels

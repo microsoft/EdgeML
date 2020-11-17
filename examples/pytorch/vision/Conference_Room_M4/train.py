@@ -39,6 +39,9 @@ parser.add_argument('--model_arch',
                     default='RPool_Face_M4', type=str,
                     choices=['RPool_Face_M4'],
                     help='choose architecture among rpool variants')
+parser.add_argument('--finetune',
+                    default=False, type=str2bool,
+                    help='Use CUDA to train model')
 parser.add_argument('--num_workers',
                     default=128, type=int,
                     help='Number of workers used in dataloading')
@@ -86,8 +89,12 @@ if not os.path.exists(args.save_folder):
     os.makedirs(args.save_folder)
 
 
-train_dataset = WIDERDetection(cfg.FACE.TRAIN_FILE, mode='train', mono_mode=cfg.IS_MONOCHROME)
-val_dataset = WIDERDetection(cfg.FACE.VAL_FILE, mode='val', mono_mode=cfg.IS_MONOCHROME)
+if args.finetune=='True':
+    train_dataset = WIDERDetection('./data/face_train_scutB.txt', mode='train', mono_mode=cfg.IS_MONOCHROME)
+    val_dataset = WIDERDetection('./data/face_val_scutB.txt', mode='val', mono_mode=cfg.IS_MONOCHROME)
+else:
+    train_dataset = WIDERDetection(cfg.FACE.TRAIN_FILE, mode='train', mono_mode=cfg.IS_MONOCHROME)
+    val_dataset = WIDERDetection(cfg.FACE.VAL_FILE, mode='val', mono_mode=cfg.IS_MONOCHROME)
 
 train_loader = data.DataLoader(train_dataset, args.batch_size,
                                num_workers=args.num_workers,
