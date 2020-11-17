@@ -26,12 +26,12 @@ parser = argparse.ArgumentParser(description='face detection demo')
 parser.add_argument('--save_dir', type=str, default='results/',
                     help='Directory for detect result')
 parser.add_argument('--model', type=str,
-                    default='weights/rpool_face_c.pth', help='trained model')
-parser.add_argument('--thresh', default=0.17, type=float,
+                    default='weights/rpool_face_m4.pth', help='trained model')
+parser.add_argument('--thresh', default=0.5, type=float,
                     help='Final confidence threshold')
 parser.add_argument('--model_arch',
-                    default='RPool_Face_C', type=str,
-                    choices=['RPool_Face_C', 'RPool_Face_Quant', 'RPool_Face_QVGA_monochrome'],
+                    default='RPool_Face_M4', type=str,
+                    choices=['RPool_Face_M4'],
                     help='choose architecture among rpool variants')
 parser.add_argument('--image_folder', default=None, type=str, help='folder containing images')
 

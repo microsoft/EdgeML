@@ -5,7 +5,7 @@
 ``` pip install -r requirements.txt ``` 
 We have tested the installation and the code on Ubuntu 18.04 with Cuda 10.2 and CuDNN 7.6
 
-## Dataset
+## Dataset - WIDER Face
 1. Download WIDER face dataset images and annotations from http://shuoyang1213.me/WIDERFACE/ and place them all in a folder with name 'WIDER_FACE'. That is, download WIDER_train.zip, WIDER_test.zip, WIDER_val.zip, wider_face_split.zip and place it in WIDER_FACE folder, and unzip files using: 
 
 ```shell
@@ -18,12 +18,18 @@ cd ..
 
 ```
 
-2. In `data/config.py` , set _C.HOME to the parent directory of the above folder, and set the _C.FACE.WIDER_DIR to the folder path. 
+2. In `data/config_qvga.py` , set _C.HOME to the parent directory of the above folder, and set the _C.FACE.WIDER_DIR to the folder path. 
 That is, if the WIDER_FACE folder is created in /mnt folder, then _C.HOME='/mnt'
 _C.FACE.WIDER_DIR='/mnt/WIDER_FACE'.
-Similarly, change `data/config_qvga.py` to set _C.HOME and _C.FACE.WIDER_DIR.
+
 3. Run
 ``` python prepare_wider_data.py ```
+
+## Dataset - SCUT Head B
+1. Download SCUT Head Part B dataset images and annotations from https://github.com/HCIILAB/SCUT-HEAD-Dataset-Release. Unzipping will create a folder by the name 'SCUT_HEAD_Part_B'.
+
+2. In `data/config_qvga.py` set the _C.FACE.SCUT_DIR to the folder path. 
+That is, if the SCUT_HEAD_Part_B folder is created in /mnt folder, then _C.FACE.SCUT_DIR='/mnt/SCUT_HEAD_Part_B'.
 
 
 # Usage
@@ -32,14 +38,7 @@ Similarly, change `data/config_qvga.py` to set _C.HOME and _C.FACE.WIDER_DIR.
 
 ```shell
 
-IS_QVGA_MONO=0 python train.py --batch_size 32 --model_arch RPool_Face_Quant --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 
-
-```
-
-For QVGA:
-```shell
-
-IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_M4 --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 
+IS_QVGA_MONO=1 python train.py --batch_size 128 --model_arch RPool_Face_M4 --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 
 
 ```
 This will save checkpoints after every '--save_frequency' number of iterations in a weight file with 'checkpoint.pth' at the end and weights for the best state in a file with 'best_state.pth' at the end. These will be saved in '--save_folder'. For resuming training from a checkpoint, use '--resume <checkpoint_name>.pth' with the above command. For example, 
@@ -47,7 +46,7 @@ This will save checkpoints after every '--save_frequency' number of iterations i
 
 ```shell
 
-IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_QVGA_monochrome --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 --resume <checkpoint_name>.pth
+IS_QVGA_MONO=1 python train.py --batch_size 128 --model_arch RPool_Face_M4 --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 --resume <checkpoint_name>.pth
 
 ```
 
@@ -58,6 +57,16 @@ Input images for training models are cropped and reshaped to square to maintain 
 
 The architecture RPool_Face_QVGA_monochrome and RPool_Face_M4 is for QVGA monochrome format while RPool_Face_C and RPool_Face_Quant are for VGA RGB format.
 
+## Finetuning
+
+To obtain a model better suited for conference room scenarios we finetune our model on the SCUT Head B dataset. Set --finetune as True and pass the model pretrained on WIDER_FACE in --resume as follows:
+
+```shell
+
+IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_M4 --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 --resume RPool_Face_M4_best_state.pth --finetune True
+
+```
+
 
 ## Test
 There are two modes of testing the trained model -- the evaluation mode to generate bounding boxes for a set of sample images, and the test mode to compute statistics like mAP scores.
@@ -67,34 +76,22 @@ There are two modes of testing the trained model -- the evaluation mode to gener
 Given a set of images in <your_image_folder>, `eval/py` generates bounding boxes around faces (where the confidence is higher than certain threshold) and write the images in <your_save_folder>. To evaluate the `rpool_face_best_state.pth` model (stored in ./weights), execute the following command: 
 
 ```shell
-IS_QVGA_MONO=0 python eval.py --model_arch RPool_Face_Quant --model ./weights/RPool_Face_Quant_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
-```
-
-For QVGA:
-```shell
 IS_QVGA_MONO=1 python eval.py --model_arch RPool_Face_M4 --model ./weights/RPool_Face_M4_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
 ```
 
-This will save images in <your_save_folder> with bounding boxes around faces, where the confidence is high. Here is an example image with a single bounding box.
-
-![Camera: Himax0360](imrgb20ft.png)
+This will save images in <your_save_folder> with bounding boxes around faces, where the confidence is high. It is recommended to use the model finetuned on SCUT Head for evaluation.
 
 If IS_QVGA_MONO=0 the evaluation code accepts an image of any size and resizes it to 640x480x3 while preserving original image aspect ratio.
 
 If IS_QVGA_MONO=1 the evaluation code accepts an image of any size and resizes and converts it to monochrome to make it 320x240x1 while preserving original image aspect ratio.
 
-#### WIDER Set Test
-In this mode, we test the generated model against the provided WIDER_FACE validation and test dataset. 
+#### SCUT Head Validation Set Test
+In this mode, we test the generated model against the provided SCUT Head Part B validation dataset. Use the SCUT Head finetuned model for this step.
 
 For this, first run the following to generate predictions of the model and store output in the '--save_folder' folder. 
 
 ```shell
-IS_QVGA_MONO=0 python wider_test.py --model_arch RPool_Face_Quant --model ./weights/RPool_Face_Quant_best_state.pth --save_folder rpool_face_quant_val --subset val
-```
-
-For QVGA:
-```shell
-IS_QVGA_MONO=1 python wider_test.py --model_arch RPool_Face_M4 --model ./weights/RPool_Face_M4_best_state.pth --save_folder rpool_face_m4_val --subset val
+IS_QVGA_MONO=1 python scut_test.py --model_arch RPool_Face_M4 --model ./weights/RPool_Face_M4_best_state.pth --save_folder rpool_face_m4_val --subset val
 ```
 
 The above command generates predictions for each image in the "validation" dataset. For each image, a separate prediction file is provided (image_name.txt file in appropriate folder). The first line of the prediction file contains the total number of boxes identified. 
@@ -102,36 +99,14 @@ Then each line in the file corresponds to an identified box. For each box, five 
 
 If IS_QVGA_MONO=1 then testing is done by converting images to monochrome and QVGA, else if IS_QVGA_MONO=0 then testing is done on VGA RGB images.
 
-The architectures RPool_Face_QVGA_monochrome and RPool_Face_M4 are for QVGA monochrome format while RPool_Face_C and RPool_Face_Quant are for VGA RGB format.
-
 ###### For calculating MAP scores:
 Now using these boxes, we can compute the standard MAP score that is widely used in this literature (see [here](https://medium.com/@jonathan_hui/map-mean-average-precision-for-object-detection-45c121a31173) for more details) as follows:
 
-1. Download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip and unzip in a folder of same name in this directory.
+Run ```python3 evaluation.py -p <your_save_folder> ```
 
-Example code: 
+where `prediction_dir` is the '--save_folder' used for `scut_test.py` above. 
 
-```shell
-wget http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip 
-unzip eval_tools.zip
-```
-
-2. Set up scripts to use the Matlab '.mat' data files in eval_tools/ground_truth folder for MAP calculation: The following installs python files that provide the same functionality as the '.m' matlab scripts in eval_tools folder.
-``` 
-cd eval_tools
-git clone https://github.com/wondervictor/WiderFace-Evaluation.git
-cd WiderFace-Evaluation 
-python3 setup.py build_ext --inplace
-```
-
-3. Run ```python3 evaluation.py -p <your_save_folder> -g <groud truth dir>``` in WiderFace-Evaluation folder
-
-where `prediction_dir` is the '--save_folder' used for `wider_test.py` above and <groud truth dir> is the subfolder `eval_tools/ground_truth`. That is in, WiderFace-Evaluation directory, run: 
-
-```shell
-python3 evaluation.py -p <your_save_folder> -g ../ground_truth
-```
-This script should output the MAP for the WIDER-easy, WIDER-medium, and WIDER-hard subsets of the dataset. Our best performance using RPool_Face_Quant model is: 0.80 (WIDER-easy), 0.78 (WIDER-medium), 0.53 (WIDER-hard). 
+This script should output the MAP on SCUT Head Part B Validation set. Our best performance using RPool_Face_M4 model is: 0.61.
 
 
 ##### Dump RNNPool Input Output Traces and Weights
