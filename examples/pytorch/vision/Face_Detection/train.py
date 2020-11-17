@@ -29,9 +29,6 @@ parser.add_argument('--dataset',
                     default='face',
                     choices=['hand', 'face', 'head'],
                     help='Train target')
-parser.add_argument('--basenet',
-                    default='vgg16_reducedfc.pth',
-                    help='Pretrained base model')
 parser.add_argument('--batch_size',
                     default=16, type=int,
                     help='Batch size for training')
@@ -40,7 +37,7 @@ parser.add_argument('--resume',
                     help='Checkpoint state_dict file to resume training from')
 parser.add_argument('--model_arch',
                     default='RPool_Face_C', type=str,
-                    choices=['RPool_Face_C', 'RPool_Face_Quant', 'RPool_Face_QVGA_monochrome', 'RPool_Face_M4'],
+                    choices=['RPool_Face_C', 'RPool_Face_Quant', 'RPool_Face_QVGA_monochrome'],
                     help='choose architecture among rpool variants')
 parser.add_argument('--num_workers',
                     default=128, type=int,
@@ -178,11 +175,6 @@ def train():
                 torch.save(net.state_dict(),
                            os.path.join(args.save_folder, file))
             iteration += 1
-
-            if args.model_arch=='RPool_Face_M4':
-                net.module.rnn_model.cell_rnn.cell.sparsify()
-                net.module.rnn_model.cell_bidirrnn.cell.sparsify()
-                net.to('cuda')
 
         val(epoch)
         if iteration == cfg.MAX_STEPS:
