@@ -499,12 +499,12 @@ void q15_v_scale_down(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scvec) {
 
 void q15xq7_q15_m_mulvec(const Q15_T* mat, const Q7_T* const vec, ITER_T nrows,
                          ITER_T ncols, Q15_T* ret, SCALE_T scmat,
-                         SCALE_T scvec, SCALE_T H1, SCALE_T H2) {
+                         SCALE_T scvec, SCALE_T scret) {
   Q31_T sum;
   #ifdef SHIFT
-    SCALE_T scale = scmat + scvec + H1;
+    SCALE_T scale = scmat + scvec + scret;
   #else
-    SCALE_T scale = scmat * scvec * H1;
+    SCALE_T scale = scmat * scvec * scret;
   #endif
 
   while (nrows--) {
@@ -537,15 +537,15 @@ void q15xq7_q15_m_mulvec(const Q15_T* mat, const Q7_T* const vec, ITER_T nrows,
 
 void q15_m_mulvec(const Q15_T* mat, const Q15_T* const vec, ITER_T nrows,
                   ITER_T ncols, Q15_T* ret, SCALE_T scmat, SCALE_T scvec,
-                  SCALE_T H1, SCALE_T H2) {
+                  SCALE_T scret) {
   Q63_T sum;
   #ifdef SHIFT
-    SCALE_T scale = scmat + scvec + H1;
+    SCALE_T scale = scmat + scvec + scret;
   #else
     // Be careful, the below implementation would not work if the denominator
     // exceeds the range of Q31_T range. In such a case, cast the denominator
     // to int64_t.
-    SCALE_T scale = scmat * scvec * H1;
+    SCALE_T scale = scmat * scvec * scret;
   #endif
 
   while (nrows--) {
@@ -579,18 +579,17 @@ void q15_m_mulvec(const Q15_T* mat, const Q15_T* const vec, ITER_T nrows,
 void q15xq7_q15_m_sparse_mulvec(const ITER_T* row_indices,
                                 const Q15_T* mat_values, const Q7_T* vec,
                                 ITER_T nrows, ITER_T ncols, Q15_T* ret,
-                                SCALE_T scmat, SCALE_T scvec, SCALE_T H1,
-                                SCALE_T H2) {
+                                SCALE_T scmat, SCALE_T scvec, SCALE_T scret) {
   ITER_T index;
   Q31_T vec_offset;
   memset(ret, 0, nrows * sizeof(Q15_T));
   #ifdef SHIFT
-    SCALE_T scale = scmat + scvec + H1;
+    SCALE_T scale = scmat + scvec + scret;
   #else
     // Be careful, the below implementation would not work if the denominator
     // exceeds the range of Q31_T range. In such a case, cast the denominator
     // to int64_t.
-    SCALE_T scale = scmat * scvec * H1;
+    SCALE_T scale = scmat * scvec * scret;
   #endif
 
   while (ncols--) {
@@ -610,18 +609,17 @@ void q15xq7_q15_m_sparse_mulvec(const ITER_T* row_indices,
 
 void q15_m_sparse_mulvec(const ITER_T* row_indices, const Q15_T* mat_values,
                          const Q15_T* vec, ITER_T nrows, ITER_T ncols,
-                         Q15_T* ret, SCALE_T scmat, SCALE_T scvec, SCALE_T H1,
-                         SCALE_T H2) {
+                         Q15_T* ret, SCALE_T scmat, SCALE_T scvec, SCALE_T scret) {
   ITER_T index;
   Q31_T vec_offset;
   memset(ret, 0, nrows * sizeof(Q15_T));
   #ifdef SHIFT
-    SCALE_T scale = scmat + scvec + H1;
+    SCALE_T scale = scmat + scvec + scret;
   #else
     // Be careful, the below implementation would not work if the denominator
     // exceeds the range of Q31_T range. In such a case, cast the denominator
     // to int64_t.
-    SCALE_T scale = scmat * scvec * H1;
+    SCALE_T scale = scmat * scvec * scret;
   #endif
 
   while (ncols--) {
