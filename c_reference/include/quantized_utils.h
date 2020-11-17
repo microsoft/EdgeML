@@ -277,9 +277,7 @@ void q15_v_scale_down(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scvec);
  * @param[out]      ret       pointer to the output vector
  * @param[in]       scmat     scale factor of the input matrix
  * @param[in]       scvec     scale factor of the input vector
- * @param[in]       H1        depth parameter for division-by-two used in TreeSum
- * @param[in]       H2        depth parameter for direct sum used in TreeSum
-
+ * @param[in]       scret     scale factor of the output vector
  * @return          none
  * @example         mat       = { {7069, -10389, 1562, -1992},
  *                                {3262, -37, -1143, -995},
@@ -294,16 +292,15 @@ void q15_v_scale_down(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scvec);
  *                  ncols     = 4
  *                  scmat     = 128
  *                  scvec     = 64
- *                  H1        = 2
- *                  H2        = 0
+ *                  scret     = 2
  *                  ret       = {-425, -169, -3534, 524, -2739, 87, 52, 292}
  */
 void q15xq7_q15_m_mulvec(const Q15_T* mat, const Q7_T* const vec, ITER_T nrows,
                          ITER_T ncols, Q15_T* ret, SCALE_T scmat,
-                         SCALE_T scvec, SCALE_T H1, SCALE_T H2);
+                         SCALE_T scvec, SCALE_T scret);
 void q15_m_mulvec(const Q15_T* mat, const Q15_T* const vec, ITER_T nrows,
                   ITER_T ncols, Q15_T* ret, SCALE_T scmat, SCALE_T scvec,
-                  SCALE_T H1, SCALE_T H2);
+                  SCALE_T scret);
 /**
  * @brief Performs sparse matrix multiplication of a matrix and a vector.
  * row_indices and mat_values combined are a sparse representation; dim(vec) = [ncols].
@@ -317,8 +314,7 @@ void q15_m_mulvec(const Q15_T* mat, const Q15_T* const vec, ITER_T nrows,
  * @param[out]      ret          pointer to the output vector
  * @param[in]       scmat        scale factor of the input matrix
  * @param[in]       scvec        scale factor of the input vector
- * @param[in]       H1           depth parameter for division-by-two used in TreeSum
- * @param[in]       H2           depth parameter for direct sum used in TreeSum
+ * @param[in]       scret        scale factor of the output vector
  * @return          none
  * @example         mat          = { {23, 32, 0},
  *                                   {0, 0, 1},
@@ -330,19 +326,16 @@ void q15_m_mulvec(const Q15_T* mat, const Q15_T* const vec, ITER_T nrows,
  *                  ncols        = 3
  *                  scmat        = 1
  *                  scvec        = 1
- *                  H1           = 1
- *                  H2           = 0
+ *                  scret        = 1
  *                  ret          = {87, 3, 48}
  */
 void q15xq7_q15_m_sparse_mulvec(const ITER_T* row_indices,
                                 const Q15_T* mat_values, const Q7_T* vec,
                                 ITER_T nrows, ITER_T ncols, Q15_T* ret,
-                                SCALE_T scmat, SCALE_T scvec, SCALE_T H1,
-                                SCALE_T H2);
+                                SCALE_T scmat, SCALE_T scvec, SCALE_T scret);
 void q15_m_sparse_mulvec(const ITER_T* row_indices, const Q15_T* mat_values,
                          const Q15_T* vec, ITER_T nrows, ITER_T ncols,
-                         Q15_T* ret, SCALE_T scmat, SCALE_T scvec, SCALE_T H1,
-                         SCALE_T H2);
+                         Q15_T* ret, SCALE_T scmat, SCALE_T scvec, SCALE_T scret);
 
 /**
  * @brief Performs the element-wise addition of two input tensors.

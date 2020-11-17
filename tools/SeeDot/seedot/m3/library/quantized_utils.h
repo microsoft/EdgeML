@@ -296,8 +296,7 @@ void q15_m_reverse(const Q15_T *const mat, ITER_T nrows, ITER_T ncols,
  * @param[out]      ret       pointer to the output vector
  * @param[in]       scmat     scale factor of the input matrix
  * @param[in]       scvec     scale factor of the input vector
- * @param[in]       H1        depth parameter for division-by-two used in TreeSum
- * @param[in]       H2        depth parameter for direct sum used in TreeSum
+ * @param[in]       scret     scale factor of the output vector
  * @return          none
  * @example         mat       = { {7069, -10389, 1562, -1992},
  *                                {3262, -37, -1143, -995},
@@ -312,16 +311,15 @@ void q15_m_reverse(const Q15_T *const mat, ITER_T nrows, ITER_T ncols,
  *                  ncols     = 4
  *                  scmat     = 128
  *                  scvec     = 64
- *                  H1        = 2
- *                  H2        = 0
+ *                  scret     = 2
  *                  ret       = {-425, -169, -3534, 524, -2739, 87, 52, 292}
  */
 void q15xq7_q15_m_mulvec(const Q15_T *mat, const Q7_T *const vec, ITER_T nrows,
                          ITER_T ncols, Q15_T *ret, SCALE_T scmat,
-                         SCALE_T scvec, SCALE_T H1, SCALE_T H2);
+                         SCALE_T scvec, SCALE_T scret);
 void q15_m_mulvec(const Q15_T *mat, const Q15_T *const vec, ITER_T nrows,
                   ITER_T ncols, Q15_T *ret, SCALE_T scmat, SCALE_T scvec,
-                  SCALE_T H1, SCALE_T H2);
+                  SCALE_T scret);
 
 /**
  * @brief Performs the element-wise addition of two input tensors.
