@@ -26,32 +26,10 @@ import operator
 class Arduino(CodegenBase):
 
     def __init__(self, outputDir, decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables):
+        super().__init__(decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables)
         outputFile = os.path.join(outputDir, "predict.cpp")
         self.outputDir = outputDir
         self.out = Writer(outputFile)
-
-        self.decls = decls
-        self.localDecls = localDecls
-        self.scales = scales
-        self.intvs = intvs
-        self.cnsts = cnsts
-        self.expTables = expTables
-        self.globalVars = globalVars
-        self.internalVars = internalVars
-        self.floatConstants = floatConstants
-
-        self.demotedVarsOffsets = demotedVarsOffsets
-        self.varsForBitwidth = varsForBitwidth
-
-        self.varLiveIntervals = varLiveIntervals
-        self.scratchSubs = {}
-        self.notScratch = notScratch
-
-        self.numberOfMemoryMaps = 0
-        self.currentMemMap = 0
-        self.defragmentationInstructions = []
-        self.defragmentationParameters = []
-        self.coLocatedVariables = dict(coLocatedVariables)
 
     def printCompilerConfig(self):
         configFile = os.path.join(self.outputDir, "compileConfig.h")
@@ -76,7 +54,7 @@ class Arduino(CodegenBase):
 
         self.printArduinoHeader()
 
-        self.computeScratchLocationsFirstFitPriority()
+        self.computeScratchLocationsFirstFitPriority() #computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
 
         self.printVarDecls()
 
@@ -160,6 +138,7 @@ class Arduino(CodegenBase):
 
     # Print the variable with pragmas
     def printVar(self, ir):
+        # Model parameters are read from RAM, hence they are read differently
         if ir.inputVar:
             if config.wordLength == 8:
                 self.out.printf('((MYINT) pgm_read_byte_near(&')

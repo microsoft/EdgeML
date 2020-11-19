@@ -1,0 +1,31 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+    
+        {
+            "name": "Python: SeeDot-dev.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/SeeDot-dev.py",
+            "console": "integratedTerminal",
+            "args": [
+                "-a",
+                "rnn",
+                "-v",
+                "fixed",
+                "-d",
+                "spectakoms",
+                "-m",
+                "red_disagree",
+                "-t",
+                "x86",
+                "-n",
+                "1"
+            ]
+        }
+    ]
+}

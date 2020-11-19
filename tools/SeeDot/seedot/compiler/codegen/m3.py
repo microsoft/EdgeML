@@ -18,34 +18,10 @@ import time
 class M3(CodegenBase):
 
     def __init__(self, outputDir, decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables):
+        super().__init__(decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables)
         self.outputDir = outputDir
-        cppFile = os.path.join(
-            self.outputDir, "predict.c")
-        
+        cppFile = os.path.join(self.outputDir, "predict.c")
         self.out = Writer(cppFile)
-
-        self.decls = decls
-        self.localDecls = localDecls
-        self.scales = scales
-        self.intvs = intvs
-        self.cnsts = cnsts
-        self.expTables = expTables
-        self.globalVars = globalVars
-        self.internalVars = internalVars
-        self.floatConstants = floatConstants
-
-        self.demotedVarsOffsets = demotedVarsOffsets
-        self.varsForBitwidth = varsForBitwidth
-
-        self.varLiveIntervals = varLiveIntervals
-        self.notScratch = notScratch
-        self.scratchSubs = {}
-
-        self.numberOfMemoryMaps = 0
-        self.currentMemMap = 0
-        self.defragmentationInstructions = []
-        self.defragmentationParameters = []
-        self.coLocatedVariables = dict(coLocatedVariables)
 
     def printPrefix(self):
 
@@ -53,7 +29,7 @@ class M3(CodegenBase):
 
         self.printCHeader()
 
-        self.computeScratchLocationsFirstFitPriority()
+        self.computeScratchLocationsFirstFitPriority() #computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
 
         self.printVarDecls(globalVarDecl=False)
 
@@ -172,6 +148,7 @@ class M3(CodegenBase):
 
     def printMemset(self, ir):
         self.out.printf('memset(', indent=True)
+        # If a memory optimized mapping is available for a variable, use that else use original variable name
         if Config.x86MemoryOptimize and forFixed() and self.numberOfMemoryMaps in self.scratchSubs:
             self.out.printf("(scratch + %d)", self.scratchSubs[self.numberOfMemoryMaps][ir.e.idf])
         else:
@@ -186,6 +163,7 @@ class M3(CodegenBase):
                         ("float" if forFloat() else typ_str, ir.len))
 
     def printMemcpy(self, ir):
+        # If one of the variables' offsets are used, this function computes an expression to reach the memory location including offsets
         def printFlattenedIndices(indices, shape):
             remSize = np.prod(shape)
             for i in range(len(shape)):
@@ -204,6 +182,7 @@ class M3(CodegenBase):
                 assert False, "Illegal state, VBW mode but no variable information present"
         typ_str = "float" if forFloat() else typ_str
         self.out.printf('memcpy(', indent=True)
+        # If a memory optimized mapping is available for a variable, use that else use original variable name
         if Config.x86MemoryOptimize and forFixed() and self.numberOfMemoryMaps in self.scratchSubs:
             for (a, b, c) in [(ir.to.idf, ir.toIndex, 0), (ir.start.idf, ir.startIndex, 1)]:
                 self.out.printf("((scratch + %d + sizeof(%s)*(", self.scratchSubs[self.numberOfMemoryMaps][a], typ_str)
@@ -261,6 +240,8 @@ class M3(CodegenBase):
                     self.out.printf(", ")
             self.out.printf(");\n")
 
+    # The following method translates function calls made for C++ codegen to function calls required by M3 library
+    # Function names and arguments are modified accordingly
     def translateToC(self, varName, argList):
         varName = varName.replace('<', ' ').replace('>', '').replace(',', '')
         varName = varName.split(' ')

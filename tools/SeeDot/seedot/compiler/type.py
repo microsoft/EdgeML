@@ -11,6 +11,8 @@ import seedot.compiler.ast.astVisitor as astVisitor
 
 import numpy as np
 
+# Performs type inference of the input AST
+
 class Type:
     pass
 

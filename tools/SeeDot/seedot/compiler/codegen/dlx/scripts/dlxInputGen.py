@@ -79,5 +79,3 @@ def generateDLXInput(mem_alloc, alignment, max_memory, print_only, dumpFile=None
 
     outFile.close()
     return None
-
-
