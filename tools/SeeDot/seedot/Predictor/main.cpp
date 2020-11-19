@@ -17,6 +17,11 @@
 
 using namespace std;
 
+/*
+ * This file is the driver for the x86 version of the code. It reads the floating point data from the csv files, parses them
+ * and translates them into integers, and then puts them through multiple generated inference codes and evaluates each result
+ */
+
 enum Version
 {
 	Fixed,
@@ -49,6 +54,7 @@ vector<string> readCSVLine(string line)
 	return tokens;
 }
 
+// Read the input 'X'
 vector<string> getFeatures(string line)
 {
 	static int featuresLength = -1;
@@ -64,6 +70,7 @@ vector<string> getFeatures(string line)
 	return features;
 }
 
+// Read the ground truth label/value 'Y'
 vector<string> getLabel(string line)
 {
 	static int labelLength = -1;
@@ -79,6 +86,7 @@ vector<string> getLabel(string line)
 	return labels;
 }
 
+// Take in the input floating point datapoint, convert it to a fixed point integer and store it
 void populateFixedVector(MYINT **features_int, vector<string> features, int scale)
 {
 	int features_size = (int)features.size();
@@ -93,6 +101,7 @@ void populateFixedVector(MYINT **features_int, vector<string> features, int scal
 	return;
 }
 
+// Take in the input floating point datapoint and store it
 void populateFloatVector(float **features_float, vector<string> features)
 {
 	int features_size = (int)features.size();
@@ -101,6 +110,10 @@ void populateFloatVector(float **features_float, vector<string> features)
 	return;
 }
 
+// Multithreading is used to speed up exploration
+// Each thread, which invokes the following method, is responsible for taking in one datapoint 
+// and running it through all the generated codes
+// Number of threads generated equals the number of datapoints in the given dataset
 void launchThread(int features_size, MYINT **features_int, MYINT *** features_intV, float **features_float, int counter, float* float_res, int* res, int** resV) {
 	seedotFixed(features_int, res);
 	seedotFloat(features_float, float_res);
@@ -198,6 +211,7 @@ int main(int argc, char *argv[])
 	// Initialize variables used for profiling
 	initializeProfiling();
 
+	// Following variables are used for storing the results of the inference
 	vector<float*> vector_float_res;
 	vector<int32_t*> vector_int_res;
 	vector<int32_t**> vector_int_resV;
@@ -213,6 +227,7 @@ int main(int argc, char *argv[])
 	if(version == Float)
 		profilingEnabled = true;
 
+	// Each iteration takes care of one datapoint
 	while (getline(featuresFile, line1) && getline(lablesFile, line2))
 	{
 		// Read the feature vector and class ID
@@ -287,18 +302,22 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
+			// There are several codes generated which are built simultaneously
 			if (version == Fixed) {
 				vector_float_res.push_back(new float[numOutputs]);
 				vector_int_res.push_back(new int32_t[numOutputs]);
+				// Populating labels for each generated code
 				if (problem == Classification)
 					labelsInt.push_back(labelInt);
 				else if (problem == Regression)
 					labelsFloat.push_back(labelFloat);
 				int** switchRes = new int*[switches];
+				// Instantiating vectors for storing inference results for each generated code
 				for(int i = 0; i < switches; i++) {
 					switchRes[i] = new int[numOutputs];
 				}
 				vector_int_resV.push_back(switchRes);
+				// Instantiating vectors for storing features, integer and float
 				MYINT** features_int_copy = new MYINT*[features_size];
 				for(int i = 0; i < features_size; i++) {
 					features_int_copy[i] = new MYINT[1];
@@ -317,6 +336,7 @@ int main(int argc, char *argv[])
 						features_intV_copy[j][i][0] = features_intV[j][i][0];
 					}
 				}
+				// Launching one thread which processes one datapoint
 				threads.push_back(thread(launchThread, features_size, features_int_copy, features_intV_copy, features_float_copy, counter, vector_float_res.back(), vector_int_res.back(), vector_int_resV.back()));
 			}
 			else if (version == Float) {
@@ -346,6 +366,9 @@ int main(int argc, char *argv[])
 
 
 	float disagreements = 0.0, reduced_disagreements = 0.0;
+
+	// Correct, Disagreements are used for Classification problems' accuracy etc
+	// Errors, Ferrors are used for Regression problems' error etc
 
 	vector<int> correctV(switches, 0), totalV(switches, 0);
 	vector<int> disagreementsV(switches, 0), reduced_disagreementsV(switches, 0);
@@ -379,8 +402,7 @@ int main(int argc, char *argv[])
 
 				if (res == labelsInt[i][j]) {
 					correct ++;
-				}
-				else {
+				} else {
 					if(logProgramOutput)
 						output << "Main: Incorrect prediction for input " << total + 1 << " element " << j << ". Predicted " << res << " Expected " << labelsInt[i][j] << endl;
 				}
@@ -399,8 +421,7 @@ int main(int argc, char *argv[])
 
 					if (resV[k][j] == labelsInt[i][j]) {
 						correctV[k] ++;
-					}
-					else {
+					} else {
 						if(logProgramOutput)
 							output << "Sub "<< k <<": Incorrect prediction for input " << total + 1 << " element " << j << ". Predicted " << resV[k][j] << " Expected " << labelsInt[i][j] << endl;
 					}
@@ -438,6 +459,7 @@ int main(int argc, char *argv[])
 
 		}
 
+		// Clearing memory
 		delete[] vector_int_res[i];
 		delete[] vector_float_res[i];
 		for(int k = 0; k < switches; k++) {

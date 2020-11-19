@@ -29,6 +29,8 @@ class Predictor:
 
         self.genHeaderFile()
 
+    # Depending on the parameters set in config.py, util.py, this method generates a header file datatypes.h 
+    # which controls the execution of the generated code
     def genHeaderFile(self):
         with open("datatypes.h", 'w') as file:
             file.write("#pragma once\n\n")
@@ -171,7 +173,7 @@ class Predictor:
         else:
             return self.executeForLinux()
 
-    # Read statistics of execution (currently only accuracy)
+    # Read statistics of execution. Accuracy, Disagreement count, Reduced disagreement count are all read
     def readStatsFile(self):
         statsFile = os.path.join(
             "output", self.version, "stats-" + self.datasetType + ".txt")

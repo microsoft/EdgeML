@@ -8,6 +8,7 @@ import traceback
 import seedot.config as config
 from seedot.util import *
 
+# Primitives used by the Intermediate Representation (IR)
 
 class Op:
     Op = Enum('Op', '+ - * / << >> & | ^ ~ ! && || < <= > >= == !=')

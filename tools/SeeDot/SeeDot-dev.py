@@ -16,10 +16,19 @@ import seedot.main as main
 import seedot.predictor as predictor
 import seedot.util as util
 
-import seedot.compiler.converter.bonsai as bonsai
 import seedot.compiler.converter.converter as converter
-import seedot.compiler.converter.protonn as protonn
 
+# This is the file which is invoked to run the compiler (Refer to README.md)
+# 
+# Sanity checks are carried out and the main compiler arguments are taken from the user
+# which is then used to invoke the main compiler code, 'main.py'
+# 
+# Note there are 3 different ways to change compiler arguments: 
+#   1) the arguments used by the user to invoke the compiler
+#   2) seedot/config.py
+#   3) seedot/util.py
+# Different parameters are controlled in different files, refer to each one of them to 
+# find out how to change one parameter
 
 class Dataset:
     common = ["cifar-binary", "cr-binary", "cr-multiclass", "curet-multiclass",
