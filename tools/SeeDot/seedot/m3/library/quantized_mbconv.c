@@ -3,11 +3,11 @@
 
 #include "quantized_mbconv.h"
 
-void q7_mbconv_block(const Q7_T* const input, const Q7_T* const filter1,
-  const Q7_T* const BN1W, const Q7_T* const BN1B, const Q7_T* const filter2,
-  const Q7_T* const BN2W, const Q7_T* const BN2B, const Q7_T* const filter3,
-  const Q7_T* const BN3W, const Q7_T* const BN3B, Q7_T* const output,
-  Q7_T* const convBuffer1, Q7_T* const convBuffer2, ITER_T N, ITER_T H,
+void q7_mbconv_block(const Q7_T *const input, const Q7_T *const filter1,
+  const Q7_T *const BN1W, const Q7_T *const BN1B, const Q7_T *const filter2,
+  const Q7_T *const BN2W, const Q7_T *const BN2B, const Q7_T *const filter3,
+  const Q7_T *const BN3W, const Q7_T *const BN3B, Q7_T *const output,
+  Q7_T *const convBuffer1, Q7_T *const convBuffer2, ITER_T N, ITER_T H,
   ITER_T W, ITER_T CIn, ITER_T CTemp, ITER_T HF, ITER_T WF, ITER_T COut,
   ITER_T HOut, ITER_T WOut, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, Q15_T limit1, Q15_T limit2,
@@ -45,11 +45,11 @@ void q7_mbconv_block(const Q7_T* const input, const Q7_T* const filter1,
       ITER_T HIndexC1 = i * HOffsetC1;
       for (ITER_T j = 0; j < W; j++) {
         ITER_T WIndexIn = j * CIn + HIndexIn;
-        Q7_T* convBuffer1_offset = ((Q7_T*)convBuffer1) + j * CTemp + HIndexC1;
+        Q7_T * convBuffer1_offset = ((Q7_T *)convBuffer1) + j * CTemp + HIndexC1;
         for (ITER_T k = 0; k < CTemp; k++) {
           sum = 0;
-          Q7_T* input_offset = (Q7_T*)input + WIndexIn;
-          Q7_T* filter1_offset = (Q7_T*)filter1 + k;
+          Q7_T * input_offset = (Q7_T *)input + WIndexIn;
+          Q7_T * filter1_offset = (Q7_T *)filter1 + k;
           ITER_T in_channels = CIn;
 
           #ifdef LOOP_UNROLL
@@ -100,11 +100,11 @@ void q7_mbconv_block(const Q7_T* const input, const Q7_T* const filter1,
         if (iFull < H){
           for (ITER_T j = 0; j < W; j++) {
             ITER_T WIndexIn = j * CIn + HIndexIn;
-            Q7_T* convBuffer1_offset = ((Q7_T*)convBuffer1) + j * CTemp + HIndexC1;
+            Q7_T * convBuffer1_offset = ((Q7_T *)convBuffer1) + j * CTemp + HIndexC1;
             for (ITER_T k = 0; k < CTemp; k++) {
               sum = 0;
-              Q7_T* input_offset = (Q7_T*)input + WIndexIn;
-              Q7_T* filter1_offset = (Q7_T*)filter1 + k;
+              Q7_T * input_offset = (Q7_T *)input + WIndexIn;
+              Q7_T * filter1_offset = (Q7_T *)filter1 + k;
               ITER_T in_channels = CIn;
 
               #ifdef LOOP_UNROLL
@@ -143,10 +143,10 @@ void q7_mbconv_block(const Q7_T* const input, const Q7_T* const filter1,
             }
           }
         } else {
-          Q7_T* convBuffer1_offset = (Q7_T*)convBuffer1 + HIndexC1;
+          Q7_T * convBuffer1_offset = (Q7_T *)convBuffer1 + HIndexC1;
           for (ITER_T j = 0; j < W; j++) {
-            Q7_T* BN1B_offset = (Q7_T*)BN1B;
-            Q7_T* BN1W_offset = (Q7_T*)BN1W;
+            Q7_T * BN1B_offset = (Q7_T *)BN1B;
+            Q7_T * BN1W_offset = (Q7_T *)BN1W;
             ITER_T temp_channels = CTemp;
 
             #ifdef LOOP_UNROLL
@@ -185,7 +185,7 @@ void q7_mbconv_block(const Q7_T* const input, const Q7_T* const filter1,
 
       ITER_T wout = 0;
       for (S_ITER_T w = WOffsetL; w < ((S_ITER_T)W) - WOffsetR; wout++, w += ((S_ITER_T)WStride)) {
-        Q7_T* output_offset = ((Q7_T*)output) + wout * COut + HIndexOut;
+        Q7_T * output_offset = ((Q7_T *)output) + wout * COut + HIndexOut;
         for (ITER_T g = 0; g < CTemp; g++) {
           sum = 0;
           ITER_T GIndexF = g * GOffsetF;
@@ -224,8 +224,8 @@ void q7_mbconv_block(const Q7_T* const input, const Q7_T* const filter1,
 
         for (ITER_T i = 0; i < COut; i++) {
           sum = 0;
-          Q7_T* convBuffer2_offset = (Q7_T*)convBuffer2;
-          Q7_T* filter3_offset = (Q7_T*)filter3 + i;
+          Q7_T * convBuffer2_offset = (Q7_T *)convBuffer2;
+          Q7_T * filter3_offset = (Q7_T *)filter3 + i;
           ITER_T temp_channels = CTemp;
 
           #ifdef LOOP_UNROLL
@@ -261,11 +261,11 @@ void q7_mbconv_block(const Q7_T* const input, const Q7_T* const filter1,
   }
 }
 
-void q7xq15_q15_mbconv_block(const Q7_T* const input,
-  const Q15_T* const filter1, const Q15_T* const BN1W, const Q15_T* const BN1B,
-  const Q15_T* const filter2, const Q15_T* const BN2W, const Q15_T* const BN2B,
-  const Q15_T* const filter3, const Q15_T* const BN3W, const Q15_T* const BN3B,
-  Q15_T* const output, Q15_T* const convBuffer1, Q15_T* const convBuffer2,
+void q7xq15_q15_mbconv_block(const Q7_T * const input,
+  const Q15_T *const filter1, const Q15_T *const BN1W, const Q15_T *const BN1B,
+  const Q15_T *const filter2, const Q15_T *const BN2W, const Q15_T *const BN2B,
+  const Q15_T *const filter3, const Q15_T *const BN3W, const Q15_T *const BN3B,
+  Q15_T *const output, Q15_T *const convBuffer1, Q15_T *const convBuffer2,
   ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T CTemp, ITER_T HF, ITER_T WF,
   ITER_T COut, ITER_T HOut, ITER_T WOut, S_ITER_T HPadU, S_ITER_T HPadD,
   S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, Q31_T limit1,
@@ -303,11 +303,11 @@ void q7xq15_q15_mbconv_block(const Q7_T* const input,
       ITER_T HIndexC1 = i * HOffsetC1;
       for (ITER_T j = 0; j < W; j++) {
         ITER_T WIndexIn = j * CIn + HIndexIn;
-        Q15_T* convBuffer1_offset = ((Q15_T*)convBuffer1) + j * CTemp + HIndexC1;
+        Q15_T *convBuffer1_offset = ((Q15_T *)convBuffer1) + j * CTemp + HIndexC1;
         for (ITER_T k = 0; k < CTemp; k++) {
           sum = 0;
-          Q7_T* input_offset = (Q7_T*)input + WIndexIn;
-          Q15_T* filter1_offset = (Q15_T*)filter1 + k;
+          Q7_T *input_offset = (Q7_T *)input + WIndexIn;
+          Q15_T *filter1_offset = (Q15_T *)filter1 + k;
           ITER_T in_channels = CIn;
 
           #ifdef LOOP_UNROLL
@@ -358,11 +358,11 @@ void q7xq15_q15_mbconv_block(const Q7_T* const input,
         if (iFull < H){
           for (ITER_T j = 0; j < W; j++) {
             ITER_T WIndexIn = j * CIn + HIndexIn;
-            Q15_T* convBuffer1_offset = ((Q15_T*)convBuffer1) + j * CTemp + HIndexC1;
+            Q15_T *convBuffer1_offset = ((Q15_T *)convBuffer1) + j * CTemp + HIndexC1;
             for (ITER_T k = 0; k < CTemp; k++) {
               sum = 0;
-              Q7_T* input_offset = (Q7_T*)input + WIndexIn;
-              Q15_T* filter1_offset = (Q15_T*)filter1 + k;
+              Q7_T *input_offset = (Q7_T *)input + WIndexIn;
+              Q15_T *filter1_offset = (Q15_T *)filter1 + k;
               ITER_T in_channels = CIn;
 
               #ifdef LOOP_UNROLL
@@ -401,10 +401,10 @@ void q7xq15_q15_mbconv_block(const Q7_T* const input,
             }
           }
         } else {
-          Q15_T* convBuffer1_offset = (Q15_T*)convBuffer1 + HIndexC1;
+          Q15_T *convBuffer1_offset = (Q15_T *)convBuffer1 + HIndexC1;
           for (ITER_T j = 0; j < W; j++) {
-            Q15_T* BN1B_offset = (Q15_T*)BN1B;
-            Q15_T* BN1W_offset = (Q15_T*)BN1W;
+            Q15_T *BN1B_offset = (Q15_T *)BN1B;
+            Q15_T *BN1W_offset = (Q15_T *)BN1W;
             ITER_T temp_channels = CTemp;
 
             #ifdef LOOP_UNROLL
@@ -443,7 +443,7 @@ void q7xq15_q15_mbconv_block(const Q7_T* const input,
 
       ITER_T wout = 0;
       for (S_ITER_T w = WOffsetL; w < ((S_ITER_T)W) - WOffsetR; wout++, w += ((S_ITER_T)WStride)) {
-        Q15_T* output_offset = ((Q15_T*)output) + wout * COut + HIndexOut;
+        Q15_T * output_offset = ((Q15_T *)output) + wout * COut + HIndexOut;
         for (ITER_T g = 0; g < CTemp; g++) {
           sum = 0;
           ITER_T GIndexF = g * GOffsetF;
@@ -482,8 +482,8 @@ void q7xq15_q15_mbconv_block(const Q7_T* const input,
 
         for (ITER_T i = 0; i < COut; i++) {
           sum = 0;
-          Q15_T* convBuffer2_offset = (Q15_T*)convBuffer2;
-          Q15_T* filter3_offset = (Q15_T*)filter3 + i;
+          Q15_T * convBuffer2_offset = (Q15_T *)convBuffer2;
+          Q15_T * filter3_offset = (Q15_T *)filter3 + i;
           ITER_T temp_channels = CTemp;
 
           #ifdef LOOP_UNROLL
@@ -519,11 +519,11 @@ void q7xq15_q15_mbconv_block(const Q7_T* const input,
   }
 }
 
-void q15xq7_q7_mbconv_block(const Q15_T* const input,
-  const Q7_T* const filter1, const Q7_T* const BN1W, const Q15_T* const BN1B,
-  const Q7_T* const filter2, const Q7_T* const BN2W, const Q15_T* const BN2B,
-  const Q7_T* const filter3, const Q7_T* const BN3W, const Q15_T* const BN3B,
-  Q7_T* const output, Q15_T* const convBuffer1, Q15_T* const convBuffer2,
+void q15xq7_q7_mbconv_block(const Q15_T *const input,
+  const Q7_T *const filter1, const Q7_T *const BN1W, const Q15_T *const BN1B,
+  const Q7_T *const filter2, const Q7_T *const BN2W, const Q15_T *const BN2B,
+  const Q7_T *const filter3, const Q7_T *const BN3W, const Q15_T *const BN3B,
+  Q7_T *const output, Q15_T *const convBuffer1, Q15_T *const convBuffer2,
   ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T CTemp, ITER_T HF, ITER_T WF,
   ITER_T COut, ITER_T HOut, ITER_T WOut, S_ITER_T HPadU, S_ITER_T HPadD,
   S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, Q31_T limit1,
@@ -561,11 +561,11 @@ void q15xq7_q7_mbconv_block(const Q15_T* const input,
       ITER_T HIndexC1 = i * HOffsetC1;
       for (ITER_T j = 0; j < W; j++) {
         ITER_T WIndexIn = j * CIn + HIndexIn;
-        Q15_T* convBuffer1_offset = ((Q15_T*)convBuffer1) + j * CTemp + HIndexC1;
+        Q15_T *convBuffer1_offset = ((Q15_T *)convBuffer1) + j * CTemp + HIndexC1;
         for (ITER_T k = 0; k < CTemp; k++) {
           sum = 0;
-          Q15_T* input_offset = (Q15_T*)input + WIndexIn;
-          Q7_T* filter1_offset = (Q7_T*)filter1 + k;
+          Q15_T *input_offset = (Q15_T *)input + WIndexIn;
+          Q7_T *filter1_offset = (Q7_T *)filter1 + k;
           ITER_T in_channels = CIn;
 
           #ifdef LOOP_UNROLL
@@ -616,11 +616,11 @@ void q15xq7_q7_mbconv_block(const Q15_T* const input,
         if (iFull < H){
           for (ITER_T j = 0; j < W; j++) {
             ITER_T WIndexIn = j * CIn + HIndexIn;
-            Q15_T* convBuffer1_offset = ((Q15_T*)convBuffer1) + j * CTemp + HIndexC1;
+            Q15_T *convBuffer1_offset = ((Q15_T *)convBuffer1) + j * CTemp + HIndexC1;
             for (ITER_T k = 0; k < CTemp; k++) {
               sum = 0;
-              Q15_T* input_offset = (Q15_T*)input + WIndexIn;
-              Q7_T* filter1_offset = (Q7_T*)filter1 + k;
+              Q15_T *input_offset = (Q15_T *)input + WIndexIn;
+              Q7_T *filter1_offset = (Q7_T *)filter1 + k;
               ITER_T in_channels = CIn;
 
               #ifdef LOOP_UNROLL
@@ -659,10 +659,10 @@ void q15xq7_q7_mbconv_block(const Q15_T* const input,
             }
           }
         } else {
-          Q15_T* convBuffer1_offset = (Q15_T*)convBuffer1 + HIndexC1;
+          Q15_T *convBuffer1_offset = (Q15_T *)convBuffer1 + HIndexC1;
           for (ITER_T j = 0; j < W; j++) {
-            Q15_T* BN1B_offset = (Q15_T*)BN1B;
-            Q7_T* BN1W_offset = (Q7_T*)BN1W;
+            Q15_T *BN1B_offset = (Q15_T *)BN1B;
+            Q7_T *BN1W_offset = (Q7_T *)BN1W;
             ITER_T temp_channels = CTemp;
 
             #ifdef LOOP_UNROLL
@@ -701,7 +701,7 @@ void q15xq7_q7_mbconv_block(const Q15_T* const input,
 
       ITER_T wout = 0;
       for (S_ITER_T w = WOffsetL; w < ((S_ITER_T)W) - WOffsetR; wout++, w += ((S_ITER_T)WStride)) {
-        Q7_T* output_offset = ((Q7_T*)output) + wout * COut + HIndexOut;
+        Q7_T *output_offset = ((Q7_T *)output) + wout * COut + HIndexOut;
         for (ITER_T g = 0; g < CTemp; g++) {
           sum = 0;
           ITER_T GIndexF = g * GOffsetF;
@@ -740,8 +740,8 @@ void q15xq7_q7_mbconv_block(const Q15_T* const input,
 
         for (ITER_T i = 0; i < COut; i++) {
           sum = 0;
-          Q15_T* convBuffer2_offset = (Q15_T*)convBuffer2;
-          Q7_T* filter3_offset = (Q7_T*)filter3 + i;
+          Q15_T *convBuffer2_offset = (Q15_T *)convBuffer2;
+          Q7_T *filter3_offset = (Q7_T *)filter3 + i;
           ITER_T temp_channels = CTemp;
 
           #ifdef LOOP_UNROLL
@@ -777,11 +777,11 @@ void q15xq7_q7_mbconv_block(const Q15_T* const input,
   }
 }
 
-void q15xq7_q15_mbconv_block(const Q15_T* const input,
-  const Q7_T* const filter1, const Q7_T* const BN1W, const Q15_T* const BN1B,
-  const Q7_T* const filter2, const Q7_T* const BN2W, const Q15_T* const BN2B,
-  const Q7_T* const filter3, const Q7_T* const BN3W, const Q15_T* const BN3B,
-  Q15_T* const output, Q15_T* const convBuffer1, Q15_T* const convBuffer2,
+void q15xq7_q15_mbconv_block(const Q15_T *const input,
+  const Q7_T *const filter1, const Q7_T *const BN1W, const Q15_T *const BN1B,
+  const Q7_T *const filter2, const Q7_T *const BN2W, const Q15_T *const BN2B,
+  const Q7_T *const filter3, const Q7_T *const BN3W, const Q15_T *const BN3B,
+  Q15_T *const output, Q15_T *const convBuffer1, Q15_T *const convBuffer2,
   ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T CTemp, ITER_T HF, ITER_T WF,
   ITER_T COut, ITER_T HOut, ITER_T WOut, S_ITER_T HPadU, S_ITER_T HPadD,
   S_ITER_T WPadL, S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, Q31_T limit1,
@@ -819,11 +819,11 @@ void q15xq7_q15_mbconv_block(const Q15_T* const input,
       ITER_T HIndexC1 = i * HOffsetC1;
       for (ITER_T j = 0; j < W; j++) {
         ITER_T WIndexIn = j * CIn + HIndexIn;
-        Q15_T* convBuffer1_offset = ((Q15_T*)convBuffer1) + j * CTemp + HIndexC1;
+        Q15_T *convBuffer1_offset = ((Q15_T *)convBuffer1) + j * CTemp + HIndexC1;
         for (ITER_T k = 0; k < CTemp; k++) {
           sum = 0;
-          Q15_T* input_offset = (Q15_T*)input + WIndexIn;
-          Q7_T* filter1_offset = (Q7_T*)filter1 + k;
+          Q15_T *input_offset = (Q15_T *)input + WIndexIn;
+          Q7_T *filter1_offset = (Q7_T *)filter1 + k;
           ITER_T in_channels = CIn;
 
           #ifdef LOOP_UNROLL
@@ -874,11 +874,11 @@ void q15xq7_q15_mbconv_block(const Q15_T* const input,
         if (iFull < H){
           for (ITER_T j = 0; j < W; j++) {
             ITER_T WIndexIn = j * CIn + HIndexIn;
-            Q15_T* convBuffer1_offset = ((Q15_T*)convBuffer1) + j * CTemp + HIndexC1;
+            Q15_T *convBuffer1_offset = ((Q15_T *)convBuffer1) + j * CTemp + HIndexC1;
             for (ITER_T k = 0; k < CTemp; k++) {
               sum = 0;
-              Q15_T* input_offset = (Q15_T*)input + WIndexIn;
-              Q7_T* filter1_offset = (Q7_T*)filter1 + k;
+              Q15_T *input_offset = (Q15_T *)input + WIndexIn;
+              Q7_T *filter1_offset = (Q7_T *)filter1 + k;
               ITER_T in_channels = CIn;
 
               #ifdef LOOP_UNROLL
@@ -917,10 +917,10 @@ void q15xq7_q15_mbconv_block(const Q15_T* const input,
             }
           }
         } else {
-          Q15_T* convBuffer1_offset = (Q15_T*)convBuffer1 + HIndexC1;
+          Q15_T *convBuffer1_offset = (Q15_T *)convBuffer1 + HIndexC1;
           for (ITER_T j = 0; j < W; j++) {
-            Q15_T* BN1B_offset = (Q15_T*)BN1B;
-            Q7_T* BN1W_offset = (Q7_T*)BN1W;
+            Q15_T *BN1B_offset = (Q15_T *)BN1B;
+            Q7_T *BN1W_offset = (Q7_T *)BN1W;
             ITER_T temp_channels = CTemp;
 
             #ifdef LOOP_UNROLL
@@ -959,7 +959,7 @@ void q15xq7_q15_mbconv_block(const Q15_T* const input,
 
       ITER_T wout = 0;
       for (S_ITER_T w = WOffsetL; w < ((S_ITER_T)W) - WOffsetR; wout++, w += ((S_ITER_T)WStride)) {
-        Q15_T* output_offset = ((Q15_T*)output) + wout * COut + HIndexOut;
+        Q15_T *output_offset = ((Q15_T *)output) + wout * COut + HIndexOut;
         for (ITER_T g = 0; g < CTemp; g++) {
           sum = 0;
           ITER_T GIndexF = g * GOffsetF;
@@ -998,8 +998,8 @@ void q15xq7_q15_mbconv_block(const Q15_T* const input,
 
         for (ITER_T i = 0; i < COut; i++) {
           sum = 0;
-          Q15_T* convBuffer2_offset = (Q15_T*)convBuffer2;
-          Q7_T* filter3_offset = (Q7_T*)filter3 + i;
+          Q15_T *convBuffer2_offset = (Q15_T *)convBuffer2;
+          Q7_T *filter3_offset = (Q7_T *)filter3 + i;
           ITER_T temp_channels = CTemp;
 
           #ifdef LOOP_UNROLL
@@ -1035,11 +1035,11 @@ void q15xq7_q15_mbconv_block(const Q15_T* const input,
   }
 }
 
-void q15_mbconv_block(const Q15_T* const input, const Q15_T* const filter1,
-  const Q15_T* const BN1W, const Q15_T* const BN1B, const Q15_T* const filter2,
-  const Q15_T* const BN2W, const Q15_T* const BN2B, const Q15_T* const filter3,
-  const Q15_T* const BN3W, const Q15_T* const BN3B, Q15_T* const output,
-  Q15_T* const convBuffer1, Q15_T* const convBuffer2, ITER_T N, ITER_T H,
+void q15_mbconv_block(const Q15_T *const input, const Q15_T *const filter1,
+  const Q15_T *const BN1W, const Q15_T *const BN1B, const Q15_T *const filter2,
+  const Q15_T *const BN2W, const Q15_T *const BN2B, const Q15_T *const filter3,
+  const Q15_T *const BN3W, const Q15_T *const BN3B, Q15_T *const output,
+  Q15_T *const convBuffer1, Q15_T *const convBuffer2, ITER_T N, ITER_T H,
   ITER_T W, ITER_T CIn, ITER_T CTemp, ITER_T HF, ITER_T WF, ITER_T COut,
   ITER_T HOut, ITER_T WOut, S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL,
   S_ITER_T WPadR, ITER_T HStride, ITER_T WStride, Q31_T limit1, Q31_T limit2,
@@ -1077,11 +1077,11 @@ void q15_mbconv_block(const Q15_T* const input, const Q15_T* const filter1,
       ITER_T HIndexC1 = i * HOffsetC1;
       for (ITER_T j = 0; j < W; j++) {
         ITER_T WIndexIn = j * CIn + HIndexIn;
-        Q15_T* convBuffer1_offset = ((Q15_T*)convBuffer1) + j * CTemp + HIndexC1;
+        Q15_T *convBuffer1_offset = ((Q15_T *)convBuffer1) + j * CTemp + HIndexC1;
         for (ITER_T k = 0; k < CTemp; k++) {
           sum = 0;
-          Q15_T* input_offset = (Q15_T*)input + WIndexIn;
-          Q15_T* filter1_offset = (Q15_T*)filter1 + k;
+          Q15_T *input_offset = (Q15_T *)input + WIndexIn;
+          Q15_T *filter1_offset = (Q15_T *)filter1 + k;
           ITER_T in_channels = CIn;
 
           #ifdef LOOP_UNROLL
@@ -1132,11 +1132,11 @@ void q15_mbconv_block(const Q15_T* const input, const Q15_T* const filter1,
         if (iFull < H){
           for (ITER_T j = 0; j < W; j++) {
             ITER_T WIndexIn = j * CIn + HIndexIn;
-            Q15_T* convBuffer1_offset = ((Q15_T*)convBuffer1) + j * CTemp + HIndexC1;
+            Q15_T *convBuffer1_offset = ((Q15_T *)convBuffer1) + j * CTemp + HIndexC1;
             for (ITER_T k = 0; k < CTemp; k++) {
               sum = 0;
-              Q15_T* input_offset = (Q15_T*)input + WIndexIn;
-              Q15_T* filter1_offset = (Q15_T*)filter1 + k;
+              Q15_T *input_offset = (Q15_T *)input + WIndexIn;
+              Q15_T *filter1_offset = (Q15_T *)filter1 + k;
               ITER_T in_channels = CIn;
 
               #ifdef LOOP_UNROLL
@@ -1175,10 +1175,10 @@ void q15_mbconv_block(const Q15_T* const input, const Q15_T* const filter1,
             }
           }
         } else {
-          Q15_T* convBuffer1_offset = (Q15_T*)convBuffer1 + HIndexC1;
+          Q15_T *convBuffer1_offset = (Q15_T *)convBuffer1 + HIndexC1;
           for (ITER_T j = 0; j < W; j++) {
-            Q15_T* BN1B_offset = (Q15_T*)BN1B;
-            Q15_T* BN1W_offset = (Q15_T*)BN1W;
+            Q15_T *BN1B_offset = (Q15_T *)BN1B;
+            Q15_T *BN1W_offset = (Q15_T *)BN1W;
             ITER_T temp_channels = CTemp;
 
             #ifdef LOOP_UNROLL
@@ -1217,7 +1217,7 @@ void q15_mbconv_block(const Q15_T* const input, const Q15_T* const filter1,
 
       ITER_T wout = 0;
       for (S_ITER_T w = WOffsetL; w < ((S_ITER_T)W) - WOffsetR; wout++, w += ((S_ITER_T)WStride)) {
-        Q15_T* output_offset = ((Q15_T*)output) + wout * COut + HIndexOut;
+        Q15_T *output_offset = ((Q15_T *)output) + wout * COut + HIndexOut;
         for (ITER_T g = 0; g < CTemp; g++) {
           sum = 0;
           ITER_T GIndexF = g * GOffsetF;
@@ -1256,8 +1256,8 @@ void q15_mbconv_block(const Q15_T* const input, const Q15_T* const filter1,
 
         for (ITER_T i = 0; i < COut; i++) {
           sum = 0;
-          Q15_T* convBuffer2_offset = (Q15_T*)convBuffer2;
-          Q15_T* filter3_offset = (Q15_T*)filter3 + i;
+          Q15_T *convBuffer2_offset = (Q15_T *)convBuffer2;
+          Q15_T *filter3_offset = (Q15_T *)filter3 + i;
           ITER_T temp_channels = CTemp;
 
           #ifdef LOOP_UNROLL
