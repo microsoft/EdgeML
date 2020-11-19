@@ -335,11 +335,11 @@ inline int8_t Saturate(int32_t inp) {
 }
 
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void MatAddNN(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+void MatAddNN(TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			TypeTemp a = (TypeTemp)A[i * J + j];
-			TypeTemp b = (TypeTemp)B[i * J + j];
+			TypeTemp a = (TypeTemp) A[i * J + j];
+			TypeTemp b = (TypeTemp) B[i * J + j];
 
 			a = a / shrA;
 			b = b / shrB;
@@ -352,11 +352,11 @@ void MatAddNN(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT 
 	return;
 }
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void MatAddCN(const TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+void MatAddCN(const TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			TypeTemp a = (TypeTemp)A[i * J + j];
-			TypeTemp b = (TypeTemp)B[i * J + j];
+			TypeTemp a = (TypeTemp) A[i * J + j];
+			TypeTemp b = (TypeTemp) B[i * J + j];
 
 			a = a / shrA;
 			b = b / shrB;
@@ -369,11 +369,11 @@ void MatAddCN(const TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, 
 	return;
 }
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void MatAddNC(TypeA* A, const TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+void MatAddNC(TypeA *A, const TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			TypeTemp a = (TypeTemp)A[i * J + j];
-			TypeTemp b = (TypeTemp)B[i * J + j];
+			TypeTemp a = (TypeTemp) A[i * J + j];
+			TypeTemp b = (TypeTemp) B[i * J + j];
 
 			a = a / shrA;
 			b = b / shrB;
@@ -386,11 +386,11 @@ void MatAddNC(TypeA* A, const TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, 
 	return;
 }
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void MatAddCC(const TypeA* A, const TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+void MatAddCC(const TypeA *A, const TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			TypeTemp a = (TypeTemp)A[i * J + j];
-			TypeTemp b = (TypeTemp)B[i * J + j];
+			TypeTemp a = (TypeTemp) A[i * J + j];
+			TypeTemp b = (TypeTemp) B[i * J + j];
 
 			a = a / shrA;
 			b = b / shrB;
@@ -404,11 +404,11 @@ void MatAddCC(const TypeA* A, const TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT 
 }
 
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void MatAddBroadCastA(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+void MatAddBroadCastA(TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			TypeTemp a = (TypeTemp)* A;
-			TypeTemp b = (TypeTemp)B[i * J + j];
+			TypeTemp a = (TypeTemp) *A;
+			TypeTemp b = (TypeTemp) B[i * J + j];
 
 			a = a / shrA;
 			b = b / shrB;
@@ -421,11 +421,11 @@ void MatAddBroadCastA(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA
 	return;
 }
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void MatAddBroadCastB(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+void MatAddBroadCastB(TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			TypeTemp a = (TypeTemp)A[i * J + j];
-			TypeTemp b = (TypeTemp)* B;
+			TypeTemp a = (TypeTemp) A[i * J + j];
+			TypeTemp b = (TypeTemp) *B;
 
 			a = a / shrA;
 			b = b / shrB;
@@ -444,8 +444,8 @@ void MatAdd4(TypeA *A, TypeB *B, TypeX *X, MYINT N, MYINT H, MYINT W, MYINT C, M
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
 				for (MYITE c = 0; c < C; c++) {
-					TypeTemp a = (TypeTemp)A[n * H * W * C + h * W * C + w * C + c];
-					TypeTemp b = (TypeTemp)B[n * H * W * C + h * W * C + w * C + c];
+					TypeTemp a = (TypeTemp) A[n * H * W * C + h * W * C + w * C + c];
+					TypeTemp b = (TypeTemp) B[n * H * W * C + h * W * C + w * C + c];
 
 					a = a / shrA;
 					b = b / shrB;
@@ -463,11 +463,11 @@ void MatAdd4(TypeA *A, TypeB *B, TypeX *X, MYINT N, MYINT H, MYINT W, MYINT C, M
 
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
 // TODO: shrB is int32_t because in 8-bit/16-bit code, shrB is usually very high and int8_t/int16_t will overflow.
-void MatSub(TypeA* A, const TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC, MYINT demote) {
+void MatSub(TypeA *A, const TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			TypeTemp a = (TypeTemp)A[i * J + j];
-			TypeTemp b = (TypeTemp)B[i * J + j];
+			TypeTemp a = (TypeTemp) A[i * J + j];
+			TypeTemp b = (TypeTemp) B[i * J + j];
 
 			a = a / shrA;
 			b = b / shrB;
@@ -480,11 +480,11 @@ void MatSub(TypeA* A, const TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, in
 	return;
 }
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void MatSubBroadCastA(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+void MatSubBroadCastA(TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			TypeTemp a = (TypeTemp)* A;
-			TypeTemp b = (TypeTemp)B[i * J + j];
+			TypeTemp a = (TypeTemp) *A;
+			TypeTemp b = (TypeTemp) B[i * J + j];
 
 			a = a / shrA;
 			b = b / shrB;
@@ -497,11 +497,11 @@ void MatSubBroadCastA(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA
 	return;
 }
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void MatSubBroadCastB(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+void MatSubBroadCastB(TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			TypeTemp a = (TypeTemp)A[i * J + j];
-			TypeTemp b = (TypeTemp)* B;
+			TypeTemp a = (TypeTemp) A[i * J + j];
+			TypeTemp b = (TypeTemp) *B;
 
 			a = a / shrA;
 			b = b / shrB;
@@ -515,12 +515,12 @@ void MatSubBroadCastB(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA
 }
 
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void MatMulNN(TypeA* A, TypeB* B, TypeC* C, TypeTemp* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
+void MatMulNN(TypeA *A, TypeB *B, TypeC *C, TypeTemp *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
-				TypeTemp a = (TypeTemp)A[i * K + k];
-				TypeTemp b = (TypeTemp)B[k * J + j];
+				TypeTemp a = (TypeTemp) A[i * K + k];
+				TypeTemp b = (TypeTemp) B[k * J + j];
 
 				TypeTemp prod = a * b;
 
@@ -564,12 +564,12 @@ void MatMulNN(TypeA* A, TypeB* B, TypeC* C, TypeTemp* tmp, MYINT I, MYINT K, MYI
 	return;
 }
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void MatMulCN(const TypeA* A, TypeB* B, TypeC* C, TypeTemp* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
+void MatMulCN(const TypeA *A, TypeB *B, TypeC *C, TypeTemp *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
-				TypeTemp a = (TypeTemp)A[i * K + k];
-				TypeTemp b = (TypeTemp)B[k * J + j];
+				TypeTemp a = (TypeTemp) A[i * K + k];
+				TypeTemp b = (TypeTemp) B[k * J + j];
 
 				TypeTemp prod = a * b;
 
@@ -613,12 +613,12 @@ void MatMulCN(const TypeA* A, TypeB* B, TypeC* C, TypeTemp* tmp, MYINT I, MYINT 
 	return;
 }
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void MatMulNC(TypeA* A, const TypeB* B, TypeC* C, TypeTemp* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
+void MatMulNC(TypeA *A, const TypeB *B, TypeC *C, TypeTemp *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
-				TypeTemp a = (TypeTemp)A[i * K + k];
-				TypeTemp b = (TypeTemp)B[k * J + j];
+				TypeTemp a = (TypeTemp) A[i * K + k];
+				TypeTemp b = (TypeTemp) B[k * J + j];
 
 				TypeTemp prod = a * b;
 
@@ -662,12 +662,12 @@ void MatMulNC(TypeA* A, const TypeB* B, TypeC* C, TypeTemp* tmp, MYINT I, MYINT 
 	return;
 }
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void MatMulCC(const TypeA* A, const TypeB* B, TypeC* C, TypeTemp* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
+void MatMulCC(const TypeA *A, const TypeB *B, TypeC *C, TypeTemp *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
-				TypeTemp a = (TypeTemp)A[i * K + k];
-				TypeTemp b = (TypeTemp)B[k * J + j];
+				TypeTemp a = (TypeTemp) A[i * K + k];
+				TypeTemp b = (TypeTemp) B[k * J + j];
 
 				TypeTemp prod = a * b;
 
@@ -712,16 +712,16 @@ void MatMulCC(const TypeA* A, const TypeB* B, TypeC* C, TypeTemp* tmp, MYINT I, 
 }
 
 template<class TypeA, class TypeAidx, class TypeB, class TypeTemp, class TypeC>
-void SparseMatMulX(const TypeAidx* Aidx, const TypeA* Aval, TypeB** B, TypeC* C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+void SparseMatMulX(const TypeAidx *Aidx, const TypeA *Aval, TypeB **B, TypeC *C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
-		TypeTemp b = (TypeTemp)B[k * 1][0];
+		TypeTemp b = (TypeTemp) B[k * 1][0];
 
 		MYITE idx = Aidx[ite_idx];
 		while (idx != 0) {
-			TypeTemp a = (TypeTemp)Aval[ite_val];
-			TypeTemp c = (TypeTemp)(a * b);
+			TypeTemp a = (TypeTemp) Aval[ite_val];
+			TypeTemp c = (TypeTemp) (a * b);
 
 			C[idx - 1] += Saturate<TypeC>((((c / shrA) / shrB) / shrC) / demote);
 
@@ -732,20 +732,19 @@ void SparseMatMulX(const TypeAidx* Aidx, const TypeA* Aval, TypeB** B, TypeC* C,
 		}
 		ite_idx++;
 	}
-
 	return;
 }
 template<class TypeA, class TypeAidx, class TypeB, class TypeTemp, class TypeC>
-void SparseMatMul(const TypeAidx* Aidx, const TypeA* Aval, TypeB* B, TypeC* C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+void SparseMatMul(const TypeAidx *Aidx, const TypeA *Aval, TypeB *B, TypeC *C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
-		TypeTemp b = (TypeTemp)B[k];
+		TypeTemp b = (TypeTemp) B[k];
 		
 		MYITE idx = Aidx[ite_idx];
 		while (idx != 0) {
-			TypeTemp a = (TypeTemp)Aval[ite_val];
-			TypeTemp c = (TypeTemp)(a * b);
+			TypeTemp a = (TypeTemp) Aval[ite_val];
+			TypeTemp c = (TypeTemp) (a * b);
 		
 			C[idx - 1] += Saturate<TypeC>((((c / shrA) / shrB) / shrC) / demote);
 
@@ -756,16 +755,15 @@ void SparseMatMul(const TypeAidx* Aidx, const TypeA* Aval, TypeB* B, TypeC* C, i
 		}
 		ite_idx++;
 	}
-
 	return;
 }
 
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void MulCir(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT demote) {
+void MulCir(TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			TypeTemp a = (TypeTemp)A[i * J + j];
-			TypeTemp b = (TypeTemp)B[i * J + j];
+			TypeTemp a = (TypeTemp) A[i * J + j];
+			TypeTemp b = (TypeTemp) B[i * J + j];
 
 			TypeTemp prod = a * b;
 			C[i * J + j] = Saturate<TypeC>(((prod / shrA) / shrB) / demote);
@@ -775,14 +773,14 @@ void MulCir(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT sh
 }
 
 template<class TypeA>
-void Confidence(TypeA* A, float* confidence) {
+void Confidence(TypeA *A, float *confidence) {
 	*confidence = *A;
 	if (*confidence < 0)
 		* confidence = -(*confidence);
 }
 
 template<class TypeA>
-void Confidence(TypeA* A, MYINT I, MYINT J, MYITE* index, float* confidence) {
+void Confidence(TypeA *A, MYINT I, MYINT J, MYITE *index, float *confidence) {
 	TypeA max = A[0];
 	TypeA min = A[0];
 	MYITE maxIndex = 0, counter = 0;
@@ -817,7 +815,7 @@ void Confidence(TypeA* A, MYINT I, MYINT J, MYITE* index, float* confidence) {
 
 
 template<class TypeA>
-void ArgMax(TypeA* A, MYINT I, MYINT J, int* index) {
+void ArgMax(TypeA *A, MYINT I, MYINT J, int *index) {
 	TypeA max = A[0];
 	MYITE maxIndex = 0, counter = 0;
 	for (MYITE i = 0; i < I; i++) {
@@ -839,7 +837,7 @@ void ArgMax(TypeA* A, MYINT I, MYINT J, int* index) {
 }
 
 template<class TypeA>
-void Transpose(TypeA* A, TypeA* B, MYINT I, MYINT J) {
+void Transpose(TypeA *A, TypeA *B, MYINT I, MYINT J) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			B[i * J + j] = A[j * I + i];
@@ -849,11 +847,11 @@ void Transpose(TypeA* A, TypeA* B, MYINT I, MYINT J) {
 }
 
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void ScalarMul(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, int demote) {
-	TypeTemp a = (TypeTemp)* A;
+void ScalarMul(TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, int demote) {
+	TypeTemp a = (TypeTemp) *A;
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			TypeTemp b = (TypeTemp)B[i * J + j];
+			TypeTemp b = (TypeTemp) B[i * J + j];
 
 			TypeTemp prod = a * b;
 			C[i * J + j] = Saturate<TypeC>(((prod / shrA) / shrB) / demote);
@@ -865,14 +863,14 @@ void ScalarMul(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT
 
 template<class TypeA, class TypeF1, class TypeB1W, class TypeB1B, class TypeF2, class TypeB2W, class TypeB2B, class TypeF3, class TypeB3W, class TypeB3B, class TypeC, class TypeX, class TypeT, class TypeU, class TypeUB1W, class TypeUB2W, class TypeUB3W> 
 void MBConv(TypeA *A, TypeF1 *F1, TypeB1W *BN1W, TypeB1B *BN1B, TypeF2 *F2, TypeB2W *BN2W, TypeB2B *BN2B, TypeF3 *F3, TypeB3W *BN3W, TypeB3B *BN3B, TypeC *C, TypeX *X, TypeT *T, TypeU *U, MYITE N, MYITE H, MYITE W, MYITE Cin, MYITE Ct, MYITE HF, MYITE WF, MYITE Cout, MYITE Hout, MYITE Wout, MYITE HPADL, MYITE HPADR, MYITE WPADL, MYITE WPADR, MYITE HSTR, MYITE WSTR, MYITE D1, MYITE D2, MYITE D3, TypeUB1W SIX_1, TypeUB2W SIX_2, TypeUB1W shr1, TypeUB1W shr2, TypeUB1W shr3, TypeUB2W shr4, TypeUB2W shr5, TypeUB2W shr6, TypeUB3W shr7, TypeUB3W shr8, TypeUB3W shr9, TypeUB1W shl1, TypeUB1W shl2, TypeUB1W shl3, TypeUB2W shl4, TypeUB2W shl5, TypeUB2W shl6, TypeUB3W shl7, TypeUB3W shl8, TypeUB3W shl9) {
-	MYITE HOffsetL = (HF/2) - HPADL;
-	MYITE WOffsetL = (WF/2) - WPADL;
-	MYITE HOffsetR = (HF/2) - HPADR;
-	MYITE WOffsetR = (WF/2) - WPADR;
+	MYITE HOffsetL = (HF / 2) - HPADL;
+	MYITE WOffsetL = (WF / 2) - WPADL;
+	MYITE HOffsetR = (HF / 2) - HPADR;
+	MYITE WOffsetR = (WF / 2) - WPADR;
 
 	for (MYITE n = 0; n < N; n++) {
-		MYITE margin = HOffsetL + (HF / 2 + 1) - HSTR > 0 ? HOffsetL + (HF/2 + 1) - HSTR : 0; 
-		MYITE nstart = HOffsetL - (HF/2) < 0 ? 0 : HOffsetL - (HF/2);
+		MYITE margin = HOffsetL + (HF / 2 + 1) - HSTR > 0 ? HOffsetL + (HF / 2 + 1) - HSTR : 0; 
+		MYITE nstart = HOffsetL - (HF / 2) < 0 ? 0 : HOffsetL - (HF / 2);
 		for (MYITE i = nstart; i < margin; i++) {
 			for (MYITE j = 0; j < W; j++) {
 				for (MYITE k = 0; k < Ct; k++) {
@@ -896,7 +894,7 @@ void MBConv(TypeA *A, TypeF1 *F1, TypeB1W *BN1W, TypeB1B *BN1B, TypeF2 *F2, Type
 						depth++;
 					}
 	
-					TypeUB1W x = (((TypeUB1W)((U[0] * shl1) / shr1 + (BN1B[k] * shl2) / shr2)) * ((TypeUB1W)BN1W[k]));
+					TypeUB1W x = (((TypeUB1W)((U[0] * shl1) / shr1 + (BN1B[k] * shl2) / shr2)) * ((TypeUB1W) BN1W[k]));
 					x = x < 0 ? 0 : x;
 					x = x > SIX_1 ? SIX_1 : x;
 					X[i * W * Ct + j * Ct + k] =  Saturate<TypeX>((x * shl3) / shr3);
@@ -920,7 +918,7 @@ void MBConv(TypeA *A, TypeF1 *F1, TypeB1W *BN1W, TypeB1B *BN1B, TypeF2 *F2, Type
 						MYITE depth = 0;
 
 						while (depth < D1) {
-							for (MYITE p = 0; p <(totalEle / 2 + 1); p++) {
+							for (MYITE p = 0; p < (totalEle / 2 + 1); p++) {
 								if (p < count / 2)
 									U[p] = U[2 * p] / 2 + U[(2 * p) + 1] / 2;
 								else if ((p == (count / 2)) && ((count % 2) == 1))
@@ -932,7 +930,7 @@ void MBConv(TypeA *A, TypeF1 *F1, TypeB1W *BN1W, TypeB1B *BN1B, TypeF2 *F2, Type
 							depth++;
 						}
 
-						TypeUB1W x = (((TypeUB1W)((U[0] * shl1) / shr1 + (BN1B[k] * shl2) / shr2)) * ((TypeUB1W)BN1W[k]));
+						TypeUB1W x = (((TypeUB1W)((U[0] * shl1) / shr1 + (BN1B[k] * shl2) / shr2)) * ((TypeUB1W) BN1W[k]));
 						x = x < 0 ? 0 : x;
 						x = x > SIX_1 ? SIX_1 : x;
 						X[iRed * W * Ct + j * Ct + k] =  Saturate<TypeX>((x * shl3) / shr3);
@@ -943,10 +941,10 @@ void MBConv(TypeA *A, TypeF1 *F1, TypeB1W *BN1W, TypeB1B *BN1B, TypeF2 *F2, Type
 			for (MYITE w = WOffsetL, wout = 0; w < W - WOffsetR; w += WSTR, wout++) {
 				for (MYITE g = 0; g < Ct; g++) {
 					MYITE counter = 0;
-					for (MYITE hf = -(HF/2); hf <= (HF/2); hf++) {
-						for (MYITE wf = -(WF/2); wf <= (WF/2); wf++) {
+					for (MYITE hf = -(HF / 2); hf <= (HF / 2); hf++) {
+						for (MYITE wf = -(WF / 2); wf <= (WF / 2); wf++) {
 							TypeX x = (((h + hf) < 0) || ((h + hf) >= H) || ((w + wf) < 0) || ((w + wf) >= W)) ? 0 : X[((h + hf) % HF) * W * Ct + (w + wf) * Ct + g];
-							TypeF2 b = F2[g * HF * WF + (hf + HF/2) * WF + (wf + WF/2)];
+							TypeF2 b = F2[g * HF * WF + (hf + HF / 2) * WF + (wf + WF / 2)];
 							U[counter] = ((TypeU) x) * ((TypeU) b);
 							counter++;
 						}
@@ -968,7 +966,7 @@ void MBConv(TypeA *A, TypeF1 *F1, TypeB1W *BN1W, TypeB1B *BN1B, TypeF2 *F2, Type
 						depth++;
 					}
 
-					TypeUB2W x = (((TypeUB2W)((U[0] * shl4) / shr4 + (BN2B[g] * shl5) / shr5)) * ((TypeUB2W)BN2W[g]));
+					TypeUB2W x = (((TypeUB2W)((U[0] * shl4) / shr4 + (BN2B[g] * shl5) / shr5)) * ((TypeUB2W) BN2W[g]));
 					x = x < 0 ? 0 : x;
 					x = x > SIX_2 ? SIX_2 : x;
 					T[g] =  Saturate<TypeT>((x * shl6) / shr6);
@@ -982,7 +980,7 @@ void MBConv(TypeA *A, TypeF1 *F1, TypeB1W *BN1W, TypeB1B *BN1B, TypeF2 *F2, Type
 					MYITE depth = 0;
 
 					while (depth < D3) {
-						for (MYITE p = 0; p<(totalEle / 2 + 1); p++) {
+						for (MYITE p = 0; p < (totalEle / 2 + 1); p++) {
 							if (p < count / 2)
 								U[p] = U[2 * p] / 2 + U[(2 * p) + 1] / 2;
 							else if ((p == (count / 2 )) && ((count % 2) == 1))
@@ -1001,7 +999,7 @@ void MBConv(TypeA *A, TypeF1 *F1, TypeB1W *BN1W, TypeB1B *BN1B, TypeF2 *F2, Type
 }
 
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void Conv(TypeA* A, const TypeB* B, TypeC* C, TypeTemp* tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
+void Conv(TypeA *A, const TypeB *B, TypeC *C, TypeTemp *tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
 	MYITE padH = (HF - 1) / 2;
 	MYITE padW = (WF - 1) / 2;
 
@@ -1014,9 +1012,9 @@ void Conv(TypeA* A, const TypeB* B, TypeC* C, TypeTemp* tmp, MYINT N, MYINT H, M
 					for (MYITE hf = 0; hf < HF; hf++) {
 						for (MYITE wf = 0; wf < WF; wf++) {
 							for (MYITE ci = 0; ci < CI; ci++) {
-								TypeTemp a = (TypeTemp)(((((h + hf) < padH) || ((h + hf) >= (H + padH))) || (((w + wf) < padW) || ((w + wf) >= (W + padW)))) ? 0 : A[n * H * W * CI + ((h + hf) - padH) * W * CI + ((w + wf) - padW) * CI + ci]);
+								TypeTemp a = (TypeTemp) (((((h + hf) < padH) || ((h + hf) >= (H + padH))) || (((w + wf) < padW) || ((w + wf) >= (W + padW)))) ? 0 : A[n * H * W * CI + ((h + hf) - padH) * W * CI + ((w + wf) - padW) * CI + ci]);
 
-								TypeTemp b = (TypeTemp)B[hf * WF * CI * CO + wf * CI * CO + ci * CO + co];
+								TypeTemp b = (TypeTemp) B[hf * WF * CI * CO + wf * CI * CO + ci * CO + co];
 
 								tmp[counter] = a * b;
 								counter++;
@@ -1080,13 +1078,13 @@ void Convolution(TypeA *A, const TypeB *B, TypeC *C, TypeTemp *tmp, MYINT N, MYI
 					for(MYITE co = 0; co < COUTF; co ++) {
 
 						MYITE counter = 0;
-						for(MYITE hf = -(HF/2); hf <= HF/2; hf++) {
-							for(MYITE wf = -(WF/2); wf <= WF/2; wf++) {
+						for(MYITE hf = -(HF / 2); hf <= HF / 2; hf++) {
+							for(MYITE wf = -(WF / 2); wf <= WF / 2; wf++) {
 								for(MYITE ci = 0; ci < CINF; ci++) {
 
 									TypeTemp a = (TypeTemp) (((h + HDL * hf) < 0) || ((h + HDL * hf) >= H) || ((w + WDL * wf) < 0) || ((w + WDL * wf) >= W)) ? 0 : A[n * H * W * CIN + (h + HDL * hf) * W * CIN + (w + WDL * wf) * CIN + (ci + g * CINF)];
 
-									TypeTemp b = (TypeTemp) B[g * HF * WF * CINF * COUTF + (hf + HF/2) * WF * CINF * COUTF + (wf + WF/2) * CINF * COUTF + ci * COUTF + co];
+									TypeTemp b = (TypeTemp) B[g * HF * WF * CINF * COUTF + (hf + HF / 2) * WF * CINF * COUTF + (wf + WF / 2) * CINF * COUTF + ci * COUTF + co];
 
 									tmp[counter] = a * b;
 									counter++;
@@ -1136,7 +1134,7 @@ void Convolution(TypeA *A, const TypeB *B, TypeC *C, TypeTemp *tmp, MYINT N, MYI
 
 
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void AddOrSubCir4D(TypeA* A, const TypeB* B, TypeC* X, MYINT N, MYINT H, MYINT W, MYINT C, MYINT shrA, MYINT shrB, MYINT shrC, bool add, MYINT demote) {
+void AddOrSubCir4D(TypeA *A, const TypeB *B, TypeC *X, MYINT N, MYINT H, MYINT W, MYINT C, MYINT shrA, MYINT shrB, MYINT shrC, bool add, MYINT demote) {
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
@@ -1161,13 +1159,13 @@ void AddOrSubCir4D(TypeA* A, const TypeB* B, TypeC* X, MYINT N, MYINT H, MYINT W
 	return;
 }
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-void AddOrSubCir2D(TypeA* A, const TypeB* B, TypeC* X, MYINT H, MYINT W, MYINT shrA, MYINT shrB, MYINT shrC, bool add, MYINT demote) {
+void AddOrSubCir2D(TypeA *A, const TypeB *B, TypeC *X, MYINT H, MYINT W, MYINT shrA, MYINT shrB, MYINT shrC, bool add, MYINT demote) {
 	for (MYITE h = 0; h < H; h++) {
 		for (MYITE w = 0; w < W; w++) {
-			TypeTemp a = (TypeTemp)A[h * W + w];
+			TypeTemp a = (TypeTemp) A[h * W + w];
 			a = a / shrA;
 
-			TypeTemp b = (TypeTemp)B[w];
+			TypeTemp b = (TypeTemp) B[w];
 			b = b / shrB;
 
 			TypeTemp res;
@@ -1184,7 +1182,7 @@ void AddOrSubCir2D(TypeA* A, const TypeB* B, TypeC* X, MYINT H, MYINT W, MYINT s
 }
 
 template<class TypeA>
-void Relu4D(TypeA* A, MYINT N, MYINT H, MYINT W, MYINT C) {
+void Relu4D(TypeA *A, MYINT N, MYINT H, MYINT W, MYINT C) {
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
@@ -1201,7 +1199,7 @@ void Relu4D(TypeA* A, MYINT N, MYINT H, MYINT W, MYINT C) {
 }
 
 template<class TypeA, class TypeB>
-void Relu6(TypeA* A, TypeB* B, MYINT N, MYINT H, MYINT W, MYINT C, TypeA six, TypeA div) {
+void Relu6(TypeA *A, TypeB *B, MYINT N, MYINT H, MYINT W, MYINT C, TypeA six, TypeA div) {
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
@@ -1220,7 +1218,7 @@ void Relu6(TypeA* A, TypeB* B, MYINT N, MYINT H, MYINT W, MYINT C, TypeA six, Ty
 }
 
 template<class TypeA>
-void Relu2D(TypeA* A, MYINT H, MYINT W) {
+void Relu2D(TypeA *A, MYINT H, MYINT W) {
 	for (MYITE h = 0; h < H; h++) {
 		for (MYITE w = 0; w < W; w++) {
 			TypeA a = A[h * W + w];
@@ -1233,7 +1231,7 @@ void Relu2D(TypeA* A, MYINT H, MYINT W) {
 }
 
 template<class TypeA, class TypeB>
-void Maxpool(TypeA* A, TypeB* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT FH, MYINT FW, MYINT strideH, MYINT strideW, MYINT HPADL, MYINT HPADR, MYINT WPADL, MYINT WPADR, MYINT demote) {
+void Maxpool(TypeA *A, TypeB *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT FH, MYINT FW, MYINT strideH, MYINT strideW, MYINT HPADL, MYINT HPADR, MYINT WPADL, MYINT WPADR, MYINT demote) {
 	MYITE HO = H / strideH;
 	MYITE WO = W / strideW;
 
@@ -1260,14 +1258,14 @@ void Maxpool(TypeA* A, TypeB* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT FH, M
 }
 
 template<class TypeA>
-void NormaliseL2(TypeA* A, TypeA* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT scaleA, MYINT shrA) {
+void NormaliseL2(TypeA *A, TypeA *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT scaleA, MYINT shrA) {
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
 
 				// calculate the sum square
 				int32_t sumSquare = 0;
-				MYINT shrAdiv = (1<<shrA);
+				MYINT shrAdiv = (1 << shrA);
 
 				for (MYITE c = 0; c < C; c++) {
 #ifdef FASTAPPROX
@@ -1275,7 +1273,7 @@ void NormaliseL2(TypeA* A, TypeA* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 				sumSquare += tmp*tmp;
 #else           
 				int32_t tmp = A[n * H * W * C + h * W * C + w * C + c];
-				sumSquare += (((tmp*tmp)/shrAdiv)/shrAdiv);						
+				sumSquare += (((tmp * tmp) / shrAdiv) / shrAdiv);						
 #endif
 				}
 				
@@ -1284,21 +1282,21 @@ void NormaliseL2(TypeA* A, TypeA* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 				MYINT yLow = 1;
 
 				// yHigh: A number of length shrA with all 1s in binary representation e.g. for shrA=8 --> y_high = 0b11111111
-				MYINT yHigh = (1<<shrA - 1);   
+				MYINT yHigh = (1 << shrA - 1);   
 
 				// one: value of 1 with same scale as y*y*sumSquare
 				// scale of sumSquare = 2*scale_in + 2*shrA
 				// since we assume scale of y = 1 - shrA
 				// scale of y*y*sumSquare =  2*scale_in + 2*shrA + 2(1-shrA) = 2*scale_in + 2
-				int32_t one = ( 1<< (-(2*scaleA + 2)) ); 
+				int32_t one = (1 << (-(2 * scaleA + 2)) ); 
 
 				//binary search for the inverse square root 
-				while( yLow+1 < yHigh ){
+				while(yLow + 1 < yHigh){
 
 					//using int32_t sotherwise (y*y*sumSquare) will overflow
-					MYINT yMid = ((yHigh + yLow)>>1);
+					MYINT yMid = ((yHigh + yLow) >> 1);
 
-					int64_t cmpValue = (int64_t)sumSquare*yMid*yMid;
+					int64_t cmpValue = (int64_t) sumSquare * yMid * yMid;
 
 					if(cmpValue > one){
 						yHigh = yMid;	
@@ -1312,7 +1310,7 @@ void NormaliseL2(TypeA* A, TypeA* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 
 				// multiply all elements by the 1/sqrt(sumSquare)
 				for (MYITE c = 0; c < C; c++) {
-						B[n * H * W * C + h * W * C + w * C + c]  = (A[n * H * W * C + h * W * C + w * C + c]  / shrAdiv)*inverseNorm;  
+						B[n * H * W * C + h * W * C + w * C + c]  = (A[n * H * W * C + h * W * C + w * C + c]  / shrAdiv) * inverseNorm;  
 				}
 			}				
 		}
@@ -1322,10 +1320,10 @@ void NormaliseL2(TypeA* A, TypeA* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 
 //shrB overflows int16_t
 template<class TypeA, class TypeB>
-void Exp(TypeA* A, MYINT I, MYINT J, MYINT shrA, int32_t shrB, TypeB* B, MYINT demote) {
+void Exp(TypeA *A, MYINT I, MYINT J, MYINT shrA, int32_t shrB, TypeB *B, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			B[i * J + j] = (TypeB)((exp(((float)A[i * J + j]) / shrA) * shrB) / demote);
+			B[i * J + j] = (TypeB)((exp(((float) A[i * J + j]) / shrA) * shrB) / demote);
 		}
 	}
 	return;
@@ -1374,7 +1372,7 @@ void ExpNew16(int16_t *A, MYINT I, MYINT J, MYINT adjust, TypeB *B) {
 
 
 template<class TypeA>
-void Sigmoid(TypeA* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit, MYINT scale_in, MYINT scale_out, TypeA* B) {
+void Sigmoid(TypeA *A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit, MYINT scale_in, MYINT scale_out, TypeA *B) {
 	TypeA scale_diff = scale_out / scale_in;
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -1410,15 +1408,15 @@ void Sigmoid(TypeA* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_lim
 }
 // Integer sigmoid using new table exponentiation
 template<int dummy>
-void SigmoidNew8(int8_t* A, MYINT I, MYINT J, int8_t* B) {
+void SigmoidNew8(int8_t *A, MYINT I, MYINT J, int8_t *B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			int8_t a = A[i * J + j];
 			if (a <= 0) {
 				int8_t b = expBase8<int8_t>(a, 1);
-				B[i * J + j] = (int8_t)((64 * (int16_t)b) / ((int16_t)b + (int16_t)64));
+				B[i * J + j] = (int8_t)((64 * (int16_t) b) / ((int16_t) b + (int16_t) 64));
 			} else {
-				B[i * J + j] = (int8_t)(((int16_t)4096) / ((int16_t)64 + (int16_t)expBase8<int8_t>(-a, 1)));
+				B[i * J + j] = (int8_t)(((int16_t) 4096) / ((int16_t) 64 + (int16_t) expBase8<int8_t>(-a, 1)));
 			}
 			
 		}
@@ -1426,15 +1424,15 @@ void SigmoidNew8(int8_t* A, MYINT I, MYINT J, int8_t* B) {
 	return;
 }
 template<int dummy>
-void SigmoidNew16(int16_t* A, MYINT I, MYINT J, int16_t* B) {
+void SigmoidNew16(int16_t *A, MYINT I, MYINT J, int16_t *B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			int16_t a = A[i * J + j];
 			if (a <= 0) {
 				int16_t b = expBase16<int16_t>(a, 1);
-				B[i * J + j] = (int16_t)((16384 * (int32_t)b) / ((int32_t)b + (int32_t)16384));
+				B[i * J + j] = (int16_t)((16384 * (int32_t) b) / ((int32_t) b + (int32_t) 16384));
 			} else {
-				B[i * J + j] = (int16_t)(((int32_t)267943936L) / ((int32_t)16384 + (int32_t)expBase16<int16_t>(-a, 1)));
+				B[i * J + j] = (int16_t)(((int32_t) 267943936L) / ((int32_t) 16384 + (int32_t) expBase16<int16_t>(-a, 1)));
 			}
 			
 		}
@@ -1443,7 +1441,7 @@ void SigmoidNew16(int16_t* A, MYINT I, MYINT J, int16_t* B) {
 }
 
 template<class TypeA>
-void TanH(TypeA* A, MYINT I, MYINT J, TypeA scale_in, TypeA scale_out, TypeA* B) {
+void TanH(TypeA *A, MYINT I, MYINT J, TypeA scale_in, TypeA scale_out, TypeA *B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 		#ifdef FLOATEXP
@@ -1476,16 +1474,16 @@ void TanH(TypeA* A, MYINT I, MYINT J, TypeA scale_in, TypeA scale_out, TypeA* B)
 }
 // Integer TanH using new table exponentiation
 template<int dummy>
-void TanHNew8(int8_t* A, MYINT I, MYINT J, int8_t* B) {
+void TanHNew8(int8_t *A, MYINT I, MYINT J, int8_t *B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			int8_t a = A[i * J + j];
 			if (a <= 0) {
-				int16_t b = expBase8<int8_t>(2*a, 1);
-				B[i * J + j] = (int8_t)( (((int16_t)64)*(b - 64)) / (b + 64));
+				int16_t b = expBase8<int8_t>(2 * a, 1);
+				B[i * J + j] = (int8_t)((((int16_t) 64) * (b - 64)) / (b + 64));
 			} else {
-				int16_t b = expBase8<int8_t>(-2*a, 1);
-				B[i * J + j] = (int8_t)( (((int16_t)64)*(64 - b)) / (b + 64));
+				int16_t b = expBase8<int8_t>(-2 * a, 1);
+				B[i * J + j] = (int8_t)((((int16_t) 64) * (64 - b)) / (b + 64));
 			}
 			
 		}
@@ -1493,16 +1491,16 @@ void TanHNew8(int8_t* A, MYINT I, MYINT J, int8_t* B) {
 	return;
 }
 template<int dummy>
-void TanHNew16(int16_t* A, MYINT I, MYINT J, int16_t* B) {
+void TanHNew16(int16_t *A, MYINT I, MYINT J, int16_t *B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			int16_t a = A[i * J + j];
 			if (a <= 0) {
-				int32_t b = expBase16<int16_t>(2*a, 1);
-				B[i * J + j] = (int16_t)( (((int32_t)16384)*(b - 16384)) / (b + 16384));
+				int32_t b = expBase16<int16_t>(2 * a, 1);
+				B[i * J + j] = (int16_t)((((int32_t) 16384) * (b - 16384)) / (b + 16384));
 			} else {
-				int32_t b = expBase16<int16_t>(-2*a, 1);
-				B[i * J + j] = (int16_t)( (((int32_t)16384)*(16384 - b)) / (b + 16384));
+				int32_t b = expBase16<int16_t>(-2 * a, 1);
+				B[i * J + j] = (int16_t)((((int32_t) 16384) * (16384 - b)) / (b + 16384));
 			}
 			
 		}
@@ -1512,7 +1510,7 @@ void TanHNew16(int16_t* A, MYINT I, MYINT J, int16_t* B) {
 
 
 template<class TypeA>
-void AdjustScaleShr(TypeA* A, MYINT I, MYINT J, MYINT scale) {
+void AdjustScaleShr(TypeA *A, MYINT I, MYINT J, MYINT scale) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			TypeA a = A[i * J + j];
@@ -1522,7 +1520,7 @@ void AdjustScaleShr(TypeA* A, MYINT I, MYINT J, MYINT scale) {
 	return;
 }
 template<class TypeA>
-void AdjustScaleShr(TypeA* A, MYINT I, MYINT J, MYINT K, MYINT L, MYINT scale) {
+void AdjustScaleShr(TypeA *A, MYINT I, MYINT J, MYINT K, MYINT L, MYINT scale) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for(MYITE k = 0; k < K; k++) {
@@ -1536,7 +1534,7 @@ void AdjustScaleShr(TypeA* A, MYINT I, MYINT J, MYINT K, MYINT L, MYINT scale) {
 	return;
 }
 template<class TypeA>
-void AdjustScaleShl(TypeA* A, MYINT I, MYINT J, MYINT scale) {
+void AdjustScaleShl(TypeA *A, MYINT I, MYINT J, MYINT scale) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			TypeA a = A[i * J + j];
@@ -1546,7 +1544,7 @@ void AdjustScaleShl(TypeA* A, MYINT I, MYINT J, MYINT scale) {
 	return;
 }
 template<class TypeA>
-void AdjustScaleShl(TypeA* A, MYINT I, MYINT J, MYINT K, MYINT L, MYINT scale) {
+void AdjustScaleShl(TypeA *A, MYINT I, MYINT J, MYINT K, MYINT L, MYINT scale) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for(MYITE k = 0; k < K; k++) {
@@ -1560,7 +1558,7 @@ void AdjustScaleShl(TypeA* A, MYINT I, MYINT J, MYINT K, MYINT L, MYINT scale) {
 	return;
 }
 template<class TypeA>
-void AdjustScaleShlSaturate(TypeA* A, MYINT I, MYINT J, MYINT scale, MYINT saturate) {
+void AdjustScaleShlSaturate(TypeA *A, MYINT I, MYINT J, MYINT scale, MYINT saturate) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			TypeA a = A[i * J + j];
@@ -1571,7 +1569,7 @@ void AdjustScaleShlSaturate(TypeA* A, MYINT I, MYINT J, MYINT scale, MYINT satur
 	return;
 }
 template<class TypeA>
-void AdjustScaleShlSaturate(TypeA* A, MYINT I, MYINT J, MYINT K, MYINT L, MYINT scale, MYINT saturate) {
+void AdjustScaleShlSaturate(TypeA *A, MYINT I, MYINT J, MYINT K, MYINT L, MYINT scale, MYINT saturate) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for(MYITE k = 0; k < K; k++) {
@@ -1588,12 +1586,9 @@ void AdjustScaleShlSaturate(TypeA* A, MYINT I, MYINT J, MYINT K, MYINT L, MYINT 
 
 // B = reverse(A, axis)
 template<class TypeA>
-void Reverse2(TypeA *A, MYINT axis, MYINT I, MYINT J, TypeA *B)
-{
-	for (MYITE i = 0; i < I; i++)
-	{
-		for (MYITE j = 0; j < J; j++)
-		{	
+void Reverse2(TypeA *A, MYINT axis, MYINT I, MYINT J, TypeA *B) {
+	for (MYITE i = 0; i < I; i++) {
+		for (MYITE j = 0; j < J; j++) {	
 			MYINT i_prime = (axis == 0 ? (I-1-i) : i);
 			MYINT j_prime = (axis == 1 ? (J-1-j) : j); 
 

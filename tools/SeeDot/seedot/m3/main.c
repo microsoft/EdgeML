@@ -31,7 +31,7 @@ int compare_doubles(const void *a, const void *b) {
 // Function for computing the deviation from the expected doubleing point
 // result and returning the largest such deviation found.
 
-double compute_error(const Q31_T* const pred, const double* const label,
+double compute_error(const Q31_T *const pred, const double* const label,
                     double* const errors, SCALE_T scl) {
   double agg_diff = 0.0;
 
@@ -52,8 +52,8 @@ double aggregate_error(double* errors, unsigned len) {
   return errors[index];
 }
 
-void parse_csv_q15p(char* line, Q15_T** array, int size, int scale) {
-  char* linepointer = line;
+void parse_csv_q15p(char *line, Q15_T **array, int size, int scale) {
+  char *linepointer = line;
   for (int i = 0; i < size; i++) {
 
     char *tok = strtok(linepointer, ",");
@@ -71,8 +71,8 @@ void parse_csv_q15p(char* line, Q15_T** array, int size, int scale) {
   return;
 }
 
-void parse_csv_d(char* line, double* array, int size) {
-  char* linepointer = line;
+void parse_csv_d(char *line, double* array, int size) {
+  char *linepointer = line;
   for (int i = 0; i < size; i++) {
 
     char *tok = strtok(linepointer, ",");
@@ -118,17 +118,17 @@ int main(int argc, char **argv) {
   }
 
 
-  char* xLine = malloc(FPSIZE * INPUT_SIZE);
-  char* yLine = malloc(FPSIZE * OUTPUT_SIZE);
+  char *xLine = malloc(FPSIZE * INPUT_SIZE);
+  char *yLine = malloc(FPSIZE * OUTPUT_SIZE);
 
 
-  Q15_T** x = malloc(sizeof(Q15_T*) * INPUT_SIZE);
+  Q15_T **x = malloc(sizeof(Q15_T *) * INPUT_SIZE);
   for (int i = 0; i < INPUT_SIZE; i++) {
     x[i] = malloc(sizeof(Q15_T));
   }
 
   double* y = malloc(sizeof(double) * OUTPUT_SIZE);
-  Q31_T* pred = malloc(sizeof(Q31_T) * OUTPUT_SIZE);
+  Q31_T *pred = malloc(sizeof(Q31_T) * OUTPUT_SIZE);
   double* allErrors = malloc(sizeof(double) * OUTPUT_SIZE);
 
   int i = 0;
