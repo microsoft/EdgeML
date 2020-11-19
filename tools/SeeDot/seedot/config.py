@@ -18,18 +18,33 @@ msbuildPathOptions = [r"C:\Program Files (x86)\Microsoft Visual Studio\2019\Comm
                       r"C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe"
                       ]
 
-# Currently not supported (ddsEnabled = False and vbwEnabled = True) 
+# Not supported (ddsEnabled = False and vbwEnabled = True) 
+
+# Enable Data driven scale computation. Turning this to False reverts the compiler to old verion (PLDI'19)
 ddsEnabled = True
+
+# Enable Variable BitWidth code generation. Setting this to false results in a code which uses mostly 16 bits
 vbwEnabled = True
+
+# For exponential activation functions, turning this on restricts the range of the values taken by tanH, sigmoid
+# which results in a better scale assignment (OOPSLA'20 Section 5.4)
 functionReducedProfiling = True
 
+# Turning this to True restricts function profiling to those datapoints whose extrema are not in highest 10%, which
+# can make scales more precise but risk running into overflows for some cases.
 trimHighestDecile = False
 
+# If true, then during exploration, a higher scale would be preferred if two or more codes have similar accuracy results
 higherOffsetBias = True
 
+# If true, the exploration iterates between Stage III and IV of the exploration to attempt to reach a global optimum
 fixedPointVbwIteration = False
 
+# Number of offsets tried out for each variable (except X, for which 9 are tried) when they are demoted to 8 bits one at a time.
 offsetsPerDemotedVariable = 3
+
+# Following classes are used sanity checks for arguments passed to the compiler, to prevent unexpected arguments being passed. 
+# These lists should be updated as the compiler is expanded to multiple algorithms and datasets 
 
 class MaximisingMetric:
     accuracy = "acc"
