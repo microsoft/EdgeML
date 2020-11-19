@@ -111,7 +111,7 @@ void flushProfile() {
 	}
 }
 
-void checkRange2(float* A, int I, int J) {
+void checkRange2(float *A, int I, int J) {
 	if(!profilingEnabled)
 		return;
 	for (int i = 0; i < I; i++) {
@@ -123,7 +123,7 @@ void checkRange2(float* A, int I, int J) {
 	}
 }
 
-void Profile4(float* A, int I, int J, int K, int L, string name) {
+void Profile4(float *A, int I, int J, int K, int L, string name) {
 	if(!profilingEnabled)
 		return;
 	if (min_temp.find(name) == min_temp.end()) {
@@ -145,7 +145,7 @@ void Profile4(float* A, int I, int J, int K, int L, string name) {
 	}
 }
 
-void Profile3(float* A, int I, int J, int K, string name) {
+void Profile3(float *A, int I, int J, int K, string name) {
 	if(!profilingEnabled)
 		return;
 	if (min_temp.find(name) == min_temp.end()) {
@@ -165,7 +165,7 @@ void Profile3(float* A, int I, int J, int K, string name) {
 	}
 }
 
-void Profile2(float* A, int I, int J, string name) {
+void Profile2(float *A, int I, int J, string name) {
 	if(!profilingEnabled)
 		return;
 	if (min_temp.find(name) == min_temp.end()) {

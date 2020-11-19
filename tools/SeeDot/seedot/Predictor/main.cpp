@@ -114,7 +114,7 @@ void populateFloatVector(float **features_float, vector<string> features)
 // Each thread, which invokes the following method, is responsible for taking in one datapoint 
 // and running it through all the generated codes
 // Number of threads generated equals the number of datapoints in the given dataset
-void launchThread(int features_size, MYINT **features_int, MYINT *** features_intV, float **features_float, int counter, float* float_res, int* res, int** resV) {
+void launchThread(int features_size, MYINT **features_int, MYINT ***features_intV, float **features_float, int counter, float *float_res, int *res, int **resV) {
 	seedotFixed(features_int, res);
 	seedotFloat(features_float, float_res);
 
@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
 	bool alloc = false;
 	int features_size = -1;
 	MYINT **features_int = NULL;
-	vector<MYINT **> features_intV(switches, NULL);
+	vector<MYINT**> features_intV(switches, NULL);
 	float **features_float = NULL;
 
 	// Initialize variables used for profiling
@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
 	vector<float*> labelsFloat;
 	vector<thread> threads;
 
-	MYINT*** features_intV_copy;
+	MYINT ***features_intV_copy;
 
 	string line1, line2;
 	int counter = 0;
@@ -233,8 +233,8 @@ int main(int argc, char *argv[])
 		// Read the feature vector and class ID
 		vector<string> features = getFeatures(line1);
 		vector<string> labelString = getLabel(line2);
-		int32_t* labelInt = new int32_t[numOutputs];
-		float* labelFloat = new float[numOutputs];
+		int32_t *labelInt = new int32_t[numOutputs];
+		float *labelFloat = new float[numOutputs];
 
 		if (problem == Classification) {
 			for (int i = 0; i < numOutputs; i++) {
@@ -281,8 +281,8 @@ int main(int argc, char *argv[])
 			populateFloatVector(features_float, features);
 
 		// Invoke the predictor function
-		int* fixed_res = NULL;
-		float* float_res = NULL;
+		int *fixed_res = NULL;
+		float *float_res = NULL;
 		vector <int> resV(switches, -1);
 
 		if (debugMode)
@@ -311,19 +311,19 @@ int main(int argc, char *argv[])
 					labelsInt.push_back(labelInt);
 				else if (problem == Regression)
 					labelsFloat.push_back(labelFloat);
-				int** switchRes = new int*[switches];
+				int **switchRes = new int*[switches];
 				// Instantiating vectors for storing inference results for each generated code
 				for(int i = 0; i < switches; i++) {
 					switchRes[i] = new int[numOutputs];
 				}
 				vector_int_resV.push_back(switchRes);
 				// Instantiating vectors for storing features, integer and float
-				MYINT** features_int_copy = new MYINT*[features_size];
+				MYINT **features_int_copy = new MYINT*[features_size];
 				for(int i = 0; i < features_size; i++) {
 					features_int_copy[i] = new MYINT[1];
 					features_int_copy[i][0] = features_int[i][0];
 				}
-				float** features_float_copy = new float*[features_size];
+				float **features_float_copy = new float*[features_size];
 				for(int i = 0; i < features_size; i++) {
 					features_float_copy[i] = new float[1];
 					features_float_copy[i][0] = features_float[i][0];
@@ -380,9 +380,9 @@ int main(int argc, char *argv[])
 
 	int correct = 0, total = 0;
 	for(int i = 0; i < counter; i++) {
-		int* fixed_res = vector_int_res[i];
-		float* float_res = vector_float_res[i];
-		int** resV = vector_int_resV[i];
+		int *fixed_res = vector_int_res[i];
+		float *float_res = vector_float_res[i];
+		int **resV = vector_int_resV[i];
 
 		if (problem == Classification) {
 			for(int j = 0; j < numOutputs; j++) {
