@@ -8,6 +8,8 @@
 #include "library_float.h"
 #include "profile.h"
 
+// This file contains floating point implementations of operations supported by SeeDot.
+
 // C = A + B
 void MatAddNN(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC)
 {

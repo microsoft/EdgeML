@@ -19,6 +19,8 @@ from seedot.compiler.compiler import Compiler
 from seedot.predictor import Predictor
 import seedot.util as Util
 
+# Overall compiler logic is maintained in this file. Please refer to architecture.md for a 
+# detailed explanation of how the various modules interact with each other
 
 class Main:
 
@@ -26,24 +28,64 @@ class Main:
         self.algo, self.version, self.target = algo, version, target
         self.trainingFile, self.testingFile, self.modelDir = trainingFile, testingFile, modelDir
         self.sf = sf
+            # MaxScale factor. Used in the original version of seedot. 
+            # Refer to PLDI'19 paper: maxscale parameter P
         self.dataset = dataset
+            # Dataset which is being evaluated
         self.accuracy = {}
+            # Seedot examines accuracy of multiple codes. 
+            # This variable contains a map from code ID -> corresponding accuracy
         self.maximisingMetric = maximisingMetric
+            # This can be accuracy, disagreements (see OOPSLA'20 paper: disagreement ratio) or 
+            # reduced disagreement (disagreement ratio for only those parameters where float model prediction is correct)
         self.numOutputs = numOutputs
+            # Number of outputs, it is 1 for a single-class prediction. For n simultaneous predictions, it is n
         self.source = source
-        self.variableSubstitutions = {} #evaluated during profiling code run
-        self.scalesForX = {} #populated for multiple code generation
-        self.scalesForY = {} #populated for multiple code generation
-        self.problemType = config.ProblemType.default
-        self.variableToBitwidthMap = {} #Populated during profiling code run
-        self.sparseMatrixSizes = {} #Populated during profiling code run
-        self.varDemoteDetails = [] #Populated during variable demotion in VBW mode
-        self.flAccuracy = -1 #Populated during profiling code run
-        self.allScales = {} #Eventually populated with scale assignments in final code
-        self.demotedVarsList = [] #Populated in VBW mode after exploration completed
-        self.demotedVarsOffsets = {} #Populated in VBW mode after exploration completed
-        self.biasShifts = {} #For simplifying bias addition, populated after every code run, used for M3 codegen
+            # seedot or onnx or tensorflow
+        self.variableSubstitutions = {}
+            # evaluated during profiling code run (runForFloat). During compilation, variable names get substituted 
+            # into other names, which is stored in this variable. It is required in the case that an attribute
+            # computed for some variable might have to be propagated to other variables, like scales and bitwidths
+        self.scalesForX = {}                            
+            # populated for multiple code generation (performSearch: if vbwEnabled is True). Seedot carries out an
+            # exploration (OOPSLA'20 paper, Section 6.2) where multiple codes are compiled and evaluated. This variable
+            # stored a map from code ID -> corresponding scale of input variable 'X'
+        self.scalesForY = {}                            
+            # populated for multiple code generation (performSearch: if vbwEnabled is True). Seedot carries out an
+            # exploration (OOPSLA'20 paper, Section 6.2) where multiple codes are compiled and evaluated. This variable
+            # stored a map from code ID -> corresponding scale of output variable 'Y' (if the problem is regression, 
+            # for classification problems 'Y' is already an integer hence does not need to be scaled)
+        self.problemType = config.ProblemType.default   
+            # edited when converter module determines whether problem is regression or classification
+        self.variableToBitwidthMap = {} 
+            # This variable holds the bitwidth assignment for all variables in the code. The keys (variable names) 
+            # are identified during profiling run (runForFloat) and the values (bitwidths) are evaluated during 
+            # multiple code generation (performSearch: if vbwEnabled is True). By default, the bitwidths are set to 16.
+        self.sparseMatrixSizes = {} 
+            # Populated during profiling code run (runForFloat). For sparse matrix multiplication, the matrices
+            # in the generated code have different sizes than in the input code due to CSR represenation, and 
+            # the generated matrix sizes are stored here.
+        self.varDemoteDetails = [] 
+            # Populated during variable demotion in VBW mode. This stores the resultant code performance
+            # when a subset of variables is demoted.
+        self.flAccuracy = -1 
+            # Populated during profiling code run. Accuracy of the floating point code.
+        self.allScales = {} 
+            # This stores the final scale assignment of every variable in the code (considering their 
+            # bitwidth assignments). This variable is updated after every code generated, so eventually it
+            # is populated with the bitwidth assignment of the final generated code
+        self.demotedVarsList = [] 
+            # Populated in VBW mode after exploration is completed. After the compiler determines the variables
+            # to be demoted, this variable is populated with a list of those variables.
+        self.demotedVarsOffsets = {} 
+            # Populated in VBW mode after exploration is completed. After the compiler determines the variables
+            # to be demoted, this variable is populated with a map of variables to the scale offset which gives the best accuracy
+        self.biasShifts = {} 
+            # For simplifying bias addition, populated after every code run, used for M3 codegen.
+            # in operations like WX+B, B is mostly used once in the code. So all the fixed point computations are clubbed into one
 
+
+    # This function is invoked right at the beginning for moving around files into the working directory
     def setup(self):
         curr_dir = os.path.dirname(os.path.realpath(__file__))
         
@@ -72,8 +114,26 @@ class Main:
         else:    
             return os.path.join(self.modelDir, "input.pb")          
 
-    # Generate the fixed-point code using the input generated from the
-    # Converter project
+    # Generates one particular fixed-point or floating-point code
+    # Arguments:
+    #   version:                float or fixed
+    #   target:                 target device (x86, arduino or m3)
+    #   sf:                     maxScale factor (check description above)
+    #   The next three parameters are used to control how many candidate codes are built at once. Generating
+    #   multiple codes at once and building them simultaneously helps avoid multiple build overheads as well
+    #   as saves data processing overhead at runtime.
+    #   generateAllFiles:       if True, it generates multiple files like datasets, configuration etc. if False,
+    #                           only generates the inference code.
+    #   id:                     Multiple inference codes are designated by a code ID 'N' (function names are 
+    #                           seedot_fixed'N')
+    #   printSwitch:            whether or not to print a switch between multiple inference codes (only needs to
+    #                           be True at the last code being generated as the switch is print right after that)
+    #   scaleForX:              scale of input X for the particular fixed-point code
+    #   variableToBitwidthMap:  bitwidth assignments for the particular fixed-point code
+    #   demotedVarsList:        set of variables using 8-bits in the particular fixed-point code
+    #   demotedVarsOffsets:     map from variables to scale offsets for particular fixed-point code
+    #   paramInNativeBitwidth:  if False, it means model parameters are stored as 8-bit/16-bit integers mixed. 
+    #                           If True, it means model parameters are stored as 16-bit integers only (16 is native bitwidth)
     def compile(self, version, target, sf, generateAllFiles=True, id=None, printSwitch=-1, scaleForX=None, variableToBitwidthMap=None, demotedVarsList=[], demotedVarsOffsets={}, paramInNativeBitwidth=True):
         print("Generating code...", end='')
 
@@ -130,8 +190,14 @@ class Main:
         print("completed")
         return True
 
-    # Run the converter project to generate the input files using reading the
-    # training model
+    # Runs the converter project to generate the input files using reading the training model
+    # Arguments:
+    #   version:                float or fixed
+    #   datasetType:            train or test
+    #   target:                 target device (x86, arduino or m3)
+    #   varsForBitwidth:        bitwidth assignments used to generate model files. If none, 
+    #                           default bitwidth 16 used for all variables
+    #   demotedVarsOffsets:     Keys are list of variables which use 8 bits
     def convert(self, version, datasetType, target, varsForBitwidth={}, demotedVarsOffsets={}):
         print("Generating input files for %s %s dataset..." %
               (version, datasetType), end='')
@@ -188,6 +254,9 @@ class Main:
         return execMap
 
     # Compile and run the generated code once for a given scaling factor
+    # The arguments are explain in the description of self.compile()
+    # The function is named partial compile as in one C++ output file multiple inference codes are generated
+    # One invokation of partialCompile generates only one of the multiple inference codes
     def partialCompile(self, version, target, scale, generateAllFiles, id, printSwitch, variableToBitwidthMap=None, demotedVarsList=[], demotedVarsOffsets={}, paramInNativeBitwidth=True):
         if config.ddsEnabled:
             res = self.compile(version, target, None, generateAllFiles, id, printSwitch, scale, variableToBitwidthMap, demotedVarsList, demotedVarsOffsets, paramInNativeBitwidth)
@@ -198,11 +267,14 @@ class Main:
         else:
             return True
 
+    # Runs the C++ file which contains multiple inference codes. Reads the output of all inference codes,
+    # arranges them and returns a map of inference code descriptor to performance
     def runAll(self, version, datasetType, codeIdToScaleFactorMap, demotedVarsToOffsetToCodeId=None, doNotSort=False):
         execMap = self.predict(version, datasetType)
         if execMap == None:
             return False, True
 
+        # Used by test module
         if self.algo == config.Algo.test:
             for codeId, sf in codeIdToScaleFactorMap.items():
                 self.accuracy[sf] = execMap[str(codeId)]
@@ -211,6 +283,9 @@ class Main:
                 print("\n")
             return True,False    
                 
+        # During the third exploration phase, when multiple codes are generated at once, codeIdToScaleFactorMap
+        # is populated with the codeID to the code description (bitwidth assignments of different variables)
+        # After executing the code, print out the accuracy of the code against the code ID
         if codeIdToScaleFactorMap is not None:
             for codeId, sf in codeIdToScaleFactorMap.items():
                 self.accuracy[sf] = execMap[str(codeId)]
@@ -226,6 +301,8 @@ class Main:
                     file.write("\nAccuracy at scale factor %d is %.3f%%, Disagreement Count is %d, Reduced Disagreement Count is %d\n" % (sf, execMap[str(codeId)][0], execMap[str(codeId)][1], execMap[str(codeId)][2]))
                     file.close()
         else:
+            # During fourth exploration phase, when the accuracy drops of every variable is known, the variables cumulatively demoted
+            # in order of better accuracy/disagreement count which is handled in this block
             def getMaximisingMetricValue(a):
                 if self.maximisingMetric == config.MaximisingMetric.accuracy:
                     return (a[1][0], -a[1][1], -a[1][2])
@@ -246,19 +323,32 @@ class Main:
                     codeId = offsetToCodeId[offset]
                     print("Offset %d (Code ID %d): Accuracy %.3f%%, Disagreement Count %d, Reduced Disagreement Count %d\n" %(offset, codeId, execMap[str(codeId)][0], execMap[str(codeId)][1], execMap[str(codeId)][2]))
             self.varDemoteDetails += allVars
+            # For the sec
             if not doNotSort:
                 self.varDemoteDetails.sort(key=getMaximisingMetricValue, reverse=True)
         return True, False
 
-    # Iterate over multiple scaling factors and store their accuracies
+    # This function performs an exploration and determines the scales and bitwidths of all variables. Described in OOPSLA'20 Paper Section 6.2
+    # The exploration is across 4 stages:
+    # STAGE I: For input 'X', we perform an exploration trying out scales from 0 to -15. (First stage exploration in this function)
+    # STAGE II: Determining Scale all other variables in 16 bits 
+    #   For all variables except input 'X', the scale is dynamically computed using the dataset (OOPSLA'20 paper, Section 6.1). 
+    #   This data is captured during the floating-point code run (collectProfileData), not performSearch.
+    #   During collectProfileData() call, self.allScales is populated which contains data driven scaling info
+    # STAGE III: Determining accuracy when each variable is demoted to 8 bits one at a time 
+    #   Multiple fixed point codes are generated, each with one variable demoted, are generated. Data driven scales do not work for 8-bits,
+    #   so we try out multiple scales (config.offsetsPerDemotedVariable different scales)
+    # STAGE IV: Cumulatively demoting variables one after the other to reduce latency and model size, as long as accuracy remains good
     def performSearch(self):
 
         start, end = config.maxScaleRange
-
         lastStageAcc = -1
 
         fixedPointCounter = 0
         while True:
+
+            # STAGE I exploration
+            
             fixedPointCounter += 1
             if config.fixedPointVbwIteration:
                 print("Will compile until conversion to fixed point. Iteration %d"%fixedPointCounter)
@@ -335,17 +425,26 @@ class Main:
                 break 
 
             if config.vbwEnabled:
+                
+                # Stage III exploration
+                
                 assert config.ddsEnabled, "Currently VBW on maxscale not supported"
                 if config.wordLength != 16:
                     assert False, "VBW mode only supported if native bitwidth is 16"
                 print("Scales computed in native bitwidth. Starting exploration over other bitwidths.")
 
+                # We attempt to demote all possible variables in the code. We try out multiple different scales 
+                # (controlled by config.offsetsPerDemotedVariable) for each demoted variable. When a variable is 
+                # demoted, it is assigned a scale given by :
+                # demoted Scale = self.allScales[var] + 8 - offset
+                
                 attemptToDemote = [var for var in self.variableToBitwidthMap if (var[-3:] != "val" and var not in self.demotedVarsList)]
                 numCodes = config.offsetsPerDemotedVariable * len(attemptToDemote) + ((9 - config.offsetsPerDemotedVariable) if 'X' in attemptToDemote else 0) 
                 # 9 offsets tried for X while 'offsetsPerDemotedVariable' tried for other variables
                 
+                # We approximately club batchSize number of codes in one generated C++ code, so that one generated code does
+                # not become too large
                 batchSize = int(np.ceil(50 / np.ceil(len(attemptToDemote) / 50)))
-
                 redBatchSize = np.max((batchSize, 16)) / config.offsetsPerDemotedVariable
                 
                 totalSize = len(attemptToDemote)
@@ -364,7 +463,9 @@ class Main:
                     self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, True, None, -1 if len(demoteBatch) > 0 else 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
                     codeId = 0
                     contentToCodeIdMap = {}
+                   
                     for demoteVar in demoteBatch:
+                        # For each variable being demoted, we populate some variables containing information regarding demoted variable
                         newbitwidths = dict(self.variableToBitwidthMap)
                         newbitwidths[demoteVar] = config.wordLength // 2
                         if demoteVar + "val" in newbitwidths:
@@ -377,7 +478,8 @@ class Main:
                             demotedVarsOffsets[key] = self.demotedVarsOffsets[key]
 
                         contentToCodeIdMap[tuple(demotedVarsList)] = {}
-                        for demOffset in ([0, -1, -2] if demoteVar != 'X' else [0, -1, -2, -3, -4, -5, -6, -7, -8]):
+                        # We try out multiple offsets for each variable to find best scale assignment for each variable
+                        for demOffset in (range(0, -config.offsetsPerDemotedVariable, -1) if demoteVar != 'X' else range(0, -9, -1)):
                             codeId += 1
                             for k in demotedVarsList:
                                 if k not in self.demotedVarsList:
@@ -390,6 +492,9 @@ class Main:
                     
                     res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, None, contentToCodeIdMap)
 
+                # Stage IV exploration
+                
+                # Again, ee compute only a limited number of inference codes per generated C++ so as to not bloat up the memory usage of the compiler
                 redBatchSize *= config.offsetsPerDemotedVariable
                 totalSize = len(self.varDemoteDetails)
                 numBatches = int(np.ceil(totalSize / redBatchSize))
@@ -400,6 +505,10 @@ class Main:
                 demotedVarsOffsets = dict(self.demotedVarsOffsets)
                 demotedVarsList = list(self.demotedVarsList)
                 demotedVarsListToOffsets = {}
+
+                # Knowing the accuracy when each single variable is demoted to 8-bits one at a time, we proceed to cumulatively 
+                # demoting all of them one after the other ensuring accuracy of target code does not fall below a threshold. The
+                # following for loop controls generating the inference codes
                 for i in range(numBatches):
                     print("=====\nBatch %i out of %d\n=====" %(i + 1, numBatches))
 
@@ -433,6 +542,8 @@ class Main:
                 if exit == True or res == False:
                     return False
 
+                # The following for loop controls how many variables are actually demoted in the final output code, which has
+                # as many variables as possible in 8-bits, while ensuring accuracy drop compared to floating point is reasonable:
                 okToDemote = ()
                 acceptedAcc = lastStageAcc
                 for ((demotedVars, _), metrics) in self.varDemoteDetails:
@@ -502,6 +613,8 @@ class Main:
 
         return True
 
+    # After exploration is completed, this function is invoked to show the performance of the final quantised code on a testing dataset,
+    # which is ideally different than the training dataset on which the bitwidth and scale tuning was done
     def runOnTestingDataset(self):
         print("\n-------------------------------")
         print("Prediction on testing dataset")
@@ -532,7 +645,8 @@ class Main:
 
         return True
 
-    # Generate files for training dataset and perform a profiled execution
+    # This function is invoked before the exploration to obtain floating point accuracy, as well as profiling each variable
+    # in the floating point code to compute their ranges and consequently their fixed-point ranges
     def collectProfileData(self):
         print("-----------------------")
         print("Collecting profile data")
@@ -569,7 +683,7 @@ class Main:
         if res == False:
             return False
 
-        # Copy file
+        # Copy files
         if self.target == config.Target.arduino:
             srcFile = os.path.join(config.outdir, "input", "model_fixed.h")
             destFile = os.path.join(config.outdir, str(config.wordLength), self.algo, self.dataset, "model.h")
@@ -628,6 +742,7 @@ class Main:
 
         return True
 
+    # Generate arduino floating point code
     def compileFloatForTarget(self):
         assert self.target == config.Target.arduino, "Floating point code supported for Arduino only"
 
@@ -656,6 +771,7 @@ class Main:
 
         return True
 
+    # Floating point x86 code
     def runForFloat(self):
         print("---------------------------")
         print("Executing for X86 target...")

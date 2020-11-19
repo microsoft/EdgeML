@@ -5,6 +5,9 @@ using System;
 using System.Text;
 using System.IO.Ports;
 
+/*
+ * This class streams data to the arduino device connected, and reads back the prediction to compute the accuracy of the arduino implementation
+ */
 namespace Streamer
 {
 	public class DeviceInterface

@@ -4,6 +4,9 @@
 using System;
 using System.IO;
 
+/*
+ * Controller for DeviceInterface class which streams data to arduino device
+ */
 namespace Streamer
 {
 	public enum DataType { Float, Int16, Int32 };

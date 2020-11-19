@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "iosfwd": "cpp",
+        "vector": "cpp",
+        "cmath": "cpp",
+        "limits": "cpp"
+    },
+    "python.linting.enabled": false
+}
