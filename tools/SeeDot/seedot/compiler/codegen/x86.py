@@ -18,9 +18,10 @@ import time
 class X86(CodegenBase):
 
     def __init__(self, outputDir, generateAllFiles, printSwitch, idStr, paramInNativeBitwidth, decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables):
+        super().__init__(decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables)
         self.outputDir = outputDir
-        cppFile = os.path.join(
-            self.outputDir, "seedot_" + getVersion() + ".cpp")
+        cppFile = os.path.join(self.outputDir, "seedot_" + getVersion() + ".cpp")
+        # For exploration, multiple inference codes are written into one output C++ file
         if generateAllFiles:
             self.out = Writer(cppFile)
         else:
@@ -36,32 +37,9 @@ class X86(CodegenBase):
                     print("Opened")
                     break
 
-        self.decls = decls
-        self.localDecls = localDecls
-        self.scales = scales
-        self.intvs = intvs
-        self.cnsts = cnsts
-        self.expTables = expTables
-        self.globalVars = globalVars
-        self.internalVars = internalVars
-        self.floatConstants = floatConstants
-
         self.generateAllFiles = generateAllFiles
         self.idStr = idStr
         self.printSwitch = printSwitch
-
-        self.demotedVarsOffsets = demotedVarsOffsets
-        self.varsForBitwidth = varsForBitwidth
-
-        self.varLiveIntervals = varLiveIntervals
-        self.notScratch = notScratch
-        self.scratchSubs = {}
-
-        self.numberOfMemoryMaps = 0
-        self.currentMemMap = 0
-        self.defragmentationInstructions = []
-        self.defragmentationParameters = []
-        self.coLocatedVariables = dict(coLocatedVariables)
 
         self.paramInNativeBitwidth = paramInNativeBitwidth
 
@@ -74,7 +52,7 @@ class X86(CodegenBase):
 
         self.printCHeader()
 
-        self.computeScratchLocationsFirstFitPriority()
+        self.computeScratchLocationsFirstFitPriority() #computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
 
         self.printModelParamsWithBitwidth()
 
@@ -396,59 +374,3 @@ class X86(CodegenBase):
             self.out.printf(");\n")
             self.out.decreaseIndent()
             self.out.printf("}\n", indent=True)
-
-    def defragmentMemory(self, oldUsedSpaceMap, newVar, newVarSpace, endIns, mode):
-        varData = []
-        for var, (end, (start, end)) in oldUsedSpaceMap:
-            spaceNeeded = end - start
-            varData.append((spaceNeeded, var, end))
-        varData.append((newVarSpace, newVar, endIns))
-        def sortkey(a):
-            return (a[0], -a[2])
-        varData.sort(key=sortkey)
-        newUsedSpaceMap = {}
-        totalScratchSize = -1
-        
-        self.numberOfMemoryMaps += 1
-        self.scratchSubs[self.numberOfMemoryMaps] = {}
-
-        for (spaceNeeded, var, endIns) in varData:
-            if var in newUsedSpaceMap.keys():
-                continue
-            if spaceNeeded >= mode:
-                blockSize = int(2**np.ceil(np.log2(spaceNeeded / mode))) * mode
-            else:
-                blockSize = mode / int(2**np.floor(np.log2(mode // spaceNeeded)))
-            i = 0
-            while True:
-                for activeVar in newUsedSpaceMap.keys():
-                    potentialStart = int(blockSize * i)
-                    potentialEnd = int(blockSize * (i+1)) - 1
-                    (locationOccupiedStart, locationOccupiedEnd) = newUsedSpaceMap[activeVar][1]
-                    if not (locationOccupiedStart > potentialEnd or locationOccupiedEnd < potentialStart):
-                        i += 1
-                        breakOutOfWhile = False
-                        break
-                    else:
-                        breakOutOfWhile = True
-                        continue
-                if breakOutOfWhile:
-                    break
-            
-            oldBlock = (oldUsedSpaceMap[var][1][0], oldUsedSpaceMap[var][1][0] + blockSize)
-
-
-            for (_, var1, _) in varData:
-                oldUsedSpaceMap[var1][1][0]
-            newUsedSpaceMap[var] = (endIns, (potentialStart, potentialStart + spaceNeeded))
-            totalScratchSize = max(totalScratchSize, potentialStart + spaceNeeded - 1)
-            self.scratchSubs[self.numberOfMemoryMaps][var] = potentialStart
-            oldIndices = oldUsedSpaceMap[var][1]
-            newIndices = newUsedSpaceMap[var][1]
-
-            difference = newIndices - oldIndices
-
-            
-            
-        return newUsedSpaceMap
-

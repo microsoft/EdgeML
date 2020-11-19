@@ -32,6 +32,10 @@ import seedot.writer as writer
 
 import seedot.config as config
 
+# The Compiler class reads in the input code, converts it first into an AST, and subsequently into an IR which
+# contains a sequence of function calls (which are implemented by hand in a library). The IR is fed into the 
+# desired target codegen, which outputs the C/C++ code which can be run on the target device.
+
 class Compiler:
 
     def __init__(self, algo, version, target, inputFile, outputDir, profileLogFile, maxScale, source, outputLogFile, generateAllFiles=True, id=None, printSwitch=-1, substitutions={}, scaleForX=None, variableToBitwidthMap={}, sparseMatrixSizes={}, demotedVarsList=[], demotedVarsOffsets={}, paramInNativeBitwidth=True):
@@ -68,6 +72,8 @@ class Compiler:
 
         self.biasShifts = {}
 
+    # Method takes in input file location, calls the tokenizer, parser upon the file to generate a parse tree
+    # and subsequently calls the ASTBuilder to convert it into an AST
     def genASTFromFile(self, inputFile):
         # Parse and generate CST for the input
         lexer = seedotLexer.seedotLexer(antlr.FileStream(inputFile))
@@ -79,6 +85,8 @@ class Compiler:
         ast = astBuilder.ASTBuilder().visit(tree)
         return ast
 
+    # Takes in the input file location, and depending on the source type (.sd/onnx/TF) calls an 
+    # appropriate method to generate an AST 
     def genAST(self, inputFile):
         ext = os.path.splitext(inputFile)[1]
 
@@ -91,6 +99,7 @@ class Compiler:
             ast = TFMain.main()
             return ast
 
+    # Driver code for compiler module which calls other functions
     def run(self):
         ast = self.genAST(self.input)
 
@@ -102,6 +111,7 @@ class Compiler:
         res, state = self.compile(ast)
 
         if util.forArduino():
+            assert self.problemType == config.ProblemType.classification, "Arduino codegen only for Classification problems"
             codegen = arduino.Arduino(self.outputDir, *state)
         elif util.forM3():
             assert self.problemType == config.ProblemType.regression, "M3 codegen only for Regression problems"
@@ -116,6 +126,7 @@ class Compiler:
     def compile(self, ast):
         return self.genCodeWithFuncCalls(ast)
 
+    # Takes in the AST and calls the IRBuilder to generate an IR which is a sequence of function calls
     def genCodeWithFuncCalls(self, ast):
 
         outputLog = writer.Writer(self.outputLogFile)
@@ -132,25 +143,30 @@ class Compiler:
 
         outputLog.close()
 
+        # All state variables are used for codegen
         state = [compiler.varDeclarations, compiler.varDeclarationsLocal, compiler.varScales, compiler.varIntervals, compiler.intConstants, compiler.expTables, compiler.globalVars, compiler.internalVars, compiler.floatConstants, compiler.substitutions, compiler.demotedVarsOffsets, compiler.varsForBitwidth, compiler.varLiveIntervals, compiler.notScratch, compiler.coLocatedVariables]
 
+        # Raw live ranges do not capture the scope of the first/last usages of a variable, so they require post processing
         state[12] = self.adjustLiveRanges(state[12], compiler.allDepths)
 
         for i in compiler.globalVars:
             state[13].append(i)
 
+        # In floating point code used for profiling, the set of variables which are profiled using training data are collected
         if util.getVersion() == config.Version.floatt:
             self.independentVars = list(compiler.independentVars)
             self.independentVars += compiler.globalVars
 
-        self.substitutions = compiler.substitutions # for profiling code, substitutions get updated and this variable is then read by main.py
+        self.substitutions = compiler.substitutions 
 
+        # Input and output scales are stored, problem type is identified as regression or classification
         self.scaleForX = compiler.varScales['X']
         self.scaleForY = compiler.varScales[res[1].idf] if res[1].idf in compiler.varScales else 0
         self.problemType = config.ProblemType.classification if res[1].idf not in compiler.varScales else config.ProblemType.regression
 
         return res, state
 
+    # The floating point code is run on the training dataset and the ranges of all variables are read to compute the scale
     def readDataDrivenScales(self):
         tempScales = {}
         error = 0.01
@@ -162,6 +178,7 @@ class Compiler:
                 tempScales[var] = util.computeScalingFactor(max(abs(m) + error, abs(M) + error)) 
         return tempScales
 
+    # Post processing of live ranges to adjust for different scoping level at the first invocation and at the last invocation
     def adjustLiveRanges(self, oldRanges, depthData):
         newRanges = {}
         for var in oldRanges:

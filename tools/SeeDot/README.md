@@ -107,40 +107,12 @@ More information on using the FastGRNN trainer can be found [here](https://githu
      cp ../../examples/tf/FastCells/usps10/*.npy ./datasets/rnn/usps10/
      cp ../../examples/tf/FastCells/usps10/FastGRNNResults/<timestamp>/* ./model/rnn/usps10/
      ```
-1. Write the code for FastGRNN in the SeeDot language (copy paste the command):
+2. Copy the example code for FastGRNN in the SeeDot language:
      ```
-     echo "     let W    = (16, 32)  in [-1.24, 1.44] in
-     let U    = (32, 32)  in [-2.88, 2.15] in
-     let Bg    = (1, 32)  in [-1.61, 5.3] in
-     let Bh    = (1, 32)  in [-0.14, 2.79] in
-     let FC    = (32, 10) in [-5.18, 4.42] in
-     let FCbias = (1, 10) in [-1.86, 2.6] in
-     let X   = (256, 1)   in [-2.0, 7.0] in
-
-     let XX = reshape(X, (16, 1, 16), (1, 2)) in
-
-     let zeta = 0.66544217 in
-     let nu = 0.07351732 in
-
-     let H    = init([1, 32], 0.0) in
-
-     let res = loop(i = [0:16], H)
-     (
-       let a = (XX[i] * W) in
-       let b = (H * U) in
-       let c = a + b in
-       let g = sigmoid(c + Bg) in
-       let h = tanh(c + Bh) in
-       let H = (g <*> H) + (zeta * (1.0 - g) + nu) <*> h in 
-       H
-     ) in
-
-     let score = (res * FC) + FCbias in
-     argmax(score)
-     " >> model/rnn/usps10/input.sd
+     cp seedot/compiler/input/fastgrnn.sd model/rnn/usps10/input.sd
      ```
 
-2. Invoke SeeDot compiler using the following command.
+3. Invoke SeeDot compiler using the following command.
       ```
       python SeeDot-dev.py -a rnn -v fixed -t arduino -m red_disagree -n 1 -d usps10
       ```

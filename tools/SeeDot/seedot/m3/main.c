@@ -13,6 +13,11 @@
 
 #define FPSIZE 16
 
+// Driver code for code generated for M3 class devices. This driver code currently only supports regression type problems
+// Build using make
+// Invocation: executable INPUT_SIZE OUTPUT_SIZE logfile
+// example: ./predictor 76800 18000 log.txt
+
 int INPUT_SIZE, OUTPUT_SIZE;
 
 // Comparator function for sorting doubles.
@@ -85,10 +90,6 @@ void parse_csv_d(char* line, double* array, int size) {
   return;
 }
 
-/** Run this test using the following command:
- * $: ./test_quantized_face_detection <log.txt>
- *  By default, all tests run without using bit-shifting operations.
- */
 int main(int argc, char **argv) {
   unsigned patches;
   FILE *xFile, *yFile, *outputLog;
