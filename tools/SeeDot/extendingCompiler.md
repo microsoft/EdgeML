@@ -1,4 +1,4 @@
-#Extending the Compiler
+# Extending the Compiler
 
 SeeDot translates the given input code into a sequence of function calls. The functions are already implemented in a library. What if the model being implemented needs a function which does not already implemented in the library? We show how to add the convolution operator.
 
