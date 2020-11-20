@@ -14,6 +14,11 @@ from scipy.io import loadmat
 from bbox import bbox_overlaps
 from IPython import embed
 import cv2
+import sys
+
+sys.path.append('../')
+from data.choose_config import cfg
+cfg = cfg.cfg
 
 
 def read_pred_file(filepath):
@@ -148,14 +153,14 @@ def voc_ap(rec, prec):
 
 
 def evaluation(pred, iou_thresh=0.5):
-    f = open('../../data/face_val_scutB.txt')
+    f = open('../data/face_val_scutB.txt')
     lines = f.readlines()
     names = []
     gt_list = []
     for line in lines:
         line = line.strip().split()
         names.append(os.path.split(line[0])[1][0:-4])
-        th, tw, tc = cv2.imread(line[0]).shape
+        th, tw, tc = cv2.imread(cfg.FACE.SCUT_DIR + '/' + line[0]).shape
         num_faces = int(line[1])
         faces = []
         for i in range(num_faces):

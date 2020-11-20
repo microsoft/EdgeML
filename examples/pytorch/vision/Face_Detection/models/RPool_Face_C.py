@@ -304,7 +304,6 @@ class MobileNetV2(nn.Module):
 
         # building first layer
         input_channel = _make_divisible(input_channel * width_mult, round_nearest)
-        self.last_channel = _make_divisible(last_channel * max(1.0, width_mult), round_nearest)
         self.layers = []
         # building inverted residual blocks
         for t, c, n, s in inverted_residual_setting:

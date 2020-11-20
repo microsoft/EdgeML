@@ -88,10 +88,9 @@ else:
 if not os.path.exists(args.save_folder):
     os.makedirs(args.save_folder)
 
-
-if args.finetune=='True':
-    train_dataset = WIDERDetection('./data/face_train_scutB.txt', mode='train', mono_mode=cfg.IS_MONOCHROME)
-    val_dataset = WIDERDetection('./data/face_val_scutB.txt', mode='val', mono_mode=cfg.IS_MONOCHROME)
+if args.finetune==True:
+    train_dataset = WIDERDetection('./data/face_train_scutB.txt', mode='train', mono_mode=cfg.IS_MONOCHROME, is_scut=True)
+    val_dataset = WIDERDetection('./data/face_val_scutB.txt', mode='val', mono_mode=cfg.IS_MONOCHROME, is_scut=True)
 else:
     train_dataset = WIDERDetection(cfg.FACE.TRAIN_FILE, mode='train', mono_mode=cfg.IS_MONOCHROME)
     val_dataset = WIDERDetection(cfg.FACE.VAL_FILE, mode='val', mono_mode=cfg.IS_MONOCHROME)
@@ -188,8 +187,6 @@ def train():
             net.to('cuda')
 
         val(epoch)
-        if iteration == cfg.MAX_STEPS:
-            break
 
 
 def val(epoch):

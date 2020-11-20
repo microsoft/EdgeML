@@ -63,7 +63,7 @@ To obtain a model better suited for conference room scenarios we finetune our mo
 
 ```shell
 
-IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_M4 --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 --resume RPool_Face_M4_best_state.pth --finetune True
+IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_M4 --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 --resume ./weights/RPool_Face_M4_best_state.pth --finetune True
 
 ```
 
@@ -100,9 +100,17 @@ Then each line in the file corresponds to an identified box. For each box, five 
 If IS_QVGA_MONO=1 then testing is done by converting images to monochrome and QVGA, else if IS_QVGA_MONO=0 then testing is done on VGA RGB images.
 
 ###### For calculating MAP scores:
-Now using these boxes, we can compute the standard MAP score that is widely used in this literature (see [here](https://medium.com/@jonathan_hui/map-mean-average-precision-for-object-detection-45c121a31173) for more details) as follows:
+Now using these boxes, we can compute the standard MAP score that is widely used in this literature (see [here](https://medium.com/@jonathan_hui/map-mean-average-precision-for-object-detection-45c121a31173) for more details).
 
-Run ```python3 evaluation.py -p <your_save_folder> ```
+In this directory run:
+``` 
+git clone https://github.com/wondervictor/WiderFace-Evaluation.git
+cd WiderFace-Evaluation 
+python3 setup.py build_ext --inplace
+mv ../evaluation.py ./
+```
+
+Run ```IS_QVGA_MONO=1 python3 evaluation.py -p <your_save_folder> ``` in WiderFace-Evaluation folder.
 
 where `prediction_dir` is the '--save_folder' used for `scut_test.py` above. 
 

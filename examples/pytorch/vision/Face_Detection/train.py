@@ -177,8 +177,6 @@ def train():
             iteration += 1
 
         val(epoch)
-        if iteration == cfg.MAX_STEPS:
-            break
 
 
 def val(epoch):

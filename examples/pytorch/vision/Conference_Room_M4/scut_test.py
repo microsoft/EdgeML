@@ -176,9 +176,16 @@ def bbox_vote(det):
 
 if __name__ == '__main__':
     cfg.USE_NMS = False
-    net = build_s3fd('test', cfg.NUM_CLASSES)
-    net.load_state_dict(torch.load(args.model))
+    module = import_module('models.' + args.model_arch)
+    net = module.build_s3fd('test', cfg.NUM_CLASSES)
+    
     net = torch.nn.DataParallel(net)
+
+    checkpoint_dict = torch.load(args.model)
+    model_dict = net.state_dict()
+    model_dict.update(checkpoint_dict) 
+    net.load_state_dict(model_dict)
+
     net.eval()
 
     if use_cuda:
@@ -190,9 +197,11 @@ if __name__ == '__main__':
     f = open('./data/face_val_scutB.txt')
     lines = f.readlines()
 
+    os.mkdir('./{}'.format(args.save_folder))
+
     for line in lines:
         line = line.strip().split()
-        im_name = line[0]
+        im_name = cfg.FACE.SCUT_DIR + '/' + line[0]
 
         img = Image.open(im_name)
         img = img.convert('RGB')

@@ -13,7 +13,9 @@ import types
 from PIL import Image, ImageEnhance, ImageDraw
 import math
 import six
-from data.config_320240 import cfg
+import sys; sys.path.append('../')
+from data.choose_config import cfg
+cfg = cfg.cfg
 import random
 
 
