@@ -267,12 +267,12 @@ int test_q15xq7_q15_m_sparse_mulvec() {
   const Q15_T qmat_values[4] = {23, 48, 32, 1};
   const Q7_T qvec_A[3] = {1, 2, 3};
   const Q15_T expected[3] = {87, 3, 48};
-  Q15_T pred[3];
+  Q15_T pred[3] = {};
 
   #ifdef SHIFT
-    q15xq7_q15_m_sparse_mulvec(&qrow_indices[0], &qmat_values[0], &qvec_A[0], 3, 3, &pred[0], 0, 0, 0);
+    q15xq7_q15_m_sparse_mulvec(&qrow_indices[0], &qmat_values[0], &qvec_A[0], 3, &pred[0], 0, 0, 0);
   #else
-    q15xq7_q15_m_sparse_mulvec(&qrow_indices[0], &qmat_values[0], &qvec_A[0], 3, 3, &pred[0], 1, 1, 1);
+    q15xq7_q15_m_sparse_mulvec(&qrow_indices[0], &qmat_values[0], &qvec_A[0], 3, &pred[0], 1, 1, 1);
   #endif
 
   return check_output_q15(pred, expected, 3);
@@ -284,12 +284,12 @@ int test_q15_m_sparse_mulvec() {
   const Q15_T qmat_values[4] = {23, 48, 32, 1};
   const Q15_T qvec_A[3] = {1, 2, 3};
   const Q15_T expected[3] = {87, 3, 48};
-  Q15_T pred[3];
+  Q15_T pred[3] = {};
 
   #ifdef SHIFT
-    q15_m_sparse_mulvec(&qrow_indices[0], &qmat_values[0], &qvec_A[0], 3, 3, &pred[0], 0, 0, 0);
+    q15_m_sparse_mulvec(&qrow_indices[0], &qmat_values[0], &qvec_A[0], 3, &pred[0], 0, 0, 0);
   #else
-    q15_m_sparse_mulvec(&qrow_indices[0], &qmat_values[0], &qvec_A[0], 3, 3, &pred[0], 1, 1, 1);
+    q15_m_sparse_mulvec(&qrow_indices[0], &qmat_values[0], &qvec_A[0], 3, &pred[0], 1, 1, 1);
   #endif
 
   return check_output_q15(pred, expected, 3);
