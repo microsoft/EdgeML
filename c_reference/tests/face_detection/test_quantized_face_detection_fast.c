@@ -155,8 +155,8 @@ int main(int argc, char **argv) {
   float* allErrors = malloc(patches * OUTPUT_SIZE * (sizeof(float)));
 
   float time_spent = 0.0;
-  Q7_T* mem_buf_input_offset = (Q7_T *)mem_buf;
-  Q15_T* mem_buf_output_offset = (Q15_T *)(mem_buf + 2 * OUTPUT_SIZE);
+  Q7_T* mem_buf_input_offset = (Q7_T*)mem_buf;
+  Q15_T* mem_buf_output_offset = (Q15_T*)(mem_buf + 2 * OUTPUT_SIZE);
   for (unsigned i = 0; i < patches; i++) {
     fread(&yLine[0], sizeof(float), OUTPUT_SIZE, floatResFile);
     fread(&xLine[0], sizeof(float), INPUT_IMG_HEIGHT * INPUT_IMG_WIDTH, xFile);

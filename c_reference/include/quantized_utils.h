@@ -269,6 +269,24 @@ void q15_v_scale_up(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scvec);
 void q15_v_scale_down(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scvec);
 
 /**
+ * @brief Performs the row-order or the column-order reversal of the 2-D input matrix.
+ * @param[in]       mat       pointer to the (row / column-major) input matrix on which reversal is to be performed
+ * @param[in]       nrows     number of rows of the input matrix
+ * @param[in]       ncols     number of columns of the input matrix
+ * @param[in]       axis      axis of reversal; 0 for reversal along rows and 1 for reversal along columns
+ * @param[out]      mat_out   pointer to the output matrix
+ * @return          none
+ * @example         mat       = { {1, 2},
+ *                                {4, 5} }
+ *                  nrows     = 2
+ *                  ncols     = 2
+ *                  axis      = 0
+ *                  ret       = { {4, 5},
+ *                                {1, 2} }
+ */
+void q15_m_reverse(const Q15_T* const mat, ITER_T nrows, ITER_T ncols,
+                   ITER_T axis, Q15_T* const ret);
+/**
  * @brief Performs the matrix multiplication of a matrix and a vector.
  * @param[in]       mat       pointer to input matrix in row-major order
  * @param[in]       vec       pointer to the input vector
@@ -309,8 +327,7 @@ void q15_m_mulvec(const Q15_T* mat, const Q15_T* const vec, ITER_T nrows,
  * @param[in]       row_indices  pointer to input matrix which stores the row indices of non-zero values of matrix A
  * @param[in]       mat_values   pointer to input matrix which stores the non-zero values of matrix A
  * @param[in]       vec          pointer to the input vector
- * @param[in]       nrows        number of rows of the input matrix
- * @param[in]       ncols        number of columns of the input matrix
+ * @param[in]       nelem        number of elements in the input vector
  * @param[out]      ret          pointer to the output vector
  * @param[in]       scmat        scale factor of the input matrix
  * @param[in]       scvec        scale factor of the input vector
@@ -322,8 +339,7 @@ void q15_m_mulvec(const Q15_T* mat, const Q15_T* const vec, ITER_T nrows,
  *                  row_indices  = {1, 3, 0, 1, 0, 2, 0}
  *                  mat_values   = {23, 48, 32, 1}
  *                  vec          = {1, 2, 3}
- *                  nrows        = 3
- *                  ncols        = 3
+ *                  nelem        = 3
  *                  scmat        = 1
  *                  scvec        = 1
  *                  scret        = 1
@@ -331,11 +347,11 @@ void q15_m_mulvec(const Q15_T* mat, const Q15_T* const vec, ITER_T nrows,
  */
 void q15xq7_q15_m_sparse_mulvec(const ITER_T* row_indices,
                                 const Q15_T* mat_values, const Q7_T* vec,
-                                ITER_T nrows, ITER_T ncols, Q15_T* ret,
-                                SCALE_T scmat, SCALE_T scvec, SCALE_T scret);
+                                ITER_T nelem, Q15_T* ret, SCALE_T scmat,
+                                SCALE_T scvec, SCALE_T scret);
 void q15_m_sparse_mulvec(const ITER_T* row_indices, const Q15_T* mat_values,
-                         const Q15_T* vec, ITER_T nrows, ITER_T ncols,
-                         Q15_T* ret, SCALE_T scmat, SCALE_T scvec, SCALE_T scret);
+                         const Q15_T* vec, ITER_T nelem, Q15_T* ret,
+                         SCALE_T scmat, SCALE_T scvec, SCALE_T scret);
 
 /**
  * @brief Performs the element-wise addition of two input tensors.
