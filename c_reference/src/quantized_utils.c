@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 #include <stddef.h>
-#include <string.h>
 #include "quantized_utils.h"
 
 void q15_v_add(const Q15_T* vec1, const Q15_T* vec2, ITER_T len, Q15_T* ret,
@@ -497,6 +496,38 @@ void q15_v_scale_down(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scvec) {
   }
 }
 
+void q15_m_reverse(const Q15_T* const mat, ITER_T nrows, ITER_T ncols,
+                   ITER_T axis, Q15_T* const ret) {
+  ITER_T len = nrows * ncols;
+
+  if (axis == 0) {
+    ITER_T col_counter = 0, row_index = len - ncols;
+
+    for (ITER_T i = 0; i < len; i++) {
+      if (col_counter >= ncols) {
+        col_counter = 0;
+        row_index -= ncols;
+      }
+
+      ret[i] = mat[row_index + col_counter];
+      col_counter++;
+    }
+  } else {
+    S_ITER_T row_counter = ncols - 1;
+    ITER_T col_index = 0;
+
+    for (ITER_T i = 0; i < len; i++) {
+      if (row_counter < 0) {
+        row_counter = ncols - 1;
+        col_index += ncols;
+      }
+
+      ret[i] = mat[col_index + (ITER_T)row_counter];
+      row_counter--;
+    }
+  }
+}
+
 void q15xq7_q15_m_mulvec(const Q15_T* mat, const Q7_T* const vec, ITER_T nrows,
                          ITER_T ncols, Q15_T* ret, SCALE_T scmat,
                          SCALE_T scvec, SCALE_T scret) {
@@ -578,11 +609,10 @@ void q15_m_mulvec(const Q15_T* mat, const Q15_T* const vec, ITER_T nrows,
 
 void q15xq7_q15_m_sparse_mulvec(const ITER_T* row_indices,
                                 const Q15_T* mat_values, const Q7_T* vec,
-                                ITER_T nrows, ITER_T ncols, Q15_T* ret,
-                                SCALE_T scmat, SCALE_T scvec, SCALE_T scret) {
+                                ITER_T nelem, Q15_T* ret, SCALE_T scmat,
+                                SCALE_T scvec, SCALE_T scret) {
   ITER_T index;
   Q31_T vec_offset;
-  memset(ret, 0, nrows * sizeof(Q15_T));
   #ifdef SHIFT
     SCALE_T scale = scmat + scvec + scret;
   #else
@@ -592,7 +622,7 @@ void q15xq7_q15_m_sparse_mulvec(const ITER_T* row_indices,
     SCALE_T scale = scmat * scvec * scret;
   #endif
 
-  while (ncols--) {
+  while (nelem--) {
     index = *row_indices++;
     vec_offset = *vec++;
 
@@ -608,11 +638,10 @@ void q15xq7_q15_m_sparse_mulvec(const ITER_T* row_indices,
 }
 
 void q15_m_sparse_mulvec(const ITER_T* row_indices, const Q15_T* mat_values,
-                         const Q15_T* vec, ITER_T nrows, ITER_T ncols,
-                         Q15_T* ret, SCALE_T scmat, SCALE_T scvec, SCALE_T scret) {
+                         const Q15_T* vec, ITER_T nelem, Q15_T* ret,
+                         SCALE_T scmat, SCALE_T scvec, SCALE_T scret) {
   ITER_T index;
   Q31_T vec_offset;
-  memset(ret, 0, nrows * sizeof(Q15_T));
   #ifdef SHIFT
     SCALE_T scale = scmat + scvec + scret;
   #else
@@ -622,7 +651,7 @@ void q15_m_sparse_mulvec(const ITER_T* row_indices, const Q15_T* mat_values,
     SCALE_T scale = scmat * scvec * scret;
   #endif
 
-  while (ncols--) {
+  while (nelem--) {
     index = *row_indices++;
     vec_offset = *vec++;
 
