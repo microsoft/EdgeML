@@ -9,7 +9,7 @@
 #include "predict.h"
 
 // C = A + B
-inline __attribute__((always_inline)) void MatAddNN(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatAddNN(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -24,7 +24,7 @@ inline __attribute__((always_inline)) void MatAddNN(float *A, float *B, float *C
 }
 
 // C = A + B
-inline __attribute__((always_inline)) void MatAddCN(const float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatAddCN(const float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = ((float) pgm_read_float_near(&A[i * J + j]));
@@ -39,7 +39,7 @@ inline __attribute__((always_inline)) void MatAddCN(const float *A, float *B, fl
 }
 
 // C = A + B
-inline __attribute__((always_inline)) void MatAddNC(float *A, const float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatAddNC(float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -54,7 +54,7 @@ inline __attribute__((always_inline)) void MatAddNC(float *A, const float *B, fl
 }
 
 // C = A + B
-inline __attribute__((always_inline)) void MatAddCC(const float *A, const float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatAddCC(const float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = ((float) pgm_read_float_near(&A[i * J + j]));
@@ -69,7 +69,7 @@ inline __attribute__((always_inline)) void MatAddCC(const float *A, const float 
 }
 
 // C = a + B
-inline __attribute__((always_inline)) void MatAddBroadCastA(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatAddBroadCastA(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = *A;
@@ -84,7 +84,7 @@ inline __attribute__((always_inline)) void MatAddBroadCastA(float *A, float *B, 
 }
 
 // C = A + b
-inline __attribute__((always_inline)) void MatAddBroadCastB(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatAddBroadCastB(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -99,7 +99,7 @@ inline __attribute__((always_inline)) void MatAddBroadCastB(float *A, float *B, 
 }
 
 // C = A - B
-inline __attribute__((always_inline)) void MatSub(float *A, const float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatSub(float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -114,7 +114,7 @@ inline __attribute__((always_inline)) void MatSub(float *A, const float *B, floa
 }
 
 // C = a - B
-inline __attribute__((always_inline)) void MatSubBroadCastA(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatSubBroadCastA(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = *A;
@@ -129,7 +129,7 @@ inline __attribute__((always_inline)) void MatSubBroadCastA(float *A, float *B, 
 }
 
 // C = A - b
-inline __attribute__((always_inline)) void MatSubBroadCastB(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatSubBroadCastB(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -144,7 +144,7 @@ inline __attribute__((always_inline)) void MatSubBroadCastB(float *A, float *B, 
 }
 
 // C = A * B
-inline __attribute__((always_inline)) void MatMulNN(float *A, float *B, float *C, float *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+inline __attribute__((always_inline)) void MatMulNN(float* A, float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -188,7 +188,7 @@ inline __attribute__((always_inline)) void MatMulNN(float *A, float *B, float *C
 }
 
 // C = A * B
-inline __attribute__((always_inline)) void MatMulCN(const float *A, float *B, float *C, float *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+inline __attribute__((always_inline)) void MatMulCN(const float* A, float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -232,7 +232,7 @@ inline __attribute__((always_inline)) void MatMulCN(const float *A, float *B, fl
 }
 
 // C = A * B
-inline __attribute__((always_inline)) void MatMulNC(float *A, const float *B, float *C, float *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+inline __attribute__((always_inline)) void MatMulNC(float* A, const float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -276,7 +276,7 @@ inline __attribute__((always_inline)) void MatMulNC(float *A, const float *B, fl
 }
 
 // C = A * B
-inline __attribute__((always_inline)) void MatMulCC(const float *A, const float *B, float *C, float *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+inline __attribute__((always_inline)) void MatMulCC(const float* A, const float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -320,7 +320,7 @@ inline __attribute__((always_inline)) void MatMulCC(const float *A, const float 
 }
 
 // C = A |*| B
-inline __attribute__((always_inline)) void SparseMatMulX(const MYINT * Aidx, const float *Aval, float *C, MYINT K, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void SparseMatMulX(const MYINT* Aidx, const float* Aval, float* C, MYINT K, MYINT shrA, MYINT shrB, MYINT shrC) {
 
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
@@ -354,7 +354,7 @@ inline __attribute__((always_inline)) void SparseMatMulX(const MYINT * Aidx, con
 	return;
 }
 // C = A |*| B
-inline __attribute__((always_inline)) void SparseMatMul(const MYINT * Aidx, const float *Aval, float *B, float *C, MYINT K, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void SparseMatMul(const MYINT* Aidx, const float* Aval, float* B, float* C, MYINT K, MYINT shrA, MYINT shrB, MYINT shrC) {
 
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
@@ -389,7 +389,7 @@ inline __attribute__((always_inline)) void SparseMatMul(const MYINT * Aidx, cons
 }
 
 // C = A <*> B
-inline __attribute__((always_inline)) void MulCir(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
+inline __attribute__((always_inline)) void MulCir(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -402,7 +402,7 @@ inline __attribute__((always_inline)) void MulCir(float *A, float *B, float *C, 
 }
 
 // A = tanh(A)
-inline __attribute__((always_inline)) void TanH(float *A, MYINT I, MYINT J, float tanh_limit) {
+inline __attribute__((always_inline)) void TanH(float* A, MYINT I, MYINT J, float tanh_limit) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float x = A[i * J + j], y;
@@ -416,7 +416,7 @@ inline __attribute__((always_inline)) void TanH(float *A, MYINT I, MYINT J, floa
 }
 
 // index = argmax(A)
-inline __attribute__((always_inline)) void ArgMax(float *A, MYINT I, MYINT J, MYINT * index) {
+inline __attribute__((always_inline)) void ArgMax(float* A, MYINT I, MYINT J, MYINT* index) {
 
 	float max = A[0];
 	MYITE maxIndex = 0, counter = 0;
@@ -439,7 +439,7 @@ inline __attribute__((always_inline)) void ArgMax(float *A, MYINT I, MYINT J, MY
 }
 
 // A = A^T
-inline __attribute__((always_inline)) void Transpose(float *A, float *B, MYINT I, MYINT J) {
+inline __attribute__((always_inline)) void Transpose(float* A, float* B, MYINT I, MYINT J) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			B[i * J + j] = A[j * I + i];
@@ -449,7 +449,7 @@ inline __attribute__((always_inline)) void Transpose(float *A, float *B, MYINT I
 }
 
 // C = a * B
-inline __attribute__((always_inline)) void ScalarMul(float *A, float *B, float *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
+inline __attribute__((always_inline)) void ScalarMul(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
 
 	float a = *A;
 
@@ -466,7 +466,7 @@ inline __attribute__((always_inline)) void ScalarMul(float *A, float *B, float *
 
 // C = A # B
 // A[N][H][W][CI], B[HF][WF][CI][CO], C[N][H][W][CO]
-inline __attribute__((always_inline)) void Conv(float *A, const float *B, float *C, float *tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+inline __attribute__((always_inline)) void Conv(float* A, const float* B, float* C, float* tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 	MYITE padH = (HF - 1) / 2;
 	MYITE padW = (WF - 1) / 2;
 
@@ -527,7 +527,7 @@ inline __attribute__((always_inline)) void Conv(float *A, const float *B, float 
 
 // A = A <+> B
 // A[N][H][W][C], B[C]
-inline __attribute__((always_inline)) void AddOrSubCir4D(float *A, const float *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
+inline __attribute__((always_inline)) void AddOrSubCir4D(float* A, const float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
 
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
@@ -554,7 +554,7 @@ inline __attribute__((always_inline)) void AddOrSubCir4D(float *A, const float *
 
 // A = A <+> B
 // A[N][H][W][C], B[C]
-inline __attribute__((always_inline)) void AddOrSubCir2D(float *A, const float *B, MYINT H, MYINT W, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
+inline __attribute__((always_inline)) void AddOrSubCir2D(float* A, const float* B, MYINT H, MYINT W, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
 
 	for (MYITE h = 0; h < H; h++) {
 		for (MYITE w = 0; w < W; w++) {
@@ -577,7 +577,7 @@ inline __attribute__((always_inline)) void AddOrSubCir2D(float *A, const float *
 
 // A = relu(A)
 // A[N][H][W][C]
-inline __attribute__((always_inline)) void Relu4D(float *A, MYINT N, MYINT H, MYINT W, MYINT C) {
+inline __attribute__((always_inline)) void Relu4D(float* A, MYINT N, MYINT H, MYINT W, MYINT C) {
 
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
@@ -598,7 +598,7 @@ inline __attribute__((always_inline)) void Relu4D(float *A, MYINT N, MYINT H, MY
 
 // A = relu(A)
 // A[N][H][W][C]
-inline __attribute__((always_inline)) void Relu2D(float *A, MYINT H, MYINT W) {
+inline __attribute__((always_inline)) void Relu2D(float* A, MYINT H, MYINT W) {
 
 	for (MYITE h = 0; h < H; h++) {
 		for (MYITE w = 0; w < W; w++) {
@@ -615,7 +615,7 @@ inline __attribute__((always_inline)) void Relu2D(float *A, MYINT H, MYINT W) {
 
 // B = maxpool(A)
 // A[N][H][W][C], B[N][H][W][C]
-inline __attribute__((always_inline)) void Maxpool(float *A, float *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT stride) {
+inline __attribute__((always_inline)) void Maxpool(float* A, float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT stride) {
 	MYITE HO = H / stride;
 	MYITE WO = W / stride;
 
@@ -643,7 +643,7 @@ inline __attribute__((always_inline)) void Maxpool(float *A, float *B, MYINT N, 
 }
 
 // B = exp(A)
-inline __attribute__((always_inline)) void Exp(float *A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, float *B) {
+inline __attribute__((always_inline)) void Exp(float* A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, float* B) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -657,7 +657,7 @@ inline __attribute__((always_inline)) void Exp(float *A, MYINT I, MYINT J, MYINT
 }
 
 // A = sigmoid(A)
-inline __attribute__((always_inline)) void Sigmoid(float *A, MYINT I, MYINT J, float div, float add, float sigmoid_limit, MYINT scale) {
+inline __attribute__((always_inline)) void Sigmoid(float* A, MYINT I, MYINT J, float div, float add, float sigmoid_limit, MYINT scale) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float x = A[i * J + j], y;
@@ -671,11 +671,11 @@ inline __attribute__((always_inline)) void Sigmoid(float *A, MYINT I, MYINT J, f
 }
 
 // A = AdjustScaleShr(A)
-inline __attribute__((always_inline)) void AdjustScaleShr(float *A, MYINT I, MYINT J, MYINT scale) {
+inline __attribute__((always_inline)) void AdjustScaleShr(float* A, MYINT I, MYINT J, MYINT scale) {
 	return;
 }
 
 // A = AdjustScaleShl(A)
-inline __attribute__((always_inline)) void AdjustScaleShl(float *A, MYINT I, MYINT J, MYINT scale) {
+inline __attribute__((always_inline)) void AdjustScaleShl(float* A, MYINT I, MYINT J, MYINT scale) {
 	return;
 }
