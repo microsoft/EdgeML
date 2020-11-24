@@ -111,7 +111,7 @@ void flushProfile() {
 	}
 }
 
-void checkRange2(float *A, int I, int J) {
+void checkRange2(float* A, int I, int J) {
 	if(!profilingEnabled)
 		return;
 	for (int i = 0; i < I; i++) {
@@ -123,7 +123,7 @@ void checkRange2(float *A, int I, int J) {
 	}
 }
 
-void Profile4(float *A, int I, int J, int K, int L, string name) {
+void Profile4(float* A, int I, int J, int K, int L, string name) {
 	if(!profilingEnabled)
 		return;
 	if (min_temp.find(name) == min_temp.end()) {
@@ -145,7 +145,7 @@ void Profile4(float *A, int I, int J, int K, int L, string name) {
 	}
 }
 
-void Profile3(float *A, int I, int J, int K, string name) {
+void Profile3(float* A, int I, int J, int K, string name) {
 	if(!profilingEnabled)
 		return;
 	if (min_temp.find(name) == min_temp.end()) {
@@ -165,7 +165,7 @@ void Profile3(float *A, int I, int J, int K, string name) {
 	}
 }
 
-void Profile2(float *A, int I, int J, string name) {
+void Profile2(float* A, int I, int J, string name) {
 	if(!profilingEnabled)
 		return;
 	if (min_temp.find(name) == min_temp.end()) {
@@ -182,7 +182,7 @@ void Profile2(float *A, int I, int J, string name) {
 	}
 }
 
-void diff(float *A, MYINT *B, MYINT scale, MYINT I, MYINT J)
+void diff(float* A, MYINT* B, MYINT scale, MYINT I, MYINT J)
 {
 
 	float min = numeric_limits<float>::max(), max = 0, sum = 0;
@@ -226,7 +226,7 @@ void diff(float *A, MYINT *B, MYINT scale, MYINT I, MYINT J)
 	return;
 }
 
-void diff(float *A, MYINT *B, MYINT scale, MYINT I, MYINT J, MYINT K)
+void diff(float* A, MYINT* B, MYINT scale, MYINT I, MYINT J, MYINT K)
 {
 
 	float min = numeric_limits<float>::max(), max = 0, sum = 0;

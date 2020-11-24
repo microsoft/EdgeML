@@ -8,8 +8,8 @@
 
 using namespace std;
 
-int main(int argc, char **argv) {
-  DLX *solver;
+int main(int argc, char** argv) {
+  DLX* solver;
 
   int numElements;
   int numToBeCovered;

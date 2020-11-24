@@ -51,7 +51,7 @@ float vars_float::tmp35[1][1];
 float vars_float::tmp36[1][1];
 MYINT vars_float::tmp37;
 
-void seedotFloat(float **X, float* res)
+void seedotFloat(float** X, float* res)
 {
 	res[0] = -1.0;	
 }

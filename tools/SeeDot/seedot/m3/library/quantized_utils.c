@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include "quantized_utils.h"
 
-void q15_v_add(const Q15_T *vec1, const Q15_T *vec2, ITER_T len, Q15_T *ret,
+void q15_v_add(const Q15_T* vec1, const Q15_T* vec2, ITER_T len, Q15_T* ret,
                SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret, SCALE_T demote) {
   #ifdef SHIFT
     SCALE_T scalevec1 = scvec1 + scret;
@@ -41,7 +41,7 @@ void q15_v_add(const Q15_T *vec1, const Q15_T *vec2, ITER_T len, Q15_T *ret,
   }
 }
 
-void q7_v_sub(const Q7_T *vec1, const Q7_T *vec2, ITER_T len, Q7_T *ret,
+void q7_v_sub(const Q7_T* vec1, const Q7_T* vec2, ITER_T len, Q7_T* ret,
               SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret) {
   #ifdef SHIFT
     SCALE_T scalevec1 = scvec1 + scret;
@@ -78,7 +78,7 @@ void q7_v_sub(const Q7_T *vec1, const Q7_T *vec2, ITER_T len, Q7_T *ret,
   }
 }
 
-void q15_v_sub(const Q15_T *vec1, const Q15_T *vec2, ITER_T len, Q15_T *ret,
+void q15_v_sub(const Q15_T* vec1, const Q15_T* vec2, ITER_T len, Q15_T* ret,
                SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret) {
   #ifdef SHIFT
     SCALE_T scalevec1 = scvec1 + scret;
@@ -116,7 +116,7 @@ void q15_v_sub(const Q15_T *vec1, const Q15_T *vec2, ITER_T len, Q15_T *ret,
 }
 
 
-void q7_v_hadamard(const Q7_T *vec1, const Q7_T *vec2, ITER_T len, Q7_T *ret,
+void q7_v_hadamard(const Q7_T* vec1, const Q7_T* vec2, ITER_T len, Q7_T* ret,
                    SCALE_T scvec1, SCALE_T scvec2) {
   #ifdef SHIFT
     SCALE_T scalevec = scvec1 + scvec2;
@@ -151,8 +151,8 @@ void q7_v_hadamard(const Q7_T *vec1, const Q7_T *vec2, ITER_T len, Q7_T *ret,
   }
 }
 
-void q15_v_hadamard(const Q15_T *vec1, const Q15_T *vec2, ITER_T len,
-                    Q15_T *ret, SCALE_T scvec1, SCALE_T scvec2) {
+void q15_v_hadamard(const Q15_T* vec1, const Q15_T* vec2, ITER_T len,
+                    Q15_T* ret, SCALE_T scvec1, SCALE_T scvec2) {
   #ifdef SHIFT
     SCALE_T scalevec = scvec1 + scvec2;
   #else
@@ -186,7 +186,7 @@ void q15_v_hadamard(const Q15_T *vec1, const Q15_T *vec2, ITER_T len,
   }
 }
 
-void q15_v_sigmoid(const Q15_T *vec, ITER_T len, Q15_T *ret, Q15_T div,
+void q15_v_sigmoid(const Q15_T* vec, ITER_T len, Q15_T* ret, Q15_T div,
                    Q15_T add, Q15_T sigmoid_limit, SCALE_T scale_in,
                    SCALE_T scale_out, ITER_T use_tables) {
   if (use_tables) {
@@ -251,7 +251,7 @@ void q15_v_sigmoid(const Q15_T *vec, ITER_T len, Q15_T *ret, Q15_T div,
   }
 }
 
-void q15_v_tanh(const Q15_T *vec, ITER_T len, Q15_T *ret, SCALE_T scale_in,
+void q15_v_tanh(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scale_in,
                 SCALE_T scale_out, ITER_T use_tables) {
   if (use_tables) {
     #ifdef LOOP_UNROLL
@@ -316,7 +316,7 @@ void q15_v_tanh(const Q15_T *vec, ITER_T len, Q15_T *ret, SCALE_T scale_in,
   }
 }
 
-void q15_v_scalar_add(Q15_T scalar, const Q15_T *vec, ITER_T len, Q15_T *ret,
+void q15_v_scalar_add(Q15_T scalar, const Q15_T* vec, ITER_T len, Q15_T* ret,
                       SCALE_T scscalar, SCALE_T scvec, SCALE_T scret) {
   #ifdef SHIFT
     SCALE_T scaledscalar = scalar >> (scscalar + scret);
@@ -353,7 +353,7 @@ void q15_v_scalar_add(Q15_T scalar, const Q15_T *vec, ITER_T len, Q15_T *ret,
   }
 }
 
-void q15_v_scalar_sub(Q15_T scalar, const Q15_T *vec, ITER_T len, Q15_T *ret,
+void q15_v_scalar_sub(Q15_T scalar, const Q15_T* vec, ITER_T len, Q15_T* ret,
                       SCALE_T scscalar, SCALE_T scvec, SCALE_T scret) {
   #ifdef SHIFT
     SCALE_T scaledscalar = scalar >> (scscalar + scret);
@@ -390,7 +390,7 @@ void q15_v_scalar_sub(Q15_T scalar, const Q15_T *vec, ITER_T len, Q15_T *ret,
   }
 }
 
-void q15_v_scalar_mul(Q15_T scalar, const Q15_T *vec, ITER_T len, Q15_T *ret,
+void q15_v_scalar_mul(Q15_T scalar, const Q15_T* vec, ITER_T len, Q15_T* ret,
                       SCALE_T scscalar, SCALE_T scvec) {
   SCALE_T upscalar = scalar;
   #ifdef SHIFT
@@ -426,7 +426,7 @@ void q15_v_scalar_mul(Q15_T scalar, const Q15_T *vec, ITER_T len, Q15_T *ret,
   }
 }
 
-void q15_v_argmax(const Q15_T *const vec, ITER_T len, ITER_T *const ret) {
+void q15_v_argmax(const Q15_T* const vec, ITER_T len, ITER_T* const ret) {
   Q15_T max_value = vec[0];
   ITER_T max_index = 0;
 
@@ -440,7 +440,7 @@ void q15_v_argmax(const Q15_T *const vec, ITER_T len, ITER_T *const ret) {
   *ret = max_index;
 }
 
-void q15_v_scale_up(const Q15_T *vec, ITER_T len, Q15_T *ret, SCALE_T scvec) {
+void q15_v_scale_up(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scvec) {
   #ifdef LOOP_UNROLL
     ITER_T len_unroll = len >> 2;
     len = len % 4;
@@ -468,7 +468,7 @@ void q15_v_scale_up(const Q15_T *vec, ITER_T len, Q15_T *ret, SCALE_T scvec) {
   }
 }
 
-void q15_v_scale_down(const Q15_T *vec, ITER_T len, Q15_T *ret, SCALE_T scvec) {
+void q15_v_scale_down(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scvec) {
   #ifdef LOOP_UNROLL
     ITER_T len_unroll = len >> 2;
     len = len % 4;
@@ -496,8 +496,8 @@ void q15_v_scale_down(const Q15_T *vec, ITER_T len, Q15_T *ret, SCALE_T scvec) {
   }
 }
 
-void q15_m_reverse(const Q15_T *const mat, ITER_T nrows, ITER_T ncols,
-                   ITER_T axis, Q15_T *const ret) {
+void q15_m_reverse(const Q15_T* const mat, ITER_T nrows, ITER_T ncols,
+                   ITER_T axis, Q15_T* const ret) {
   ITER_T len = nrows * ncols;
 
   if (axis == 0) {
@@ -528,8 +528,8 @@ void q15_m_reverse(const Q15_T *const mat, ITER_T nrows, ITER_T ncols,
   }
 }
 
-void q15xq7_q15_m_mulvec(const Q15_T *mat, const Q7_T *const vec, ITER_T nrows,
-                         ITER_T ncols, Q15_T *ret, SCALE_T scmat,
+void q15xq7_q15_m_mulvec(const Q15_T* mat, const Q7_T* const vec, ITER_T nrows,
+                         ITER_T ncols, Q15_T* ret, SCALE_T scmat,
                          SCALE_T scvec, SCALE_T scret) {
   Q31_T sum;
   #ifdef SHIFT
@@ -541,7 +541,7 @@ void q15xq7_q15_m_mulvec(const Q15_T *mat, const Q7_T *const vec, ITER_T nrows,
   while (nrows--) {
     sum = 0;
     ITER_T cols = ncols;
-    const Q7_T *vec_offset = (const Q7_T *)vec;
+    const Q7_T* vec_offset = (const Q7_T*)vec;
 
     #ifdef LOOP_UNROLL
       ITER_T len_unroll = cols >> 2;
@@ -566,8 +566,8 @@ void q15xq7_q15_m_mulvec(const Q15_T *mat, const Q7_T *const vec, ITER_T nrows,
   }
 }
 
-void q15_m_mulvec(const Q15_T *mat, const Q15_T *const vec, ITER_T nrows,
-                  ITER_T ncols, Q15_T *ret, SCALE_T scmat, SCALE_T scvec,
+void q15_m_mulvec(const Q15_T* mat, const Q15_T* const vec, ITER_T nrows,
+                  ITER_T ncols, Q15_T* ret, SCALE_T scmat, SCALE_T scvec,
                   SCALE_T scret) {
   Q63_T sum;
   #ifdef SHIFT
@@ -582,7 +582,7 @@ void q15_m_mulvec(const Q15_T *mat, const Q15_T *const vec, ITER_T nrows,
   while (nrows--) {
     sum = 0;
     ITER_T cols = ncols;
-    const Q15_T *vec_offset = (const Q15_T *)vec;
+    const Q15_T* vec_offset = (const Q15_T*)vec;
 
     #ifdef LOOP_UNROLL
       ITER_T len_unroll = cols >> 2;
@@ -607,9 +607,9 @@ void q15_m_mulvec(const Q15_T *mat, const Q15_T *const vec, ITER_T nrows,
   }
 }
 
-void q15xq7_q15_m_sparse_mulvec(const Q15_T *row_indices,
-                                const Q15_T *mat_values, const Q7_T *vec,
-                                ITER_T nelem, Q15_T *ret,
+void q15xq7_q15_m_sparse_mulvec(const Q15_T* row_indices,
+                                const Q15_T* mat_values, const Q7_T* vec,
+                                ITER_T nelem, Q15_T* ret,
                                 SCALE_T scmat, SCALE_T scvec, SCALE_T scret) {
   ITER_T index;
   Q31_T vec_offset;
@@ -637,8 +637,8 @@ void q15xq7_q15_m_sparse_mulvec(const Q15_T *row_indices,
   }
 }
 
-void q15_m_sparse_mulvec(const Q15_T *row_indices, const Q15_T *mat_values,
-                         const Q15_T *vec, ITER_T nelem, Q15_T *ret, SCALE_T scmat, 
+void q15_m_sparse_mulvec(const Q15_T* row_indices, const Q15_T* mat_values,
+                         const Q15_T* vec, ITER_T nelem, Q15_T* ret, SCALE_T scmat,
                          SCALE_T scvec, SCALE_T scret) {
   ITER_T index;
   Q31_T vec_offset;
@@ -666,8 +666,8 @@ void q15_m_sparse_mulvec(const Q15_T *row_indices, const Q15_T *mat_values,
   }
 }
 
-void q7_t_add(const Q7_T *ten1, const Q7_T *ten2, ITER_T nbatches, ITER_T nrows,
-              ITER_T ncols, ITER_T nchannels, Q7_T *ret, SCALE_T scten1,
+void q7_t_add(const Q7_T* ten1, const Q7_T* ten2, ITER_T nbatches, ITER_T nrows,
+              ITER_T ncols, ITER_T nchannels, Q7_T* ret, SCALE_T scten1,
               SCALE_T scten2, SCALE_T scret) {
   ITER_T len = nbatches * nrows * ncols * nchannels;
 
@@ -706,8 +706,8 @@ void q7_t_add(const Q7_T *ten1, const Q7_T *ten2, ITER_T nbatches, ITER_T nrows,
   }
 }
 
-void q15_t_add(const Q15_T *ten1, const Q15_T *ten2, ITER_T nbatches,
-               ITER_T nrows, ITER_T ncols, ITER_T nchannels, Q15_T *ret,
+void q15_t_add(const Q15_T* ten1, const Q15_T* ten2, ITER_T nbatches,
+               ITER_T nrows, ITER_T ncols, ITER_T nchannels, Q15_T* ret,
                SCALE_T scten1, SCALE_T scten2, SCALE_T scret) {
   ITER_T len = nbatches * nrows * ncols * nchannels;
   #ifdef SHIFT
@@ -745,9 +745,9 @@ void q15_t_add(const Q15_T *ten1, const Q15_T *ten2, ITER_T nbatches,
   }
 }
 
-void q7xq15_q7_t_add_vec(const Q7_T *ten, const Q15_T *const vec,
+void q7xq15_q7_t_add_vec(const Q7_T* ten, const Q15_T* const vec,
                          ITER_T nbatches, ITER_T nrows, ITER_T ncols,
-                         ITER_T nchannels, Q7_T *ret, SCALE_T scten,
+                         ITER_T nchannels, Q7_T* ret, SCALE_T scten,
                          SCALE_T scvec, SCALE_T scret) {
   ITER_T len = nbatches * nrows * ncols;
   #ifdef SHIFT
@@ -760,7 +760,7 @@ void q7xq15_q7_t_add_vec(const Q7_T *ten, const Q15_T *const vec,
 
   while (len--) {
     ITER_T channels = nchannels;
-    const Q15_T *vec_offset = (const Q15_T *)vec;
+    const Q15_T* vec_offset = (const Q15_T*)vec;
 
     #ifdef LOOP_UNROLL
       ITER_T len_unroll = channels >> 2;
@@ -790,9 +790,9 @@ void q7xq15_q7_t_add_vec(const Q7_T *ten, const Q15_T *const vec,
   }
 }
 
-void q15_t_add_vec(const Q15_T *ten, const Q15_T *const vec,
+void q15_t_add_vec(const Q15_T* ten, const Q15_T* const vec,
                    ITER_T nbatches, ITER_T nrows, ITER_T ncols,
-                   ITER_T nchannels, Q15_T *ret, SCALE_T scten,
+                   ITER_T nchannels, Q15_T* ret, SCALE_T scten,
                    SCALE_T scvec, SCALE_T scret) {
   ITER_T len = nbatches * nrows * ncols;
   #ifdef SHIFT
@@ -805,7 +805,7 @@ void q15_t_add_vec(const Q15_T *ten, const Q15_T *const vec,
 
   while (len--) {
     ITER_T channels = nchannels;
-    const Q15_T *vec_offset = (const Q15_T *)vec;
+    const Q15_T* vec_offset = (const Q15_T*)vec;
 
     #ifdef LOOP_UNROLL
       ITER_T len_unroll = channels >> 2;
@@ -835,8 +835,8 @@ void q15_t_add_vec(const Q15_T *ten, const Q15_T *const vec,
   }
 }
 
-void q7_t_relu(const Q7_T *ten, ITER_T nbatches, ITER_T nrows, ITER_T ncols,
-               ITER_T nchannels, Q7_T *ret, Q7_T limit, Q7_T div) {
+void q7_t_relu(const Q7_T* ten, ITER_T nbatches, ITER_T nrows, ITER_T ncols,
+               ITER_T nchannels, Q7_T* ret, Q7_T limit, Q7_T div) {
   ITER_T len = nbatches * nrows * ncols * nchannels;
 
   #ifdef LOOP_UNROLL
@@ -855,8 +855,8 @@ void q7_t_relu(const Q7_T *ten, ITER_T nbatches, ITER_T nrows, ITER_T ncols,
   }
 }
 
-void q15_t_l2_norm(const Q15_T *ten, ITER_T nbatches, ITER_T nrows,
-                   ITER_T ncols, ITER_T nchannels, Q15_T *ret,
+void q15_t_l2_norm(const Q15_T* ten, ITER_T nbatches, ITER_T nrows,
+                   ITER_T ncols, ITER_T nchannels, Q15_T* ret,
                    SCALE_T scale_in, SCALE_T scale_out) {
   ITER_T len = nbatches * nrows * ncols;
   #ifndef SHIFT
@@ -866,7 +866,7 @@ void q15_t_l2_norm(const Q15_T *ten, ITER_T nbatches, ITER_T nrows,
   for (ITER_T i = 0; i < len; i++) {
     Q31_T sum_square = 0;
     ITER_T channels = nchannels;
-    const Q15_T *ten_offset = ten;
+    const Q15_T* ten_offset = ten;
 
     #ifdef LOOP_UNROLL
       ITER_T len_unroll = channels >> 2;
@@ -934,8 +934,8 @@ void q15_t_l2_norm(const Q15_T *ten, ITER_T nbatches, ITER_T nrows,
   }
 }
 
-void q7xq15_q7_convolution(const Q7_T *const input, const Q15_T *const filter,
-  Q7_T *const output, ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF,
+void q7xq15_q7_convolution(const Q7_T* const input, const Q15_T* const filter,
+  Q7_T* const output, ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF,
   ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G,
   S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR,
   ITER_T HStride, ITER_T WStride, ITER_T HDilation, ITER_T WDilation,
@@ -977,7 +977,7 @@ void q7xq15_q7_convolution(const Q7_T *const input, const Q15_T *const filter,
         for (ITER_T g = 0; g < G; g++) {
           ITER_T CIndexIn = g * CF + NIndexIn;
           ITER_T GIndexF = g * GOffsetF;
-          Q7_T *output_offset = ((Q7_T *)output) + g * COut + WIndexOut;
+          Q7_T* output_offset = ((Q7_T*)output) + g * COut + WIndexOut;
           for (ITER_T c = 0; c < COut; c++) {
 
             sum = 0;
@@ -993,8 +993,8 @@ void q7xq15_q7_convolution(const Q7_T *const input, const Q15_T *const filter,
                 if ((woffset < 0) || (woffset >= (S_ITER_T)W)) {
                   continue;
                 }
-                const Q7_T *input_offset = ((const Q7_T *)input) + ((ITER_T)woffset) * CIn + HIndexIn;
-                const Q15_T *filter_offset = ((const Q15_T *)filter) + ((ITER_T)(wf + WOffsetFL)) * WOffsetF + HIndexF;
+                const Q7_T* input_offset = ((const Q7_T*)input) + ((ITER_T)woffset) * CIn + HIndexIn;
+                const Q15_T* filter_offset = ((const Q15_T*)filter) + ((ITER_T)(wf + WOffsetFL)) * WOffsetF + HIndexF;
                 ITER_T channels = CF;
 
                 #ifdef LOOP_UNROLL
@@ -1031,8 +1031,8 @@ void q7xq15_q7_convolution(const Q7_T *const input, const Q15_T *const filter,
   }
 }
 
-void q7xq15_q15_convolution(const Q7_T *const input, const Q15_T *const filter,
-  Q15_T *const output, ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF,
+void q7xq15_q15_convolution(const Q7_T* const input, const Q15_T* const filter,
+  Q15_T* const output, ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF,
   ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G,
   S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR,
   ITER_T HStride, ITER_T WStride, ITER_T HDilation, ITER_T WDilation,
@@ -1074,7 +1074,7 @@ void q7xq15_q15_convolution(const Q7_T *const input, const Q15_T *const filter,
         for (ITER_T g = 0; g < G; g++) {
           ITER_T CIndexIn = g * CF + NIndexIn;
           ITER_T GIndexF = g * GOffsetF;
-          Q15_T *output_offset = ((Q15_T *)output) + g * COut + WIndexOut;
+          Q15_T* output_offset = ((Q15_T*)output) + g * COut + WIndexOut;
           for (ITER_T c = 0; c < COut; c++) {
 
             sum = 0;
@@ -1090,8 +1090,8 @@ void q7xq15_q15_convolution(const Q7_T *const input, const Q15_T *const filter,
                 if ((woffset < 0) || (woffset >= (S_ITER_T)W)) {
                   continue;
                 }
-                const Q7_T *input_offset = ((const Q7_T *)input) + ((ITER_T)woffset) * CIn + HIndexIn;
-                const Q15_T *filter_offset = ((const Q15_T *)filter) + ((ITER_T)(wf + WOffsetFL)) * WOffsetF + HIndexF;
+                const Q7_T* input_offset = ((const Q7_T*)input) + ((ITER_T)woffset) * CIn + HIndexIn;
+                const Q15_T* filter_offset = ((const Q15_T*)filter) + ((ITER_T)(wf + WOffsetFL)) * WOffsetF + HIndexF;
                 ITER_T channels = CF;
 
                 #ifdef LOOP_UNROLL
@@ -1128,8 +1128,8 @@ void q7xq15_q15_convolution(const Q7_T *const input, const Q15_T *const filter,
   }
 }
 
-void q15_convolution(const Q15_T *const input, const Q15_T *const filter,
-  Q15_T *const output, ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF,
+void q15_convolution(const Q15_T* const input, const Q15_T* const filter,
+  Q15_T* const output, ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF,
   ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G,
   S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR,
   ITER_T HStride, ITER_T WStride, ITER_T HDilation, ITER_T WDilation,
@@ -1171,7 +1171,7 @@ void q15_convolution(const Q15_T *const input, const Q15_T *const filter,
         for (ITER_T g = 0; g < G; g++) {
           ITER_T CIndexIn = g * CF + NIndexIn;
           ITER_T GIndexF = g * GOffsetF;
-          Q15_T *output_offset = ((Q15_T *)output) + g * COut + WIndexOut;
+          Q15_T* output_offset = ((Q15_T*)output) + g * COut + WIndexOut;
           for (ITER_T c = 0; c < COut; c++) {
 
             sum = 0;
@@ -1187,8 +1187,8 @@ void q15_convolution(const Q15_T *const input, const Q15_T *const filter,
                 if ((woffset < 0) || (woffset >= (S_ITER_T)W)) {
                   continue;
                 }
-                const Q15_T *input_offset = ((const Q15_T *)input) + ((ITER_T)woffset) * CIn + HIndexIn;
-                const Q15_T *filter_offset = ((const Q15_T *)filter) + ((ITER_T)(wf + WOffsetFL)) * WOffsetF + HIndexF;
+                const Q15_T* input_offset = ((const Q15_T*)input) + ((ITER_T)woffset) * CIn + HIndexIn;
+                const Q15_T* filter_offset = ((const Q15_T*)filter) + ((ITER_T)(wf + WOffsetFL)) * WOffsetF + HIndexF;
                 ITER_T channels = CF;
 
                 #ifdef LOOP_UNROLL
