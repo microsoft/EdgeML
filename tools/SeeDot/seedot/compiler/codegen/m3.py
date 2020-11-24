@@ -638,6 +638,7 @@ class M3(CodegenBase):
                 assert False, "Not implemented for M3"
             return "%s_convolution" % bwString, args
         elif name == "MBConv":
+            #TODO: Remove the TreeSum buffer variable from the list of variables to be allocated from the scratch space, because the TreeSum variable is not used in the M3 codegen.
             bwA = bitwidths[0]
             bwF1 = bitwidths[1]
             bwW1 = bitwidths[2]
