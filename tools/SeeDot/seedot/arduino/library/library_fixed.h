@@ -57,7 +57,7 @@ bool isSame<int32_t, int32_t>() {
 
 
 // C = A + B
-inline __attribute__((always_inline)) void MatAddNN(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatAddNN(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
@@ -75,7 +75,7 @@ inline __attribute__((always_inline)) void MatAddNN(MYINT *A, MYINT *B, MYINT *C
 }
 // C = A + B
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void MatAddNN(TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+inline __attribute__((always_inline)) void MatAddNN(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			TypeTemp a = (TypeTemp)A[i * J + j];
@@ -93,7 +93,7 @@ inline __attribute__((always_inline)) void MatAddNN(TypeA *A, TypeB *B, TypeC *C
 }
 
 // C = A + B
-inline __attribute__((always_inline)) void MatAddCN(const MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatAddCN(const MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			#if defined(INT8)
@@ -118,7 +118,7 @@ inline __attribute__((always_inline)) void MatAddCN(const MYINT *A, MYINT *B, MY
 }
 // C = A + B
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void MatAddCN(const TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+inline __attribute__((always_inline)) void MatAddCN(const TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			TypeTemp a;
@@ -146,7 +146,7 @@ inline __attribute__((always_inline)) void MatAddCN(const TypeA *A, TypeB *B, Ty
 }
 
 // C = A + B
-inline __attribute__((always_inline)) void MatAddNC(MYINT *A, const MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatAddNC(MYINT* A, const MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
@@ -171,7 +171,7 @@ inline __attribute__((always_inline)) void MatAddNC(MYINT *A, const MYINT *B, MY
 }
 // C = A + B
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void MatAddNC(TypeA *A, const TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+inline __attribute__((always_inline)) void MatAddNC(TypeA* A, const TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 
@@ -200,7 +200,7 @@ inline __attribute__((always_inline)) void MatAddNC(TypeA *A, const TypeB *B, Ty
 }
 
 // C = A + B
-inline __attribute__((always_inline)) void MatAddCC(const MYINT *A, const MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatAddCC(const MYINT* A, const MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			#if defined(INT8)
@@ -231,7 +231,7 @@ inline __attribute__((always_inline)) void MatAddCC(const MYINT *A, const MYINT 
 }
 // C = A + B
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void MatAddCC(const TypeA *A, const TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+inline __attribute__((always_inline)) void MatAddCC(const TypeA* A, const TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 
@@ -269,7 +269,7 @@ inline __attribute__((always_inline)) void MatAddCC(const TypeA *A, const TypeB 
 }
 
 // C = a + B
-inline __attribute__((always_inline)) void MatAddBroadCastA(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatAddBroadCastA(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			MYINT a = *A;
@@ -287,7 +287,7 @@ inline __attribute__((always_inline)) void MatAddBroadCastA(MYINT *A, MYINT *B, 
 }
 // C = a + B
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void MatAddBroadCastA(TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+inline __attribute__((always_inline)) void MatAddBroadCastA(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			TypeTemp a = (TypeTemp)*A;
@@ -305,7 +305,7 @@ inline __attribute__((always_inline)) void MatAddBroadCastA(TypeA *A, TypeB *B, 
 }
 
 // C = A + b
-inline __attribute__((always_inline)) void MatAddBroadCastB(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatAddBroadCastB(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
@@ -323,7 +323,7 @@ inline __attribute__((always_inline)) void MatAddBroadCastB(MYINT *A, MYINT *B, 
 }
 // C = A + b
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void MatAddBroadCastB(TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+inline __attribute__((always_inline)) void MatAddBroadCastB(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			TypeTemp a = (TypeTemp)A[i * J + j];
@@ -342,7 +342,7 @@ inline __attribute__((always_inline)) void MatAddBroadCastB(TypeA *A, TypeB *B, 
 
 // C = A - B
 // TODO: shrB is int32_t because in 8-bit/16-bit code, shrB is usually very high and int8_t/int16_t will overflow.
-inline __attribute__((always_inline)) void MatSub(MYINT *A, const MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatSub(MYINT* A, const MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
@@ -368,7 +368,7 @@ inline __attribute__((always_inline)) void MatSub(MYINT *A, const MYINT *B, MYIN
 // C = A - B
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
 // TODO: shrB is int32_t because in 8-bit/16-bit code, shrB is usually very high and int8_t/int16_t will overflow.
-inline __attribute__((always_inline)) void MatSub(TypeA *A, const TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC, MYINT demote) {
+inline __attribute__((always_inline)) void MatSub(TypeA* A, const TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			TypeTemp a = (TypeTemp)A[i * J + j];
@@ -397,7 +397,7 @@ inline __attribute__((always_inline)) void MatSub(TypeA *A, const TypeB *B, Type
 
 // C = a - B
 // TODO: shrB is int32_t because in 8-bit/16-bit code, shrB is usually very high and int8_t/int16_t will overflow.
-inline __attribute__((always_inline)) void MatSubBroadCastA(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatSubBroadCastA(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			MYINT a = *A;
@@ -416,7 +416,7 @@ inline __attribute__((always_inline)) void MatSubBroadCastA(MYINT *A, MYINT *B, 
 // C = a - B
 // TODO: shrB is int32_t because in 8-bit/16-bit code, shrB is usually very high and int8_t/int16_t will overflow.
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void MatSubBroadCastA(TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+inline __attribute__((always_inline)) void MatSubBroadCastA(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			TypeTemp a = (TypeTemp)*A;
@@ -435,7 +435,7 @@ inline __attribute__((always_inline)) void MatSubBroadCastA(TypeA *A, TypeB *B, 
 
 // C = A - b
 // TODO: shrB is int32_t because in 8-bit/16-bit code, shrB is usually very high and int8_t/int16_t will overflow.
-inline __attribute__((always_inline)) void MatSubBroadCastB(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void MatSubBroadCastB(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
@@ -454,7 +454,7 @@ inline __attribute__((always_inline)) void MatSubBroadCastB(MYINT *A, MYINT *B, 
 // C = A - b
 // TODO: shrB is int32_t because in 8-bit/16-bit code, shrB is usually very high and int8_t/int16_t will overflow.
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void MatSubBroadCastB(TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+inline __attribute__((always_inline)) void MatSubBroadCastB(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			TypeTemp a = (TypeTemp)A[i * J + j];
@@ -472,7 +472,7 @@ inline __attribute__((always_inline)) void MatSubBroadCastB(TypeA *A, TypeB *B, 
 }
 
 // C = A * B
-inline __attribute__((always_inline)) void MatMulNN(MYINT *A, MYINT *B, MYINT *C, MYINT *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+inline __attribute__((always_inline)) void MatMulNN(MYINT* A, MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -523,7 +523,7 @@ inline __attribute__((always_inline)) void MatMulNN(MYINT *A, MYINT *B, MYINT *C
 }
 // C = A * B
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void MatMulNN(TypeA *A, TypeB *B, TypeC *C, TypeTemp* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
+inline __attribute__((always_inline)) void MatMulNN(TypeA* A, TypeB* B, TypeC* C, TypeTemp* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
@@ -573,7 +573,7 @@ inline __attribute__((always_inline)) void MatMulNN(TypeA *A, TypeB *B, TypeC *C
 }
 
 // C = A * B
-inline __attribute__((always_inline)) void MatMulCN(const MYINT *A, MYINT *B, MYINT *C, MYINT *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+inline __attribute__((always_inline)) void MatMulCN(const MYINT* A, MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -632,7 +632,7 @@ inline __attribute__((always_inline)) void MatMulCN(const MYINT *A, MYINT *B, MY
 }
 // C = A * B
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void MatMulCN(const TypeA *A, TypeB *B, TypeC *C, TypeTemp* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
+inline __attribute__((always_inline)) void MatMulCN(const TypeA* A, TypeB* B, TypeC* C, TypeTemp* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
@@ -692,7 +692,7 @@ inline __attribute__((always_inline)) void MatMulCN(const TypeA *A, TypeB *B, Ty
 }
 
 // C = A * B
-inline __attribute__((always_inline)) void MatMulNC(MYINT *A, const MYINT *B, MYINT *C, MYINT *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+inline __attribute__((always_inline)) void MatMulNC(MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -751,7 +751,7 @@ inline __attribute__((always_inline)) void MatMulNC(MYINT *A, const MYINT *B, MY
 }
 // C = A * B
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void MatMulNC(TypeA *A, const TypeB *B, TypeC *C, TypeTemp* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
+inline __attribute__((always_inline)) void MatMulNC(TypeA* A, const TypeB* B, TypeC* C, TypeTemp* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
@@ -811,7 +811,7 @@ inline __attribute__((always_inline)) void MatMulNC(TypeA *A, const TypeB *B, Ty
 }
 
 // C = A * B
-inline __attribute__((always_inline)) void MatMulCC(const MYINT *A, const MYINT *B, MYINT *C, MYINT *tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+inline __attribute__((always_inline)) void MatMulCC(const MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -876,7 +876,7 @@ inline __attribute__((always_inline)) void MatMulCC(const MYINT *A, const MYINT 
 }
 // C = A * B
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void MatMulCC(const TypeA *A, const TypeB *B, TypeC *C, TypeTemp* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
+inline __attribute__((always_inline)) void MatMulCC(const TypeA* A, const TypeB* B, TypeC* C, TypeTemp* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
@@ -946,7 +946,7 @@ inline __attribute__((always_inline)) void MatMulCC(const TypeA *A, const TypeB 
 
 // C = A |*| B
 // TODO: K is int16_t because K is usually very high and int8_t will overflow in 8-bit code.
-inline __attribute__((always_inline)) void SparseMatMulX(const MYINT *Aidx, const MYINT *Aval, MYINT *C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void SparseMatMulX(const MYINT* Aidx, const MYINT* Aval, MYINT* C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC) {
 
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
@@ -1000,7 +1000,7 @@ inline __attribute__((always_inline)) void SparseMatMulX(const MYINT *Aidx, cons
 }
 // C = A |*| B
 // TODO: K is int16_t because K is usually very high and int8_t will overflow in 8-bit code.
-inline __attribute__((always_inline)) void SparseMatMul(const MYINT *Aidx, const MYINT *Aval, MYINT *B, MYINT *C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC) {
+inline __attribute__((always_inline)) void SparseMatMul(const MYINT* Aidx, const MYINT* Aval, MYINT* B, MYINT* C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC) {
 
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
@@ -1055,7 +1055,7 @@ inline __attribute__((always_inline)) void SparseMatMul(const MYINT *Aidx, const
 // C = A |*| B
 // TODO: K is int16_t because K is usually very high and int8_t will overflow in 8-bit code.
 template<class TypeA, class TypeAidx, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void SparseMatMulX(const TypeAidx* Aidx, const TypeA *Aval, TypeC *C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+inline __attribute__((always_inline)) void SparseMatMulX(const TypeAidx* Aidx, const TypeA* Aval, TypeC* C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
@@ -1107,7 +1107,7 @@ inline __attribute__((always_inline)) void SparseMatMulX(const TypeAidx* Aidx, c
 // C = A |*| B
 // TODO: K is int16_t because K is usually very high and int8_t will overflow in 8-bit code.
 template<class TypeA, class TypeAidx, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void SparseMatMul(const TypeAidx* Aidx, const TypeA *Aval, TypeB *B, TypeC *C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
+inline __attribute__((always_inline)) void SparseMatMul(const TypeAidx* Aidx, const TypeA* Aval, TypeB* B, TypeC* C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
@@ -1160,7 +1160,7 @@ inline __attribute__((always_inline)) void SparseMatMul(const TypeAidx* Aidx, co
 
 
 // C = A <*> B
-inline __attribute__((always_inline)) void MulCir(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
+inline __attribute__((always_inline)) void MulCir(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			MYINT a = A[i * J + j];
@@ -1181,7 +1181,7 @@ inline __attribute__((always_inline)) void MulCir(MYINT *A, MYINT *B, MYINT *C, 
 }
 // C = A <*> B
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void MulCir(TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT demote) {
+inline __attribute__((always_inline)) void MulCir(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			TypeTemp a = (TypeTemp)A[i * J + j];
@@ -1195,7 +1195,7 @@ inline __attribute__((always_inline)) void MulCir(TypeA *A, TypeB *B, TypeC *C, 
 }
 
 // index = argmax(A)
-inline __attribute__((always_inline)) void ArgMax(MYINT *A, MYINT I, MYINT J, MYINT *index) {
+inline __attribute__((always_inline)) void ArgMax(MYINT* A, MYINT I, MYINT J, MYINT* index) {
 
 	MYINT max = A[0];
 	MYITE maxIndex = 0, counter = 0;
@@ -1218,7 +1218,7 @@ inline __attribute__((always_inline)) void ArgMax(MYINT *A, MYINT I, MYINT J, MY
 }
 // index = argmax(A)
 template<class TypeA>
-inline __attribute__((always_inline)) void ArgMax(TypeA *A, MYINT I, MYINT J, MYITE* index) {
+inline __attribute__((always_inline)) void ArgMax(TypeA* A, MYINT I, MYINT J, MYITE* index) {
 	TypeA max = A[0];
 	MYITE maxIndex = 0, counter = 0;
 	for (MYITE i = 0; i < I; i++) {
@@ -1240,7 +1240,7 @@ inline __attribute__((always_inline)) void ArgMax(TypeA *A, MYINT I, MYINT J, MY
 }
 
 // A = A^T
-inline __attribute__((always_inline)) void Transpose(MYINT *A, MYINT *B, MYINT I, MYINT J) {
+inline __attribute__((always_inline)) void Transpose(MYINT* A, MYINT* B, MYINT I, MYINT J) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			B[i * J + j] = A[j * I + i];
@@ -1250,7 +1250,7 @@ inline __attribute__((always_inline)) void Transpose(MYINT *A, MYINT *B, MYINT I
 }
 // A = A^T
 template<class TypeA>
-inline __attribute__((always_inline)) void Transpose(TypeA *A, TypeA *B, MYINT I, MYINT J) {
+inline __attribute__((always_inline)) void Transpose(TypeA* A, TypeA* B, MYINT I, MYINT J) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			B[i * J + j] = A[j * I + i];
@@ -1260,7 +1260,7 @@ inline __attribute__((always_inline)) void Transpose(TypeA *A, TypeA *B, MYINT I
 }
 
 // C = a * B
-inline __attribute__((always_inline)) void ScalarMul(MYINT *A, MYINT *B, MYINT *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
+inline __attribute__((always_inline)) void ScalarMul(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
 	MYINT a = *A;
 #ifdef FASTAPPROX
 	a = a / shrA;
@@ -1287,7 +1287,7 @@ inline __attribute__((always_inline)) void ScalarMul(MYINT *A, MYINT *B, MYINT *
 }
 // C = a * B
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void ScalarMul(TypeA *A, TypeB *B, TypeC *C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, int demote) {
+inline __attribute__((always_inline)) void ScalarMul(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, int demote) {
 	TypeTemp a = (TypeTemp)*A;
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -1303,7 +1303,7 @@ inline __attribute__((always_inline)) void ScalarMul(TypeA *A, TypeB *B, TypeC *
 
 // C = A # B
 // A[N][H][W][CI], B[HF][WF][CI][CO], C[N][H][W][CO]
-inline __attribute__((always_inline)) void Conv(MYINT *A, const MYINT *B, MYINT *C, MYINT *tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+inline __attribute__((always_inline)) void Conv(MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 	MYITE padH = (HF - 1) / 2;
 	MYITE padW = (WF - 1) / 2;
 
@@ -1372,7 +1372,7 @@ inline __attribute__((always_inline)) void Conv(MYINT *A, const MYINT *B, MYINT 
 // C = A # B
 // A[N][H][W][CI], B[HF][WF][CI][CO], C[N][H][W][CO]
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
-inline __attribute__((always_inline)) void Conv(TypeA *A, const TypeB *B, TypeC *C, TypeTemp* tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
+inline __attribute__((always_inline)) void Conv(TypeA* A, const TypeB* B, TypeC* C, TypeTemp* tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2, MYINT demote) {
 	MYITE padH = (HF - 1) / 2;
 	MYITE padW = (WF - 1) / 2;
 
@@ -1445,7 +1445,7 @@ inline __attribute__((always_inline)) void Conv(TypeA *A, const TypeB *B, TypeC 
 
 // A = A <+> B
 // A[N][H][W][C], B[C]
-inline __attribute__((always_inline)) void AddOrSubCir4D(MYINT *A, const MYINT *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
+inline __attribute__((always_inline)) void AddOrSubCir4D(MYINT* A, const MYINT* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
 
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
@@ -1481,7 +1481,7 @@ inline __attribute__((always_inline)) void AddOrSubCir4D(MYINT *A, const MYINT *
 // A = A <+> B
 // A[N][H][W][C], B[C]
 template<class TypeA, class TypeB, class TypeTemp>
-inline __attribute__((always_inline)) void AddOrSubCir4D(TypeA *A, const TypeB *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
+inline __attribute__((always_inline)) void AddOrSubCir4D(TypeA* A, const TypeB* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
@@ -1519,7 +1519,7 @@ inline __attribute__((always_inline)) void AddOrSubCir4D(TypeA *A, const TypeB *
 
 // A = A <+> B
 // A[N][H][W][C], B[C]
-inline __attribute__((always_inline)) void AddOrSubCir2D(MYINT *A, const MYINT *B, MYINT H, MYINT W, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
+inline __attribute__((always_inline)) void AddOrSubCir2D(MYINT* A, const MYINT* B, MYINT H, MYINT W, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
 
 	for (MYITE h = 0; h < H; h++) {
 		for (MYITE w = 0; w < W; w++) {
@@ -1551,7 +1551,7 @@ inline __attribute__((always_inline)) void AddOrSubCir2D(MYINT *A, const MYINT *
 // A = A <+> B
 // A[N][H][W][C], B[C]
 template<class TypeA, class TypeB, class TypeTemp>
-inline __attribute__((always_inline)) void AddOrSubCir2D(TypeA *A, const TypeB *B, MYINT H, MYINT W, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
+inline __attribute__((always_inline)) void AddOrSubCir2D(TypeA* A, const TypeB* B, MYINT H, MYINT W, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
 	for (MYITE h = 0; h < H; h++) {
 		for (MYITE w = 0; w < W; w++) {
 			TypeTemp a = (TypeTemp)A[h * W + w];
@@ -1586,7 +1586,7 @@ inline __attribute__((always_inline)) void AddOrSubCir2D(TypeA *A, const TypeB *
 
 // A = relu(A)
 // A[N][H][W][C]
-inline __attribute__((always_inline)) void Relu4D(MYINT *A, MYINT N, MYINT H, MYINT W, MYINT C) {
+inline __attribute__((always_inline)) void Relu4D(MYINT* A, MYINT N, MYINT H, MYINT W, MYINT C) {
 
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
@@ -1607,7 +1607,7 @@ inline __attribute__((always_inline)) void Relu4D(MYINT *A, MYINT N, MYINT H, MY
 // A = relu(A)
 // A[N][H][W][C]
 template<class TypeA>
-inline __attribute__((always_inline)) void Relu4D(TypeA *A, MYINT N, MYINT H, MYINT W, MYINT C) {
+inline __attribute__((always_inline)) void Relu4D(TypeA* A, MYINT N, MYINT H, MYINT W, MYINT C) {
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
@@ -1625,7 +1625,7 @@ inline __attribute__((always_inline)) void Relu4D(TypeA *A, MYINT N, MYINT H, MY
 
 // A = relu(A)
 // A[N][H][W][C]
-inline __attribute__((always_inline)) void Relu2D(MYINT *A, MYINT H, MYINT W) {
+inline __attribute__((always_inline)) void Relu2D(MYINT* A, MYINT H, MYINT W) {
 
 	for (MYITE h = 0; h < H; h++) {
 		for (MYITE w = 0; w < W; w++) {
@@ -1642,7 +1642,7 @@ inline __attribute__((always_inline)) void Relu2D(MYINT *A, MYINT H, MYINT W) {
 // A = relu(A)
 // A[N][H][W][C]
 template<class TypeA>
-inline __attribute__((always_inline)) void Relu2D(TypeA *A, MYINT H, MYINT W) {
+inline __attribute__((always_inline)) void Relu2D(TypeA* A, MYINT H, MYINT W) {
 	for (MYITE h = 0; h < H; h++) {
 		for (MYITE w = 0; w < W; w++) {
 			TypeA a = A[h * W + w];
@@ -1656,7 +1656,7 @@ inline __attribute__((always_inline)) void Relu2D(TypeA *A, MYINT H, MYINT W) {
 
 // B = maxpool(A)
 // A[N][H][W][C], B[N][H][W][C]
-inline __attribute__((always_inline)) void Maxpool(MYINT *A, MYINT *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT stride) {
+inline __attribute__((always_inline)) void Maxpool(MYINT* A, MYINT* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT stride) {
 	MYITE HO = H / stride;
 	MYITE WO = W / stride;
 
@@ -1685,7 +1685,7 @@ inline __attribute__((always_inline)) void Maxpool(MYINT *A, MYINT *B, MYINT N, 
 // B = maxpool(A)
 // A[N][H][W][C], B[N][H][W][C]
 template<class TypeA, class TypeB>
-inline __attribute__((always_inline)) void Maxpool(TypeA *A, TypeB *B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT stride, MYINT demote) {
+inline __attribute__((always_inline)) void Maxpool(TypeA* A, TypeB* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT stride, MYINT demote) {
 	MYITE HO = H / stride;
 	MYITE WO = W / stride;
 
@@ -1712,7 +1712,7 @@ inline __attribute__((always_inline)) void Maxpool(TypeA *A, TypeB *B, MYINT N, 
 }
 
 // B = exp(A)
-inline __attribute__((always_inline)) void Exp(MYINT *A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT *B) {
+inline __attribute__((always_inline)) void Exp(MYINT* A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT* B) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -1725,7 +1725,7 @@ inline __attribute__((always_inline)) void Exp(MYINT *A, MYINT I, MYINT J, MYINT
 // B = exp(A)
 //shrB overflows int16_t
 template<class TypeA, class TypeB>
-inline __attribute__((always_inline)) void Exp(TypeA *A, MYINT I, MYINT J, MYINT shrA, int32_t shrB, TypeB *B, MYINT demote) {
+inline __attribute__((always_inline)) void Exp(TypeA* A, MYINT I, MYINT J, MYINT shrA, int32_t shrB, TypeB* B, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			B[i * J + j] = (TypeB)((exp(((float)A[i * J + j]) / shrA) * shrB) / demote);
@@ -1756,7 +1756,7 @@ inline __attribute__((always_inline)) TypeB expBase16(int16_t A, MYINT adjust) {
 	return (TypeB) ((res / 16384) / adjust);
 }
 template<class TypeB>
-inline __attribute__((always_inline)) void ExpNew8(int8_t *A, MYINT I, MYINT J, MYINT adjust, TypeB *B) {
+inline __attribute__((always_inline)) void ExpNew8(int8_t* A, MYINT I, MYINT J, MYINT adjust, TypeB* B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			B[i * J + j] = expBase8<TypeB>(A[i * J + j], adjust);
@@ -1765,7 +1765,7 @@ inline __attribute__((always_inline)) void ExpNew8(int8_t *A, MYINT I, MYINT J, 
 	return;
 }
 template<class TypeB>
-inline __attribute__((always_inline)) void ExpNew16(int16_t *A, MYINT I, MYINT J, MYINT adjust, TypeB *B) {
+inline __attribute__((always_inline)) void ExpNew16(int16_t* A, MYINT I, MYINT J, MYINT adjust, TypeB* B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			B[i * J + j] = expBase16<TypeB>(A[i * J + j], adjust);
@@ -1775,7 +1775,7 @@ inline __attribute__((always_inline)) void ExpNew16(int16_t *A, MYINT I, MYINT J
 }
 
 // A = Sigmoid(A)
-inline __attribute__((always_inline)) void Sigmoid(MYINT *A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit, MYINT scale_in, MYINT scale_out) {
+inline __attribute__((always_inline)) void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit, MYINT scale_in, MYINT scale_out) {
 
 	MYINT scale_diff = scale_out / scale_in;
 
@@ -1815,7 +1815,7 @@ inline __attribute__((always_inline)) void Sigmoid(MYINT *A, MYINT I, MYINT J, M
 }
 // A = Sigmoid(A)
 template<class TypeA>
-inline __attribute__((always_inline)) void Sigmoid(TypeA *A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit, MYINT scale_in, MYINT scale_out) {
+inline __attribute__((always_inline)) void Sigmoid(TypeA* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit, MYINT scale_in, MYINT scale_out) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float x = float(A[i * J + j]) / scale_in;
@@ -1866,7 +1866,7 @@ inline __attribute__((always_inline)) void SigmoidNew16(int16_t* A, MYINT I, MYI
 
 
 // A = tanh(A)
-inline __attribute__((always_inline)) void TanH(MYINT *A, MYINT I, MYINT J, MYINT scale_in, MYINT scale_out, MYINT *B) {
+inline __attribute__((always_inline)) void TanH(MYINT* A, MYINT I, MYINT J, MYINT scale_in, MYINT scale_out, MYINT* B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 #ifdef FLOATEXP
@@ -1899,7 +1899,7 @@ inline __attribute__((always_inline)) void TanH(MYINT *A, MYINT I, MYINT J, MYIN
 }
 // A = tanh(A)
 template<class TypeA>
-inline __attribute__((always_inline)) void TanH(TypeA *A, MYINT I, MYINT J, TypeA scale_in, TypeA scale_out, TypeA *B) {
+inline __attribute__((always_inline)) void TanH(TypeA* A, MYINT I, MYINT J, TypeA scale_in, TypeA scale_out, TypeA* B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float x = float(A[i * J + j]) / scale_in;
@@ -1950,7 +1950,7 @@ inline __attribute__((always_inline)) void TanHNew16(int16_t* A, MYINT I, MYINT 
 }
 
 // A = AdjustScaleShr(A)
-inline __attribute__((always_inline)) void AdjustScaleShr(MYINT *A, MYINT I, MYINT J, MYINT scale) {
+inline __attribute__((always_inline)) void AdjustScaleShr(MYINT* A, MYINT I, MYINT J, MYINT scale) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -1963,7 +1963,7 @@ inline __attribute__((always_inline)) void AdjustScaleShr(MYINT *A, MYINT I, MYI
 }
 // A = AdjustScaleShr(A)
 template<class TypeA>
-inline __attribute__((always_inline)) void AdjustScaleShr(TypeA *A, MYINT I, MYINT J, MYINT scale) {
+inline __attribute__((always_inline)) void AdjustScaleShr(TypeA* A, MYINT I, MYINT J, MYINT scale) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			TypeA a = A[i * J + j];
@@ -1974,7 +1974,7 @@ inline __attribute__((always_inline)) void AdjustScaleShr(TypeA *A, MYINT I, MYI
 }
 
 // A = AdjustScaleShl(A)
-inline __attribute__((always_inline)) void AdjustScaleShl(MYINT *A, MYINT I, MYINT J, MYINT scale) {
+inline __attribute__((always_inline)) void AdjustScaleShl(MYINT* A, MYINT I, MYINT J, MYINT scale) {
 
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -1987,7 +1987,7 @@ inline __attribute__((always_inline)) void AdjustScaleShl(MYINT *A, MYINT I, MYI
 }
 // A = AdjustScaleShl(A)
 template<class TypeA>
-inline __attribute__((always_inline)) void AdjustScaleShl(TypeA *A, MYINT I, MYINT J, MYINT scale) {
+inline __attribute__((always_inline)) void AdjustScaleShl(TypeA* A, MYINT I, MYINT J, MYINT scale) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			TypeA a = A[i * J + j];
@@ -1998,7 +1998,7 @@ inline __attribute__((always_inline)) void AdjustScaleShl(TypeA *A, MYINT I, MYI
 }
 // A = AdjustScaleShlSaturate(A)
 template<class TypeA>
-inline __attribute__((always_inline)) void AdjustScaleShlSaturate(TypeA *A, MYINT I, MYINT J, MYINT scale, MYINT saturate) {
+inline __attribute__((always_inline)) void AdjustScaleShlSaturate(TypeA* A, MYINT I, MYINT J, MYINT scale, MYINT saturate) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			TypeA a = A[i * J + j];
