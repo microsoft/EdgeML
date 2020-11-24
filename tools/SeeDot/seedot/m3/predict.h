@@ -5,4 +5,4 @@
 
 #include "quantized_datatypes.h"
 
-void seedotFixed(Q15_T **, Q31_T *);
+void seedotFixed(Q15_T**, Q31_T*);

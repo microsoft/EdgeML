@@ -83,7 +83,7 @@ static inline Q15_T exp_base_16(Q15_T inp, Q15_T scale) {
  *                  demote    = 1
  *                  ret       = {-2772, -1358, -3028, -389, -1666, -2070, -608, -699}
  */
-void q15_v_add(const Q15_T *vec1, const Q15_T *vec2, ITER_T len, Q15_T *ret,
+void q15_v_add(const Q15_T* vec1, const Q15_T* vec2, ITER_T len, Q15_T* ret,
                SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret, SCALE_T demote);
 /**
  * @brief Compute the element-wise subtraction between two vectors.
@@ -103,9 +103,9 @@ void q15_v_add(const Q15_T *vec1, const Q15_T *vec2, ITER_T len, Q15_T *ret,
  *                  scret     = 1
  *                  ret       = {1922, 1020, -4040, 1437, -3812, 2244, 712, 1283}
  */
-void q7_v_sub(const Q7_T *vec1, const Q7_T *vec2, ITER_T len, Q7_T *ret,
+void q7_v_sub(const Q7_T* vec1, const Q7_T* vec2, ITER_T len, Q7_T* ret,
               SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret);
-void q15_v_sub(const Q15_T *vec1, const Q15_T *vec2, ITER_T len, Q15_T *ret,
+void q15_v_sub(const Q15_T* vec1, const Q15_T* vec2, ITER_T len, Q15_T* ret,
                SCALE_T scvec1, SCALE_T scvec2, SCALE_T scret);
 /**
  * @brief Compute the element-wise product (also known as Hadamard product) between two vectors.
@@ -123,9 +123,9 @@ void q15_v_sub(const Q15_T *vec1, const Q15_T *vec2, ITER_T len, Q15_T *ret,
  *                  scvec2    = 64
  *                  ret       = {1423, 7085, -16378, 8209, -12067, 6805, 6475, 6897}
  */
-void q7_v_hadamard(const Q7_T *vec1, const Q7_T *vec2, ITER_T len, Q7_T *ret,
+void q7_v_hadamard(const Q7_T* vec1, const Q7_T* vec2, ITER_T len, Q7_T* ret,
                    SCALE_T scvec1, SCALE_T scvec2);
-void q15_v_hadamard(const Q15_T *vec1, const Q15_T *vec2, ITER_T len, Q15_T *ret,
+void q15_v_hadamard(const Q15_T* vec1, const Q15_T* vec2, ITER_T len, Q15_T* ret,
                     SCALE_T scvec1, SCALE_T scvec2);
 /**
  * @brief Compute the element-wise Sigmoid activation on the input vector.
@@ -150,7 +150,7 @@ void q15_v_hadamard(const Q15_T *vec1, const Q15_T *vec2, ITER_T len, Q15_T *ret
  *                  use_tables     = 0
  *                  ret            = {0, 2760, 0, 6640, 1528, 0, 5760, 5400}
  */
-void q15_v_sigmoid(const Q15_T *vec, ITER_T len, Q15_T *ret, Q15_T div,
+void q15_v_sigmoid(const Q15_T* vec, ITER_T len, Q15_T* ret, Q15_T div,
                    Q15_T add, Q15_T sigmoid_limit, SCALE_T scale_in,
                    SCALE_T scale_out, ITER_T use_tables);
 /**
@@ -170,7 +170,7 @@ void q15_v_sigmoid(const Q15_T *vec, ITER_T len, Q15_T *ret, Q15_T div,
  *                  use_tables     = 0
  *                  ret            = {178, 1064, -2048, 1718, -1663, 851, 1244, 1282}
  */
-void q15_v_tanh(const Q15_T *vec, ITER_T len, Q15_T *ret, SCALE_T scale_in,
+void q15_v_tanh(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scale_in,
                 SCALE_T scale_out, ITER_T use_tables);
 /**
  * @brief Compute the addition of a scalar to every element of a vector.
@@ -190,7 +190,7 @@ void q15_v_tanh(const Q15_T *vec, ITER_T len, Q15_T *ret, SCALE_T scale_in,
  *                  scret     = 1
  *                  ret       = {16378, 13638, 16378, 9787, 14861, 16378, 10661, 11018}
  */
-void q15_v_scalar_add(Q15_T scalar, const Q15_T *vec, ITER_T len, Q15_T *ret,
+void q15_v_scalar_add(Q15_T scalar, const Q15_T* vec, ITER_T len, Q15_T* ret,
                       SCALE_T scscalar, SCALE_T scvec, SCALE_T scret);
 /**
  * @brief Compute the subtraction of every element of a vector (B) from a scalar (a). The resultant vector has elements C_{i} = a - B_{i}.
@@ -210,7 +210,7 @@ void q15_v_scalar_add(Q15_T scalar, const Q15_T *vec, ITER_T len, Q15_T *ret,
  *                  scret     = 1
  *                  ret       = {16384, 13624, 16384, 9744, 14856, 16384, 10624, 10984}
  */
-void q15_v_scalar_sub(Q15_T scalar, const Q15_T *vec, ITER_T len, Q15_T *ret,
+void q15_v_scalar_sub(Q15_T scalar, const Q15_T* vec, ITER_T len, Q15_T* ret,
                       SCALE_T scscalar, SCALE_T scvec, SCALE_T scret);
 /**
  * @brief Compute the multiplication of a scalar to every element of a vector.
@@ -228,7 +228,7 @@ void q15_v_scalar_sub(Q15_T scalar, const Q15_T *vec, ITER_T len, Q15_T *ret,
  *                  scvec     = 256
  *                  ret       = {16261, 13521, 16261, 9670, 14744, 16261, 10544, 10901}
  */
-void q15_v_scalar_mul(Q15_T scalar, const Q15_T *vec, ITER_T len, Q15_T *ret,
+void q15_v_scalar_mul(Q15_T scalar, const Q15_T* vec, ITER_T len, Q15_T* ret,
                       SCALE_T scscalar, SCALE_T scvec);
 /**
  * @brief Finds the index of largest element in a vector.
@@ -240,7 +240,7 @@ void q15_v_scalar_mul(Q15_T scalar, const Q15_T *vec, ITER_T len, Q15_T *ret,
  *                  len       = 6
  *                  *ret      = 2
  */
-void q15_v_argmax(const Q15_T *const vec, ITER_T len, ITER_T *const ret);
+void q15_v_argmax(const Q15_T* const vec, ITER_T len, ITER_T* const ret);
 /**
  * @brief Performs element-wise up-scaling on a vector.
  * @param[in]       vec       pointer to the vector on which up-scaling is to be performed
@@ -253,7 +253,7 @@ void q15_v_argmax(const Q15_T *const vec, ITER_T len, ITER_T *const ret);
  *                  scvec     = 10
  *                  ret       = {4230, -9870, -23420, 12320}
  */
-void q15_v_scale_up(const Q15_T *vec, ITER_T len, Q15_T *ret, SCALE_T scvec);
+void q15_v_scale_up(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scvec);
 /**
  * @brief Performs element-wise down-scaling on a vector.
  * @param[in]       vec       pointer to the vector on which down-scaling is to be performed
@@ -266,7 +266,7 @@ void q15_v_scale_up(const Q15_T *vec, ITER_T len, Q15_T *ret, SCALE_T scvec);
  *                  scvec     = 37
  *                  ret       = {114, -267, -63, 33}
  */
-void q15_v_scale_down(const Q15_T *vec, ITER_T len, Q15_T *ret, SCALE_T scvec);
+void q15_v_scale_down(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scvec);
 
 /**
  * @brief Performs the row-order or the column-order reversal of the 2-D input matrix.
@@ -284,8 +284,8 @@ void q15_v_scale_down(const Q15_T *vec, ITER_T len, Q15_T *ret, SCALE_T scvec);
  *                  ret       = { {4, 5},
  *                                {1, 2} }
  */
-void q15_m_reverse(const Q15_T *const mat, ITER_T nrows, ITER_T ncols,
-                   ITER_T axis, Q15_T *const ret);
+void q15_m_reverse(const Q15_T* const mat, ITER_T nrows, ITER_T ncols,
+                   ITER_T axis, Q15_T* const ret);
 
 /**
  * @brief Performs the matrix multiplication of a matrix and a vector.
@@ -314,11 +314,11 @@ void q15_m_reverse(const Q15_T *const mat, ITER_T nrows, ITER_T ncols,
  *                  scret     = 2
  *                  ret       = {-425, -169, -3534, 524, -2739, 87, 52, 292}
  */
-void q15xq7_q15_m_mulvec(const Q15_T *mat, const Q7_T *const vec, ITER_T nrows,
-                         ITER_T ncols, Q15_T *ret, SCALE_T scmat,
+void q15xq7_q15_m_mulvec(const Q15_T* mat, const Q7_T* const vec, ITER_T nrows,
+                         ITER_T ncols, Q15_T* ret, SCALE_T scmat,
                          SCALE_T scvec, SCALE_T scret);
-void q15_m_mulvec(const Q15_T *mat, const Q15_T *const vec, ITER_T nrows,
-                  ITER_T ncols, Q15_T *ret, SCALE_T scmat, SCALE_T scvec,
+void q15_m_mulvec(const Q15_T* mat, const Q15_T* const vec, ITER_T nrows,
+                  ITER_T ncols, Q15_T* ret, SCALE_T scmat, SCALE_T scvec,
                   SCALE_T scret);
 
 /**
@@ -355,11 +355,11 @@ void q15_m_mulvec(const Q15_T *mat, const Q15_T *const vec, ITER_T nrows,
  *                              { { {6894, 1210}, {6790, 5424} },
  *                                { {8976, 4538}, {9348, 9320} } }
  */
-void q7_t_add(const Q7_T *ten1, const Q7_T *ten2, ITER_T nbatches,
-              ITER_T nrows, ITER_T ncols, ITER_T nchannels, Q7_T *ret,
+void q7_t_add(const Q7_T* ten1, const Q7_T* ten2, ITER_T nbatches,
+              ITER_T nrows, ITER_T ncols, ITER_T nchannels, Q7_T* ret,
               SCALE_T scten1, SCALE_T scten2, SCALE_T scret);
-void q15_t_add(const Q15_T *ten1, const Q15_T *ten2, ITER_T nbatches,
-               ITER_T nrows, ITER_T ncols, ITER_T nchannels, Q15_T *ret,
+void q15_t_add(const Q15_T* ten1, const Q15_T* ten2, ITER_T nbatches,
+               ITER_T nrows, ITER_T ncols, ITER_T nchannels, Q15_T* ret,
                SCALE_T scten1, SCALE_T scten2, SCALE_T scret);
 /**
  * @brief Performs the channel-wise addition of a bias term to the input tensor.
@@ -392,12 +392,12 @@ void q15_t_add(const Q15_T *ten1, const Q15_T *ten2, ITER_T nbatches,
  *                              { { {5560, 1190}, {5740, 3300} },
  *                                { {6601, 2854}, {7019, 5248} } }
  */
-void q7xq15_q7_t_add_vec(const Q7_T *ten, const Q15_T *const vec,
+void q7xq15_q7_t_add_vec(const Q7_T* ten, const Q15_T* const vec,
                          ITER_T nbatches, ITER_T nrows, ITER_T ncols,
-                         ITER_T nchannels, Q7_T *ret, SCALE_T scmat,
+                         ITER_T nchannels, Q7_T* ret, SCALE_T scmat,
                          SCALE_T scvec, SCALE_T scret);
-void q15_t_add_vec(const Q15_T *ten, const Q15_T *const vec, ITER_T nbatches,
-                   ITER_T nrows, ITER_T ncols, ITER_T nchannels, Q15_T *ret,
+void q15_t_add_vec(const Q15_T* ten, const Q15_T* const vec, ITER_T nbatches,
+                   ITER_T nrows, ITER_T ncols, ITER_T nchannels, Q15_T* ret,
                    SCALE_T scmat, SCALE_T scvec, SCALE_T scret);
 /**
  * @brief Replace any negative element present in the tensor with zero and clips positive elements to the limit.
@@ -426,8 +426,8 @@ void q15_t_add_vec(const Q15_T *ten, const Q15_T *const vec, ITER_T nbatches,
  *                              { { {64, 0}, {64, 42} },
  *                                { {64, 39}, {64, 21} } }
  */
-void q7_t_relu(const Q7_T *ten, ITER_T nbatches, ITER_T nrows, ITER_T ncols,
-               ITER_T nchannels, Q7_T *ret, Q7_T limit, Q7_T div);
+void q7_t_relu(const Q7_T* ten, ITER_T nbatches, ITER_T nrows, ITER_T ncols,
+               ITER_T nchannels, Q7_T* ret, Q7_T limit, Q7_T div);
 /**
  * @brief Computes the L2-Norm for each channel of the input tensor, and divides each number in that channel by it.
  * dim(ten) = dim(ret) = [nbatches][nrows][ncols][nchannels].
@@ -455,8 +455,8 @@ void q7_t_relu(const Q7_T *ten, ITER_T nbatches, ITER_T nrows, ITER_T ncols,
  *                              { { {3447, 605}, {3395, 2712} },
  *                                { {4488, 2269}, {4674, 4660} } }
  */
-void q15_t_l2_norm(const Q15_T *ten, ITER_T nbatches, ITER_T nrows,
-                   ITER_T ncols, ITER_T nchannels, Q15_T *ret,
+void q15_t_l2_norm(const Q15_T* ten, ITER_T nbatches, ITER_T nrows,
+                   ITER_T ncols, ITER_T nchannels, Q15_T* ret,
                    SCALE_T scale_in, SCALE_T scale_out);
 
 /**
@@ -489,20 +489,20 @@ void q15_t_l2_norm(const Q15_T *ten, ITER_T nbatches, ITER_T nrows,
  * @return          none
  * @example         Please refer the test-case: test_q15_convolution() in file: c_reference/tests/utils/test_quantized_utils.c
  */
-void q7xq15_q7_convolution(const Q7_T *const input, const Q15_T *const filter,
-  Q7_T *const output, ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF,
+void q7xq15_q7_convolution(const Q7_T* const input, const Q15_T* const filter,
+  Q7_T* const output, ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF,
   ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G,
   S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR,
   ITER_T HStride, ITER_T WStride, ITER_T HDilation, ITER_T WDilation,
   SCALE_T scinput, SCALE_T scoutput, SCALE_T demote);
-void q7xq15_q15_convolution(const Q7_T *const input, const Q15_T *const filter,
-  Q15_T *const output, ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF,
+void q7xq15_q15_convolution(const Q7_T* const input, const Q15_T* const filter,
+  Q15_T* const output, ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF,
   ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G,
   S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR,
   ITER_T HStride, ITER_T WStride, ITER_T HDilation, ITER_T WDilation,
   SCALE_T scinput, SCALE_T scoutput, SCALE_T demote);
-void q15_convolution(const Q15_T *const input, const Q15_T *const filter,
-  Q15_T *const output, ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF,
+void q15_convolution(const Q15_T* const input, const Q15_T* const filter,
+  Q15_T* const output, ITER_T N, ITER_T H, ITER_T W, ITER_T CIn, ITER_T HF,
   ITER_T WF, ITER_T CF, ITER_T COut, ITER_T HOut, ITER_T WOut, ITER_T G,
   S_ITER_T HPadU, S_ITER_T HPadD, S_ITER_T WPadL, S_ITER_T WPadR,
   ITER_T HStride, ITER_T WStride, ITER_T HDilation, ITER_T WDilation,
