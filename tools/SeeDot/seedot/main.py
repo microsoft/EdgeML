@@ -97,8 +97,12 @@ class Main:
                 destFile = os.path.join(config.outdir, fileName)
                 shutil.copyfile(srcFile, destFile)
         elif self.target == config.Target.m3:
-            for fileName in ["datatypes.h", "mbconv.h", "mbconv.c", "utils.h", "utils.c"]:
-                srcFile = os.path.join(curr_dir, "m3", "library", "quantized_%s"%fileName)
+            for fileName in ["datatypes.h", "mbconv.h", "utils.h"]:
+                srcFile = os.path.join(curr_dir, "..", "..", "..",  "c_reference", "include", "quantized_%s"%fileName)
+                destFile = os.path.join(config.outdir, "quantized_%s"%fileName)
+                shutil.copyfile(srcFile, destFile)
+            for fileName in ["mbconv.c", "utils.c"]:
+                srcFile = os.path.join(curr_dir, "..", "..", "..",  "c_reference", "src", "quantized_%s"%fileName)
                 destFile = os.path.join(config.outdir, "quantized_%s"%fileName)
                 shutil.copyfile(srcFile, destFile)
             for fileName in ["main.c", "predict.h", "Makefile"]:
