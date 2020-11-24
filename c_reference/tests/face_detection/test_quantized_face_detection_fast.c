@@ -23,9 +23,9 @@
 #endif
 
 // Comparator function for sorting floats.
-int compare_floats(const void *a, const void *b) {
-  const float *da = (const float *) a;
-  const float *db = (const float *) b;
+int compare_floats(const void* a, const void* b) {
+  const float* da = (const float*) a;
+  const float* db = (const float*) b;
 
   return (*da > *db) - (*da < *db);
 }
@@ -57,7 +57,7 @@ float aggregate_error(float* errors, unsigned len) {
 /**
  *  By default, all tests run without using bit-shifting operations.
  */
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   unsigned patches;
   SCALE_T XScale = -1, YScale = 12;
   FILE *xFile, *yFile, *floatResFile, *outputLog;
@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
   char* mem_buf = malloc(MEM_BUF_SIZE * sizeof(char));
   float* xLine = malloc(INPUT_IMG_HEIGHT * INPUT_IMG_WIDTH * sizeof(float));
   float* yLine = malloc(OUTPUT_SIZE * sizeof(float));
-  float* allErrors = malloc(patches * OUTPUT_SIZE * (sizeof(float)));
+  float* allErrors = malloc(patches * OUTPUT_SIZE * sizeof(float));
 
   float time_spent = 0.0;
   Q7_T* mem_buf_input_offset = (Q7_T*)mem_buf;

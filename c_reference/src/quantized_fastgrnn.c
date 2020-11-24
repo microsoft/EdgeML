@@ -6,7 +6,7 @@
 
 int q15_fastgrnn_lr(Q15_T* const hiddenState, ITER_T hiddenDims,
   const Q15_T* const input, ITER_T inputDims, ITER_T steps, const void* params,
-  void* buffers, const void *scales, int backward, int normalize) {
+  void* buffers, const void* scales, int backward, int normalize) {
 
   const Q15_FastGRNN_LR_Params* tparams = (const Q15_FastGRNN_LR_Params*)params;
   Q15_FastGRNN_LR_Buffers* tbuffers = (Q15_FastGRNN_LR_Buffers*)buffers;
