@@ -10,7 +10,7 @@
 #include "quantized_datatypes.h"
 #include "quantized_face_detection_sparse.h"
 
-#define MEM_BUF_SIZE 188160
+#define MEM_BUF_SIZE 184576
 #define INPUT_IMG_HEIGHT 240
 #define INPUT_IMG_WIDTH 320
 #define OUTPUT_SIZE 18000
@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
   double* allErrors = malloc(patches * OUTPUT_SIZE * sizeof(double));
 
   float time_spent = 0.0;
-  Q7_T* mem_buf_input_offset = (Q7_T*)mem_buf;
+  Q7_T* mem_buf_input_offset = (Q7_T*)(mem_buf + INPUT_IMG_HEIGHT * INPUT_IMG_WIDTH);
   Q15_T* mem_buf_output_offset = (Q15_T*)mem_buf;
   for (unsigned i = 0; i < patches; i++) {
     fread(&yLine[0], sizeof(double), OUTPUT_SIZE, floatResFile);
