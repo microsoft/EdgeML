@@ -73,10 +73,10 @@ There are two modes of testing the trained model -- the evaluation mode to gener
 
 #### Evaluation Mode
 
-Given a set of images in <your_image_folder>, `eval/py` generates bounding boxes around faces (where the confidence is higher than certain threshold) and write the images in <your_save_folder>. To evaluate the `rpool_face_best_state.pth` model (stored in ./weights), execute the following command: 
+Given a set of images in <your_image_folder>, `eval/py` generates bounding boxes around faces (where the confidence is higher than certain threshold - 0.5 in this case) and write the images in <your_save_folder>. To evaluate the `rpool_face_best_state.pth` model (stored in ./weights), execute the following command: 
 
 ```shell
-IS_QVGA_MONO=1 python eval.py --model_arch RPool_Face_M4 --model ./weights/RPool_Face_M4_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
+IS_QVGA_MONO=1 python eval.py --model_arch RPool_Face_M4 --model ./weights/RPool_Face_M4_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder> --thresh 0.5
 ```
 
 This will save images in <your_save_folder> with bounding boxes around faces, where the confidence is high. It is recommended to use the model finetuned on SCUT Head for evaluation.
@@ -107,10 +107,10 @@ In this directory run:
 git clone https://github.com/wondervictor/WiderFace-Evaluation.git
 cd WiderFace-Evaluation 
 python3 setup.py build_ext --inplace
-mv ../evaluation.py ./
+mv ../scut_evaluation.py ./
 ```
 
-Run ```IS_QVGA_MONO=1 python3 evaluation.py -p <your_save_folder> ``` in WiderFace-Evaluation folder.
+Run ```IS_QVGA_MONO=1 python3 scut_evaluation.py -p <your_save_folder> ``` in WiderFace-Evaluation folder.
 
 where `prediction_dir` is the '--save_folder' used for `scut_test.py` above. 
 

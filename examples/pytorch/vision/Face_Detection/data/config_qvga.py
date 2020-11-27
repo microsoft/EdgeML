@@ -61,4 +61,5 @@ _C.FACE = EasyDict()
 _C.FACE.TRAIN_FILE = './data/face_train.txt'
 _C.FACE.VAL_FILE = './data/face_val.txt'
 _C.FACE.WIDER_DIR = '/mnt/WIDER_FACE'
+_C.FACE.SCUT_DIR = '/mnt/SCUT_HEAD_Part_B'
 _C.FACE.OVERLAP_THRESH = [0.1, 0.35, 0.5]

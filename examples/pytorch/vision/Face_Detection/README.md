@@ -1,4 +1,5 @@
 # Code for Face Detection experiments with RNNPool
+Refer to README_M4.md for instructions related to the M4 model
 ## Requirements
 1. Follow instructions to install requirements for EdgeML operators and the EdgeML operators [here](https://github.com/microsoft/EdgeML/blob/master/pytorch/README.md).
 2. Install requirements for face detection model using
