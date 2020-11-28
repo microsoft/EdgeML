@@ -33,13 +33,13 @@ void q_face_detection_sparse(char* const mem_buf) {
     CONV2D_WOUT, CONV2D_COUT, (Q7_T*)mem_buf, CBR1B_Scten, CBR1B_Scvec,
     CBR1B_Scret);
 
-  q7xq15_q7_convolution((Q7_T*)mem_buf, CBR1W, (Q7_T*)(mem_buf + 76800), CONV2D_N,
+  q7xq15_q7_convolution((Q7_T*)mem_buf, CBR1W, (Q7_T*)mem_buf, CONV2D_N,
     CONV2D_HOUT, CONV2D_WOUT, CONV2D_COUT, CBR1W_HF, CBR1W_WF, CBR1W_CF,
     CBR1W_COUT, CONV2D_HOUT, CONV2D_WOUT, CBR1W_G, CBR1W_HPADL, CBR1W_HPADR,
     CBR1W_WPADL, CBR1W_WPADR, CBR1W_HSTRIDE, CBR1W_WSTRIDE, CBR1W_HDILATION,
     CBR1W_WDILATION, CBR1W_Scinput, CBR1W_Scoutput, CBR1W_Demote);
 
-  q7_t_relu((Q7_T*)(mem_buf + 76800), CONV2D_N, CONV2D_HOUT, CONV2D_WOUT, CONV2D_COUT,
+  q7_t_relu((Q7_T*)mem_buf, CONV2D_N, CONV2D_HOUT, CONV2D_WOUT, CONV2D_COUT,
     (Q7_T*)(mem_buf + 76800), CONV2D_Limit, CONV2D_Div);
 
   Q7_T* mem_buf_offset_q7 = (Q7_T*)mem_buf;
