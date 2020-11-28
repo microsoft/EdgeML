@@ -1,9 +1,9 @@
-# Code for Face Detection experiments with RNNPool
+# Code for Face Detection Experiments with RNNPool
 ## Requirements
-1. Follow instructions to install requirements for EdgeML operators and the EdgeML operators [here](https://github.com/microsoft/EdgeML/blob/master/pytorch/README.md).
+1. Follow instructions to install EdgeML operators and their pre-requisites [here](https://github.com/microsoft/EdgeML/blob/master/pytorch/README.md).
 2. Install requirements for face detection model using
 ``` pip install -r requirements.txt ``` 
-We have tested the installation and the code on Ubuntu 18.04 with Cuda 10.2 and CuDNN 7.6
+We have tested the installation and the code on Ubuntu 18.04 with Python 3.6, Cuda 10.2 and CuDNN 7.6
 
 ## Dataset - WIDER Face
 1. Download WIDER face dataset images and annotations from http://shuoyang1213.me/WIDERFACE/ and place them all in a folder with name 'WIDER_FACE'. That is, download WIDER_train.zip, WIDER_test.zip, WIDER_val.zip, wider_face_split.zip and place it in WIDER_FACE folder, and unzip files using: 
@@ -31,6 +31,7 @@ _C.FACE.WIDER_DIR='/mnt/WIDER_FACE'.
 2. In `data/config_qvga.py` set the _C.FACE.SCUT_DIR to the folder path. 
 That is, if the SCUT_HEAD_Part_B folder is created in /mnt folder, then _C.FACE.SCUT_DIR='/mnt/SCUT_HEAD_Part_B'.
 
+Note that for Windows '/' should be replaced by '\' for each path in the config files.
 
 # Usage
 
@@ -99,8 +100,8 @@ Then each line in the file corresponds to an identified box. For each box, five 
 
 If IS_QVGA_MONO=1 then testing is done by converting images to monochrome and QVGA, else if IS_QVGA_MONO=0 then testing is done on VGA RGB images.
 
-###### For calculating MAP scores:
-Now using these boxes, we can compute the standard MAP score that is widely used in this literature (see [here](https://medium.com/@jonathan_hui/map-mean-average-precision-for-object-detection-45c121a31173) for more details).
+###### For calculating mAP scores:
+Now using these boxes, we can compute the standard mAP score that is widely used in this literature (see [here](https://medium.com/@jonathan_hui/map-mean-average-precision-for-object-detection-45c121a31173) for more details).
 
 In this directory run:
 ``` 
@@ -114,12 +115,12 @@ Run ```IS_QVGA_MONO=1 python3 scut_evaluation.py -p <your_save_folder> ``` in Wi
 
 where `prediction_dir` is the '--save_folder' used for `scut_test.py` above. 
 
-This script should output the MAP on SCUT Head Part B Validation set. Our best performance using RPool_Face_M4 model is: 0.61.
+This script should output the mAP on SCUT Head Part B Validation set. Our best performance using RPool_Face_M4 model is: 0.61.
 
 
 ##### Dump RNNPool Input Output Traces and Weights
 
-To save model weights and/or input output pairs for each patch through RNNPool in numpy format use the command below. Put images which you want to save traces for in <your_image_folder> . Specify output folder for saving model weights in numpy format in <your_save_model_numpy_folder>. Specify output folder for saving input output traces of RNNPool in numpy format in <your_save_traces_numpy_folder>. Note that input traces will be saved in a folder named 'inputs' and output traces in a folder named 'outputs' inside <your_save_traces_numpy_folder>.
+For saving model weights and/or input output pairs for each patch through RNNPool in numpy format use the command below. Put images which you want to save traces for in <your_image_folder> . Specify output folder for saving model weights in numpy format in <your_save_model_numpy_folder>. Specify output folder for saving input output traces of RNNPool in numpy format in <your_save_traces_numpy_folder>. Note that input traces will be saved in a folder named 'inputs' and output traces in a folder named 'outputs' inside <your_save_traces_numpy_folder>.
 
 ```shell
 python3 dump_model.py --model ./weights/RPool_Face_M4_best_state.pth --model_arch RPool_Face_M4 --image_folder <your_image_folder> --save_model_npy_dir <your_save_model_numpy_folder> --save_traces_npy_dir <your_save_traces_numpy_folder>
