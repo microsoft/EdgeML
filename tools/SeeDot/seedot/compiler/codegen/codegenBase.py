@@ -596,7 +596,7 @@ class CodegenBase:
                 self.scratchSubs[self.numberOfMemoryMaps][var] = potentialStart
                 varf = var
                 if not Config.faceDetectionHacks:
-                    if varf in self.coLocatedVariables:
+                    while varf in self.coLocatedVariables:
                         varf = self.coLocatedVariables[varf]
                         self.scratchSubs[self.numberOfMemoryMaps][varf] = potentialStart
                 x.append((endIns + 1 + startIns) / 2)
@@ -684,7 +684,7 @@ class CodegenBase:
                 self.scratchSubs[self.numberOfMemoryMaps][var] = potentialStart
                 varf = var
                 if not Config.faceDetectionHacks:
-                    if varf in self.coLocatedVariables:
+                    while varf in self.coLocatedVariables:
                         varf = self.coLocatedVariables[varf]
                         self.scratchSubs[self.numberOfMemoryMaps][varf] = potentialStart
                 x.append((endIns + 1 + startIns) / 2)
@@ -804,7 +804,7 @@ class CodegenBase:
                 self.scratchSubs[self.numberOfMemoryMaps][var] = potentialStart
                 varf = var
                 if not Config.faceDetectionHacks:
-                    if varf in self.coLocatedVariables:
+                    while varf in self.coLocatedVariables:
                         varf = self.coLocatedVariables[varf]
                         self.scratchSubs[self.numberOfMemoryMaps][varf] = potentialStart
                 x.append((endIns + 1 + startIns) / 2)
@@ -974,7 +974,7 @@ class CodegenBase:
                     self.scratchSubs[self.numberOfMemoryMaps] = {}
                 self.scratchSubs[self.numberOfMemoryMaps][varName] = loc * alignment
                 varf = varName
-                if varf in self.coLocatedVariables:
+                while varf in self.coLocatedVariables:
                     varf = self.coLocatedVariables[varf]
                     self.scratchSubs[self.numberOfMemoryMaps][varf] = loc * alignment
                 memUsage = max(memUsage, loc * alignment + varOrderAndSize[varId][1])
