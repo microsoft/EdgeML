@@ -274,7 +274,7 @@ void q15_v_scale_down(const Q15_T* vec, ITER_T len, Q15_T* ret, SCALE_T scvec);
  * @param[in]       nrows     number of rows of the input matrix
  * @param[in]       ncols     number of columns of the input matrix
  * @param[in]       axis      axis of reversal; 0 for reversal along rows and 1 for reversal along columns
- * @param[out]      mat_out   pointer to the output matrix
+ * @param[out]      ret       pointer to the output matrix
  * @return          none
  * @example         mat       = { {1, 2},
  *                                {4, 5} }
