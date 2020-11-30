@@ -23,7 +23,7 @@ That is, if the WIDER_FACE folder is created in /mnt folder, then _C.HOME='/mnt'
 _C.FACE.WIDER_DIR='/mnt/WIDER_FACE'.
 
 3. Run
-``` python prepare_wider_data.py ```
+``` IS_QVGA_MONO=1 python prepare_wider_data.py ```
 
 ## Dataset - SCUT Head B
 1. Download SCUT Head Part B dataset images and annotations from https://github.com/HCIILAB/SCUT-HEAD-Dataset-Release. Unzipping will create a folder by the name 'SCUT_HEAD_Part_B'.
