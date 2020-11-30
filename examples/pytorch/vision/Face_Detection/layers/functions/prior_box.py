@@ -49,3 +49,4 @@ class PriorBox(object):
         if self.clip:
             output.clamp_(max=1, min=0)
         return output
+        

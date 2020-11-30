@@ -55,7 +55,7 @@ _C.NUM_CLASSES = 2
 _C.USE_NMS = True
 
 # dataset config
-_C.HOME = '/mnt/'  ## change here ----------
+_C.HOME = '/mnt'  ## change here ----------
 
 # face config
 _C.FACE = EasyDict()

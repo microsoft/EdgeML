@@ -131,3 +131,4 @@ if __name__ == '__main__':
                 for x in os.listdir(img_path)]
     for path in img_list:
         detect(net, path, args.thresh)
+        

@@ -378,4 +378,3 @@ if __name__ == '__main__':
     net = build_s3fd('train', num_classes=2)
     inputs = Variable(torch.randn(4, 3, 640, 640))
     output = net(inputs)
-

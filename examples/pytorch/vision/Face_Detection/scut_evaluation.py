@@ -3,6 +3,7 @@ WiderFace evaluation code
 author: wondervictor
 mail: tianhengcheng@gmail.com
 copyright@wondervictor
+Code buit upon https://github.com/wondervictor/WiderFace-Evaluation having MIT License
 """
 
 import os
