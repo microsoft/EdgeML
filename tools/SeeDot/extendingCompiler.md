@@ -146,16 +146,16 @@ void Convolution(float *A, const float *B, float *C, float *tmp, MYINT N, MYINT 
     MYITE HOffsetR = HDL*(HF/2) - HPADR;
     MYITE WOffsetR = WDL*(WF/2) - WPADR;
     
-    for(MYITE n = 0; n < N; n++) {
-        for(MYITE h = HOffsetL, hout = 0; h < H - HOffsetR; h += HSTR, hout++) {
-            for(MYITE w = WOffsetL, wout = 0; w < W - WOffsetR; w += WSTR, wout++) {
-                for(MYITE g = 0; g < G; g++) {
-                    for(MYITE co = 0; co < COUTF; co ++) {
+    for (MYITE n = 0; n < N; n++) {
+        for (MYITE h = HOffsetL, hout = 0; h < H - HOffsetR; h += HSTR, hout++) {
+            for (MYITE w = WOffsetL, wout = 0; w < W - WOffsetR; w += WSTR, wout++) {
+                for (MYITE g = 0; g < G; g++) {
+                    for (MYITE co = 0; co < COUTF; co++) {
                         MYITE counter = 0;
                         
-                        for(MYITE hf = -(HF/2); hf <= HF/2; hf++) {
-                            for(MYITE wf = -(WF/2); wf <= WF/2; wf++) {
-                                for(MYITE ci = 0; ci < CINF; ci++) {
+                        for (MYITE hf = -(HF/2); hf <= HF/2; hf++) {
+                            for (MYITE wf = -(WF/2); wf <= WF/2; wf++) {
+                                for (MYITE ci = 0; ci < CINF; ci++) {
                                     float a = (((h + HDL * hf) < 0) || ((h + HDL * hf) >= H) || ((w + WDL * wf) < 0) || ((w + WDL * wf) >= W)) ? 0 : A[n * H * W * CIN + (h + HDL * hf) * W * CIN + (w + WDL * wf) * CIN + (ci + g * CINF)];
                                     float b = B[g * HF * WF * CINF * COUTF + (hf + HF/2) * WF * CINF * COUTF + (wf + WF/2) * CINF + COUTF + ci * COUTF + co];
                                     tmp[counter] = a * b;
@@ -169,22 +169,26 @@ void Convolution(float *A, const float *B, float *C, float *tmp, MYINT N, MYINT 
                         
                         bool shr = true;
                         while (depth < (H1 + H2)) {
-                            if (depth >= H1)
+                            if (depth >= H1) {
                                 shr = false;
+                            }
                             for (MYITE p = 0; p < (totalEle / 2 + 1); p++) {
                                 float sum;
-                                if (p < (count >> 1))
+                                if (p < (count >> 1)) {
                                     sum = tmp[2 * p] + tmp[(2 * p) + 1];
-                                else if ((p == (count >> 1)) && ((count & 1) == 1))
+                                } else if ((p == (count >> 1)) && ((count & 1) == 1)) {
                                     sum = tmp[2 * p];
-                                else
+                                } else {
                                     sum = 0;
+                                }
                                 
-                                if (shr)
+                                if (shr) {
                                     tmp[p] = sum;
-                                else
+                                } else {
                                     tmp[p] = sum;
+                                }
                             }
+
                             count = (count + 1) >> 1;
                             depth++;
                         }
@@ -211,16 +215,16 @@ void Convolution(TypeA *A, const TypeB *B, TypeC *C, TypeTemp *tmp, MYINT N, MYI
     MYITE HOffsetR = HDL*(HF/2) - HPADR;
     MYITE WOffsetR = WDL*(WF/2) - WPADR;
     
-    for(MYITE n = 0; n < N; n++) {
-        for(MYITE h = HOffsetL, hout = 0; h < H - HOffsetR; h += HSTR, hout++) {
-            for(MYITE w = WOffsetL, wout = 0; w < W - WOffsetR; w += WSTR, wout++) {
-                for(MYITE g = 0; g < G; g++) {
-                    for(MYITE co = 0; co < COUTF; co ++) {
+    for (MYITE n = 0; n < N; n++) {
+        for (MYITE h = HOffsetL, hout = 0; h < H - HOffsetR; h += HSTR, hout++) {
+            for (MYITE w = WOffsetL, wout = 0; w < W - WOffsetR; w += WSTR, wout++) {
+                for (MYITE g = 0; g < G; g++) {
+                    for (MYITE co = 0; co < COUTF; co++) {
                         
                         MYITE counter = 0;
-                        for(MYITE hf = -(HF/2); hf <= HF/2; hf++) {
-                            for(MYITE wf = -(WF/2); wf <= WF/2; wf++) {
-                                for(MYITE ci = 0; ci < CINF; ci++) {
+                        for (MYITE hf = -(HF/2); hf <= HF/2; hf++) {
+                            for (MYITE wf = -(WF/2); wf <= WF/2; wf++) {
+                                for (MYITE ci = 0; ci < CINF; ci++) {
                                     
                                     TypeTemp a = (TypeTemp) (((h + HDL * hf) < 0) || ((h + HDL * hf) >= H) || ((w + WDL * wf) < 0) || ((w + WDL * wf) >= W)) ? 0 : A[n * H * W * CIN + (h + HDL * hf) * W * CIN + (w + WDL * wf) * CIN + (ci + g * CINF)];
                                     TypeTemp b = (TypeTemp) B[g * HF * WF * CINF * COUTF + (hf + HF/2) * WF * CINF * COUTF + (wf + WF/2) * CINF * COUTF + ci * COUTF + co];
@@ -235,27 +239,30 @@ void Convolution(TypeA *A, const TypeB *B, TypeC *C, TypeTemp *tmp, MYINT N, MYI
                         
                         bool shr = true;
                         while (depth < (H1 + H2)) {
-                            if (depth >= H1)
+                            if (depth >= H1) {
                                 shr = false;
+                            }
                             for (MYITE p = 0; p < (totalEle / 2 + 1); p++) {
                                 TypeTemp sum;
                                 if (p < (count >> 1)) {
-                                    if (shr)
+                                    if (shr) {
                                         sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
-                                    else
+                                    } else {
                                         sum = tmp[2 * p] + tmp[(2 * p) + 1];
-                                }
-                                else if ((p == (count >> 1)) && ((count & 1) == 1)) {
-                                    if (shr)
+                                    }
+                                } else if ((p == (count >> 1)) && ((count & 1) == 1)) {
+                                    if (shr) {
                                         sum = tmp[2 * p] / 2;
-                                    else
+                                    } else {
                                         sum = tmp[2 * p];
-                                }
-                                else
+                                    }
+                                } else {
                                     sum = 0;
+                                }
 
                                 tmp[p] = sum;
                             }
+
                             count = (count + 1) >> 1;
                             depth++;
                         }

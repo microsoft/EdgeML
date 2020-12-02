@@ -1740,7 +1740,7 @@ const PROGMEM int8_t expTable8[128] = {64, 60, 56, 53, 50, 47, 44, 41, 39, 36, 3
 template<class TypeB>
 inline __attribute__((always_inline)) TypeB expBase8(int8_t A, MYINT adjust) {
 	int8_t val = (A == -128) ? 127 : -A;
-	if(val < 0) {
+	if (val < 0) {
 		val = 127;
 	}
 	return (TypeB) (pgm_read_byte_near(&expTable8[val]) * adjust);

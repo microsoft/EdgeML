@@ -114,7 +114,6 @@ void MatAdd4(float* A, float* B, float* X, MYINT N, MYINT H, MYINT W, MYINT C, M
 					X[n * H * W * C + h * W * C + w * C + c] = x;
 				}
 			}
-			
 		}
 	}
 	return;
@@ -180,25 +179,28 @@ void MatMulNN(float* A, float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT 
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
-				if (depth >= H1)
+				if (depth >= H1) {
 					shr = false;
+				}
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					float sum;
-					if (p < (count >> 1))
+					if (p < (count >> 1)) {
 						sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					else if ((p == (count >> 1)) && ((count & 1) == 1))
+					} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
 						sum = tmp[2 * p];
-					else
+					} else {
 						sum = 0;
+					}
 
-					if (shr)
+					if (shr) {
 						tmp[p] = sum;
-					else
+					} else {
 						tmp[p] = sum;
+					}
 				}
-				count = (count + 1) >> 1;
 
+				count = (count + 1) >> 1;
 				depth++;
 			}
 
@@ -223,25 +225,28 @@ void MatMulCN(const float* A, float* B, float* C, float* tmp, MYINT I, MYINT K, 
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
-				if (depth >= H1)
+				if (depth >= H1) {
 					shr = false;
+				}
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					float sum;
-					if (p < (count >> 1))
+					if (p < (count >> 1)) {
 						sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					else if ((p == (count >> 1)) && ((count & 1) == 1))
+					} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
 						sum = tmp[2 * p];
-					else
+					} else {
 						sum = 0;
+					}
 
-					if (shr)
+					if (shr) {
 						tmp[p] = sum;
-					else
+					} else {
 						tmp[p] = sum;
+					}
 				}
-				count = (count + 1) >> 1;
 
+				count = (count + 1) >> 1;
 				depth++;
 			}
 
@@ -266,25 +271,28 @@ void MatMulNC(float* A, const float* B, float* C, float* tmp, MYINT I, MYINT K, 
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
-				if (depth >= H1)
+				if (depth >= H1) {
 					shr = false;
+				}
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					float sum;
-					if (p < (count >> 1))
+					if (p < (count >> 1)) {
 						sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					else if ((p == (count >> 1)) && ((count & 1) == 1))
+					} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
 						sum = tmp[2 * p];
-					else
+					} else {
 						sum = 0;
+					}
 
-					if (shr)
+					if (shr) {
 						tmp[p] = sum;
-					else
+					} else {
 						tmp[p] = sum;
+					}
 				}
-				count = (count + 1) >> 1;
 
+				count = (count + 1) >> 1;
 				depth++;
 			}
 
@@ -309,25 +317,28 @@ void MatMulCC(const float* A, const float* B, float* C, float* tmp, MYINT I, MYI
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
-				if (depth >= H1)
+				if (depth >= H1) {
 					shr = false;
+				}
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					float sum;
-					if (p < (count >> 1))
+					if (p < (count >> 1)) {
 						sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					else if ((p == (count >> 1)) && ((count & 1) == 1))
+					} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
 						sum = tmp[2 * p];
-					else
+					} else {
 						sum = 0;
+					}
 
-					if (shr)
+					if (shr) {
 						tmp[p] = sum;
-					else
+					} else {
 						tmp[p] = sum;
+					}
 				}
-				count = (count + 1) >> 1;
 
+				count = (count + 1) >> 1;
 				depth++;
 			}
 
@@ -406,10 +417,10 @@ void TanH(float* A, MYINT I, MYINT J, float scale_in, float scale_out, float* B)
 			float x = A[i * J + j], y;
 
 			#ifdef FLOATEXP
-			y = tanh(x);
+				y = tanh(x);
 			#else
-			y = x > -1 ? x : -1;
-			y = y < 1 ? y : 1;
+				y = x > -1 ? x : -1;
+				y = y < 1 ? y : 1;
 			#endif
 
 			B[i * J + j] = y;
@@ -421,9 +432,9 @@ void TanH(float* A, MYINT I, MYINT J, float scale_in, float scale_out, float* B)
 // B = reverse(A, axis)
 void Reverse2(float* A, MYINT axis, MYINT I, MYINT J, float* B) {
 	for (MYITE i = 0; i < I; i++) {
-		for (MYITE j = 0; j < J; j++) {	
-			MYINT i_prime = (axis == 0 ? (I-1-i) : i);
-			MYINT j_prime = (axis == 1 ? (J-1-j) : j); 
+		for (MYITE j = 0; j < J; j++) {
+			MYINT i_prime = (axis == 0 ? (I - 1 - i) : i);
+			MYINT j_prime = (axis == 1 ? (J - 1 - j) : j);
 
 			B[i * J + j] = A[i_prime*J + j_prime];
 		}
@@ -485,7 +496,7 @@ void MBConv(float* A, const float* F1, const float* BN1W, const float* BN1B, con
 	MYITE WOffsetR = (WF / 2) - WPADR;
 
 	for (MYITE n = 0; n < N; n++) {
-		MYITE margin = HOffsetL + (HF / 2 + 1) - HSTR > 0 ? HOffsetL + (HF/2 + 1) - HSTR : 0; 
+		MYITE margin = HOffsetL + (HF / 2 + 1) - HSTR > 0 ? HOffsetL + (HF/2 + 1) - HSTR : 0;
 		MYITE nstart = HOffsetL - (HF / 2) < 0 ? 0 : HOffsetL - (HF / 2);
 		for (MYITE i = nstart; i < margin; i++) {
 			for (MYITE j = 0; j < W; j++) {
@@ -499,13 +510,15 @@ void MBConv(float* A, const float* F1, const float* BN1W, const float* BN1B, con
 
 					while (depth < D1) {
 						for (MYITE p = 0; p < (totalEle / 2 + 1); p++) {
-							if (p < count / 2)
+							if (p < count / 2) {
 								U[p] = U[2 * p] + U[(2 * p) + 1];
-							else if ((p == (count / 2)) && ((count % 2) == 1))
+							} else if ((p == (count / 2)) && ((count % 2) == 1)) {
 								U[p] = U[2 * p];
-							else
+							} else {
 								U[p] = 0;
+							}
 						}
+
 						count = (count + 1) / 2;
 						depth++;
 					}
@@ -526,7 +539,7 @@ void MBConv(float* A, const float* F1, const float* BN1W, const float* BN1B, con
 					for (MYITE k = 0; k < Ct; k++) {
 						MYITE iRed = (i + margin + hout * HSTR) % HF, iFull = i + margin + hout * HSTR;
 						X[iRed * W * Ct + j * Ct + k] = 0.0;
-						for(MYITE l = 0; l < Cin; l++) {
+						for (MYITE l = 0; l < Cin; l++) {
 							float a = iFull < H ? A[n * H * W * Cin + iFull * W * Cin + j * Cin + l] : 0.0;
 							U[l] = a * F1[l * Ct + k];
 						}
@@ -536,16 +549,19 @@ void MBConv(float* A, const float* F1, const float* BN1W, const float* BN1B, con
 
 						while (depth < D1) {
 							for (MYITE p = 0; p <(totalEle / 2 + 1); p++) {
-								if (p < count / 2)
+								if (p < count / 2) {
 									U[p] = U[2 * p] + U[(2 * p) + 1];
-								else if ((p == (count / 2)) && ((count % 2) == 1))
+								} else if ((p == (count / 2)) && ((count % 2) == 1)) {
 									U[p] = U[2 * p];
-								else
+								} else {
 									U[p] = 0;
+								}
 							}
+
 							count = (count + 1) / 2;
 							depth++;
 						}
+
 						float ar = U[0] + BN1B[k];
 						X[iRed * W * Ct + j * Ct + k] = (ar) * BN1W[k];
 						Profile2(&ar, 1, 1, name + "t1");
@@ -572,16 +588,19 @@ void MBConv(float* A, const float* F1, const float* BN1W, const float* BN1B, con
 
 					while (depth < D2) {
 						for (MYITE p = 0; p < (totalEle / 2 + 1); p++) {
-							if (p < count / 2)
+							if (p < count / 2) {
 								U[p] = U[2 * p] + U[(2 * p) + 1];
-							else if ((p == (count / 2)) && ((count % 2) == 1))
+							} else if ((p == (count / 2)) && ((count % 2) == 1)) {
 								U[p] = U[2 * p];
-							else
+							} else {
 								U[p] = 0;
+							}
 						}
+
 						count = (count + 1) / 2;
 						depth++;
 					}
+
 					float ar = U[0] + BN2B[g];
 					T[g] = (ar) * BN2W[g];
 					Profile2(&ar, 1, 1, name + "t3");
@@ -590,24 +609,28 @@ void MBConv(float* A, const float* F1, const float* BN1W, const float* BN1B, con
 				}
 
 				for (MYITE i = 0; i < Cout; i++) {
-					for (MYITE g = 0; g < Ct; g++) 
+					for (MYITE g = 0; g < Ct; g++) {
 						U[g] = T[g] * F3[g * Cout + i];
+					}
 					MYITE totalEle = Ct;
 					MYITE count = Ct;
 					MYITE depth = 0;
 
 					while (depth < D3) {
 						for (MYITE p = 0; p < (totalEle / 2 + 1); p++) {
-							if (p < count / 2)
+							if (p < count / 2) {
 								U[p] = U[2 * p] + U[(2 * p) + 1];
-							else if ((p == (count / 2)) && ((count % 2) == 1))
+							} else if ((p == (count / 2)) && ((count % 2) == 1)) {
 								U[p] = U[2 * p];
-							else
+							} else {
 								U[p] = 0;
+							}
 						}
+
 						count = (count + 1) / 2;
 						depth++;
 					}
+
 					float ar = U[0] + BN3B[i];
 					C[n * Hout * Wout * Cout + hout * Wout * Cout + wout * Cout + i] = (ar) * BN3W[i];
 					Profile2(&ar, 1, 1, name + "t5");
@@ -625,19 +648,17 @@ void Convolution(float* A, const float* B, float* C, float* tmp, MYINT N, MYINT 
 	MYITE HOffsetR = HDL * (HF / 2) - HPADR;
 	MYITE WOffsetR = WDL * (WF / 2) - WPADR;
 
-	for(MYITE n = 0; n < N; n++) {
-		for(MYITE h = HOffsetL, hout = 0; h < H - HOffsetR; h += HSTR, hout++) {
-			for(MYITE w = WOffsetL, wout = 0; w < W - WOffsetR; w += WSTR, wout++) {
-				for(MYITE g = 0; g < G; g++) {
-					for(MYITE co = 0; co < COUTF; co ++) {
+	for (MYITE n = 0; n < N; n++) {
+		for (MYITE h = HOffsetL, hout = 0; h < H - HOffsetR; h += HSTR, hout++) {
+			for (MYITE w = WOffsetL, wout = 0; w < W - WOffsetR; w += WSTR, wout++) {
+				for (MYITE g = 0; g < G; g++) {
+					for (MYITE co = 0; co < COUTF; co++) {
 
 						MYITE counter = 0;
-						for(MYITE hf = -(HF / 2); hf <= HF / 2; hf++) {
-							for(MYITE wf = -(WF / 2); wf <= WF / 2; wf++) {
-								for(MYITE ci = 0; ci < CINF; ci++) {
-
+						for (MYITE hf = -(HF / 2); hf <= HF / 2; hf++) {
+							for (MYITE wf = -(WF / 2); wf <= WF / 2; wf++) {
+								for (MYITE ci = 0; ci < CINF; ci++) {
 									float a = (((h + HDL * hf) < 0) || ((h + HDL * hf) >= H) || ((w + WDL * wf) < 0) || ((w + WDL * wf) >= W)) ? 0 : A[n * H * W * CIN + (h + HDL * hf) * W * CIN + (w + WDL * wf) * CIN + (ci + g * CINF)];
-
 									float b = B[g * HF * WF * CINF * COUTF + (hf + HF / 2) * WF * CINF * COUTF + (wf + WF / 2) * CINF * COUTF + ci * COUTF + co];
 
 									tmp[counter] = a * b;
@@ -651,25 +672,28 @@ void Convolution(float* A, const float* B, float* C, float* tmp, MYINT N, MYINT 
 						bool shr = true;
 
 						while (depth < (H1 + H2)) {
-							if (depth >= H1)
+							if (depth >= H1) {
 								shr = false;
+							}
 
 							for (MYITE p = 0; p < (totalEle / 2 + 1); p++) {
 								float sum;
-								if (p < (count >> 1))
+								if (p < (count >> 1)) {
 									sum = tmp[2 * p] + tmp[(2 * p) + 1];
-								else if ((p == (count >> 1)) && ((count & 1) == 1))
+								} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
 									sum = tmp[2 * p];
-								else
+								} else {
 									sum = 0;
+								}
 
-								if (shr)
+								if (shr) {
 									tmp[p] = sum;
-								else
+								} else {
 									tmp[p] = sum;
+								}
 							}
-							count = (count + 1) >> 1;
 
+							count = (count + 1) >> 1;
 							depth++;
 						}
 
@@ -684,8 +708,7 @@ void Convolution(float* A, const float* B, float* C, float* tmp, MYINT N, MYINT 
 
 // C = A # B
 // A[N][H][W][CI], B[HF][WF][CI][CO], C[N][H][W][CO]
-void Conv(float* A, const float* B, float* C, float* tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2)
-{
+void Conv(float* A, const float* B, float* C, float* tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 	MYITE padH = (HF - 1) / 2;
 	MYITE padW = (WF - 1) / 2;
 
@@ -699,7 +722,6 @@ void Conv(float* A, const float* B, float* C, float* tmp, MYINT N, MYINT H, MYIN
 						for (MYITE wf = 0; wf < WF; wf++) {
 							for (MYITE ci = 0; ci < CI; ci++) {
 								float a = (((((h + hf) < padH) || ((h + hf) >= (H + padH))) || (((w + wf) < padW) || ((w + wf) >= (W + padW)))) ? 0 : A[n * H * W * CI + ((h + hf) - padH) * W * CI + ((w + wf) - padW) * CI + ci]);
-
 								float b = B[hf * WF * CI * CO + wf * CI * CO + ci * CO + co];
 
 								tmp[counter] = a * b;
@@ -713,25 +735,28 @@ void Conv(float* A, const float* B, float* C, float* tmp, MYINT N, MYINT H, MYIN
 					bool shr = true;
 
 					while (depth < (H1 + H2)) {
-						if (depth >= H1)
+						if (depth >= H1) {
 							shr = false;
+						}
 
 						for (MYITE p = 0; p < (totalEle / 2 + 1); p++) {
 							float sum;
-							if (p < (count >> 1))
+							if (p < (count >> 1)) {
 								sum = tmp[2 * p] + tmp[(2 * p) + 1];
-							else if ((p == (count >> 1)) && ((count & 1) == 1))
+							} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
 								sum = tmp[2 * p];
-							else
+							} else {
 								sum = 0;
+							}
 
-							if (shr)
+							if (shr) {
 								tmp[p] = sum;
-							else
+							} else {
 								tmp[p] = sum;
+							}
 						}
-						count = (count + 1) >> 1;
 
+						count = (count + 1) >> 1;
 						depth++;
 					}
 
@@ -752,14 +777,14 @@ void AddOrSubCir4D(float* A, const float* B, float* X, MYINT N, MYINT H, MYINT W
 			for (MYITE w = 0; w < W; w++) {
 				for (MYITE c = 0; c < C; c++) {
 					float a = A[n * H * W * C + h * W * C + w * C + c];
-
 					float b = B[c];
 
 					float res;
-					if (add)
+					if (add) {
 						res = a + b;
-					else
+					} else {
 						res = a - b;
+					}
 
 					X[n * H * W * C + h * W * C + w * C + c] = res;
 				}
@@ -775,14 +800,14 @@ void AddOrSubCir2D(float* A, const float* B, float* X, MYINT H, MYINT W, MYINT s
 	for (MYITE h = 0; h < H; h++) {
 		for (MYITE w = 0; w < W; w++) {
 			float a = A[h * W + w];
-
 			float b = B[w];
 
 			float res;
-			if (add)
+			if (add) {
 				res = a + b;
-			else
+			} else {
 				res = a - b;
+			}
 
 			X[h * W + w] = res;
 		}
@@ -798,8 +823,9 @@ void Relu4D(float* A, MYINT N, MYINT H, MYINT W, MYINT C) {
 			for (MYITE w = 0; w < W; w++) {
 				for (MYITE c = 0; c < C; c++) {
 					float a = A[n * H * W * C + h * W * C + w * C + c];
-					if (a < 0)
+					if (a < 0) {
 						a = 0;
+					}
 
 					A[n * H * W * C + h * W * C + w * C + c] = a;
 				}
@@ -817,10 +843,12 @@ void Relu6(float* A, float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT six, MY
 			for (MYITE w = 0; w < W; w++) {
 				for (MYITE c = 0; c < C; c++) {
 					float a = A[n * H * W * C + h * W * C + w * C + c];
-					if (a < 0)
+					if (a < 0) {
 						a = 0;
-					if (a > 6)
+					}
+					if (a > 6) {
 						a = 6;
+					}
 
 					B[n * H * W * C + h * W * C + w * C + c] = a;
 				}
@@ -836,8 +864,9 @@ void Relu2D(float* A, MYINT H, MYINT W) {
 	for (MYITE h = 0; h < H; h++) {
 		for (MYITE w = 0; w < W; w++) {
 			float a = A[h * W + w];
-			if (a < 0)
+			if (a < 0) {
 				a = 0;
+			}
 
 			A[h * W + w] = a;
 		}
@@ -860,8 +889,9 @@ void Maxpool(float* A, float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT FH, M
 					for (MYITE hs = 0; hs < FH; hs++) {
 						for (MYITE ws = 0; ws < FW; ws++) {
 							float a = A[n * H * W * C + ((strideH * ho) + hs) * W * C + ((strideW * wo) + ws) * C + c];
-							if (a > max)
+							if (a > max) {
 								max = a;
+							}
 						}
 					}
 
@@ -881,13 +911,12 @@ void NormaliseL2(float* A, float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 				// calculate the sum square
 				float sumSquare = 0;
 				for (MYITE c = 0; c < C; c++) {
-						float tmp = A[n * H * W * C + h * W * C + w * C + c];
-						sumSquare += tmp * tmp;
+					float tmp = A[n * H * W * C + h * W * C + w * C + c];
+					sumSquare += tmp * tmp;
 				}
 
 				// calculate the inverse square root of sumSquare
-
-				if(sumSquare == 0) {
+				if (sumSquare == 0) {
 					sumSquare = 1e-5;
 				}
 
@@ -895,8 +924,8 @@ void NormaliseL2(float* A, float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 
 				// multiply all elements by the 1/sqrt(sumSquare)
 				for (MYITE c = 0; c < C; c++) {
-						B[n * H * W * C + h * W * C + w * C + c]  = A[n * H * W * C + h * W * C + w * C + c]  * inverseNorm;  
-				}								
+					B[n * H * W * C + h * W * C + w * C + c]  = A[n * H * W * C + h * W * C + w * C + c]  * inverseNorm;
+				}
 			}
 		}
 	}
