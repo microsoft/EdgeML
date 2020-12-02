@@ -198,30 +198,32 @@ void MatMulNN(MYINT* A, MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYINT K, MYINT 
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
-				if (depth >= H1)
+				if (depth >= H1) {
 					shr = false;
+				}
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					MYINT sum;
 					if (p < (count >> 1)) {
-						if (shr)
+						if (shr) {
 							sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
-						else
+						} else {
 							sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					}
-					else if ((p == (count >> 1)) && ((count & 1) == 1)) {
-						if (shr)
+						}
+					} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
+						if (shr) {
 							sum = tmp[2 * p] / 2;
-						else
+						} else {
 							sum = tmp[2 * p];
-					}
-					else
+						}
+					} else {
 						sum = 0;
+					}
 
 					tmp[p] = sum;
 				}
-				count = (count + 1) >> 1;
 
+				count = (count + 1) >> 1;
 				depth++;
 			}
 
@@ -254,30 +256,32 @@ void MatMulCN(const MYINT* A, MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYINT K, 
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
-				if (depth >= H1)
+				if (depth >= H1) {
 					shr = false;
+				}
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					MYINT sum;
 					if (p < (count >> 1)) {
-						if (shr)
+						if (shr) {
 							sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
-						else
+						} else {
 							sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					}
-					else if ((p == (count >> 1)) && ((count & 1) == 1)) {
-						if (shr)
+						}
+					} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
+						if (shr) {
 							sum = tmp[2 * p] / 2;
-						else
+						} else {
 							sum = tmp[2 * p];
-					}
-					else
+						}
+					} else {
 						sum = 0;
+					}
 
 					tmp[p] = sum;
 				}
-				count = (count + 1) >> 1;
 
+				count = (count + 1) >> 1;
 				depth++;
 			}
 
@@ -310,30 +314,32 @@ void MatMulNC(MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYINT K, 
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
-				if (depth >= H1)
+				if (depth >= H1) {
 					shr = false;
+				}
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					MYINT sum;
 					if (p < (count >> 1)) {
-						if (shr)
+						if (shr) {
 							sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
-						else
+						} else {
 							sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					}
-					else if ((p == (count >> 1)) && ((count & 1) == 1)) {
-						if (shr)
+						}
+					} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
+						if (shr) {
 							sum = tmp[2 * p] / 2;
-						else
+						} else {
 							sum = tmp[2 * p];
-					}
-					else
+						}
+					} else {
 						sum = 0;
+					}
 
 					tmp[p] = sum;
 				}
-				count = (count + 1) >> 1;
 
+				count = (count + 1) >> 1;
 				depth++;
 			}
 
@@ -344,7 +350,7 @@ void MatMulNC(MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYINT K, 
 }
 
 // C = A * B
-void MatMulCC(const MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2){
+void MatMulCC(const MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
@@ -366,30 +372,32 @@ void MatMulCC(const MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYI
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
-				if (depth >= H1)
+				if (depth >= H1) {
 					shr = false;
+				}
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					MYINT sum;
 					if (p < (count >> 1)) {
-						if (shr)
+						if (shr) {
 							sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
-						else
+						} else {
 							sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					}
-					else if ((p == (count >> 1)) && ((count & 1) == 1)) {
-						if (shr)
+						}
+					} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
+						if (shr) {
 							sum = tmp[2 * p] / 2;
-						else
+						} else {
 							sum = tmp[2 * p];
-					}
-					else
+						}
+					} else {
 						sum = 0;
+					}
 
 					tmp[p] = sum;
 				}
-				count = (count + 1) >> 1;
 
+				count = (count + 1) >> 1;
 				depth++;
 			}
 
@@ -504,12 +512,13 @@ void TanH(MYINT* A, MYINT I, MYINT J, MYINT scale_in, MYINT scale_out, MYINT* B)
 #else
 			MYINT x = A[i * J + j], y;
 
-			if (x >= scale_in)
+			if (x >= scale_in) {
 				y = scale_in;
-			else if (x <= -scale_in)
+			} else if (x <= -scale_in) {
 				y = -scale_in;
-			else
+			} else {
 				y = x;
+			}
 
 			MYINT scale_diff = scale_out / scale_in;
 
@@ -547,9 +556,8 @@ void ArgMax(MYINT* A, MYINT I, MYINT J, int* index) {
 void Reverse2(MYINT* A, MYINT axis, MYINT I, MYINT J, MYINT* B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {	
-			MYINT i_prime = (axis == 0 ? (I-1-i) : i);
-			MYINT j_prime = (axis == 1 ? (J-1-j) : j); 
-
+			MYINT i_prime = (axis == 0 ? (I - 1 - i) : i);
+			MYINT j_prime = (axis == 1 ? (J - 1 - j) : j);
 			B[i * J + j] = A[i_prime * J + j_prime];
 		}
 	}
@@ -579,7 +587,6 @@ void ScalarMul(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT
 
 #ifdef FASTAPPROX
 			b = b / shrB;
-
 			C[i * J + j] = a * b;
 #else
 			int64_t prod = ((int64_t)a * (int64_t)b);
@@ -627,30 +634,32 @@ void Conv(MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT N, MYINT H, MYIN
 					bool shr = true;
 
 					while (depth < (H1 + H2)) {
-						if (depth >= H1)
+						if (depth >= H1) {
 							shr = false;
+						}
 
 						for (MYITE p = 0; p < (totalEle / 2 + 1); p++) {
 							MYINT sum;
 							if (p < (count >> 1)) {
-								if (shr)
+								if (shr) {
 									sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
-								else
+								} else {
 									sum = tmp[2 * p] + tmp[(2 * p) + 1];
-							}
-							else if ((p == (count >> 1)) && ((count & 1) == 1)) {
-								if (shr)
+								}
+							} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
+								if (shr) {
 									sum = tmp[2 * p] / 2;
-								else
+								} else {
 									sum = tmp[2 * p];
-							}
-							else
+								}
+							} else {
 								sum = 0;
+							}
 
 							tmp[p] = sum;
 						}
-						count = (count + 1) >> 1;
 
+						count = (count + 1) >> 1;
 						depth++;
 					}
 
@@ -670,16 +679,16 @@ void Convolution(MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT N, MYINT 
 	MYITE HOffsetR = HDL * (HF / 2) - HPADR;
 	MYITE WOffsetR = WDL * (WF / 2) - WPADR;
 
-	for(MYITE n = 0; n < N; n++) {
-		for(MYITE h = HOffsetL, hout = 0; h < H - HOffsetR; h += HSTR, hout++) {
-			for(MYITE w = WOffsetL, wout = 0; w < W - WOffsetR; w += WSTR, wout++) {
-				for(MYITE g = 0; g < G; g++) {
-					for(MYITE co = 0; co < COUTF; co ++) {
+	for (MYITE n = 0; n < N; n++) {
+		for (MYITE h = HOffsetL, hout = 0; h < H - HOffsetR; h += HSTR, hout++) {
+			for (MYITE w = WOffsetL, wout = 0; w < W - WOffsetR; w += WSTR, wout++) {
+				for (MYITE g = 0; g < G; g++) {
+					for (MYITE co = 0; co < COUTF; co++) {
 
 						MYITE counter = 0;
-						for(MYITE hf = -(HF / 2); hf <= HF / 2; hf++) {
-							for(MYITE wf = -(WF / 2); wf <= WF / 2; wf++) {
-								for(MYITE ci = 0; ci < CINF; ci++) {
+						for (MYITE hf = -(HF / 2); hf <= HF / 2; hf++) {
+							for (MYITE wf = -(WF / 2); wf <= WF / 2; wf++) {
+								for (MYITE ci = 0; ci < CINF; ci++) {
 
 									MYINT a = (((h + HDL * hf) < 0) || ((h + HDL * hf) >= H) || ((w + WDL * wf) < 0) || ((w + WDL * wf) >= W)) ? 0 : A[n * H * W * CIN + (h + HDL * hf) * W * CIN + (w + WDL * wf) * CIN + (ci + g * CINF)];
 									MYINT b = B[g * HF * WF * CINF * COUTF + (hf + HF/2) * WF * CINF * COUTF + (wf + WF/2) * CINF * COUTF + ci * COUTF + co];
@@ -703,30 +712,32 @@ void Convolution(MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT N, MYINT 
 						bool shr = true;
 
 						while (depth < (H1 + H2)) {
-							if (depth >= H1)
+							if (depth >= H1) {
 								shr = false;
+							}
 
 							for (MYITE p = 0; p < (totalEle / 2 + 1); p++) {
 								MYINT sum;
 								if (p < (count >> 1)) {
-									if (shr)
+									if (shr) {
 										sum = tmp[2 * p] / 2 + tmp[(2 * p) + 1] / 2;
-									else
+									} else {
 										sum = tmp[2 * p] + tmp[(2 * p) + 1];
-								}
-								else if ((p == (count >> 1)) && ((count & 1) == 1)) {
-									if (shr)
+									}
+								} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
+									if (shr) {
 										sum = tmp[2 * p] / 2;
-									else
+									} else {
 										sum = tmp[2 * p];
-								}
-								else
+									}
+								} else {
 									sum = 0;
+								}
 
 								tmp[p] = sum;
 							}
-							count = (count + 1) >> 1;
 
+							count = (count + 1) >> 1;
 							depth++;
 						}
 
@@ -753,10 +764,11 @@ void AddOrSubCir4D(MYINT* A, const MYINT* B, MYINT* X, MYINT N, MYINT H, MYINT W
 					b = b / shrB;
 
 					MYINT res;
-					if (add)
+					if (add) {
 						res = Saturate<MYINT>(a / shrC + b / shrC);
-					else
+					} else {
 						res = Saturate<MYINT>(a / shrC - b / shrC);
+					}
 
 					X[n * H * W * C + h * W * C + w * C + c] = res;
 				}
@@ -778,10 +790,11 @@ void AddOrSubCir2D(MYINT* A, const MYINT* B, MYINT* X, MYINT H, MYINT W, MYINT s
 			b = b / shrB;
 
 			MYINT res;
-			if (add)
+			if (add) {
 				res = Saturate<MYINT>(a / shrC + b / shrC);
-			else
+			} else {
 				res = Saturate<MYINT>(a / shrC - b / shrC);
+			}
 
 			X[h * W + w] = res;
 		}
@@ -797,8 +810,9 @@ void Relu4D(MYINT* A, MYINT N, MYINT H, MYINT W, MYINT C) {
 			for (MYITE w = 0; w < W; w++) {
 				for (MYITE c = 0; c < C; c++) {
 					MYINT a = A[n * H * W * C + h * W * C + w * C + c];
-					if (a < 0)
+					if (a < 0) {
 						a = 0;
+					}
 
 					A[n * H * W * C + h * W * C + w * C + c] = a;
 				}
@@ -816,10 +830,12 @@ void Relu6(MYINT* A, MYINT* B, MYINT N, MYINT H, MYINT W, MYINT C,MYINT six, MYI
 			for (MYITE w = 0; w < W; w++) {
 				for (MYITE c = 0; c < C; c++) {
 					MYINT a = A[n * H * W * C + h * W * C + w * C + c];
-					if (a < 0)
+					if (a < 0) {
 						a = 0;
-					if (a > six)
+					}
+					if (a > six) {
 						a = six;
+					}
 
 					B[n * H * W * C + h * W * C + w * C + c] = a / div;
 				}
@@ -835,8 +851,9 @@ void Relu2D(MYINT* A, MYINT H, MYINT W) {
 	for (MYITE h = 0; h < H; h++) {
 		for (MYITE w = 0; w < W; w++) {
 			MYINT a = A[h * W + w];
-			if (a < 0)
+			if (a < 0){
 				a = 0;
+			}
 
 			A[h * W + w] = a;
 		}
@@ -859,8 +876,9 @@ void Maxpool(MYINT* A, MYINT* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT FH, M
 					for (MYITE hs = 0; hs < FH; hs++) {
 						for (MYITE ws = 0; ws < FW; ws++) {
 							MYINT a = A[n * H * W * C + ((strideH * ho) + hs) * W * C + ((strideW * wo) + ws) * C + c];
-							if (a > max)
+							if (a > max) {
 								max = a;
+							}
 						}
 					}
 
@@ -877,19 +895,18 @@ void NormaliseL2(MYINT* A, MYINT* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
-		 
+
 				// calculate the sum square
 				int32_t sumSquare = 0;
 				MYINT shrAdiv = (1 << shrA);
 
 				for (MYITE c = 0; c < C; c++) {
-
 #ifdef FASTAPPROX
 				MYINT tmp = (A[n * H * W * C + h * W * C + w * C + c] / shrAdiv);
 				sumSquare += tmp*tmp;
 #else           
 				int32_t tmp = A[n * H * W * C + h * W * C + w * C + c];
-				sumSquare += (((tmp * tmp) / shrAdiv) / shrAdiv);						
+				sumSquare += (((tmp * tmp) / shrAdiv) / shrAdiv);
 #endif
 				}
 				
@@ -898,26 +915,25 @@ void NormaliseL2(MYINT* A, MYINT* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 				MYINT yLow = 1;
 
 				// yHigh: A number of length shrA with all 1s in binary representation e.g. for shrA=8 --> y_high = 0b11111111
-				MYINT yHigh = (1 << shrA - 1);   
+				MYINT yHigh = (1 << shrA - 1);
 
 				// one: value of 1 with same scale as y*y*sumSquare
 				// scale of sumSquare = 2*scale_in + 2*shrA
 				// since we assume scale of y = 1 - shrA
 				// scale of y*y*sumSquare =  2*scale_in + 2*shrA + 2(1-shrA) = 2*scale_in + 2
-				int32_t one = ( 1<< (-(2 * scaleA + 2)) ); 
+				int32_t one = (1 << (-(2 * scaleA + 2)));
 
 				//binary search for the inverse square root 
-				while( yLow + 1 < yHigh){
+				while (yLow + 1 < yHigh) {
 
 					//using int32_t sotherwise (y*y*sumSquare) will overflow
-					MYINT yMid = ((yHigh + yLow)>>1);
+					MYINT yMid = ((yHigh + yLow) >> 1);
 
 					int64_t cmpValue = (int64_t)sumSquare * yMid * yMid;
 
-					if(cmpValue > one){
+					if (cmpValue > one) {
 						yHigh = yMid;	
-					}	
-					else {
+					} else {
 						yLow = yMid;
 					}
 				}
@@ -925,10 +941,10 @@ void NormaliseL2(MYINT* A, MYINT* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 
 
 				// multiply all elements by the 1/sqrt(sumSquare)
-				for (MYITE c = 0; c < C; c++){
-						B[n * H * W * C + h * W * C + w * C + c]  = (A[n * H * W * C + h * W * C + w * C + c]  / shrAdiv) * inverseNorm;  
+				for (MYITE c = 0; c < C; c++) {
+						B[n * H * W * C + h * W * C + w * C + c]  = (A[n * H * W * C + h * W * C + w * C + c]  / shrAdiv) * inverseNorm;
 				}	
-			}					
+			}
 		}
 	}
 	return;
@@ -965,12 +981,13 @@ void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_lim
 			x = (x / div) + add;
 
 			MYINT y;
-			if (x >= sigmoid_limit)
+			if (x >= sigmoid_limit) {
 				y = sigmoid_limit;
-			else if (x <= 0)
+			} else if (x <= 0) {
 				y = 0;
-			else
+			} else {
 				y = x;
+			}
 
 			y = y * scale_diff;
 
@@ -985,8 +1002,8 @@ void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_lim
 void AdjustScaleShr(MYINT* A, MYINT I, MYINT J, MYINT K, MYINT L, MYINT scale) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			for(MYITE k = 0; k < K; k++) {
-				for(MYITE l = 0; l < L; l++) {
+			for (MYITE k = 0; k < K; k++) {
+				for (MYITE l = 0; l < L; l++) {
 					MYINT a = A[i * J * K * L + j * K * L + k * L + l];
 					A[i * J * K * L + j * K * L + k * L + l] = a / scale;
 				}
@@ -1022,8 +1039,8 @@ void AdjustScaleShl(MYINT* A, MYINT I, MYINT J, MYINT scale) {
 void AdjustScaleShl(MYINT* A, MYINT I, MYINT J, MYINT K, MYINT L, MYINT scale) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			for(MYITE k = 0; k < K; k++) {
-				for(MYITE l = 0; l < L; l++) {
+			for (MYITE k = 0; k < K; k++) {
+				for (MYITE l = 0; l < L; l++) {
 					MYINT a = A[i * J * K * L + j * K * L + k * L + l];
 					A[i * J * K * L + j * K * L + k * L + l] = a * scale;
 				}
@@ -1034,37 +1051,42 @@ void AdjustScaleShl(MYINT* A, MYINT I, MYINT J, MYINT K, MYINT L, MYINT scale) {
 }
 
 MYINT treeSum(MYINT* arr, MYINT count, MYINT height_shr, MYINT height_noshr) {
-	if (count == 1)
+	if (count == 1) {
 		return arr[0];
+	}
 
 	bool shr = true;
 
 	for (MYITE depth = 0; depth < (height_shr + height_noshr); depth++) {
-		if (depth >= height_shr)
+		if (depth >= height_shr) {
 			shr = false;
+		}
 
 		for (MYITE index = 0; index < (count / 2); index++) {
 			MYINT sum = arr[2 * index] + arr[(2 * index) + 1];
 
-			if (shr)
+			if (shr) {
 				arr[index] = sum / 2;
-			else
+			} else {
 				arr[index] = sum;
+			}
 		}
 
 		if (count % 2 == 1) {
 			MYITE index = (count / 2) + 1;
-			if (shr)
+			if (shr) {
 				arr[index - 1] = arr[count - 1] / 2;
-			else
+			} else {
 				arr[index - 1] = arr[count - 1];
+			}
 		}
 
 		// Debugging
-		if (count % 2 == 1)
+		if (count % 2 == 1) {
 			arr[count / 2 + 1] = 0;
-		else
+		} else {
 			arr[count / 2] = 0;
+		}
 
 		count = (count + 1) >> 1;
 	}

@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
     fread(&yLine[0], sizeof(float), 4 * HIDDEN_DIM2, floatResFile);
     Q15_T reshapedXLine[INPUT_CHANNELS * PATCH_DIM * PATCH_DIM];
 
-    for (unsigned a = 0; a < INPUT_CHANNELS; a ++) {
+    for (unsigned a = 0; a < INPUT_CHANNELS; a++) {
       for (unsigned b = 0; b < PATCH_DIM; b++) {
         for (unsigned c = 0; c < PATCH_DIM; c++) {
           reshapedXLine[b * PATCH_DIM * INPUT_CHANNELS + c * INPUT_CHANNELS + a] =

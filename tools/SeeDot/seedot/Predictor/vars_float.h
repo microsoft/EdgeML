@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserve.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
 #pragma once
@@ -43,4 +43,4 @@ extern float tmp33[20];
 extern float tmp35[1][1];
 extern float tmp36[1][1];
 extern MYINT tmp37;
-} 
+}

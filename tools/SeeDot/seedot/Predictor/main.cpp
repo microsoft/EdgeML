@@ -41,58 +41,58 @@ enum ProblemType
 bool profilingEnabled = false;
 
 // Split the CSV row into multiple values
-vector<string> readCSVLine(string line)
-{
+vector<string> readCSVLine(string line) {
 	vector<string> tokens;
 
 	stringstream stream(line);
 	string str;
 
-	while (getline(stream, str, ','))
+	while (getline(stream, str, ',')) {
 		tokens.push_back(str);
+	}
 
 	return tokens;
 }
 
 // Read the input 'X'
-vector<string> getFeatures(string line)
-{
+vector<string> getFeatures(string line) {
 	static int featuresLength = -1;
 
 	vector<string> features = readCSVLine(line);
 
-	if (featuresLength == -1)
+	if (featuresLength == -1) {
 		featuresLength = (int)features.size();
+	}
 
-	if ((int)features.size() != featuresLength)
+	if ((int)features.size() != featuresLength) {
 		throw "Number of row entries in X is inconsistent";
+	}
 
 	return features;
 }
 
 // Read the ground truth label/value 'Y'
-vector<string> getLabel(string line)
-{
+vector<string> getLabel(string line) {
 	static int labelLength = -1;
 
 	vector<string> labels = readCSVLine(line);
 
-	if (labelLength == -1)
+	if (labelLength == -1) {
 		labelLength = (int)labels.size();
+	}
 
-	if ((int)labels.size() != labelLength)
+	if ((int)labels.size() != labelLength) {
 		throw "Number of row entries in Y is inconsistent";
+	}
 
 	return labels;
 }
 
 // Take in the input floating point datapoint, convert it to a fixed point integer and store it
-void populateFixedVector(MYINT** features_int, vector<string> features, int scale)
-{
+void populateFixedVector(MYINT** features_int, vector<string> features, int scale) {
 	int features_size = (int)features.size();
 
-	for (int i = 0; i < features_size; i++)
-	{
+	for (int i = 0; i < features_size; i++) {
 		double f = (double)(atof(features.at(i).c_str()));
 		double f_int = ldexp(f, -scale);
 		features_int[i][0] = (MYINT)(f_int);
@@ -102,11 +102,11 @@ void populateFixedVector(MYINT** features_int, vector<string> features, int scal
 }
 
 // Take in the input floating point datapoint and store it
-void populateFloatVector(float** features_float, vector<string> features)
-{
+void populateFloatVector(float** features_float, vector<string> features) {
 	int features_size = (int)features.size();
-	for (int i = 0; i < features_size; i++)
+	for (int i = 0; i < features_size; i++) {
 		features_float[i][0] = (float)(atof(features.at(i).c_str()));
+	}
 	return;
 }
 
@@ -122,13 +122,13 @@ void launchThread(int features_size, MYINT** features_int, MYINT*** features_int
 		seedotFixedSwitch(i, features_intV[i], resV[i]);
 	}
 
-	for(int i = 0; i < features_size; i++) {
+	for (int i = 0; i < features_size; i++) {
 		delete features_int[i];
 		delete features_float[i];
 		for (int j = 0; j < switches; j++) {
 			delete features_intV[j][i];
 		}
-	}	
+	}
 	delete[] features_int;
 	delete[] features_float;
 	for (int j = 0; j < switches; j++) {
@@ -137,46 +137,41 @@ void launchThread(int features_size, MYINT** features_int, MYINT*** features_int
 	delete[] features_intV;
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
 	float epsilon = 0.00001;
-	if (argc == 1)
-	{
+	if (argc == 1) {
 		cout << "No arguments supplied" << endl;
 		return 1;
 	}
 
 	Version version;
-	if (strcmp(argv[1], "fixed") == 0)
+	if (strcmp(argv[1], "fixed") == 0) {
 		version = Fixed;
-	else if (strcmp(argv[1], "float") == 0)
+	} else if (strcmp(argv[1], "float") == 0) {
 		version = Float;
-	else
-	{
+	} else {
 		cout << "Argument mismatch for version\n";
 		return 1;
 	}
 	string versionStr = argv[1];
 
 	DatasetType datasetType;
-	if (strcmp(argv[2], "training") == 0)
+	if (strcmp(argv[2], "training") == 0) {
 		datasetType = Training;
-	else if (strcmp(argv[2], "testing") == 0)
+	} else if (strcmp(argv[2], "testing") == 0) {
 		datasetType = Testing;
-	else
-	{
+	} else {
 		cout << "Argument mismatch for dataset type\n";
 		return 1;
 	}
 	string datasetTypeStr = argv[2];
 
 	ProblemType problem;
-	if (strcmp(argv[3], "classification") == 0)
+	if (strcmp(argv[3], "classification") == 0) {
 		problem = Classification;
-	else if (strcmp(argv[3], "regression") == 0)
+	} else if (strcmp(argv[3], "regression") == 0) {
 		problem = Regression;
-	else
-	{
+	} else {
 		cout << "Argument mismatch for problem type\n";
 		return 1;
 	}
@@ -190,8 +185,9 @@ int main(int argc, char* argv[])
 	ifstream featuresFile(inputDir + "X.csv");
 	ifstream lablesFile(inputDir + "Y.csv");
 
-	if (featuresFile.good() == false || lablesFile.good() == false)
+	if (featuresFile.good() == false || lablesFile.good() == false) {
 		throw "Input files doesn't exist";
+	}
 
 	// Create output directory and files
 	string outputDir = "output/" + versionStr;
@@ -224,12 +220,12 @@ int main(int argc, char* argv[])
 	string line1, line2;
 	int counter = 0;
 
-	if(version == Float)
+	if (version == Float) {
 		profilingEnabled = true;
+	}
 
 	// Each iteration takes care of one datapoint
-	while (getline(featuresFile, line1) && getline(lablesFile, line2))
-	{
+	while (getline(featuresFile, line1) && getline(lablesFile, line2)) {
 		// Read the feature vector and class ID
 		vector<string> features = getFeatures(line1);
 		vector<string> labelString = getLabel(line2);
@@ -247,46 +243,46 @@ int main(int argc, char* argv[])
 		}
 
 		// Allocate memory to store the feature vector as arrays
-		if (alloc == false)
-		{
+		if (alloc == false) {
 			features_size = (int)features.size();
 
 			features_int = new MYINT* [features_size];
-			for (int i = 0; i < features_size; i++)
+			for (int i = 0; i < features_size; i++) {
 				features_int[i] = new MYINT[1];
+			}
 
 			for (int i = 0; i < switches; i++) {
 				features_intV[i] = new MYINT* [features_size];
-				for (int j = 0; j < features_size; j++)
+				for (int j = 0; j < features_size; j++) {
 					features_intV[i][j] = new MYINT[1];
+				}
 			}
 
 			features_float = new float* [features_size];
-			for (int i = 0; i < features_size; i++)
+			for (int i = 0; i < features_size; i++) {
 				features_float[i] = new float[1];
+			}
 
 			alloc = true;
 		}
 
 		// Populate the array using the feature vector
-		if (debugMode || version == Fixed)
-		{
+		if (debugMode || version == Fixed) {
 			populateFixedVector(features_int, features, scaleForX);
 			for (int i = 0; i < switches; i++) {
 				populateFixedVector(features_intV[i], features, scalesForX[i]);
 			}
 			populateFloatVector(features_float, features);
-		}
-		else
+		} else {
 			populateFloatVector(features_float, features);
+		}
 
 		// Invoke the predictor function
 		int* fixed_res = NULL;
 		float* float_res = NULL;
 		vector <int> resV(switches, -1);
 
-		if (debugMode)
-		{
+		if (debugMode) {
 			float_res = new float[numOutputs];
 			seedotFloat(features_float, float_res);
 			fixed_res = new int32_t[numOutputs];
@@ -294,73 +290,73 @@ int main(int argc, char* argv[])
 			//debug();
 			vector_float_res.push_back(float_res);
 			vector_int_res.push_back(fixed_res);
-			if (problem == Classification)
+			if (problem == Classification) {
 				labelsInt.push_back(labelInt);
-			else if (problem == Regression)
+			} else if (problem == Regression) {
 				labelsFloat.push_back(labelFloat);
+			}
 			vector_int_resV.push_back(NULL);
-		}
-		else
-		{
+		} else {
 			// There are several codes generated which are built simultaneously
 			if (version == Fixed) {
 				vector_float_res.push_back(new float[numOutputs]);
 				vector_int_res.push_back(new int32_t[numOutputs]);
 				// Populating labels for each generated code
-				if (problem == Classification)
+				if (problem == Classification) {
 					labelsInt.push_back(labelInt);
-				else if (problem == Regression)
+				} else if (problem == Regression) {
 					labelsFloat.push_back(labelFloat);
+				}
 				int** switchRes = new int* [switches];
 				// Instantiating vectors for storing inference results for each generated code
-				for(int i = 0; i < switches; i++) {
+				for (int i = 0; i < switches; i++) {
 					switchRes[i] = new int[numOutputs];
 				}
 				vector_int_resV.push_back(switchRes);
 				// Instantiating vectors for storing features, integer and float
 				MYINT** features_int_copy = new MYINT* [features_size];
-				for(int i = 0; i < features_size; i++) {
+				for (int i = 0; i < features_size; i++) {
 					features_int_copy[i] = new MYINT[1];
 					features_int_copy[i][0] = features_int[i][0];
 				}
 				float** features_float_copy = new float* [features_size];
-				for(int i = 0; i < features_size; i++) {
+				for (int i = 0; i < features_size; i++) {
 					features_float_copy[i] = new float[1];
 					features_float_copy[i][0] = features_float[i][0];
 				}
 				features_intV_copy = new MYINT** [switches];
-				for(int j = 0; j < switches; j++) {
+				for (int j = 0; j < switches; j++) {
 					features_intV_copy[j] = new MYINT* [features_size];
-					for(int i = 0; i < features_size; i++) {
+					for (int i = 0; i < features_size; i++) {
 						features_intV_copy[j][i] = new MYINT[1];
 						features_intV_copy[j][i][0] = features_intV[j][i][0];
 					}
 				}
 				// Launching one thread which processes one datapoint
 				threads.push_back(thread(launchThread, features_size, features_int_copy, features_intV_copy, features_float_copy, counter, vector_float_res.back(), vector_int_res.back(), vector_int_resV.back()));
-			}
-			else if (version == Float) {
+			} else if (version == Float) {
 				float_res = new float[numOutputs];
 				seedotFloat(features_float, float_res);
 				vector_float_res.push_back(float_res);
 				vector_int_res.push_back(new int[numOutputs]);
-				if (problem == Classification)
+				if (problem == Classification) {
 					labelsInt.push_back(labelInt);
-				else if (problem == Regression)
+				} else if (problem == Regression) {
 					labelsFloat.push_back(labelFloat);
+				}
 				vector_int_resV.push_back(NULL);
 			}
 		}
 
-		if(!logProgramOutput) {
+		if (!logProgramOutput) {
 			output << "Inputs handled = " << counter + 1 << endl;
 		}
 
 		flushProfile();
-		counter ++;
+		counter++;
 	}
 
-	for(int i = 0; i < threads.size(); i++) {
+	for (int i = 0; i < threads.size(); i++) {
 		threads[i].join();
 	}
 
@@ -379,13 +375,13 @@ int main(int argc, char* argv[])
 	ofstream trace("trace.txt");
 
 	int correct = 0, total = 0;
-	for(int i = 0; i < counter; i++) {
+	for (int i = 0; i < counter; i++) {
 		int* fixed_res = vector_int_res[i];
 		float* float_res = vector_float_res[i];
 		int** resV = vector_int_resV[i];
 
 		if (problem == Classification) {
-			for(int j = 0; j < numOutputs; j++) {
+			for (int j = 0; j < numOutputs; j++) {
 				float res;
 				if (version == Float) {
 					res = float_res[j];
@@ -395,46 +391,49 @@ int main(int argc, char* argv[])
 
 				if (res != float_res[j]) {
 					if (float_res[j] == labelsInt[i][j]) {
-						reduced_disagreements ++;
+						reduced_disagreements++;
 					}
-					disagreements ++;
+					disagreements++;
 				}
 
 				if (res == labelsInt[i][j]) {
-					correct ++;
+					correct++;
 				} else {
-					if(logProgramOutput)
+					if (logProgramOutput) {
 						output << "Main: Incorrect prediction for input " << total + 1 << " element " << j << ". Predicted " << res << " Expected " << labelsInt[i][j] << endl;
+					}
 				}
-				total ++;
+				total++;
 
 				for (int k = 0; k < switches; k++) {
-					if(version == Float)
+					if (version == Float) {
 						throw "Multiple codes not expected in Floating point execution";
+					}
 
 					if (resV[k][j] != float_res[j]) {
 						if (float_res[j] == labelsInt[i][j]) {
-							reduced_disagreementsV[k] ++;
+							reduced_disagreementsV[k]++;
 						}
-						disagreementsV[k] ++;
+						disagreementsV[k]++;
 					}
 
 					if (resV[k][j] == labelsInt[i][j]) {
-						correctV[k] ++;
+						correctV[k]++;
 					} else {
-						if(logProgramOutput)
+						if (logProgramOutput) {
 							output << "Sub "<< k <<": Incorrect prediction for input " << total + 1 << " element " << j << ". Predicted " << resV[k][j] << " Expected " << labelsInt[i][j] << endl;
+						}
 					}
-					totalV[k] ++;
+					totalV[k]++;
 				}
-			} 
+			}
 		} else {
-			for(int j = 0; j < numOutputs; j++) {
+			for (int j = 0; j < numOutputs; j++) {
 				float res;
 				if (version == Float) {
 					res = float_res[j];
 				} else {
-					res = ((float) fixed_res[j]) / ldexp(1.0 , -scaleForY);
+					res = ((float)fixed_res[j]) / ldexp(1.0, -scaleForY);
 				}
 
 				trace << res << " ";
@@ -443,26 +442,26 @@ int main(int argc, char* argv[])
 				float ferror = 100.0 * fabs(res - float_res[j]);
 				errors.push_back(error);
 				ferrors.push_back(ferror);
-				total ++;
+				total++;
 
 				for (int k = 0; k < switches; k++) {
-					if(version == Float)
+					if (version == Float) {
 						throw "Multiple codes not expected in Floating point execution";
+          }
 					float normRes = ((float) resV[k][j]) / ldexp(1.0 , -scalesForY[k]);
 					float error = 100.0 * fabs(normRes - labelsFloat[i][j]);
 					float ferror = 100.0 * fabs(normRes - float_res[j]);
 					errorsV[k].push_back(error);
 					ferrorsV[k].push_back(ferror);
-					totalV[k] ++;
+					totalV[k]++;
 				}
-			} 
-
+			}
 		}
 
 		// Clearing memory
 		delete[] vector_int_res[i];
 		delete[] vector_float_res[i];
-		for(int k = 0; k < switches; k++) {
+		for (int k = 0; k < switches; k++) {
 			delete[] vector_int_resV[i][k];
 		}
 		delete[] vector_int_resV[i];
@@ -473,17 +472,20 @@ int main(int argc, char* argv[])
 	trace.close();
 
 	// Deallocate memory
-	for (int i = 0; i < features_size; i++)
+	for (int i = 0; i < features_size; i++) {
 		delete features_int[i];
+	}
 	delete[] features_int;
 
-	for (int i = 0; i < features_size; i++)
+	for (int i = 0; i < features_size; i++) {
 		delete features_float[i];
+	}
 	delete[] features_float;
 
 	for (int i = 0; i < switches; i++) {
-		for (int j = 0; j < features_size; j++)
+		for (int j = 0; j < features_size; j++) {
 			delete features_intV[i][j];
+		}
 		delete[] features_intV[i];
 	}
 
@@ -520,10 +522,8 @@ int main(int argc, char* argv[])
 	}
 	
 
-	if (version == Fixed) 
-	{
-		for (int i = 0; i < switches; i++) 
-		{
+	if (version == Fixed) {
+		for (int i = 0; i < switches; i++) {
 			stats << i + 1 << "\n";
 			if (problem == Classification) {
 				stats << (float)correctV[i] / totalV[i] * 100.0f << "\n";
@@ -538,17 +538,18 @@ int main(int argc, char* argv[])
 				stats << ferrorsV[i][index] << "\n";
 				stats << "0.000\n";
 			}
-
 		}
 	}
 
 	stats.close();
 
-	if (version == Float)
+	if (version == Float) {
 		dumpProfile();
+	}
 
-	if (datasetType == Training)
+	if (datasetType == Training) {
 		dumpRange(outputDir + "/profile.txt");
+	}
 
 	return 0;
 }
