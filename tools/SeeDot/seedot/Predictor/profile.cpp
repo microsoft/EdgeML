@@ -18,8 +18,7 @@ using namespace std;
 float m_all, M_all;
 float m_exp, M_exp;
 
-void initializeProfiling()
-{
+void initializeProfiling() {
 	m_all = numeric_limits<float>::max();
 	M_all = -numeric_limits<float>::max();
 
@@ -29,26 +28,27 @@ void initializeProfiling()
 	return;
 }
 
-void updateRange(float x)
-{
-	if (x < m_all)
+void updateRange(float x) {
+	if (x < m_all) {
 		m_all = x;
-	if (x > M_all)
+	}
+	if (x > M_all) {
 		M_all = x;
+	}
 	return;
 }
 
-void updateRangeOfExp(float x)
-{
-	if (x < m_exp)
+void updateRangeOfExp(float x) {
+	if (x < m_exp) {
 		m_exp = x;
-	if (x > M_exp)
+	}
+	if (x > M_exp) {
 		M_exp = x;
+	}
 	return;
 }
 
-void dumpRange(string outputFile)
-{
+void dumpRange(string outputFile) {
 	ofstream fout(outputFile);
 
 	fout.precision(6);
@@ -71,10 +71,12 @@ unordered_map<string, pair<float, float>> statistics;
 bool range_exceeded = false;
 
 void dumpProfile() {
-	if(!profilingEnabled)
+	if (!profilingEnabled) {
 		return;
-	if (min_all.size() == 0)
+	}
+	if (min_all.size() == 0) {
 		return;
+	}
 	ofstream outfile("dump.profile");
 	auto min_i = min_all.begin();
 	while (min_i != min_all.end()) {
@@ -86,12 +88,13 @@ void dumpProfile() {
 }
 
 void flushProfile() {
-	if(!profilingEnabled)
+	if (!profilingEnabled) {
 		return;
+	}
 	if (range_exceeded == false) {
-		for(auto it = min_temp.begin(); it != min_temp.end(); it ++) {
+		for (auto it = min_temp.begin(); it != min_temp.end(); it++) {
 			string name = it->first;
-			if(min_all.find(name) == min_all.end()) {
+			if (min_all.find(name) == min_all.end()) {
 				min_all[name] = min_temp[name];
 				max_all[name] = max_temp[name];
 			} else {
@@ -102,7 +105,7 @@ void flushProfile() {
 			max_temp[name] = -FLT_MAX;
 		}
 	} else {
-		for(auto it = min_temp.begin(); it != min_temp.end(); it ++) {
+		for (auto it = min_temp.begin(); it != min_temp.end(); it++) {
 			string name = it -> first;
 			min_temp[name] = FLT_MAX;
 			max_temp[name] = -FLT_MAX;
@@ -112,8 +115,9 @@ void flushProfile() {
 }
 
 void checkRange2(float* A, int I, int J) {
-	if(!profilingEnabled)
+	if (!profilingEnabled) {
 		return;
+	}
 	for (int i = 0; i < I; i++) {
 		for (int j = 0; j < J; j++) {
 			if (fabs(A[i * J + j]) >= 32) {
@@ -124,8 +128,9 @@ void checkRange2(float* A, int I, int J) {
 }
 
 void Profile4(float* A, int I, int J, int K, int L, string name) {
-	if(!profilingEnabled)
+	if (!profilingEnabled) {
 		return;
+	}
 	if (min_temp.find(name) == min_temp.end()) {
 		min_temp[name] = FLT_MAX;
 		max_temp[name] = -FLT_MAX;
@@ -134,20 +139,20 @@ void Profile4(float* A, int I, int J, int K, int L, string name) {
 	for (int i = 0; i < I; i++) {
 		for (int j = 0; j < J; j++) {
 			for (int k = 0; k < K; k++) {
-				for(int l = 0; l < L; l++) {
+				for (int l = 0; l < L; l++) {
 					min_temp[name] = min_temp[name] < A[i * J * K * L + j * K * L + k * L + l] ? min_temp[name] : A[i * J * K * L + j * K * L + k * L + l];
 					max_temp[name] = max_temp[name] > A[i * J * K * L + j * K * L + k * L + l] ? max_temp[name] : A[i * J * K * L + j * K * L + k * L + l];
 					all_values[name].push_back(A[i * J * K * L + j * K * L + k * L + l]);
 				}
 			}
-
 		}
 	}
 }
 
 void Profile3(float* A, int I, int J, int K, string name) {
-	if(!profilingEnabled)
+	if (!profilingEnabled) {
 		return;
+	}
 	if (min_temp.find(name) == min_temp.end()) {
 		min_temp[name] = FLT_MAX;
 		max_temp[name] = -FLT_MAX;
@@ -160,14 +165,14 @@ void Profile3(float* A, int I, int J, int K, string name) {
 				max_temp[name] = max_temp[name] > A[i * J * K + j * K + k] ? max_temp[name] : A[i * J * K + j * K + k];
 				all_values[name].push_back(A[i * J * K + j * K + k]);
 			}
-
 		}
 	}
 }
 
 void Profile2(float* A, int I, int J, string name) {
-	if(!profilingEnabled)
+	if (!profilingEnabled) {
 		return;
+	}
 	if (min_temp.find(name) == min_temp.end()) {
 		min_temp[name] = FLT_MAX;
 		max_temp[name] = -FLT_MAX;
@@ -182,17 +187,13 @@ void Profile2(float* A, int I, int J, string name) {
 	}
 }
 
-void diff(float* A, MYINT* B, MYINT scale, MYINT I, MYINT J)
-{
-
+void diff(float* A, MYINT* B, MYINT scale, MYINT I, MYINT J) {
 	float min = numeric_limits<float>::max(), max = 0, sum = 0;
 	float min_relative = numeric_limits<float>::max(), max_relative = 0, sum_relative = 0;
 	int count = 0;
 
-	for (MYINT i = 0; i < I; i++)
-	{
-		for (MYINT j = 0; j < J; j++)
-		{
+	for (MYINT i = 0; i < I; i++) {
+		for (MYINT j = 0; j < J; j++) {
 			float a = A[i * J + j];
 
 			MYINT b = B[i * J + j];
@@ -201,15 +202,19 @@ void diff(float* A, MYINT* B, MYINT scale, MYINT I, MYINT J)
 			float diff = abs(a - b_float);
 			float diff_relative = diff / abs(a);
 
-			if (diff < min)
+			if (diff < min) {
 				min = diff;
-			if (diff > max)
+			}
+			if (diff > max) {
 				max = diff;
+			}
 
-			if (diff_relative < min_relative)
+			if (diff_relative < min_relative) {
 				min_relative = diff_relative;
-			if (diff_relative > max_relative)
+			}
+			if (diff_relative > max_relative) {
 				max_relative = diff_relative;
+			}
 
 			sum += diff;
 			sum_relative += diff_relative;
@@ -226,19 +231,14 @@ void diff(float* A, MYINT* B, MYINT scale, MYINT I, MYINT J)
 	return;
 }
 
-void diff(float* A, MYINT* B, MYINT scale, MYINT I, MYINT J, MYINT K)
-{
-
+void diff(float* A, MYINT* B, MYINT scale, MYINT I, MYINT J, MYINT K) {
 	float min = numeric_limits<float>::max(), max = 0, sum = 0;
 	float min_relative = numeric_limits<float>::max(), max_relative = 0, sum_relative = 0;
 	int count = 0;
 
-	for (MYINT i = 0; i < I; i++)
-	{
-		for (MYINT j = 0; j < J; j++)
-		{
-			for (MYINT k = 0; k < K; k++)
-			{
+	for (MYINT i = 0; i < I; i++) {
+		for (MYINT j = 0; j < J; j++) {
+			for (MYINT k = 0; k < K; k++) {
 				float a = A[i * J * K + j * K + k];
 
 				MYINT b = B[i * J * K + j * K + k];
@@ -247,15 +247,19 @@ void diff(float* A, MYINT* B, MYINT scale, MYINT I, MYINT J, MYINT K)
 				float diff = abs(a - b_float);
 				float diff_relative = diff / abs(a);
 
-				if (diff < min)
+				if (diff < min) {
 					min = diff;
-				if (diff > max)
+				}
+				if (diff > max) {
 					max = diff;
+				}
 
-				if (diff_relative < min_relative)
+				if (diff_relative < min_relative) {
 					min_relative = diff_relative;
-				if (diff_relative > max_relative)
+				}
+				if (diff_relative > max_relative) {
 					max_relative = diff_relative;
+				}
 
 				sum += diff;
 				sum_relative += diff_relative;

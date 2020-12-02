@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
 
   solver = new DLX(numElements, numToBeCovered, numSubsets);
 
-  for (int i = 0; i < numSubsets; i ++) {
+  for (int i = 0; i < numSubsets; i++) {
     string tag;
     cin >> tag;
 
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
 
     vector <int> elements;
     elements.resize(numElements);
-    for (int j = 0; j < numElements; j ++) {
+    for (int j = 0; j < numElements; j++) {
       cin >> elements[j];
     }
 
