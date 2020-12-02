@@ -54,12 +54,8 @@ _C.NEG_POS_RATIOS = 3
 _C.NUM_CLASSES = 2
 _C.USE_NMS = True
 
-# dataset config
-_C.HOME = '/mnt'  ## change here ----------
-
 # face config
 _C.FACE = EasyDict()
 _C.FACE.TRAIN_FILE = './data/face_train.txt'
 _C.FACE.VAL_FILE = './data/face_val.txt'
-_C.FACE.WIDER_DIR = '/mnt/WIDER_FACE'  ## change here ---------
 _C.FACE.OVERLAP_THRESH = [0.1, 0.35, 0.5]

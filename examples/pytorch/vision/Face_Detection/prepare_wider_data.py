@@ -10,7 +10,10 @@ import os
 from data.config import cfg
 import cv2
 
-WIDER_ROOT = os.path.join(cfg.HOME, 'WIDER_FACE')
+HOME = os.environ['DATA_HOME']
+
+
+WIDER_ROOT = os.path.join(HOME, 'WIDER_FACE')
 train_list_file = os.path.join(WIDER_ROOT, 'wider_face_split',
                                'wider_face_train_bbx_gt.txt')
 val_list_file = os.path.join(WIDER_ROOT, 'wider_face_split',

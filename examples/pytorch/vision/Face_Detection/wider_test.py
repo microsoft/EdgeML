@@ -27,6 +27,9 @@ from importlib import import_module
 import warnings
 warnings.filterwarnings("ignore")
 
+HOME = os.environ['DATA_HOME']
+
+
 parser = argparse.ArgumentParser(description='s3fd evaluatuon wider')
 parser.add_argument('--model', type=str,
                     default='./weights/rpool_face_c.pth', help='trained model')
@@ -177,7 +180,7 @@ def bbox_vote(det):
 def get_data():
     subset = args.subset
 
-    WIDER_ROOT = os.path.join(cfg.HOME, 'WIDER_FACE')
+    WIDER_ROOT = os.path.join(HOME, 'WIDER_FACE')
     if subset == 'val':
         wider_face = sio.loadmat(
             os.path.join(WIDER_ROOT, 'wider_face_split',
@@ -191,7 +194,7 @@ def get_data():
     del wider_face
 
     imgs_path = os.path.join(
-        cfg.FACE.WIDER_DIR, 'WIDER_{}'.format(subset), 'images')
+        WIDER_ROOT, 'WIDER_{}'.format(subset), 'images')
     save_path = './{}'.format(args.save_folder)
 
     return event_list, file_list, imgs_path, save_path

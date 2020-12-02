@@ -10,6 +10,10 @@ import sys; sys.path.append('../')
 from utils.augmentations import preprocess, preprocess_qvga
 from data.choose_config import cfg
 cfg = cfg.cfg
+import os
+
+HOME = os.environ['DATA_HOME']
+SCUT_ROOT = os.path.join(HOME, 'SCUT_HEAD_Part_B')
 
 
 class WIDERDetection(data.Dataset):
@@ -43,7 +47,7 @@ class WIDERDetection(data.Dataset):
                 label.append(c)
             if len(box) > 0:
                 if is_scut==True:
-                    self.fnames.append(cfg.FACE.SCUT_DIR + '/' + line[0])
+                    self.fnames.append(SCUT_ROOT + '/' + line[0])
                 else:
                     self.fnames.append(line[0])
                 self.boxes.append(box)

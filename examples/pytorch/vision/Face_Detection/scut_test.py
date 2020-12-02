@@ -27,6 +27,9 @@ from importlib import import_module
 import warnings
 warnings.filterwarnings("ignore")
 
+HOME = os.environ['DATA_HOME']
+SCUT_ROOT = os.path.join(HOME, 'SCUT_HEAD_Part_B')
+
 parser = argparse.ArgumentParser(description='s3fd evaluatuon wider')
 parser.add_argument('--model', type=str,
                     default='./weights/rpool_face_m4.pth', help='trained model')
@@ -201,7 +204,7 @@ if __name__ == '__main__':
 
     for line in lines:
         line = line.strip().split()
-        im_name = cfg.FACE.SCUT_DIR + '/' + line[0]
+        im_name = SCUT_ROOT + '/' + line[0]
 
         img = Image.open(im_name)
         img = img.convert('RGB')

@@ -18,20 +18,20 @@ cd ..
 
 ```
 
-2. In `data/config_qvga.py` , set _C.HOME to the parent directory of the above folder, and set the _C.FACE.WIDER_DIR to the folder path. 
-That is, if the WIDER_FACE folder is created in /mnt folder, then _C.HOME='/mnt'
-_C.FACE.WIDER_DIR='/mnt/WIDER_FACE'.
+2. Set environment variable DATA_HOME to the parent directory of the above folder
+That is, if the WIDER_FACE folder is created in /mnt folder
+
+``` export DATA_HOME='/mnt' ```
+
+Note that for Windows '/' should be replaced by '\'.
+
 
 3. Run
 ``` IS_QVGA_MONO=1 python prepare_wider_data.py ```
 
 ## Dataset - SCUT Head B
-1. Download SCUT Head Part B dataset images and annotations from https://github.com/HCIILAB/SCUT-HEAD-Dataset-Release. Unzipping will create a folder by the name 'SCUT_HEAD_Part_B'.
+Download SCUT Head Part B dataset images and annotations from https://github.com/HCIILAB/SCUT-HEAD-Dataset-Release. Unzipping will create a folder by the name 'SCUT_HEAD_Part_B'. Place this folder in the same parent directory as the WIDER_FACE folder.
 
-2. In `data/config_qvga.py` set the _C.FACE.SCUT_DIR to the folder path. 
-That is, if the SCUT_HEAD_Part_B folder is created in /mnt folder, then _C.FACE.SCUT_DIR='/mnt/SCUT_HEAD_Part_B'.
-
-Note that for Windows '/' should be replaced by '\' for each path in the config files.
 
 # Usage
 

@@ -19,13 +19,14 @@ cd ..
 
 ```
 
-2. In `data/config.py` , set _C.HOME to the parent directory of the above folder, and set the _C.FACE.WIDER_DIR to the folder path. 
-That is, if the WIDER_FACE folder is created in /mnt folder, then _C.HOME='/mnt'
-_C.FACE.WIDER_DIR='/mnt/WIDER_FACE'.
-Similarly, change `data/config_qvga.py` to set _C.HOME and _C.FACE.WIDER_DIR.
-For all following commands the environment variable IS_QVGA_MONO has to be set as 0 for using config.py and as 1 for using config_qvga.py as the configuration file.
+2. Set environment variable DATA_HOME to the parent directory of the above folder
+That is, if the WIDER_FACE folder is created in /mnt folder
 
-Note that for Windows '/' should be replaced by '\' for each path in the config files.
+``` export DATA_HOME='/mnt' ```
+
+Note that for Windows '/' should be replaced by '\'.
+For all following commands the environment variable IS_QVGA_MONO has to be set as 0 for using config.py (to use RGB 640x480 images) and as 1 for using config_qvga.py (to use monochrome 320x240 images) as the configuration file.
+
 
 3. Run
 ``` IS_QVGA_MONO=1 python prepare_wider_data.py ```

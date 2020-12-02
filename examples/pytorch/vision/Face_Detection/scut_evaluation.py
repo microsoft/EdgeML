@@ -21,6 +21,8 @@ sys.path.append('../')
 from data.choose_config import cfg
 cfg = cfg.cfg
 
+HOME = os.environ['DATA_HOME']
+SCUT_ROOT = os.path.join(HOME, 'SCUT_HEAD_Part_B')
 
 def read_pred_file(filepath):
 
@@ -161,7 +163,7 @@ def evaluation(pred, iou_thresh=0.5):
     for line in lines:
         line = line.strip().split()
         names.append(os.path.split(line[0])[1][0:-4])
-        th, tw, tc = cv2.imread(cfg.FACE.SCUT_DIR + '/' + line[0]).shape
+        th, tw, tc = cv2.imread(SCUT_ROOT + '/' + line[0]).shape
         num_faces = int(line[1])
         faces = []
         for i in range(num_faces):

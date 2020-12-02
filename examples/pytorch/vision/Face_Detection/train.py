@@ -88,7 +88,6 @@ else:
 if not os.path.exists(args.save_folder):
     os.makedirs(args.save_folder)
 
-
 if args.finetune==True:
     train_dataset = WIDERDetection('./data/face_train_scutB.txt', mode='train', mono_mode=cfg.IS_MONOCHROME, is_scut=True)
     val_dataset = WIDERDetection('./data/face_val_scutB.txt', mode='val', mono_mode=cfg.IS_MONOCHROME, is_scut=True)
@@ -131,7 +130,7 @@ optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=args.momentum,
                       weight_decay=args.weight_decay)
 
 criterion = MultiBoxLoss(cfg, args.dataset, args.cuda)
-print('Loading wider dataset...')
+print('Loading dataset...')
 print('Using the specified args:')
 print(args)
 
