@@ -382,9 +382,9 @@ def writeMatAsArray(mat, name: str, fileName: str, shapeStr=None, bw=None):
 
     with open(fileName, 'a') as file:
         if not config.vbwEnabled or "float" in fileName:
-            file.write('const %s%s %s%s = {\n' % (arduinoStr, dataType, name, shapeStr))
+            file.write('static const %s%s %s%s = {\n' % (arduinoStr, dataType, name, shapeStr))
         else:
-            file.write('const %s%s %s%s%s = {\n' % (arduinoStr, dataType, name, "_temp" if (forX86() and bw is None) else "", shapeStr))
+            file.write('static const %s%s %s%s%s = {\n' % (arduinoStr, dataType, name, "_temp" if (forX86() and bw is None) else "", shapeStr))
 
 
         for row in mat:
@@ -419,9 +419,9 @@ def writeListAsArray(list, name: str, fileName: str, shapeStr=None, bw=None):
 
     with open(fileName, 'a') as file:
         if not config.vbwEnabled or "float" in fileName:
-            file.write('const %s%s %s%s = {\n' % (arduinoStr, dataType, name, shapeStr))
+            file.write('static const %s%s %s%s = {\n' % (arduinoStr, dataType, name, shapeStr))
         else:
-            file.write('const %s%s %s%s%s = {\n' % (arduinoStr, dataType, name, "_temp" if (forX86() and bw is None) else "", shapeStr))
+            file.write('static const %s%s %s%s%s = {\n' % (arduinoStr, dataType, name, "_temp" if (forX86() and bw is None) else "", shapeStr))
 
         file.write('\t')
         for cell in list:
@@ -458,12 +458,12 @@ def writeVars(vars: dict, fileName: str):
             # Add the 'f' specifier for each float to supress compiler warnings
             if dataType == "float":
                 formatSpecifier += 'f'
-                file.write(("const %s %s = " + formatSpecifier + ";\n") %
+                file.write(("static const %s %s = " + formatSpecifier + ";\n") %
                            (dataType, key, vars[key]))
             # todo: Why is this required when I am already taking care of
             # writing the datatype?
             else:
-                file.write(("const %s %s = " + formatSpecifier + ";\n") %
+                file.write(("static const %s %s = " + formatSpecifier + ";\n") %
                            ("int", key, vars[key]))
         file.write("\n")
 
