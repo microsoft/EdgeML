@@ -147,9 +147,13 @@ class Quantizer:
                     else:
                         writeListAsArray(idx, param.name + 'idx', self.headerFile)
             else:
-                if forArduino() or forM3():
+                if forArduino():
                     bw = self.varsForBitwidth[param.name] if param.name not in self.promoteParam else 2 * self.varsForBitwidth[param.name]
                     writeMatAsArray(param.data, param.name, self.headerFile, shapeStr=("[%d]" * len(param.shape)) % tuple(param.shape), bw=bw)
+                elif forM3():
+                    bw = self.varsForBitwidth[param.name] if param.name not in self.promoteParam else 2 * self.varsForBitwidth[param.name]
+                    assert len(param.shape) > 0
+                    writeMatAsArray(param.data, param.name, self.headerFile, shapeStr=("[%d" + ("*%d" * (len(param.shape) - 1)) + "]") % tuple(param.shape), bw=bw)
                 else:
                     if hasattr(self, 'varsForBitwidth') and param.name in self.varsForBitwidth:
                         writeMatAsArray(param.data, param.name, self.headerFile, shapeStr=("[%d]" * len(param.shape)) % tuple(param.shape), bw=self.varsForBitwidth[param.name])

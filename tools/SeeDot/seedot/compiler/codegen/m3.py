@@ -233,7 +233,7 @@ class M3(CodegenBase):
                         self.out.printf("&")
                     self.print(arg)
                     if x != 0 and x != -1:
-                        self.out.printf("[0]" * x)
+                        self.out.printf("[0]")
                 else:
                     self.out.printf("(scratch + %d)"%(self.scratchSubs[self.currentMemMap][arg.idf]))
                 if i != len(keys) - 1:
