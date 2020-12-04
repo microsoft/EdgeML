@@ -417,6 +417,11 @@ def writeListAsArray(list, name: str, fileName: str, shapeStr=None, bw=None):
     if config.vbwEnabled and dataType == "MYINT" and bw is not None:
         dataType = "int%d_t" % bw
 
+    # Hacky fix for ITER_T datatype for Widx and Uidx
+    # TODO: Incorporate this in a more lucid way
+    if forM3() and name[-3:] == 'idx':
+        dataType = "uint32_t"
+
     with open(fileName, 'a') as file:
         if not config.vbwEnabled or "float" in fileName:
             file.write('static const %s%s %s%s = {\n' % (arduinoStr, dataType, name, shapeStr))
