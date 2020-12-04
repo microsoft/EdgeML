@@ -171,7 +171,7 @@ class S3FD(nn.Module):
 
        
         if self.phase == 'test':
-            output = detect_function(
+            output = detect_function(cfg,
                 loc.view(loc.size(0), -1, 4),                   # loc preds
                 self.softmax(conf.view(conf.size(0), -1,
                                        self.num_classes)),                # conf preds
