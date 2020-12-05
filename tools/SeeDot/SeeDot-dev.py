@@ -84,9 +84,6 @@ class MainDriver:
         parser.add_argument("-o", "--outdir", metavar='',
                             help="Directory to output the generated Arduino sketch")
 
-        parser.add_argument("--driver", choices=["compiler", "converter", "predictor"],
-                            metavar='', help="Invoke specific components of the tool instead of the entire workflow")
-
         self.args = parser.parse_args()
 
         if not isinstance(self.args.algo, list):
@@ -144,15 +141,7 @@ class MainDriver:
             self.checkMSBuildPath()
 
         self.setGlobalFlags()
-
-        if self.args.driver is None:
-            self.runMainDriver()
-        elif self.args.driver == "compiler":
-            self.runCompilerDriver()
-        elif self.args.driver == "converter":
-            self.runConverterDriver()
-        elif self.args.driver == "predictor":
-            self.runPredictorDriver()
+        self.runMainDriver()
 
     def runMainDriver(self):
 
@@ -261,113 +250,6 @@ class MainDriver:
                 print("FAIL: Expected best scale %d" % (bestScale))
             else:
                 print("PASS")
-
-    def runCompilerDriver(self):
-        for iter in product(self.args.algo, self.args.version, self.args.target):
-            algo, version, target = iter
-
-            print("\nGenerating code for " + algo + " " + target + "...")
-
-            inputFile = os.path.join("input", algo + ".sd")
-            profileLogFile = os.path.join("input", "profile.txt")
-
-            outputDir = os.path.join("output")
-            os.makedirs(outputDir, exist_ok=True)
-
-            outputFile = os.path.join(outputDir, algo + "-fixed.cpp")
-            obj = main.Main(algo, version, target, inputFile, outputFile,
-                            profileLogFile, self.args.max_scale_factor)
-            obj.run()
-
-    def runConverterDriver(self):
-        for iter in product(self.args.algo, self.args.version, self.args.dataset, self.args.datasetType, self.args.target):
-            algo, version, dataset, datasetType, target = iter
-
-            print("\nGenerating input files for \"" + algo + " " + version +
-                  " " + dataset + " " + datasetType + " " + target + "\"...")
-
-            outputDir = os.path.join(
-                "Converter", "output", algo + "-" + version + "-" + datasetType, dataset)
-            os.makedirs(outputDir, exist_ok=True)
-
-            datasetDir = os.path.join("..", "datasets", "datasets", dataset)
-            modelDir = os.path.join("..", "model", dataset)
-
-            if algo == config.Algo.bonsai:
-                modelDir = os.path.join(modelDir, "BonsaiResults", "Params")
-            elif algo == config.Algo.lenet:
-                modelDir = os.path.join(modelDir, "LenetModel")
-            else:
-                modelDir = os.path.join(modelDir, "ProtoNNResults")
-
-            inputFile = os.path.join(modelDir, "input.sd")
-
-            trainingInput = os.path.join(datasetDir, "training-full.tsv")
-            testingInput = os.path.join(datasetDir, "testing.tsv")
-
-            obj = converter.Converter(algo, version, datasetType, target,
-                                      outputDir, outputDir)
-            obj.setInput(inputFile, modelDir, trainingInput, testingInput)
-            obj.run()
-
-    def runPredictorDriver(self):
-        for iter in product(self.args.algo, self.args.version, self.args.dataset, self.args.datasetType):
-            algo, version, dataset, datasetType = iter
-
-            print("\nGenerating input files for \"" + algo + " " +
-                  version + " " + dataset + " " + datasetType + "\"...")
-
-            if version == config.Version.fixed:
-                outputDir = os.path.join(
-                    "..", "Predictor", "seedot_fixed", "testing")
-                datasetOutputDir = os.path.join(
-                    "..", "Predictor", "seedot_fixed", datasetType)
-            elif version == config.Version.floatt:
-                outputDir = os.path.join(
-                    "..", "Predictor", algo + "_float", "testing")
-                datasetOutputDir = os.path.join(
-                    "..", "Predictor", algo + "_float", datasetType)
-
-            os.makedirs(datasetOutputDir, exist_ok=True)
-            os.makedirs(outputDir, exist_ok=True)
-
-            datasetDir = os.path.join("..", "datasets", "datasets", dataset)
-            modelDir = os.path.join("..", "model", dataset)
-
-            if algo == config.Algo.bonsai:
-                modelDir = os.path.join(modelDir, "BonsaiResults", "Params")
-            elif algo == config.Algo.lenet:
-                modelDir = os.path.join(modelDir, "LenetModel")
-            else:
-                modelDir = os.path.join(modelDir, "ProtoNNResults")
-
-            inputFile = os.path.join(modelDir, "input.sd")
-
-            trainingInput = os.path.join(datasetDir, "training-full.tsv")
-            testingInput = os.path.join(datasetDir, "testing.tsv")
-
-            obj = converter.Converter(algo, version, datasetType, config.Target.x86,
-                                      datasetOutputDir, outputDir)
-            obj.setInput(inputFile, modelDir, trainingInput, testingInput)
-            obj.run()
-
-            print("Building and executing " + algo + " " +
-                  version + " " + dataset + " " + datasetType + "...")
-
-            outputDir = os.path.join(
-                "..", "Predictor", "output", algo + "-" + version)
-
-            curDir = os.getcwd()
-            os.chdir(os.path.join("..", "Predictor"))
-
-            obj = predictor.Predictor(
-                algo, version, datasetType, outputDir, self.args.max_scale_factor)
-            acc = obj.run()
-
-            os.chdir(curDir)
-
-            if acc != None:
-                print("Accuracy is %.3f" % (acc))
 
     def loadResultsFile(self):
         results = {}

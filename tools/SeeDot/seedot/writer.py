@@ -4,7 +4,7 @@
 
 class Writer:
 
-    def __init__(self, fileName,  mode = 'w'):
+    def __init__(self, fileName, mode = 'w'):
         self.file = open(fileName, mode)
         self.indentLevel = 0
 
