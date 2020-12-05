@@ -27,7 +27,7 @@ SeeDot can be invoked using **`SeeDot-dev.py`** file. The arguments for the scri
 
 ```
 usage: SeeDot-dev.py [-h] [-a] [-v] [-d] [-m] [-n] [-dt] [-t] [-s] [-sf]
-                     [--load-sf] [--convert] [--tempdir] [-o] [--driver]
+                     [--load-sf] [--convert] [--tempdir] [-o]
 
 optional arguments:
   -h, --help            Show this help message and exit
