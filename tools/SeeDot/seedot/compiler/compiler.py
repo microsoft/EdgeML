@@ -150,6 +150,8 @@ class Compiler:
         state[12] = self.adjustLiveRanges(state[12], compiler.allDepths)
 
         for i in compiler.globalVars:
+            if util.forM3() and i == 'X':
+                continue
             state[13].append(i)
 
         # In floating point code used for profiling, the set of variables which are profiled using training data are collected
