@@ -20,21 +20,21 @@ class M3(CodegenBase):
     def __init__(self, outputDir, decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables):
         super().__init__(decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables)
         self.outputDir = outputDir
-        cppFile = os.path.join(self.outputDir, "predict.c")
-        self.out = Writer(cppFile)
+        cFile = os.path.join(self.outputDir, "predict.c")
+        self.out = Writer(cFile)
 
     def printPrefix(self):
-
         self.printCincludes()
-
         self.printCHeader()
 
-        self.computeScratchLocationsFirstFitPriority() #computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
+        scratchSize = self.computeScratchLocationsFirstFitPriority() #computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
+        hFile = os.path.join(self.outputDir, "predict.h")
+        hFileOut = Writer(hFile, 'a')
+        hFileOut.printf('\n#define MEM_BUF_SIZE %d\n' % scratchSize, indent=True)
+        hFileOut.close()
 
         self.printVarDecls(globalVarDecl=False)
-
         self.printConstDecls()
-
         self.out.printf('\n')
 
     def printCincludes(self):
@@ -44,19 +44,17 @@ class M3(CodegenBase):
         self.out.printf('#include "quantized_utils.h"\n', indent=True)
         self.out.printf('#include "quantized_mbconv.h"\n', indent=True)
         self.out.printf('#include "model.h"\n', indent=True)
-    
 
     def printCHeader(self):
+        type = "char"
         if forFloat():
             func = "Float"
-            type = "float"
         else:
             func = "Fixed"
-            type = "Q15_T"
         if forFloat():
-            self.out.printf('void seedot%s(%s **X, float* res) {\n' % (func, type), indent=True)
+            self.out.printf('void seedot%s(%s* scratch) {\n' % (func, type), indent=True)
         else: 
-            self.out.printf('void seedot%s%s(%s **X, Q31_T* res) {\n' % (func, "", type), indent=True)
+            self.out.printf('void seedot%s(%s* scratch) {\n' % (func, type), indent=True)
         self.out.increaseIndent()
 
     def printVarDecls(self, globalVarDecl=True):
@@ -102,39 +100,9 @@ class M3(CodegenBase):
 
         self.out.printf('\n')
 
-
     def printSuffix(self, expr: IR.Expr):
-        self.out.printf('\n')
-
-        type = self.decls[expr.idf]
-
-        if Type.isInt(type) or (Type.isTensor(type) and type.dim == 0):
-            self.out.printf('res[0] = ', indent = True)
-            self.print(expr)
-            self.out.printf(';\n')
-        elif Type.isTensor(type):
-            idfr = expr.idf
-            iters = []
-            resIndex = ''
-            remSize = np.prod(type.shape)
-            for i in range(type.dim):
-                s = chr(ord('i') + i)
-                remSize = remSize // type.shape[i]
-                resIndex += str(s) + '*' + str(remSize) + '+'
-                tempVar = IR.Var(s)
-                iters.append(tempVar)
-            resIndex = resIndex[:-1]
-            expr_1 = IRUtil.addIndex(expr, iters)
-            cmds = IRUtil.loop(type.shape, iters, [
-                IR.Assn(IRUtil.addIndex(IR.Var('res'), [IR.Var(resIndex)]), IRUtil.addIndex(expr, iters))
-            ])
-            self.print(IR.Prog(cmds))
-        else:
-            assert False, "Illegal type of program output"
-
         self.out.decreaseIndent()
         self.out.printf('}\n', indent=True)
-
         self.out.close()
 
     def printForHeader(self, ir):
@@ -204,7 +172,6 @@ class M3(CodegenBase):
             self.out.printf(", &")
             self.print(startIndexed)
         self.out.printf(', sizeof(%s) * %d);\n' % (typ_str, ir.length))
-
 
     def printFuncCall(self, ir):
         if forFloat():

@@ -606,8 +606,10 @@ class CodegenBase:
                 c.append("#" + ''.join([str(int(i)) for i in 10*np.random.rand(6)]))
                 visualisation.append((startIns, var, endIns, usedSpaceMap[var][1][0], usedSpaceMap[var][1][1]))
             plot.rect(x=x, y=y, width=w, height=h, color=c, width_units="data", height_units="data")
-            self.out.printf("char scratch[%d];\n"%(totalScratchSize+1), indent=True)
+            if not forM3():
+                self.out.printf("char scratch[%d];\n"%(totalScratchSize+1), indent=True)
             self.out.printf("/* %s */"%(str(self.scratchSubs)))
+            return totalScratchSize + 1
 
     # This method uses a greedy first fit heuristic which works well on RNNPool benchmarks
     # It does not compute the optimum assignment (10-20% more memory ), however works very fast
@@ -694,8 +696,10 @@ class CodegenBase:
                 c.append("#" + ''.join([str(int(i)) for i in 10*np.random.rand(6)]))
                 visualisation.append((startIns, var, endIns, usedSpaceMap[var][1][0], usedSpaceMap[var][1][1]))
             plot.rect(x=x, y=y, width=w, height=h, color=c, width_units="data", height_units="data")
-            self.out.printf("char scratch[%d];\n"%(totalScratchSize+1), indent=True)
+            if not forM3():
+                self.out.printf("char scratch[%d];\n"%(totalScratchSize+1), indent=True)
             self.out.printf("/* %s */"%(str(self.scratchSubs)))
+            return totalScratchSize + 1
 
     # A variation of the computeScratchLocationsFirstFit where it prioritises allocation of
     # larger variables in lower memory addresses, though it also does not compute optimum assignment (10-20% more memory)
@@ -816,8 +820,10 @@ class CodegenBase:
             plot.rect(x=x, y=y, width=w, height=h, color=c, width_units="data", height_units="data")
             if not forX86():
                 show(plot)
-            self.out.printf("char scratch[%d];\n"%(totalScratchSize+1), indent=True)
+            if not forM3():
+                self.out.printf("char scratch[%d];\n"%(totalScratchSize+1), indent=True)
             self.out.printf("/* %s */"%(str(self.scratchSubs)))
+            return totalScratchSize + 1
 
     # This method uses the DLX library to attempt to compute an optimum memory assignment
     # The underlying DLX library performs an exponential search, and can take a long time
@@ -897,8 +903,10 @@ class CodegenBase:
                     if not self.checkDlxSuccess(dlxErrorDumpDirectory):
                         assert False, "Unable to allovate variables within %d bytes. ABORT" % maxAllowedMemUsage
             totalScratchSize = self.readDlxAllocation(dlxOutputDumpDirectory, alignment, varOrderAndSize)
-            self.out.printf("char scratch[%d];\n"%(totalScratchSize), indent=True)
+            if not forM3():
+                self.out.printf("char scratch[%d];\n"%(totalScratchSize), indent=True)
             self.out.printf("/* %s */"%(str(self.scratchSubs)))
+            return totalScratchSize + 1
             
     def preProcessRawMemData(self):
         varToLiveRange = []
