@@ -107,7 +107,7 @@ class IRBuilder(ASTVisitor):
         #                     eg. C = A + B -> C and A can occupy the same memory location
         self.varDeclarations = {}
         self.varDeclarationsLocal = {}
-        self.notScratch = ['X']
+        self.notScratch = ['X'] if not forM3() else []
         self.varLiveIntervals = {}
         self.varScales = {}
         self.varIntervals = {}
@@ -457,7 +457,8 @@ class IRBuilder(ASTVisitor):
         for i in range(len(node.order)):
             if node.order[i] != i+1:
                 canOptimize = False
-        canOptimize = canOptimize and expr_in.idf not in self.globalVars
+        if not (forM3() and expr_in.idf == 'X'):
+            canOptimize = canOptimize and expr_in.idf not in self.globalVars
 
         if canOptimize:
             prog_memcpy = IR.Memcpy(expr_out, expr_in, type_out.size(), [IR.Int(0) for i in range(type_out.dim)], [IR.Int(0) for i in range(type_in.dim)])
