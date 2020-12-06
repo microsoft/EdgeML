@@ -31,7 +31,7 @@ int compare_doubles(const void* a, const void* b) {
 // Function for computing the deviation from the expected doubleing point
 // result and returning the largest such deviation found.
 
-double compute_error(const Q31_T* const pred, const double* const label,
+double compute_error(Q15_T* pred, const double* const label,
                     double* const errors, SCALE_T scl) {
   double agg_diff = 0.0;
 
@@ -52,10 +52,9 @@ double aggregate_error(double* errors, unsigned len) {
   return errors[index];
 }
 
-void parse_csv_q15p(char* line, Q15_T** array, int size, int scale) {
+void parse_csv_q15p(char* line, char* array, int size, int scale) {
   char* linepointer = line;
   for (int i = 0; i < size; i++) {
-
     char* tok = strtok(linepointer, ",");
     if (linepointer != NULL) {
       linepointer = NULL;
@@ -66,7 +65,7 @@ void parse_csv_q15p(char* line, Q15_T** array, int size, int scale) {
     }
 
     float num = atof(tok);
-    array[i][0] = (Q15_T)(ldexp(num, -scale));
+    array[i] = (Q7_T)(ldexp(num, -scale));
   }
   return;
 }
@@ -117,18 +116,12 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-
   char* xLine = malloc(FPSIZE * INPUT_SIZE);
   char* yLine = malloc(FPSIZE * OUTPUT_SIZE);
 
-
-  Q15_T** x = malloc(sizeof(Q15_T*) * INPUT_SIZE);
-  for (int i = 0; i < INPUT_SIZE; i++) {
-    x[i] = malloc(sizeof(Q15_T));
-  }
+  char* scratch = malloc(MEM_BUF_SIZE * sizeof(char));
 
   double* y = malloc(sizeof(double) * OUTPUT_SIZE);
-  Q31_T* pred = malloc(sizeof(Q31_T) * OUTPUT_SIZE);
   double* allErrors = malloc(sizeof(double) * OUTPUT_SIZE);
 
   int i = 0;
@@ -136,18 +129,16 @@ int main(int argc, char** argv) {
 
   while (fgets(xLine, FPSIZE * INPUT_SIZE, xFile)) {
     if (fgets(yLine, FPSIZE * OUTPUT_SIZE, yFile)) {
-      parse_csv_q15p(xLine, x, INPUT_SIZE, scaleForX);
+      parse_csv_q15p(xLine, scratch, INPUT_SIZE, scaleForX);
       parse_csv_d(yLine, y, OUTPUT_SIZE);
     } else {
       printf("Illegal State. Check input and output files.");
       return -1;
     }
 
-    seedotFixed(x, pred);
+    seedotFixed(scratch);
 
-
-    compute_error(pred, y, allErrors, scaleForY);
-
+    compute_error(scratch, y, allErrors, scaleForY);
     aggregate += aggregate_error(allErrors, OUTPUT_SIZE);
     i++;
   }
@@ -156,11 +147,7 @@ int main(int argc, char** argv) {
 
   free(xLine);
   free(yLine);
-  
-  for (int i = 0; i < INPUT_SIZE; i++) {
-    free(x[i]);
-  }
-  free(x);
+  free(scratch);
   free(y);
 
   return 0;
