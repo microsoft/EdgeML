@@ -39,13 +39,13 @@ class ASTBuilder(SeeDotVisitor):
         Sizes = [int(size.getText()) for size in ctx.IntConst()]
         return AST.Splice(var, startIndices, Sizes)
 
-    # when splice is on the LHS 
+    # When splice is on the LHS
     def visitLeftSplice(self, ctx: SeeDotParser.LeftSpliceContext):
         exprs = [self.visit(expr) for expr in ctx.expr()]
         var = ctx.Id().getText()
         startIndices = exprs
         Sizes = [int(size.getText()) for size in ctx.IntConst()]
-        return AST.LeftSplice(var, startIndices, Sizes)    
+        return AST.LeftSplice(var, startIndices, Sizes)
 
     def visitInit(self, ctx: SeeDotParser.InitContext):
         shape = [int(IntConst.getText())
@@ -75,7 +75,7 @@ class ASTBuilder(SeeDotVisitor):
     def visitReverse(self, ctx: SeeDotParser.MaxpoolContext):
         expr = self.visit(ctx.expr())
         axis = int(ctx.IntConst().getText())
-        return AST.Reverse(expr, axis)    
+        return AST.Reverse(expr, axis)
 
     def visitIndex(self, ctx: SeeDotParser.IndexContext):
         expr = self.visit(ctx.expr(0))
@@ -162,12 +162,10 @@ class ASTBuilder(SeeDotVisitor):
         name = ctx.lhs().Id().getText()
         decl = self.visit(ctx.expr(0))
         expr = self.visit(ctx.expr(1))
-
         # In case it is left splicing we need to visit the left splicing node
         if isinstance(ctx.lhs(), SeeDotParser.LeftSpliceContext):
             leftSplice = self.visit(ctx.lhs())
             return AST.Let(name, decl, expr, leftSplice)
-
         return AST.Let(name, decl, expr)
 
     def visitParen(self, ctx: SeeDotParser.ParenContext):
