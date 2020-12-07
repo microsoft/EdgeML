@@ -4,7 +4,7 @@
 include ../config.mk
 
 INCLUDE_DIR=../include
-IFLAGS = -I $(INCLUDE_DIR)
+IFLAGS=-I $(INCLUDE_DIR)
 
 all: quantized_face_detection.o quantized_face_detection_fast.o quantized_face_detection_sparse.o
 
