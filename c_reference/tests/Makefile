@@ -6,7 +6,7 @@ include ../config.mk
 INCLUDE_DIR=../include
 MODEL_DIR=../models
 SRC_DIR=../src
-IFLAGS = -I $(INCLUDE_DIR) -I $(MODEL_DIR)
+IFLAGS=-I $(INCLUDE_DIR) -I $(MODEL_DIR)
 
 all: test_fastgrnn_lr test_rnnpool test_quantized_utils test_quantized_fastgrnn test_quantized_rnnpool test_quantized_mbconv test_quantized_face_detection test_quantized_face_detection_fast test_quantized_face_detection_sparse
 

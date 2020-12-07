@@ -6,6 +6,7 @@ from seedot.compiler.ast.astVisitor import ASTVisitor
 
 
 class MtdAST(ASTVisitor):
+
     def visitInt(self, node: AST.Int, mtd: dict):
         node.metadata.update(mtd)
 
@@ -32,7 +33,7 @@ class MtdAST(ASTVisitor):
 
     def visitReverse(self, node: AST.Reverse, mtd: dict):
         node.metadata.update(mtd)
-        self.visit(node.expr, mtd)    
+        self.visit(node.expr, mtd)
 
     def visitIndex(self, node: AST.Index, mtd: dict):
         node.metadata.update(mtd)

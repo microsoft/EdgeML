@@ -31,7 +31,7 @@ class PrintAST(ASTVisitor):
         print(indent * node.printLevel, "splice")
 
     def visitSplice(self, node:AST.LeftSplice):
-        print(indent * node.printLevel, "leftSplice")    
+        print(indent * node.printLevel, "leftSplice")
 
     def visitInit(self, node: AST.Init):
         print(indent * node.printLevel, "init", node.shape, "with", node.value)
@@ -57,7 +57,7 @@ class PrintAST(ASTVisitor):
         node.expr.printLevel = node.printLevel + 1
         print(indent * node.printLevel, "reverse")
         self.visit(node.expr)
-        print(indent * node.printLevel, node.axis)    
+        print(indent * node.printLevel, node.axis)
 
     def visitIndex(self, node: AST.Index):
         node.expr.printLevel = node.index.printLevel = node.printLevel + 1
@@ -99,7 +99,7 @@ class PrintAST(ASTVisitor):
         print(", FWB1:")
         self.visit(node.exprF1)
         self.visit(node.exprW1)
-        self.visit(node.exprB1)        
+        self.visit(node.exprB1)
         print(", FWB2:")
         self.visit(node.exprF2)
         self.visit(node.exprW2)
