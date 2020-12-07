@@ -67,6 +67,7 @@ class Splice(ASTNode):
         self.vars = vars
         self.sizes = sizes
 
+
 class LeftSplice(ASTNode):
 
     def __init__(self, expr, vars, sizes):
@@ -74,6 +75,7 @@ class LeftSplice(ASTNode):
         self.expr = expr
         self.vars = vars
         self.sizes = sizes
+
 
 class Reshape(ASTNode):
 
@@ -151,7 +153,7 @@ class MBConv(ASTNode):
         self.exprB3 = exprB3
         self.stride = stride
         self.padding = padding
-        
+
 
 class Convolution(ASTNode):
 
@@ -212,6 +214,7 @@ class Let(ASTNode):
         self.decl = decl
         self.expr = expr
         self.leftSplice = leftSplice
+
 
 class Reverse(ASTNode):
 
