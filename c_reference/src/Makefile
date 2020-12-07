@@ -4,7 +4,7 @@
 include ../config.mk
 
 INCLUDE_DIR=../include
-IFLAGS = -I $(INCLUDE_DIR)
+IFLAGS=-I $(INCLUDE_DIR)
 
 all: utils.o fastgrnn.o classifier.o rnnpool.o quantized_utils.o quantized_fastgrnn.o quantized_rnnpool.o quantized_mbconv.o
 

@@ -108,13 +108,13 @@ int32_t getIntFeature(MYITE i) {
 
 #ifdef PREDICTIONTIME
   #ifdef XFLOAT
-	double f = ((float) pgm_read_float_near(&X[i]));
+    double f = ((float) pgm_read_float_near(&X[i]));
   #endif
   #ifdef XINT8
-  return ((int8_t) pgm_read_byte_near(&Xint[i]));
+    return ((int8_t) pgm_read_byte_near(&Xint[i]));
   #endif
   #ifdef XINT16
-  return ((int16_t) pgm_read_word_near(&Xint[i]));
+    return ((int16_t) pgm_read_word_near(&Xint[i]));
   #endif
 #endif
 

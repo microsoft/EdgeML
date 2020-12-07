@@ -1,12 +1,12 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-LDFLAGS= -lm -ldl
+LDFLAGS=-lm -ldl
 CC=gcc
-CFLAGS= -g -fPIC -O3 -w
+CFLAGS=-g -fPIC -O3 -w
 
 INCLUDE_DIR=./
-IFLAGS = -I $(INCLUDE_DIR)
+IFLAGS=-I $(INCLUDE_DIR)
 
 all: predictor
 
