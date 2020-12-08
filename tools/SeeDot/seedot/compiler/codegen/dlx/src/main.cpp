@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
   int numElements;
   int numToBeCovered;
   int numSubsets;
-  
+
   cin >> numElements;
   cin >> numToBeCovered;
   cin >> numSubsets;
@@ -46,6 +46,6 @@ int main(int argc, char** argv) {
   }
 
   delete solver;
-  
+
   return 0;
 }
