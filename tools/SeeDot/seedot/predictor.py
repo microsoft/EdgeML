@@ -7,8 +7,8 @@ import subprocess
 import seedot.config as config
 import seedot.util as Util
 
-# Program to build and run the predictor project using msbuild (C++ build tool for windows)
-# The accuracy and other statistics are written to the output file specified
+# Program to build and run the predictor project using MSBuild (C++ build tool for windows).
+# The accuracy and other statistics are written to the output file specified.
 
 
 class Predictor:
@@ -29,8 +29,8 @@ class Predictor:
 
         self.genHeaderFile()
 
-    # Depending on the parameters set in config.py, util.py, this method generates a header file datatypes.h 
-    # which controls the execution of the generated code
+    # Depending on the parameters set in config.py, util.py, this method generates a header file datatypes.h
+    # which controls the execution of the generated code.
     def genHeaderFile(self):
         with open("datatypes.h", 'w') as file:
             file.write("#pragma once\n\n")
@@ -73,12 +73,12 @@ class Predictor:
                 file.write("#define SATURATE\n")
             else:
                 file.write("//#define SATURATE\n")
-            
+
             if Util.isfastApprox():
                 file.write("#define FASTAPPROX\n")
             else:
                 file.write("//#define FASTAPPROX\n")
-            
+
             if Util.useMathExp() or (Util.useNewTableExp()):
                 file.write("#define FLOATEXP\n")
             else:
@@ -86,8 +86,8 @@ class Predictor:
 
     def buildForWindows(self):
         '''
-        Builds using the Predictor.vcxproj project file and creates the executable
-        The target platform is currently set to x64
+        Builds using the Predictor.vcxproj project file and creates the executable.
+        The target platform is currently set to x64.
         '''
         print("Build...", end='')
 
@@ -130,7 +130,7 @@ class Predictor:
 
     def executeForWindows(self):
         '''
-        Invokes the executable with arguments
+        Invokes the executable with arguments.
         '''
         print("Execution...", end='')
 
@@ -155,7 +155,7 @@ class Predictor:
         exeFile = os.path.join("./Predictor")
         args = [exeFile, self.version, self.datasetType, self.problemType, str(self.numOutputs)]
 
-        logFile = os.path.join(self.outputDir, "exec.txt") 
+        logFile = os.path.join(self.outputDir, "exec.txt")
         with open(logFile, 'w') as file:
             process = subprocess.call(args, stdout=file, stderr=subprocess.STDOUT)
 
@@ -173,7 +173,7 @@ class Predictor:
         else:
             return self.executeForLinux()
 
-    # Read statistics of execution. Accuracy, Disagreement count, Reduced disagreement count are all read
+    # Read statistics of execution. Accuracy, Disagreement Count and Reduced Disagreement Count are all read.
     def readStatsFile(self):
         statsFile = os.path.join(
             "output", self.version, "stats-" + self.datasetType + ".txt")
@@ -184,10 +184,10 @@ class Predictor:
         stats = [x.strip() for x in content]
 
         executionOutput = {}
-        
+
         for i in range(len(stats) // 4):
-            key = stats[4*i]
-            value = (float(stats[4*i + 1]), float(stats[4*i + 2]), float(stats[4*i + 3]))
+            key = stats[4 * i]
+            value = (float(stats[4 * i + 1]), float(stats[4 * i + 2]), float(stats[4 * i + 3]))
             executionOutput[key] = value
 
         return executionOutput

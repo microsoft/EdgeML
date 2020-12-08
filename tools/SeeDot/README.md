@@ -4,7 +4,7 @@ SeeDot is an automatic quantization tool that generates efficient machine learni
 
 ### **Overview**
 
-ML models are usually expressed in floating-point, and IoT devices typically lack hardware support for floating-point arithmetic. Hence, running such ML models on IoT devices involves simulating floating-point arithmetic in software, which is very inefficient. SeeDot addresses this issue by generating fixed-point code with only integer operations. To enable this, SeeDot takes as input trained floating-point models (like [Bonsai](https://github.com/microsoft/EdgeML/blob/master/docs/publications/Bonsai.pdf) or [ProtoNN](https://github.com/microsoft/EdgeML/blob/master/docs/publications/ProtoNN.pdf) or [FastGRNN](https://github.com/microsoft/EdgeML/blob/master/docs/publications/FastGRNN.pdf)) and generates efficient fixed-point code that can run on microcontrollers. The SeeDot compiler uses novel compilation techniques to automatically infer certain parameters used in the fixed-point code, optimized exponentiation computation, etc. With these techniques, the generated fixed-point code has comparable classification accuracy and performs significantly faster than the floating-point code.
+ML models are usually expressed in floating-point, and IoT devices typically lack hardware support for floating-point arithmetic. Hence, running such ML models on IoT devices involves simulating floating-point arithmetic in software, which is very inefficient. SeeDot addresses this issue by generating fixed-point code with only integer operations. To enable this, SeeDot takes as input trained floating-point models (like [Bonsai](https://github.com/microsoft/EdgeML/blob/master/docs/publications/Bonsai.pdf) or [ProtoNN](https://github.com/microsoft/EdgeML/blob/master/docs/publications/ProtoNN.pdf) or [FastGRNN](https://github.com/microsoft/EdgeML/blob/master/docs/publications/FastGRNN.pdf)) and generates efficient fixed-point code that can run on micro-controllers. The SeeDot compiler uses novel compilation techniques to automatically infer certain parameters used in the fixed-point code, optimized exponentiation computation, etc. With these techniques, the generated fixed-point code has comparable classification accuracy and performs significantly faster than the floating-point code.
 
 To know more about SeeDot, please refer to our publications [here](https://www.microsoft.com/en-us/research/publication/compiling-kb-sized-machine-learning-models-to-constrained-hardware/) and [here](https://www.microsoft.com/en-us/research/publication/shiftry-rnn-inference-in-2kb-of-ram/).
 
@@ -48,7 +48,7 @@ python SeeDot-dev.py -a rnn -v fixed -d usps10 -n 1 -t arduino -m red_disagree
 ```
 
 SeeDot expects the `train` and the `test` data files in a specific format. Each data file should be of the shape `[numberOfDataPoints, numberOfFeatures + n]`, where the ground truth/output is in the first `n` columns. The tool currently supports numpy arrays (.npy) for inputting model parameters.
-The data files must be present in the directory `datasets/<algo>/<dataset>`. 
+The data files must be present in the directory `datasets/<algo>/<dataset>`.
 
 After training, the learned parameters are stored in this directory in a specific format. For FastGRNN, the learned parameters are `W`, `U`, `Bg`, `Bh`, `FC`, `FCBias`, `zeta` and `nu`. These parameters are numpy arrays (.npy). The model files must be present in the directory `model/<algo>/<dataset>`.
 
@@ -76,7 +76,7 @@ This process consists of four steps: 1) installing EdgeML TensorFlow library, 2)
      pip install -e .
      ```
 
-#### **Step 2: Training FastGRNN on usps10** 
+#### **Step 2: Training FastGRNN on usps10**
 
 1. Navigate to the FastGRNN examples directory.
      ```
@@ -125,7 +125,7 @@ Follow the below steps to perform prediction on the device, where the SeeDot-gen
 
 1. The model files are generated within `arduinodump/arduino/16/rnn/usps10`. Copy all the files to `arduinodump/arduino`.
 2. Open the Arduino sketch file located at `arduinodump/arduino/arduino.ino` in the [Arduino IDE](https://www.arduino.cc/en/main/software).
-3. Connect the Arduino microcontroller to the computer and choose the correct board configuration.
+3. Connect the Arduino micro-controller to the computer and choose the correct board configuration.
 4. Upload the sketch to the device.
 5. Open the Serial Monitor and select baud rate specified in the sketch (default is 115200) to monitor the output.
 6. The average prediction time is computed for every iteration. On an Arduino Uno, the average prediction time is around 280000 micro seconds.
