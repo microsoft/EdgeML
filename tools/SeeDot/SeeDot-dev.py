@@ -18,17 +18,17 @@ import seedot.util as util
 
 import seedot.compiler.converter.converter as converter
 
-# This is the file which is invoked to run the compiler (Refer to README.md)
-# 
+# This is the file which is invoked to run the compiler (Refer to README.md).
+#
 # Sanity checks are carried out and the main compiler arguments are taken from the user
-# which is then used to invoke the main compiler code, 'main.py'
-# 
-# Note there are 3 different ways to change compiler arguments: 
+# which is then used to invoke the main compiler code, 'main.py'.
+#
+# Note there are 3 different ways to change compiler arguments:
 #   1) the arguments used by the user to invoke the compiler
 #   2) seedot/config.py
 #   3) seedot/util.py
-# Different parameters are controlled in different files, refer to each one of them to 
-# find out how to change one parameter
+# Different parameters are controlled in different files, refer to each one of them to
+# find out how to change one parameter.
 
 class Dataset:
     common = ["cifar-binary", "cr-binary", "cr-multiclass", "curet-multiclass",
@@ -61,16 +61,16 @@ class MainDriver:
                             default=config.Version.default, metavar='', help="Floating-point or fixed-point")
         parser.add_argument("-d", "--dataset", choices=Dataset.all,
                             default=Dataset.default, metavar='', help="Dataset to use")
-        parser.add_argument("-m", "--maximisingMetric", choices=config.MaximisingMetric.all, metavar='', 
+        parser.add_argument("-m", "--maximisingMetric", choices=config.MaximisingMetric.all, metavar='',
                             help="What metric to maximise during exploration",default=config.MaximisingMetric.default)
-        parser.add_argument("-n", "--numOutputs", type=int, metavar='', 
+        parser.add_argument("-n", "--numOutputs", type=int, metavar='',
                             help="Number of simultaneous outputs of the inference procedure",default=1)
         parser.add_argument("-dt", "--datasetType", choices=config.DatasetType.all,
                             default=config.DatasetType.default, metavar='', help="Training dataset or testing dataset")
         parser.add_argument("-t", "--target", choices=config.Target.all,
                             default=config.Target.default, metavar='', help="X86 code or Arduino sketch")
-        parser.add_argument("-s", "--source", metavar='', choices=config.Source.all, 
-                            default=config.Source.default, help="model source type seedot/onnx/tf")                    
+        parser.add_argument("-s", "--source", metavar='', choices=config.Source.all,
+                            default=config.Source.default, help="model source type seedot/onnx/tf")
         parser.add_argument("-sf", "--max-scale-factor", type=int,
                             metavar='', help="Max scaling factor for code generation")
         parser.add_argument("--load-sf", action="store_true",
@@ -144,7 +144,6 @@ class MainDriver:
         self.runMainDriver()
 
     def runMainDriver(self):
-
         results = self.loadResultsFile()
 
         for iter in product(self.args.algo, self.args.version, self.args.dataset, self.args.target, self.args.maximisingMetric, [16]):
@@ -275,7 +274,7 @@ class MainDriver:
                     scaleFactor = 9999
 
                 results[algo][bitwidth][dataset] = {"accuracy": float(accuracy), "scaleFactor": int(scaleFactor)}
-                
+
         return results
 
 

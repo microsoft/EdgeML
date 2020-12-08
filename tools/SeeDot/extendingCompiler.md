@@ -1,4 +1,4 @@
-# Extending the Compiler
+# Extending The Compiler
 
 SeeDot translates the given input code into a sequence of function calls. The functions are already implemented in a library. What if the model being implemented needs a function which does not already implemented in the library? We show how to add the convolution operator.
 
@@ -6,7 +6,7 @@ SeeDot translates the given input code into a sequence of function calls. The fu
 
 ### STEP 1: Operator description
 
-We present an implementation of convolution which supports padding, strides, dilations, as well as groups (for depthwise separable convolutions) which is similar to what is provided by pytorch [here](https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html?highlight=conv2d#torch.nn.Conv2d)
+We present an implementation of convolution operation which supports padding, strides, dilations, as well as groups (for depthwise-separable convolutions) which is similar to what is provided by pytorch [here](https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html?highlight=conv2d#torch.nn.Conv2d).
 
 Suppose our syntax looks like the following:
 ``` ocaml
@@ -14,11 +14,11 @@ Suppose our syntax looks like the following:
     let B = <some G*FH*FW*C*Cout tensor>
     let C = conv2d(A, B, {s 1 1}, {p 0 0 1 1}, {d 1 1}, {g 2})
 ```
-In this syntax, s represents the 2 stride parameters (vertical, horizontal), p represents the 4 padding parameters (up, down, left, right), d represents the 4 dilation parameters (vertical, horizontal), g represents the number of groups. For details please refer to the pytorch documentation of conv2d given above.
+In this syntax, `s` represents the 2 stride parameters (vertical, horizontal), `p` represents the 4 padding parameters (up, down, left, right), `d` represents the 4 dilation parameters (vertical, horizontal), `g` represents the number of groups. For details please refer to the pytorch documentation of `conv2d` given above.
 
 ### STEP 2: Adding the grammar in the file
 
-1. The grammar is in the file `SeeDot\seedot\compiler\antlr\seedot.g4`. Add the following: (feel free to change symbols if preferred)
+1. The grammar is in the file `SeeDot\seedot\compiler\antlr\seedot.g4`. Add the following (feel free to change symbols if preferred):
 ``` bash
     | Conv2d '(' expr ',' expr ','
     '{s' IntConst IntConst '}' ','
@@ -26,19 +26,21 @@ In this syntax, s represents the 2 stride parameters (vertical, horizontal), p r
     '{d' IntConst IntConst '}' ','
     '{g'IntConst'}' ')' # convolution
 ```
-to the rules for expr. The name after the # (convolution) is the name which would be generated for this operator when we generate the parser. (Watch out for methods named visitConvolution below)
+to the rules for `expr`. The name after the # (convolution) is the name which would be generated for this operator when we generate the parser. (Watch out for methods named `visitConvolution` below).
+
 2. After updating the grammar file, we need to generate a new parser. Navigate to `SeeDot\seedot\lib\` in a terminal and execute the following command:
 ``` bash
     java -jar .\antlr-4.7-complete.jar ..\compiler\antlr\seedot.g4 -visitor -Dlanguage=Python3 -o kl
 ```
-This will generate the new parser and associated files in the folder `SeeDot\seedot\lib\compiler\antlr\`
-3. Within the folder `SeeDot\seedot\lib\compiler\antlr\` there will be 6 files. Delete seedotListener.py (it is not needed) and copy the rest of the files to the directory `SeeDot\seedot\compiler\antlr\` (there already will be 5 files of the same name which you must overwrite). After this SeeDot's parser will be updated.
+This will generate the new parser and associated files in the folder `SeeDot\seedot\lib\compiler\antlr\`.
+
+3. Within the folder `SeeDot\seedot\lib\compiler\antlr\` there will be 6 files. Delete `seedotListener.py` (it is not needed) and copy the rest of the files to the directory `SeeDot\seedot\compiler\antlr\` (there already will be 5 files of the same name which you must overwrite). After this SeeDot's parser will be updated.
 
 ### STEP 3: Adding new nodes in the AST
 
 Since we are adding a new rule for the expr, we will need to add a new node for our convolution operation to the abstract syntax tree (AST).
-1. Go to the file `SeeDot\seedot\compiler\ast\ast.py`
-Here, we will add a node which captures all the relevant information for the convolution node. We have discusse above that the node has an input image, an input filter, properties called stride, padding, dilation, groups. So we add the following class to the end of the file:
+1. Go to the file `SeeDot\seedot\compiler\ast\ast.py`.
+Here, we will add a node which captures all the relevant information for the convolution node. We have discussed above that the node has an input image, an input filter, properties called stride, padding, dilation, groups. So we add the following class to the end of the file:
 ``` python
     class Convolution(ASTNode):
         
@@ -51,7 +53,7 @@ Here, we will add a node which captures all the relevant information for the con
             self.dilation = dilation
             self.groups = groups
 ```
-2. We also need a mechanism to construct an object of the class Convolution. Navigate to `SeeDot\seedot\compiler\ast\astBuilder.py`, and add the following method as a member of the class ASTBuilder:
+2. We also need a mechanism to construct an object of the class `Convolution`. Navigate to `SeeDot\seedot\compiler\ast\astBuilder.py`, and add the following method as a member of the class `ASTBuilder`:
 ``` python
     def visitConvolution(self, ctx: SeeDotParser.ConvolutionContext):
         expr1 = self.visit(ctx.expr(0))
@@ -62,8 +64,9 @@ Here, we will add a node which captures all the relevant information for the con
         groups = int(ctx.IntConst(8).getText())
         return AST.Convolution(expr1, expr2, stride, padding, dilation, groups)
 ```
-We explain the above builder method. Take a look at the addition to the grammar file in **STEP 1**. In a convolution node, the first two sub expressions signify the two inputs. Since they are subexpressions within our convolution expression, we must recurse down both of them one after the other. `ctx.expr(0)` refers to first subexpression, `ctx.expr(1)` refers to the second sub expressions.
-After the first two subexpressions, we have 2 integers (0, 1) for the stride parameter, 4 integers (2, 3, 4, 5) for padding, 2 integers (6, 7) for dilation, and 1 integer (8) for groups. all of these numbers are read by the parser in the same order, and we extract the numbers thus. The `ctx.expr()`, `ctx.IntConst(i).getText()` etc. are pre generated from the parser in **STEP 2**. After extracting all parameters, we simply construct the convolution class and return.
+We explain the above builder method. Take a look at the addition to the grammar file in **STEP 1**. In a convolution node, the first two sub-expressions signify the two inputs. Since they are sub-expressions within our convolution expression, we must recurse down both of them one after the other. `ctx.expr(0)` refers to first sub-expression, `ctx.expr(1)` refers to the second sub-expression.
+After the first two sub-expressions, we have 2 integers (0, 1) for the stride parameter, 4 integers (2, 3, 4, 5) for padding, 2 integers (6, 7) for dilation, and 1 integer (8) for groups. All of these numbers are read by the parser in the same order, and we extract the numbers. Thus the `ctx.expr()`, `ctx.IntConst(i).getText()` etc. are pre-generated from the parser in **STEP 2**. After extracting all parameters, we simply construct the `Convolution` class and return.
+
 3. Navigate to `SeeDot\seedot\compiler\ast\astVisitor.py`. The `ASTVisitor` class is inherited by the type checker, IR generator etc. In the `visit()` method, before the else branch, add the following:
 ``` python
     elif isinstance(node, AST.Convolution):
@@ -76,7 +79,8 @@ After the first two subexpressions, we have 2 integers (0, 1) for the stride par
         self.visit(node.expr1, mtd)
         self.visit(node.expr2, mtd)
 ```
-Include all the subexpressions of the node which is being added, but no need to add int constants (which are not recursively explored)
+Include all the sub-expressions of the node which is being added, but no need to add `int` constants (which are not recursively explored).
+
 5. In `SeeDot\seedot\compiler\ast\printAST.py`, within the `PrintAST` class, add the following method:
 ``` python
     def visitConvolution(self, node: AST.Convolution):
@@ -90,7 +94,7 @@ This is for pretty printing. Feel free to edit if not pretty enough.
 
 ### STEP 4: Type Checking
 
-Navigate to `SeeDot\seedot\compiler\type.py` and add the following code as a member method of Type class:
+Navigate to `SeeDot\seedot\compiler\type.py` and add the following code as a member method of `Type` class:
 ``` python
 def visitConvolution(self, node: ast.Convolution):
     node.expr1.gamma = dict(node.gamma)
@@ -124,8 +128,8 @@ def visitConvolution(self, node: ast.Convolution):
  ```
 This function checks whether the types of the inputs are compatible with the outputs, whether there are illegal values and so on.
 For example, the following are the checks made for convolution:
-1. The input image should be of dimension 4 corresponding to (batch, number of rows, number of columns, channels), and the filter should match the number of channels
-2. Our implementation does not support even filter sizes, so we can make a check here to only allow odd filter sizes or throw an exception
+1. The input image should be of dimension 4 corresponding to (batch, number of rows, number of columns, channels), and the filter should match the number of channels.
+2. Our implementation does not support even filter sizes, so we can make a check here to only allow odd filter sizes or throw an exception.
 3. The values for padding should not be negative, neither should dilations be negative
 The method also computes the type of the output node, given the input (look at the assignment `node.type = Tensor(shape)`, which is returned).
 For other operators, different checks may be there. For example for addition, the dimensions of both inputs should match and the output should also have the same dimension as inputs.
@@ -145,14 +149,14 @@ void Convolution(float *A, const float *B, float *C, float *tmp, MYINT N, MYINT 
     MYITE WOffsetL = WDL*(WF/2) - WPADL;
     MYITE HOffsetR = HDL*(HF/2) - HPADR;
     MYITE WOffsetR = WDL*(WF/2) - WPADR;
-    
+
     for (MYITE n = 0; n < N; n++) {
         for (MYITE h = HOffsetL, hout = 0; h < H - HOffsetR; h += HSTR, hout++) {
             for (MYITE w = WOffsetL, wout = 0; w < W - WOffsetR; w += WSTR, wout++) {
                 for (MYITE g = 0; g < G; g++) {
                     for (MYITE co = 0; co < COUTF; co++) {
                         MYITE counter = 0;
-                        
+
                         for (MYITE hf = -(HF/2); hf <= HF/2; hf++) {
                             for (MYITE wf = -(WF/2); wf <= WF/2; wf++) {
                                 for (MYITE ci = 0; ci < CINF; ci++) {
@@ -166,7 +170,7 @@ void Convolution(float *A, const float *B, float *C, float *tmp, MYINT N, MYINT 
 
                         MYITE totalEle = HF * WF * CINF;
                         MYITE count = HF * WF * CINF, depth = 0;
-                        
+
                         bool shr = true;
                         while (depth < (H1 + H2)) {
                             if (depth >= H1) {
@@ -181,7 +185,7 @@ void Convolution(float *A, const float *B, float *C, float *tmp, MYINT N, MYINT 
                                 } else {
                                     sum = 0;
                                 }
-                                
+
                                 if (shr) {
                                     tmp[p] = sum;
                                 } else {
@@ -201,7 +205,8 @@ void Convolution(float *A, const float *B, float *C, float *tmp, MYINT N, MYINT 
 }
 ```
 In most cases, this implementation itself can act as a reference for adding other operators. The code from `MYITE counter = 0;` to `MYITE totalEle = HF * WF * CINF` is the
-standard convolution operation, and the while loop in the code is tree sum addition (From SeeDot, Gopinath et al., PLDI 2019)
+standard convolution operation, and the while loop in the code is tree-sum addition (From SeeDot, Gopinath et al., PLDI 2019).
+
 3. Navigate to `SeeDot\seedot\Predictor\library_fixed.h` and append the following:
 ``` cpp
 template<class TypeA, class TypeB, class TypeTemp, class TypeC>
@@ -214,18 +219,18 @@ void Convolution(TypeA *A, const TypeB *B, TypeC *C, TypeTemp *tmp, MYINT N, MYI
     MYITE WOffsetL = WDL*(WF/2) - WPADL;
     MYITE HOffsetR = HDL*(HF/2) - HPADR;
     MYITE WOffsetR = WDL*(WF/2) - WPADR;
-    
+
     for (MYITE n = 0; n < N; n++) {
         for (MYITE h = HOffsetL, hout = 0; h < H - HOffsetR; h += HSTR, hout++) {
             for (MYITE w = WOffsetL, wout = 0; w < W - WOffsetR; w += WSTR, wout++) {
                 for (MYITE g = 0; g < G; g++) {
                     for (MYITE co = 0; co < COUTF; co++) {
-                        
+
                         MYITE counter = 0;
                         for (MYITE hf = -(HF/2); hf <= HF/2; hf++) {
                             for (MYITE wf = -(WF/2); wf <= WF/2; wf++) {
                                 for (MYITE ci = 0; ci < CINF; ci++) {
-                                    
+
                                     TypeTemp a = (TypeTemp) (((h + HDL * hf) < 0) || ((h + HDL * hf) >= H) || ((w + WDL * wf) < 0) || ((w + WDL * wf) >= W)) ? 0 : A[n * H * W * CIN + (h + HDL * hf) * W * CIN + (w + WDL * wf) * CIN + (ci + g * CINF)];
                                     TypeTemp b = (TypeTemp) B[g * HF * WF * CINF * COUTF + (hf + HF/2) * WF * CINF * COUTF + (wf + WF/2) * CINF * COUTF + ci * COUTF + co];
                                     tmp[counter] = a * b;
@@ -236,7 +241,7 @@ void Convolution(TypeA *A, const TypeB *B, TypeC *C, TypeTemp *tmp, MYINT N, MYI
 
                         MYITE totalEle = HF * WF * CINF;
                         MYITE count = HF * WF * CINF, depth = 0;
-                        
+
                         bool shr = true;
                         while (depth < (H1 + H2)) {
                             if (depth >= H1) {
@@ -266,7 +271,7 @@ void Convolution(TypeA *A, const TypeB *B, TypeC *C, TypeTemp *tmp, MYINT N, MYI
                             count = (count + 1) >> 1;
                             depth++;
                         }
-                        
+
                         C[n * HOUT * WOUT * (COUTF * G) + hout * WOUT * (COUTF * G) + wout * (COUTF * G) + (co + g * COUTF)] = Saturate<TypeC>(((tmp[0] / shrA) / shrB) / demote);
                     }
                 }
@@ -277,9 +282,9 @@ void Convolution(TypeA *A, const TypeB *B, TypeC *C, TypeTemp *tmp, MYINT N, MYI
 ```
 
 ### STEP 6: Handling the operator in IR
-**Note**: *This part can also be tricky as the user would need to know how to compute bitwidths, scales for the outputs given the inputs’ parameters. It is recommended to study MatAdd, MatMul, Exponentiation, TanH functions for a good understanding*
+**Note**: *This part can also be tricky as the user would need to know how to compute bit-widths, scales for the outputs given the input parameters. It is recommended to study MatAdd, MatMul, Exponentiation, TanH functions for a good understanding*
 
-Navigate to `SeeDot\seedot\compiler\ir\irBuilder.py`, and add the following as a member method of the IRBuilder class: 
+Navigate to `SeeDot\seedot\compiler\ir\irBuilder.py`, and add the following as a member method of the `IRBuilder` class:
 ``` Python
 def visitConvolution(self, node: AST.Convolution):
 
@@ -300,8 +305,7 @@ def visitConvolution(self, node: AST.Convolution):
     type_treeSum = Type.Tensor([Hf * Wf * CinF])
     type_out = node.type
 
- # In the convolution operator, a temporary buffer is created whose type can be inferred from the inputs' types, but will not be encountered in the source code. Hence
-they are declared here
+ # In the convolution operator, a temporary buffer is created whose type can be inferred from the inputs' types, but will not be encountered in the source code. Hence they are declared here
 
     bitwidth_in_A, scale_in_A = self.getBitwidthAndScale(expr_in_A.idf)
     bitwidth_in_B, scale_in_B = self.getBitwidthAndScale(expr_in_B.idf)
@@ -371,14 +375,14 @@ they are declared here
         IR.Int(H1): "H1",
         IR.Int(H2): "H2"
     }
-    
+
     if self.vbwEnabled:
         argMap[IR.Int(demote)] = "demote"
 
     if not self.vbwEnabled:
         funcCall = IR.FuncCall("Convolution", argMap) #, {expr_treeSum.idf: type_treeSum})
     else:
-        funcCall = IR.FuncCall("Convolution" + ("<int%d_t, int%d_t, int%d_t, int%d_t>"%(bitwidth_in_A, bitwidth_in_B, bitwidth_mul, bitwidth_out)), argMap) 
+        funcCall = IR.FuncCall("Convolution" + ("<int%d_t, int%d_t, int%d_t, int%d_t>"%(bitwidth_in_A, bitwidth_in_B, bitwidth_mul, bitwidth_out)), argMap)
  
  # The argMap variable holds the arguments of the function call. Each key corresponds to one argument, the value is not required but is added for reference
  
@@ -395,7 +399,7 @@ they are declared here
         IR.Int(CoutF * G): "L",
         IR.String(expr_out): "VarName"
     })
- 
+
     if forFloat():
         self.independentVars.append(expr_out.idf)
 
@@ -426,4 +430,4 @@ they are declared here
 
 ### STEP 7: Use the operator
 
-After all these steps, one can simply use the operator in the input Shiftry code, and the compiler will handle the rest
+After all these steps, one can simply use the operator in the input Shiftry code, and the compiler will handle the rest.

@@ -14,10 +14,10 @@ import time
 import hashlib
 from onnx import helper
 
-# import smain
 import seedot.main as main
 import seedot.config as config
 import seedot.compiler.ONNX.common as common
+
 
 class TestNode(unittest.TestCase):
 
@@ -36,12 +36,11 @@ class TestNode(unittest.TestCase):
 		prod = 1
 		for val in list: prod*=val
 		return prod
-		
 
 	# First read the ONNX file
 	def get_onnx_output(self, model_path, input, intermediate_node=None):
 		model = onnx.load(model_path)
-		sess = onnxruntime.InferenceSession(model_path) 
+		sess = onnxruntime.InferenceSession(model_path)
 
 		x = input
 		x = x.astype(np.float32)
@@ -53,7 +52,7 @@ class TestNode(unittest.TestCase):
 			intermediate_layer_value_info.name = sys.argv[2]
 			model.graph.output.extend([intermediate_layer_value_info])
 			onnx.save(model, file_path + '_1')
-			sess = onnxruntime.InferenceSession(file_path + '_1') 
+			sess = onnxruntime.InferenceSession(file_path + '_1')
 			pred = sess.run([intermediate_layer_value_info.name], {input_name: x})
 			return pred
 
@@ -69,13 +68,12 @@ class TestNode(unittest.TestCase):
 
 		# need to create random input and output
 		input_dims = common.proto_val_to_dimension_tuple(model.graph.input[0])
-		inp = self._get_rnd_float32(shape=input_dims, get_np_array=True)	
-		op = self.get_onnx_output(model_path, inp)		
+		inp = self._get_rnd_float32(shape=input_dims, get_np_array=True)
+		op = self.get_onnx_output(model_path, inp)
 
 		# print(type(inp), type(op))
 
 		test = np.expand_dims(np.concatenate((np.asarray(op).flatten(), inp.flatten()), axis=0), axis=0)
-
 
 		training_input = 'datasets/' + name + '_train.npy'
 		testing_input = 'datasets/' + name + '_test.npy'
@@ -91,14 +89,14 @@ class TestNode(unittest.TestCase):
 			shutil.rmtree(config.tempdir)
 			os.makedirs(config.tempdir)
 		config.outdir = os.path.join(config.tempdir, "arduino")
-		os.makedirs(config.outdir, exist_ok=True)	
+		os.makedirs(config.outdir, exist_ok=True)
 
 		config.ddsEnabled = False
 		config.vbwEnabled = False
 
-		obj = main.Main(config.Algo.test, config.Version.fixed, config.Target.x86, training_input, testing_input, 
+		obj = main.Main(config.Algo.test, config.Version.fixed, config.Target.x86, training_input, testing_input,
 			'model', None, None, None, self.get_list_prod(output_shape), config.Source.onnx)
-		obj.run()			
+		obj.run()
 
 	def test_relu(self):
 		name = "relu"
@@ -147,9 +145,9 @@ class TestNode(unittest.TestCase):
 		        [state_out],
 		        [shape_param]
 		    )
-		self.check_result(graph, name, output_shape)	
+		self.check_result(graph, name, output_shape)
 
-	# TODO: with group!=1 
+	# TODO: with group!=1
 	def test_conv2d(self):
 		name = "conv2d"
 		input_shape = [1, 3, 10, 10]
@@ -178,7 +176,7 @@ class TestNode(unittest.TestCase):
 		        [state_out],
 		        [shape_param, weight]
 		    )
-		self.check_result(graph, name, output_shape)	
+		self.check_result(graph, name, output_shape)
 
 	# def test_pad(self):
 	# 	name = "pad"
@@ -191,7 +189,6 @@ class TestNode(unittest.TestCase):
 	# 	node_def = helper.make_node("Pad", ['state_in', 'pads', 'const_val'], ['state_out'], mode="constant")
 	# 	graph = helper.make_graph([node_def],name,[state_in, pads, const_val],[state_out],initializer=[pad_init, const_val_init])
 	# 	self.check_result(graph, name)
-
 
 	# def test_relu3d(self):
 	# 	name = "relu3d"
@@ -246,7 +243,6 @@ class TestNode(unittest.TestCase):
 	# 	mean_val = self._get_rnd_float32(shape=weight_shape)
 	# 	mean = helper.make_tensor('mean', TensorProto.FLOAT, mean_shape, mean_val)
 
-
 	# 	var_shape = [24]
 	# 	var_val = self._get_rnd_float32(shape=weight_shape, low=0, high=1)
 	# 	var = helper.make_tensor('var', TensorProto.FLOAT, var_shape, var_val)
@@ -258,9 +254,9 @@ class TestNode(unittest.TestCase):
 	# 	        [state_out],
 	# 	        [weight, bias, mean, var]
 	# 	    )
-	# 	self.check_result(graph, name)	
+	# 	self.check_result(graph, name)
 
-		# def test_conv3d(self):
+	# def test_conv3d(self):
 	# 	name = "conv3d"
 	# 	state_in = helper.make_tensor_value_info('state_in',TensorProto.FLOAT, [1, 2, 64, 256, 256])
 	# 	state_out  = helper.make_tensor_value_info('state_out',
@@ -281,7 +277,7 @@ class TestNode(unittest.TestCase):
 	# 	        [state_out],
 	# 	        [weight]
 	# 	    )
-	# 	self.check_result(graph, name)	
+	# 	self.check_result(graph, name)
 
 	# def test_conv_transpose(self):
 	# 	name = "conv_transpose"
@@ -308,7 +304,7 @@ class TestNode(unittest.TestCase):
 	# 	self.check_result(graph, name)
 
 	# # For this to run onnx_run_tf.py should be used in the compile script
-	# # since onnxruntime does not support convtranspose3d	
+	# # since onnxruntime does not support convtranspose3d
 	# def test_conv_transpose3d(self):
 	# 	name = "conv3dTranspose"
 	# 	state_in = helper.make_tensor_value_info('state_in',
@@ -334,7 +330,7 @@ class TestNode(unittest.TestCase):
 	# 	        [state_out],
 	# 	        [weight, bias]
 	# 	    )
-	# 	self.check_result(graph, name)	
+	# 	self.check_result(graph, name)
 
 if __name__ == '__main__':
 	unittest.main()

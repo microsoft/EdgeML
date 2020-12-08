@@ -4,12 +4,12 @@
 import sys
 import math
 
+
 def generateDLXInput(mem_alloc, alignment, max_memory, print_only, dumpFile=None):
     # Read all the memory variables
     mem_vars = []
     num_instructions = 0
 
-    
     for (size, start, end) in mem_alloc:
         size = math.ceil(float(size) / alignment)
         mem_vars.append((size, start, end))
@@ -23,7 +23,6 @@ def generateDLXInput(mem_alloc, alignment, max_memory, print_only, dumpFile=None
             if start <= i and i <= end:
                 inst_size += var_size
         min_memory_required = max(min_memory_required, inst_size)
-
 
     min_memory_required = max(min_memory_required, math.floor(float(max_memory) / alignment))
 
@@ -53,7 +52,7 @@ def generateDLXInput(mem_alloc, alignment, max_memory, print_only, dumpFile=None
         for loc in range(mem_start, mem_end):
             # tag
             tag = "v%d.l%d" % (var_index, loc)
-            
+
             # include the column for this variable
             subset = [var_index]
 
@@ -66,8 +65,7 @@ def generateDLXInput(mem_alloc, alignment, max_memory, print_only, dumpFile=None
             # add subset
             tags.append(tag)
             subsets.append(subset)
-        
-        
+
     outFile = open(dumpFile, "w")
 
     outFile.write("%d\n"%num_columns)

@@ -21,7 +21,7 @@ using namespace std;
 
 
 class DLX {
-  // Number of elements in the universe and 
+  // Number of elements in the universe and
   // the number of subsets available
   int numElements;
   int numToBeCovered;
@@ -114,7 +114,7 @@ class DLX {
   }
 
 public:
-  
+
   // Constructor
   DLX(int _numElements, int _numToBeCovered, int _numSubsets) {
     numElements = _numElements;
@@ -140,7 +140,7 @@ public:
       colHeader->col = colHeader;
       colHeader->colIndex = i;
       colHeader->subsets = 0;
-      
+
       colHeaders[i] = colHeader;
     }
   }
@@ -175,14 +175,13 @@ public:
    * Solve DLX. Returns true of solved, else false
    */
   bool solve(int level = 0) {
-
     // cerr << level << endl;
     // print();
 
     // if (level == 1) {
     //   return false
     // }
-    
+
     // if no columns to cover, solved
     if (header->right == header) return true;
     // if all columns to be covered are covered, solved
@@ -194,7 +193,6 @@ public:
 
     // for each subset that covers that element
     LOOP_DOWN(chosenSubset, chosenElement) {
-
       // cout << "Choosing subset " << chosenSubset->row->tag << endl;
 
       // add the chosen subset to the solution
@@ -202,7 +200,7 @@ public:
       solution.push_back(chosenSubsetHead);
 
       list <Node*> unlinkedSubsets;
-      
+
       // For each element in the chosen subset
       LOOP_RIGHT(element, chosenSubsetHead) {
         Node* elementHead = element->col;
