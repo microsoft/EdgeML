@@ -8,9 +8,11 @@ import traceback
 import seedot.config as config
 from seedot.util import *
 
-# Primitives used by the Intermediate Representation (IR)
+# Primitives used by the Intermediate Representation (IR).
+
 
 class Op:
+
     Op = Enum('Op', '+ - * / << >> & | ^ ~ ! && || < <= > >= == !=')
     Op.print = lambda self, writer: writer.printf('%s', self.name)
     Op.op_list = lambda op_str: list(map(lambda x: Op.Op[x], op_str.split()))
@@ -27,14 +29,18 @@ class IntExpr(Expr):
 class BoolExpr(Expr):
     pass
 
+
 class String(Expr):
+
 	def __init__(self, s):
 		self.s = s
+
 	def subst(self, from_idf:str, to_e:Expr):
 		if self.s.idf == from_idf:
 			return String(Var(to_e.idf))
 		else:
 			return String(self.s)
+
 
 class Int(IntExpr):
 
@@ -54,6 +60,7 @@ class Int(IntExpr):
 
 
 class Float(IntExpr):
+
     def __init__(self, n: float):
         self.n = n
 
@@ -62,6 +69,7 @@ class Float(IntExpr):
 
 
 class Var(IntExpr):
+
     def __init__(self, idf: str, idx: list = [], inputVar=False, internalVar=False):
         self.idf = idf
         self.idx = idx
@@ -276,7 +284,7 @@ class Memcpy(Cmd):
 
     def subst(self, from_idf: str, to_e: Expr):
         return Memcpy(self.to.subst(from_idf, to_e), self.start.subst(from_idf, to_e), self.length,
-            list(map(lambda var: var.subst(from_idf, to_e), self.toIndex)), 
+            list(map(lambda var: var.subst(from_idf, to_e), self.toIndex)),
             list(map(lambda var: var.subst(from_idf, to_e), self.startIndex)))
 
 
@@ -322,6 +330,7 @@ class Prog:
 
 
 class DataType:
+
     intType = {config.Target.arduino: {8: np.int8, 16: np.int16, 32: np.int32, 64: np.int64},
                config.Target.x86: {8: np.int8, 16: np.int16, 32: np.int32, 64: np.int64},
                config.Target.m3: {8: np.int8, 16: np.int16, 32: np.int32, 64: np.int64}
@@ -335,10 +344,10 @@ class DataType:
     @staticmethod
     def getInt(x: int):
         '''
-        Function returns the numpy int object for x
-        The datattype of x is determined by config.wordLength
-        The function tries to handle overflows, by using a higher bitwidth when needed
-        But reports a warning if the higher bitwidth also overflows
+        Function returns the numpy int object for x.
+        The datatype of x is determined by config.wordLength.
+        The function tries to handle overflows, by using a higher bit-width when needed
+        but reports a warning if the higher bit-width also overflows.
         '''
         target = getTarget()
         wordLen = config.wordLength
