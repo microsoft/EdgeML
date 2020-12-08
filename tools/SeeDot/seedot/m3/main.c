@@ -28,9 +28,8 @@ int compare_doubles(const void* a, const void* b) {
   return (*da > *db) - (*da < *db);
 }
 
-// Function for computing the deviation from the expected doubleing point
+// Function for computing the deviation from the expected floating-point
 // result and returning the largest such deviation found.
-
 double compute_error(Q15_T* pred, const double* const label,
                     double* const errors, SCALE_T scl) {
   double agg_diff = 0.0;
@@ -49,11 +48,13 @@ double compute_error(Q15_T* pred, const double* const label,
 double aggregate_error(double* errors, unsigned len) {
   qsort(errors, len, sizeof(double), compare_doubles);
   unsigned index = (unsigned) round(fmax((0.95 * len - 1), 0));
+
   return errors[index];
 }
 
 void parse_csv_q15p(char* line, char* array, int size, int scale) {
   char* linepointer = line;
+
   for (int i = 0; i < size; i++) {
     char* tok = strtok(linepointer, ",");
     if (linepointer != NULL) {
@@ -67,13 +68,12 @@ void parse_csv_q15p(char* line, char* array, int size, int scale) {
     float num = atof(tok);
     array[i] = (Q7_T)(ldexp(num, -scale));
   }
-  return;
 }
 
 void parse_csv_d(char* line, double* array, int size) {
   char* linepointer = line;
-  for (int i = 0; i < size; i++) {
 
+  for (int i = 0; i < size; i++) {
     char* tok = strtok(linepointer, ",");
     if (linepointer != NULL) {
       linepointer = NULL;
@@ -86,12 +86,12 @@ void parse_csv_d(char* line, double* array, int size) {
     float num = atof(tok);
     array[i] = num;
   }
-  return;
 }
 
 int main(int argc, char** argv) {
   unsigned patches;
   FILE *xFile, *yFile, *outputLog;
+
   if (argc != 4) {
     printf("Improper Number of Arguments Provided!\n");
     return -1;
