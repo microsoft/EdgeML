@@ -70,15 +70,15 @@ There are two modes of testing the trained model -- the evaluation mode to gener
 
 #### Evaluation Mode
 
-Given a set of images in <your_image_folder>, `eval/py` generates bounding boxes around faces (where the confidence is higher than certain threshold) and write the images in <your_save_folder>. To evaluate the `rpool_face_best_state.pth` model (stored in ./weights), execute the following command: 
+Given a set of images in <your_image_folder>, `eval/py` generates bounding boxes around faces (where the confidence is higher than certain threshold) and write the images in <your_save_folder>. Specify if the model was trained in multigpu setting in --multigpu. To evaluate the `rpool_face_best_state.pth` model (stored in ./weights), execute the following command: 
 
 ```shell
-IS_QVGA_MONO=0 python eval.py --model_arch RPool_Face_Quant --model ./weights/RPool_Face_Quant_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
+IS_QVGA_MONO=0 python eval.py --model_arch RPool_Face_Quant --model ./weights/RPool_Face_Quant_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder> --multigpu True
 ```
 
 For QVGA:
 ```shell
-IS_QVGA_MONO=1 python eval.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
+IS_QVGA_MONO=1 python eval.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder> --multigpu True
 ```
 
 This will save images in <your_save_folder> with bounding boxes around faces, where the confidence is high. Here is an example image with a single bounding box.
@@ -92,15 +92,15 @@ If IS_QVGA_MONO=1 the evaluation code accepts an image of any size and resizes a
 #### WIDER Set Test
 In this mode, we test the generated model against the provided WIDER_FACE validation and test dataset. 
 
-For this, first run the following to generate predictions of the model and store output in the '--save_folder' folder. 
+For this, first run the following to generate predictions of the model and store output in the '--save_folder' folder. Specify if the model was trained in multigpu setting in --multigpu.
 
 ```shell
-IS_QVGA_MONO=0 python wider_test.py --model_arch RPool_Face_Quant --model ./weights/RPool_Face_Quant_best_state.pth --save_folder rpool_face_quant_val --subset val
+IS_QVGA_MONO=0 python wider_test.py --model_arch RPool_Face_Quant --model ./weights/RPool_Face_Quant_best_state.pth --save_folder rpool_face_quant_val --subset val --multigpu True
 ```
 
 For QVGA:
 ```shell
-IS_QVGA_MONO=1 python wider_test.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --save_folder rpool_face_qvgamono_val --subset val
+IS_QVGA_MONO=1 python wider_test.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --save_folder rpool_face_qvgamono_val --subset val --multigpu True
 ```
 
 The above command generates predictions for each image in the "validation" dataset. For each image, a separate prediction file is provided (image_name.txt file in appropriate folder). The first line of the prediction file contains the total number of boxes identified. 

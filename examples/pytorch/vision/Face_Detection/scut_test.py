@@ -30,11 +30,17 @@ warnings.filterwarnings("ignore")
 HOME = os.environ['DATA_HOME']
 SCUT_ROOT = os.path.join(HOME, 'SCUT_HEAD_Part_B')
 
+def str2bool(v):
+    return v.lower() in ("yes", "true", "t", "1")
+
 parser = argparse.ArgumentParser(description='s3fd evaluatuon wider')
 parser.add_argument('--model', type=str,
                     default='./weights/rpool_face_m4.pth', help='trained model')
 parser.add_argument('--thresh', default=0.05, type=float,
                     help='Final confidence threshold')
+parser.add_argument('--multigpu',
+                    default=False, type=str2bool,
+                    help='Specify whether model was trained with multigpu')
 parser.add_argument('--model_arch',
                     default='RPool_Face_M4', type=str,
                     choices=['RPool_Face_M4'],
@@ -182,7 +188,8 @@ if __name__ == '__main__':
     module = import_module('models.' + args.model_arch)
     net = module.build_s3fd('test', cfg.NUM_CLASSES)
     
-    net = torch.nn.DataParallel(net)
+    if args.multigpu == True:
+        net = torch.nn.DataParallel(net)
 
     checkpoint_dict = torch.load(args.model)
     model_dict = net.state_dict()

@@ -21,6 +21,8 @@ from utils.augmentations import to_chw_bgr
 
 from importlib import import_module
 
+def str2bool(v):
+    return v.lower() in ("yes", "true", "t", "1")
 
 parser = argparse.ArgumentParser(description='face detection demo')
 parser.add_argument('--save_dir', type=str, default='results/',
@@ -29,6 +31,9 @@ parser.add_argument('--model', type=str,
                     default='weights/rpool_face_c.pth', help='trained model')
 parser.add_argument('--thresh', default=0.17, type=float,
                     help='Final confidence threshold')
+parser.add_argument('--multigpu',
+                    default=False, type=str2bool,
+                    help='Specify whether model was trained with multigpu')
 parser.add_argument('--model_arch',
                     default='RPool_Face_C', type=str,
                     choices=['RPool_Face_C', 'RPool_Face_Quant', 'RPool_Face_QVGA_monochrome', 'RPool_Face_M4'],
@@ -110,7 +115,8 @@ if __name__ == '__main__':
     module = import_module('models.' + args.model_arch)
     net = module.build_s3fd('test', cfg.NUM_CLASSES)
 
-    net = torch.nn.DataParallel(net)
+    if args.multigpu == True:
+        net = torch.nn.DataParallel(net)
 
     checkpoint_dict = torch.load(args.model)
 
