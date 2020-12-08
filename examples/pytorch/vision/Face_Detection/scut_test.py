@@ -47,10 +47,7 @@ parser.add_argument('--model_arch',
                     help='choose architecture among rpool variants')
 parser.add_argument('--save_folder', type=str,
                     default='rpool_face_predictions', help='folder for saving predictions')
-parser.add_argument('--subset', type=str,
-                    default='val',
-                    choices=['val', 'test'],
-                    help='choose which set to run testing on')
+
 
 args = parser.parse_args()
 
