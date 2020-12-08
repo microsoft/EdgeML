@@ -183,8 +183,12 @@ def train():
             iteration += 1
 
             if args.model_arch == 'RPool_Face_M4' and args.finetune == True:
-                net.module.rnn_model.cell_rnn.cell.sparsify()
-                net.module.rnn_model.cell_bidirrnn.cell.sparsify()
+                if args.multigpu == True:
+                    net.module.rnn_model.cell_rnn.cell.sparsify()
+                    net.module.rnn_model.cell_bidirrnn.cell.sparsify()
+                else:
+                    net.rnn_model.cell_rnn.cell.sparsify()
+                    net.rnn_model.cell_bidirrnn.cell.sparsify()
                 net.to('cuda')
 
         val(epoch)
