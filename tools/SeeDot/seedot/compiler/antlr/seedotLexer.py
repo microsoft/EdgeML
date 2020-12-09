@@ -1,9 +1,9 @@
 # Generated from ..\compiler\antlr\seedot.g4 by ANTLR 4.7
+
 from antlr4 import *
 from io import StringIO
 from typing.io import TextIO
 import sys
-
 
 def serializedATN():
     with StringIO() as buf:
@@ -226,30 +226,30 @@ class seedotLexer(Lexer):
     modeNames = [ "DEFAULT_MODE" ]
 
     literalNames = [ "<INVALID>",
-            "'('", "')'", "'['", "','", "']'", "'init'", "'^T'", "':+'", 
-            "'{k'", "'}'", "'{p'", "'{s'", "'{d'", "'{g'", "'='", "':'", 
-            "'>='", "'?'", "'+'", "'-'", "'*'", "'|*|'", "'<*>'", "'<+>'", 
-            "'<->'", "'relu'", "'relu6'", "'exp'", "'argmax'", "'sgn'", 
-            "'tanh'", "'sigmoid'", "'normaliseL2'", "'mbconv'", "'conv2d'", 
-            "'reshape'", "'maxpool'", "'reverse'", "'$'", "'loop'", "'let'", 
-            "'in'" ]
+            "'('", "')'", "'['", "','", "']'", "'init'", "'^T'", "':+'",
+            "'{k'", "'}'", "'{p'", "'{s'", "'{d'", "'{g'", "'='", "':'",
+            "'>='", "'?'", "'+'", "'-'", "'*'", "'|*|'", "'<*>'", "'<+>'",
+            "'<->'", "'relu'", "'relu6'", "'exp'", "'argmax'", "'sgn'",
+            "'tanh'", "'sigmoid'", "'normaliseL2'", "'mbconv'", "'conv2d'",
+            "'reshape'", "'maxpool'", "'reverse'", "'$'", "'loop'", "'let'",
+            "'in'"]
 
     symbolicNames = [ "<INVALID>",
-            "ADD", "SUB", "MUL", "SPARSEMUL", "MULCIR", "ADDCIR", "SUBCIR", 
-            "RELU", "RELU6", "EXP", "ARGMAX", "SGN", "TANH", "SIGMOID", 
-            "NORMALISEL2", "MbConv", "Conv2d", "Reshape", "Maxpool", "Reverse", 
-            "Sum", "Loop", "Let", "In", "Id", "IntConst", "FloatConst", 
-            "WS", "LineComment" ]
+            "ADD", "SUB", "MUL", "SPARSEMUL", "MULCIR", "ADDCIR", "SUBCIR",
+            "RELU", "RELU6", "EXP", "ARGMAX", "SGN", "TANH", "SIGMOID",
+            "NORMALISEL2", "MbConv", "Conv2d", "Reshape", "Maxpool", "Reverse",
+            "Sum", "Loop", "Let", "In", "Id", "IntConst", "FloatConst",
+            "WS", "LineComment"]
 
-    ruleNames = [ "T__0", "T__1", "T__2", "T__3", "T__4", "T__5", "T__6", 
-                  "T__7", "T__8", "T__9", "T__10", "T__11", "T__12", "T__13", 
-                  "T__14", "T__15", "T__16", "T__17", "ADD", "SUB", "MUL", 
-                  "SPARSEMUL", "MULCIR", "ADDCIR", "SUBCIR", "RELU", "RELU6", 
-                  "EXP", "ARGMAX", "SGN", "TANH", "SIGMOID", "NORMALISEL2", 
-                  "MbConv", "Conv2d", "Reshape", "Maxpool", "Reverse", "Sum", 
-                  "Loop", "Let", "In", "Id", "Nondigit", "IntConst", "Digit", 
-                  "FloatConst", "FracConst", "ExpntPart", "Sign", "WS", 
-                  "LineComment" ]
+    ruleNames = [ "T__0", "T__1", "T__2", "T__3", "T__4", "T__5", "T__6",
+                  "T__7", "T__8", "T__9", "T__10", "T__11", "T__12", "T__13",
+                  "T__14", "T__15", "T__16", "T__17", "ADD", "SUB", "MUL",
+                  "SPARSEMUL", "MULCIR", "ADDCIR", "SUBCIR", "RELU", "RELU6",
+                  "EXP", "ARGMAX", "SGN", "TANH", "SIGMOID", "NORMALISEL2",
+                  "MbConv", "Conv2d", "Reshape", "Maxpool", "Reverse", "Sum",
+                  "Loop", "Let", "In", "Id", "Nondigit", "IntConst", "Digit",
+                  "FloatConst", "FracConst", "ExpntPart", "Sign", "WS",
+                  "LineComment"]
 
     grammarFileName = "seedot.g4"
 
@@ -259,5 +259,3 @@ class seedotLexer(Lexer):
         self._interp = LexerATNSimulator(self, self.atn, self.decisionsToDFA, PredictionContextCache())
         self._actions = None
         self._predicates = None
-
-

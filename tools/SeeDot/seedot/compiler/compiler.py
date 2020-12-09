@@ -6,7 +6,6 @@ import argparse
 import os
 import pickle
 
-
 import seedot
 
 import seedot.compiler.antlr.seedotLexer as seedotLexer
@@ -35,6 +34,7 @@ import seedot.config as config
 # The Compiler class reads in the input code, converts it first into an AST, and subsequently into an IR which
 # contains a sequence of function calls (which are implemented by hand in a library). The IR is fed into the 
 # desired target codegen, which outputs the C/C++ code which can be run on the target device.
+
 
 class Compiler:
 
@@ -73,20 +73,20 @@ class Compiler:
         self.biasShifts = {}
 
     # Method takes in input file location, calls the tokenizer, parser upon the file to generate a parse tree
-    # and subsequently calls the ASTBuilder to convert it into an AST
+    # and subsequently calls the ASTBuilder to convert it into an AST.
     def genASTFromFile(self, inputFile):
-        # Parse and generate CST for the input
+        # Parse and generate CST for the input.
         lexer = seedotLexer.seedotLexer(antlr.FileStream(inputFile))
         tokens = antlr.CommonTokenStream(lexer)
         parser = seedotParser.seedotParser(tokens)
         tree = parser.expr()
 
-        # Generate AST
+        # Generate AST.
         ast = astBuilder.ASTBuilder().visit(tree)
         return ast
 
     # Takes in the input file location, and depending on the source type (.sd/onnx/TF) calls an 
-    # appropriate method to generate an AST 
+    # appropriate method to generate an AST.
     def genAST(self, inputFile):
         ext = os.path.splitext(inputFile)[1]
 
@@ -95,15 +95,15 @@ class Compiler:
         elif self.source == config.Source.onnx:
             ast = process_onnx.get_seedot_ast(inputFile)
             return ast
-        else:    
+        else:
             ast = TFMain.main()
             return ast
 
-    # Driver code for compiler module which calls other functions
+    # Driver code for compiler module which calls other functions.
     def run(self):
         ast = self.genAST(self.input)
 
-        # Perform type inference
+        # Perform type inference.
         type.InferType().visit(ast)
 
         irUtil.init()
@@ -126,9 +126,8 @@ class Compiler:
     def compile(self, ast):
         return self.genCodeWithFuncCalls(ast)
 
-    # Takes in the AST and calls the IRBuilder to generate an IR which is a sequence of function calls
+    # Takes in the AST and calls the IRBuilder to generate an IR which is a sequence of function calls.
     def genCodeWithFuncCalls(self, ast):
-
         outputLog = writer.Writer(self.outputLogFile)
 
         if util.getVersion() == config.Version.fixed and config.ddsEnabled:
@@ -143,10 +142,10 @@ class Compiler:
 
         outputLog.close()
 
-        # All state variables are used for codegen
+        # All state variables are used for codegen.
         state = [compiler.varDeclarations, compiler.varDeclarationsLocal, compiler.varScales, compiler.varIntervals, compiler.intConstants, compiler.expTables, compiler.globalVars, compiler.internalVars, compiler.floatConstants, compiler.substitutions, compiler.demotedVarsOffsets, compiler.varsForBitwidth, compiler.varLiveIntervals, compiler.notScratch, compiler.coLocatedVariables]
 
-        # Raw live ranges do not capture the scope of the first/last usages of a variable, so they require post processing
+        # Raw live ranges do not capture the scope of the first/last usage of a variable, so they require post-processing.
         state[12] = self.adjustLiveRanges(state[12], compiler.allDepths)
 
         for i in compiler.globalVars:
@@ -154,21 +153,21 @@ class Compiler:
                 continue
             state[13].append(i)
 
-        # In floating point code used for profiling, the set of variables which are profiled using training data are collected
+        # In floating-point code used for profiling, the set of variables which are profiled using training data are collected.
         if util.getVersion() == config.Version.floatt:
             self.independentVars = list(compiler.independentVars)
             self.independentVars += compiler.globalVars
 
-        self.substitutions = compiler.substitutions 
+        self.substitutions = compiler.substitutions
 
-        # Input and output scales are stored, problem type is identified as regression or classification
+        # Input and output scales are stored, problem type is identified as regression or classification.
         self.scaleForX = compiler.varScales['X']
         self.scaleForY = compiler.varScales[res[1].idf] if res[1].idf in compiler.varScales else 0
         self.problemType = config.ProblemType.classification if res[1].idf not in compiler.varScales else config.ProblemType.regression
 
         return res, state
 
-    # The floating point code is run on the training dataset and the ranges of all variables are read to compute the scale
+    # The floating point code is run on the training dataset and the ranges of all variables are read to compute the scale.
     def readDataDrivenScales(self):
         tempScales = {}
         error = 0.01
@@ -177,10 +176,10 @@ class Compiler:
                 entries = line.strip().split(",")
                 var, m, M = entries
                 m, M = float(m), float(M)
-                tempScales[var] = util.computeScalingFactor(max(abs(m) + error, abs(M) + error)) 
+                tempScales[var] = util.computeScalingFactor(max(abs(m) + error, abs(M) + error))
         return tempScales
 
-    # Post processing of live ranges to adjust for different scoping level at the first invocation and at the last invocation
+    # Post-processing of live ranges to adjust for different scoping level at the first invocation and at the last invocation.
     def adjustLiveRanges(self, oldRanges, depthData):
         newRanges = {}
         for var in oldRanges:

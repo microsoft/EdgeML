@@ -13,7 +13,6 @@ class Config:
     exp = "new table"  # "table" "math" "new table"
     codegen = "funcCall"  # "funcCall" "inline"
     debug = False
-    debugCompiler = True
     saturateArithmetic = False
     fastApproximations = False
     x86MemoryOptimize = True
@@ -105,9 +104,6 @@ def genFuncCalls():
 
 def debugMode():
     return Config.debug
-
-def debugCompiler():
-    return Config.debugCompiler
 
 def copy_dict(dict_src: dict, diff={}):
     dict_res = dict(dict_src)

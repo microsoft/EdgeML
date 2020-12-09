@@ -44,7 +44,6 @@ class Arduino(CodegenBase):
                 else:
                     file.write("#define XINT%d\n" % config.wordLength)
 
-
     def printPrefix(self):
         self.printCompilerConfig()
 
@@ -54,7 +53,7 @@ class Arduino(CodegenBase):
 
         self.printArduinoHeader()
 
-        self.computeScratchLocationsFirstFitPriority() #computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
+        self.computeScratchLocationsFirstFitPriority() # computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
 
         self.printVarDecls()
 
@@ -91,8 +90,8 @@ class Arduino(CodegenBase):
         self.out.printf('int predict() {\n', indent=True)
         self.out.increaseIndent()
 
-    # Generate the appropriate return experssion
-    # If integer, return the integer
+    # Generate the appropriate return expression.
+    # If integer, return the integer.
     # If tensor of size 0, convert the fixed-point integer to float and return the float value.
     # If tensor of size >0, convert the tensor to fixed-point integer, print
     # it to the serial port, and return void.
@@ -131,14 +130,15 @@ class Arduino(CodegenBase):
         self.out.printf('}\n', indent=True)
 
         self.out.close()
+
     '''
     Below functions are overriding their corresponding definitions in codegenBase.py.
     These function have arduino-specific print functions.
     '''
 
-    # Print the variable with pragmas
+    # Print the variable with pragmas.
     def printVar(self, ir):
-        # Model parameters are read from RAM, hence they are read differently
+        # Model parameters are read from RAM, hence they are read differently.
         if ir.inputVar:
             if config.wordLength == 8:
                 self.out.printf('((MYINT) pgm_read_byte_near(&')
@@ -201,7 +201,7 @@ class Arduino(CodegenBase):
                         continue
                 if breakOutOfWhile:
                     break
-                
+
             usedSpaceMap[var] = (endIns, (potentialStart, potentialEnd))
             totalScratchSize = max(totalScratchSize, potentialEnd)
             self.scratchSubs[var] = potentialStart
@@ -251,8 +251,8 @@ class Arduino(CodegenBase):
             # The value of x in the below code is the number of special characters (& and []) around the variable in the function call.
             # This number depends on the shape of the variable.
             # Example: A[10][10] is written as &A[0][0]. The value of x in this case is 2.
-            # x is 0 for constants
-            # x is -1 for integer variables where only & is printed and not []
+            # x is 0 for constants.
+            # x is -1 for integer variables where only & is printed and not [].
             if isinstance(arg, IR.Var) and (arg.idf in self.decls.keys() or arg.idf in self.localDecls.keys()) and not arg.idf == 'X':
                 type = self.decls[arg.idf] if arg.idf in self.decls else self.localDecls[arg.idf]
                 if isinstance(type, Type.Tensor):
@@ -269,7 +269,6 @@ class Arduino(CodegenBase):
                 typeCast = "(int%d_t*)" % self.varsForBitwidth[arg.idf] if x > 0 else ""
                 self.out.printf(typeCast)
 
-            
             if not (isinstance(arg, IR.Var) and arg.idf in self.scratchSubs):
                 if x != 0:
                     self.out.printf("&")

@@ -17,19 +17,20 @@ from seedot.compiler.converter.util import *
 import seedot.compiler.ONNX.process_onnx as process_onnx
 import seedot.compiler.ONNX.paramsBuilderOnnx as paramsBuilderOnnx
 
+
 class Quantizer:
 
     def __init__(self):
         self.sparseMatSizes = {}
 
     def genASTFromFile(self, inputFile):
-        # Parse and generate CST for the input
+        # Parse and generate CST for the input.
         lexer = SeeDotLexer(FileStream(inputFile))
         tokens = CommonTokenStream(lexer)
         parser = SeeDotParser(tokens)
         tree = parser.expr()
 
-        # Generate AST
+        # Generate AST.
         ast = ASTBuilder.ASTBuilder().visit(tree)
         return ast
 
@@ -42,12 +43,12 @@ class Quantizer:
             ast = process_onnx.get_seedot_ast(inputFile)
             return ast
         else:    
-            ast = TFMain.main()  
+            ast = TFMain.main()
 
     def buildParams(self, source):
         ast = self.genAST(getInputFile(), source)
 
-        # Generate params
+        # Generate params.
         paramsBuilder = ParamsBuilder.ParamsBuilder()
         paramsBuilder.visit(ast)
 
@@ -109,18 +110,18 @@ class Quantizer:
                 "(assuming 4 bytes for values and 2 bytes for indices)\n")
             file.write("--------------------------------------------\n\n")
 
-    # Writing the model as a bunch of variables, arrays and matrices to a file
+    # Writing the model as a bunch of variables, arrays and matrices to a file.
     def writeModel(self):
         self.writeHeader()
 
         if forArduino() and dumpDataset():
-            scaleOfX = self.allScales['X'] 
+            scaleOfX = self.allScales['X']
             Xint, _ = scaleList(self.X[0], scaleOfX)
 
             writeListAsArray(self.X[0], 'X', self.headerFile, None, self.varsForBitwidth['X'])
             writeListAsArray(Xint, 'Xint', self.headerFile, None, self.varsForBitwidth['X'])
             writeVars({'scaleOfX': scaleOfX}, self.headerFile)
-            writeVars({'Y': self.Y[0][0]}, self.headerFile) 
+            writeVars({'Y': self.Y[0][0]}, self.headerFile)
 
         if forM3() and dumpDataset():
             writeVars({'scaleForX': self.allScales['X']}, self.scalesFile)
@@ -162,7 +163,7 @@ class Quantizer:
 
         self.writeFooter()
 
-    # Write macros and namespace declarations
+    # Write macros and namespace declarations.
     def writeHeader(self):
         with open(self.headerFile, 'a') as file:
             file.write("#pragma once\n\n")
@@ -191,17 +192,17 @@ class Quantizer:
                   (param.name, np.amin(param.data), np.amax(param.data)))
         print("X = %.6f, %.6f" % self.trainDatasetRange)
 
-    # Float model is generated for for training dataset to profile the prediction
-    # Hence, X is trimmed down to remove outliers. Prediction profiling is performed on the trimmed X to generate more precise profile data
+    # Float model is generated for for training dataset to profile the prediction.
+    # Hence, X is trimmed down to remove outliers. Prediction profiling is performed on the trimmed X to generate more precise profile data.
     def transformDataset(self):
         if getVersion() == config.Version.fixed:
-            # If X itself is X_train, reuse it. Otherwise, read it from file
+            # If X itself is X_train, reuse it. Otherwise, read it from file.
             if usingTrainingDataset():
                 self.X_train = list(self.X)
             else:
                 self.X_train, _ = readXandY(useTrainingSet=True)
 
-            # Trim some data points from X_train
+            # Trim some data points from X_train.
             self.X_train, _ = trimMatrix(self.X_train)
 
             self.trainDatasetRange = matRange(self.X_train)
@@ -213,7 +214,7 @@ class Quantizer:
             else:
                 self.X_train, _ = readXandY(useTrainingSet=True)
 
-                # Trim some data points from X_train
+                # Trim some data points from X_train.
                 self.X_train, _ = trimMatrix(self.X_train)
 
                 self.trainDatasetRange = matRange(self.X_train)
@@ -224,7 +225,7 @@ class Quantizer:
         self.transformModel()
         for param in self.params:
             writeMatAsArray(param.data, param.name, self.headerFile, shapeStr=("[%d]" * len(param.shape)) % tuple(param.shape))
-        self.writeFooter()              
+        self.writeFooter()
 
     def run(self, source):
         self.headerFile = os.path.join(
@@ -240,14 +241,15 @@ class Quantizer:
         if dumpDataset():
             self.processDataset()
 
-        if source == config.Source.seedot:    
+        if source == config.Source.seedot:
             self.buildParams(source)
             self.processModel()
         elif source == config.Source.onnx:
-            self.generateParamFilesForOnnx()    
+            self.generateParamFilesForOnnx()
 
         # self.printDataRange()
-        
+
+
 class QuantizerFixed(Quantizer):
 
     def __init__(self, varsForBitwidth, allScales, numOutputs, biasShifts, scaleForY):
@@ -264,16 +266,16 @@ class QuantizerFixed(Quantizer):
     # Since the range of X_train depends on its distribution, the scale computed may be imprecise.
     # To avoid this, any outliers in X_train is trimmed off using a threshold to get a more precise range and a more precise scale.
     def transformDatasetOld(self):
-        # If X itself is X_train, reuse it. Otherwise, read it from file
+        # If X itself is X_train, reuse it. Otherwise, read it from file.
         if usingTrainingDataset():
             self.X_train = list(self.X)
         else:
             self.X_train, _ = readXandY(useTrainingSet=True)
 
-        # Trim some data points from X_train
+        # Trim some data points from X_train.
         self.X_train, _ = trimMatrix(self.X_train)
 
-        # Compute range and scale and quantize X
+        # Compute range and scale and quantize X.
         testDatasetRange = matRange(self.X)
         self.trainDatasetRange = matRange(self.X_train)
 
@@ -287,10 +289,9 @@ class QuantizerFixed(Quantizer):
                 self.trainDatasetRange))
             file.write("Test dataset scaled by: %d\n\n" % (scale))
 
-    # Quantize the matrices
+    # Quantize the matrices.
     def transformModel(self):
         for param in self.params:
-
             if forArduino() or forM3():
                 scale = self.allScales[param.name]
                 if forM3() and param.name in self.biasShifts.keys():
@@ -311,8 +312,8 @@ class QuantizerFloat(Quantizer):
         super().__init__()
         self.numOutputs = numOutputs
 
-    # Float model is generated for for training dataset to profile the prediction
-    # Hence, X is trimmed down to remove outliers. Prediction profiling is performed on the trimmed X to generate more precise profile data
+    # Float model is generated for for training dataset to profile the prediction.
+    # Hence, X is trimmed down to remove outliers. Prediction profiling is performed on the trimmed X to generate more precise profile data.
     def transformDatasetOld(self):
         if usingTrainingDataset():
             beforeLen = len(self.X)
@@ -333,7 +334,7 @@ class QuantizerFloat(Quantizer):
         else:
             self.X_train, _ = readXandY(useTrainingSet=True)
 
-            # Trim some data points from X_train
+            # Trim some data points from X_train.
             self.X_train, _ = trimMatrix(self.X_train)
 
             self.trainDatasetRange = matRange(self.X_train)
