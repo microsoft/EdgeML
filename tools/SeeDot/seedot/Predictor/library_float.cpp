@@ -705,7 +705,6 @@ void Convolution(float* A, const float* B, float* C, float* tmp, MYINT N, MYINT 
 	}
 }
 
-
 // C = A # B
 // A[N][H][W][CI], B[HF][WF][CI][CO], C[N][H][W][CO]
 void Conv(float* A, const float* B, float* C, float* tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
@@ -908,21 +907,21 @@ void NormaliseL2(float* A, float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
 
-				// calculate the sum square
+				// Calculate the sum square.
 				float sumSquare = 0;
 				for (MYITE c = 0; c < C; c++) {
 					float tmp = A[n * H * W * C + h * W * C + w * C + c];
 					sumSquare += tmp * tmp;
 				}
 
-				// calculate the inverse square root of sumSquare
+				// Calculate the inverse square root of sumSquare.
 				if (sumSquare == 0) {
 					sumSquare = 1e-5;
 				}
 
 				float inverseNorm = 1 / sqrt(sumSquare);
 
-				// multiply all elements by the 1/sqrt(sumSquare)
+				// Multiply all elements by the 1 / sqrt(sumSquare).
 				for (MYITE c = 0; c < C; c++) {
 					B[n * H * W * C + h * W * C + w * C + c]  = A[n * H * W * C + h * W * C + w * C + c]  * inverseNorm;
 				}

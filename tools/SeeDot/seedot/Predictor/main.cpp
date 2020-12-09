@@ -19,7 +19,7 @@ using namespace std;
 
 /*
  * This file is the driver for the x86 version of the code. It reads the floating point data from the csv files, parses them
- * and translates them into integers, and then puts them through multiple generated inference codes and evaluates each result
+ * and translates them into integers, and then puts them through multiple generated inference codes and evaluates each result.
  */
 
 enum Version
@@ -40,7 +40,7 @@ enum ProblemType
 
 bool profilingEnabled = false;
 
-// Split the CSV row into multiple values
+// Split the CSV row into multiple values.
 vector<string> readCSVLine(string line) {
 	vector<string> tokens;
 
@@ -54,7 +54,7 @@ vector<string> readCSVLine(string line) {
 	return tokens;
 }
 
-// Read the input 'X'
+// Read the input 'X'.
 vector<string> getFeatures(string line) {
 	static int featuresLength = -1;
 
@@ -71,7 +71,7 @@ vector<string> getFeatures(string line) {
 	return features;
 }
 
-// Read the ground truth label/value 'Y'
+// Read the ground truth label/value 'Y'.
 vector<string> getLabel(string line) {
 	static int labelLength = -1;
 
@@ -88,7 +88,7 @@ vector<string> getLabel(string line) {
 	return labels;
 }
 
-// Take in the input floating point datapoint, convert it to a fixed point integer and store it
+// Take in the input floating point datapoint, convert it to a fixed point integer and store it.
 void populateFixedVector(MYINT** features_int, vector<string> features, int scale) {
 	int features_size = (int)features.size();
 
@@ -101,7 +101,7 @@ void populateFixedVector(MYINT** features_int, vector<string> features, int scal
 	return;
 }
 
-// Take in the input floating point datapoint and store it
+// Take in the input floating point datapoint and store it.
 void populateFloatVector(float** features_float, vector<string> features) {
 	int features_size = (int)features.size();
 	for (int i = 0; i < features_size; i++) {
@@ -110,10 +110,10 @@ void populateFloatVector(float** features_float, vector<string> features) {
 	return;
 }
 
-// Multithreading is used to speed up exploration
-// Each thread, which invokes the following method, is responsible for taking in one datapoint 
-// and running it through all the generated codes
-// Number of threads generated equals the number of datapoints in the given dataset
+// Multi-threading is used to speed up exploration.
+// Each thread, which invokes the following method, is responsible for taking in one datapoint
+// and running it through all the generated codes.
+// Number of threads generated equals the number of datapoints in the given dataset.
 void launchThread(int features_size, MYINT** features_int, MYINT*** features_intV, float** features_float, int counter, float* float_res, int* res, int** resV) {
 	seedotFixed(features_int, res);
 	seedotFloat(features_float, float_res);
@@ -179,7 +179,7 @@ int main(int argc, char* argv[]) {
 
 	int numOutputs = atoi(argv[4]);
 
-	// Reading the dataset
+	// Reading the dataset.
 	string inputDir = "input/";
 
 	ifstream featuresFile(inputDir + "X.csv");
@@ -189,7 +189,7 @@ int main(int argc, char* argv[]) {
 		throw "Input files doesn't exist";
 	}
 
-	// Create output directory and files
+	// Create output directory and files.
 	string outputDir = "output/" + versionStr;
 
 	string outputFile = outputDir + "/prediction-info-" + datasetTypeStr + ".txt";
@@ -204,10 +204,10 @@ int main(int argc, char* argv[]) {
 	vector<MYINT**> features_intV(switches, NULL);
 	float** features_float = NULL;
 
-	// Initialize variables used for profiling
+	// Initialize variables used for profiling.
 	initializeProfiling();
 
-	// Following variables are used for storing the results of the inference
+	// Following variables are used for storing the results of the inference.
 	vector<float*> vector_float_res;
 	vector<int32_t*> vector_int_res;
 	vector<int32_t**> vector_int_resV;
@@ -224,9 +224,9 @@ int main(int argc, char* argv[]) {
 		profilingEnabled = true;
 	}
 
-	// Each iteration takes care of one datapoint
+	// Each iteration takes care of one datapoint.
 	while (getline(featuresFile, line1) && getline(lablesFile, line2)) {
-		// Read the feature vector and class ID
+		// Read the feature vector and class ID.
 		vector<string> features = getFeatures(line1);
 		vector<string> labelString = getLabel(line2);
 		int32_t* labelInt = new int32_t[numOutputs];
@@ -242,7 +242,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		// Allocate memory to store the feature vector as arrays
+		// Allocate memory to store the feature vector as arrays.
 		if (alloc == false) {
 			features_size = (int)features.size();
 
@@ -266,7 +266,7 @@ int main(int argc, char* argv[]) {
 			alloc = true;
 		}
 
-		// Populate the array using the feature vector
+		// Populate the array using the feature vector.
 		if (debugMode || version == Fixed) {
 			populateFixedVector(features_int, features, scaleForX);
 			for (int i = 0; i < switches; i++) {
@@ -277,7 +277,7 @@ int main(int argc, char* argv[]) {
 			populateFloatVector(features_float, features);
 		}
 
-		// Invoke the predictor function
+		// Invoke the predictor function.
 		int* fixed_res = NULL;
 		float* float_res = NULL;
 		vector <int> resV(switches, -1);
@@ -297,23 +297,23 @@ int main(int argc, char* argv[]) {
 			}
 			vector_int_resV.push_back(NULL);
 		} else {
-			// There are several codes generated which are built simultaneously
+			// There are several codes generated which are built simultaneously.
 			if (version == Fixed) {
 				vector_float_res.push_back(new float[numOutputs]);
 				vector_int_res.push_back(new int32_t[numOutputs]);
-				// Populating labels for each generated code
+				// Populating labels for each generated code.
 				if (problem == Classification) {
 					labelsInt.push_back(labelInt);
 				} else if (problem == Regression) {
 					labelsFloat.push_back(labelFloat);
 				}
 				int** switchRes = new int* [switches];
-				// Instantiating vectors for storing inference results for each generated code
+				// Instantiating vectors for storing inference results for each generated code.
 				for (int i = 0; i < switches; i++) {
 					switchRes[i] = new int[numOutputs];
 				}
 				vector_int_resV.push_back(switchRes);
-				// Instantiating vectors for storing features, integer and float
+				// Instantiating vectors for storing features, integer and float.
 				MYINT** features_int_copy = new MYINT* [features_size];
 				for (int i = 0; i < features_size; i++) {
 					features_int_copy[i] = new MYINT[1];
@@ -332,7 +332,7 @@ int main(int argc, char* argv[]) {
 						features_intV_copy[j][i][0] = features_intV[j][i][0];
 					}
 				}
-				// Launching one thread which processes one datapoint
+				// Launching one thread which processes one datapoint.
 				threads.push_back(thread(launchThread, features_size, features_int_copy, features_intV_copy, features_float_copy, counter, vector_float_res.back(), vector_int_res.back(), vector_int_resV.back()));
 			} else if (version == Float) {
 				float_res = new float[numOutputs];
@@ -360,11 +360,10 @@ int main(int argc, char* argv[]) {
 		threads[i].join();
 	}
 
-
 	float disagreements = 0.0, reduced_disagreements = 0.0;
 
-	// Correct, Disagreements are used for Classification problems' accuracy etc
-	// Errors, Ferrors are used for Regression problems' error etc
+	// Correct, Disagreements are used for Classification problems' accuracy etc.
+	// Errors, Ferrors are used for Regression problems' error etc.
 
 	vector<int> correctV(switches, 0), totalV(switches, 0);
 	vector<int> disagreementsV(switches, 0), reduced_disagreementsV(switches, 0);
@@ -447,7 +446,7 @@ int main(int argc, char* argv[]) {
 				for (int k = 0; k < switches; k++) {
 					if (version == Float) {
 						throw "Multiple codes not expected in Floating point execution";
-          }
+					}
 					float normRes = ((float) resV[k][j]) / ldexp(1.0 , -scalesForY[k]);
 					float error = 100.0 * fabs(normRes - labelsFloat[i][j]);
 					float ferror = 100.0 * fabs(normRes - float_res[j]);
@@ -458,7 +457,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		// Clearing memory
+		// Clearing memory.
 		delete[] vector_int_res[i];
 		delete[] vector_float_res[i];
 		for (int k = 0; k < switches; k++) {
@@ -471,7 +470,7 @@ int main(int argc, char* argv[]) {
 
 	trace.close();
 
-	// Deallocate memory
+	// Deallocate memory.
 	for (int i = 0; i < features_size; i++) {
 		delete features_int[i];
 	}
@@ -520,7 +519,6 @@ int main(int argc, char* argv[]) {
 		stats << ferrors[index] << "\n";
 		stats << "0.000\n";
 	}
-	
 
 	if (version == Fixed) {
 		for (int i = 0; i < switches; i++) {

@@ -6,7 +6,6 @@ import enum
 
 # Util functions
 
-
 def errIfTokensNotMinLen(tokens, minlen, lineNum, entity):
     errCond = (len(tokens) < minlen)
     if (errCond):
@@ -16,6 +15,7 @@ def errIfTokensNotMinLen(tokens, minlen, lineNum, entity):
 
 
 class DataTypeEnum(enum.Enum):
+
     DT_INVALID = 0
     DT_FLOAT = 1
     DT_BOOL = 2
@@ -34,7 +34,7 @@ class DataTypeEnum(enum.Enum):
         else:
             return DataTypeEnum.DT_INVALID
 
-    # TODO : The size given below is for c++ .. for python the sizes are different
+    # TODO: The size given below is for C++. For Python the sizes are different.
     def Size(dt):
         if (dt == DataTypeEnum.DT_INVALID):
             return 0
@@ -51,6 +51,7 @@ class DataTypeEnum(enum.Enum):
 
 
 class Shape:
+
     def __init__(self, dimList=None):
         if (dimList is None):
             self.__dimList = []
@@ -60,13 +61,13 @@ class Shape:
 
     def getNumElements(self):
         if self.__dimList:
-            #list is non-empty
+            # List is non-empty.
             ans = 1
             for curDim in self.__dimList:
                 ans *= curDim
             return ans
         else:
-            #list is empty
+            # List is empty.
             return 0
 
     def getRank(self):
@@ -158,15 +159,15 @@ class Shape:
 
 
 class Tensor:
-    # TODO : Not impelemented operator Shape() from the c++ implementation.
+    # TODO : Not implemented operator Shape() from the C++ implementation.
 
     def __init__(self):
         # In the input, either tensor content in the form of a binary string is provided
-        #   or an int/float/bool value is provided and the tensor shape is provided
-        #   The corresponding C++ code converts the int/float/bool array into byte array.
-        #   Right now I don't see any use of doing this in python implementation.
-        #   So, for now, either __valArr will be non-null or __tensorBytes.
-        #   TODO : If need arises, change everything to byte array.
+        # or an int/float/bool value is provided and the tensor shape is provided.
+        # The corresponding C++ code converts the int/float/bool array into byte array.
+        # Right now I don't see any use of doing this in python implementation.
+        # So, for now, either __valArr will be non-null or __tensorBytes.
+        # TODO: If need arises, change everything to byte array.
         self.__totalSize = None
         self.__dtype = None
         self.__tensorShape = None
@@ -181,8 +182,8 @@ class Tensor:
     def __convToBytes(self):
         numElements = self.__tensorShape.getNumElements()
 
-        # TODO : The totalSize calculated below seems inaccurate because empty list in python is itself 64 bytes
-        #       Meaning the actual size on a python system will be much more.
+        # TODO: The totalSize calculated below seems inaccurate because empty list in python is itself 64 bytes,
+        # meaning that the actual size on a python system will be much more.
 
         self.__totalSize = DataTypeEnum.Size(self.__dtype)
         self.__totalSize *= numElements
@@ -195,9 +196,9 @@ class Tensor:
                 and (self.__valInput is not None)):
             self.__valArr = [self.__valInput]*numElements
         else:
-            # By virtue of how this function is called from below
+            # By virtue of how this function is called from below.
             assert(self.__tensorContentInput)
-            # Parse the tensorcontent and fill the tensorbytes
+            # Parse the tensorcontent and fill the tensorbytes.
 
             self.__tensorBytes = bytearray(self.__totalSize)
 
@@ -295,18 +296,18 @@ class Tensor:
         return self.__valInput
 
     def getContentAsValArr(self):
-        # This will try and return an array of values (even when tensorContent is given as array of bytes)
+        # This will try and return an array of values (even when tensorContent is given as array of bytes).
         if self.__valArr:
             pass
         else:
-            # Convert tensorBytes into array of values
+            # Convert tensorBytes into array of values.
             numOfElements = self.__tensorShape.getNumElements()
             numOfBytesPerVal = None
             if self.__dtype == DataTypeEnum.DT_INT32:
                 numOfBytesPerVal = 4
             else:
-                # Right now the CNN tensorflow benchmark i am dealing with only has int32 case when tensorContents are given as bytes.
-                # If in future, we encounter this case for float/bool, deal with it accordingly here
+                # Right now the CNN tensorflow benchmark I'm dealing with only has int32 case when tensorContents are given as bytes.
+                # If in future, we encounter this case for float/bool, deal with it accordingly here.
                 # Plus, also from empirical observation, byteorder is little and its a signed value for ints.
                 # Figure out for others when the time comes.
                 print(self.__dtype)
@@ -323,6 +324,7 @@ class Tensor:
 
 
 class MultiValue:
+
     def __init__(self):
         self.__valStrLi = []
         self.__valIntLi = []
@@ -356,7 +358,7 @@ class MultiValue:
                     return (False, cnt)
                 self.__valBoolLi.append(bool(tokens[1]))
             else:
-                print("Unknown token found while parsing Mutlivalue, line =",
+                print("Unknown token found while parsing Multivalue, line =",
                       cnt, ", Token =", curToken, file=sys.stderr)
                 return (False, cnt)
             line = fileP.readline()
@@ -376,6 +378,7 @@ class MultiValue:
 
 
 class Value:
+
     def __init__(self):
         self.__val = None
 
@@ -505,10 +508,10 @@ class Value:
 
 class Node:
     def __init__(self):
-        self.__name = ""  # Name of node
-        self.__op = ""  # Name of operation carried out by node
-        self.__inputs = []  # List of all inputs to the current node
-        # Map of (attrName, Value) of all attributes for the current node
+        self.__name = ""  # Name of node.
+        self.__op = ""  # Name of operation carried out by node.
+        self.__inputs = []  # List of all inputs to the current node.
+        # Map of (attrName, Value) of all attributes for the current node.
         self.__attr = {}
 
     def getName(self):
@@ -538,7 +541,7 @@ class Node:
                 if (errIfTokensNotMinLen(tokens, 2, cnt, "attr from node")):
                     return (False, cnt)
                 if (keyStr):
-                    # keyStr is already non-None .. there is then probably some error
+                    # keyStr is already non-None. There is probably some error.
                     print(
                         "Too many keys found while parsing attr for node at line =", cnt, file=sys.stderr)
                     return (False, cnt)
@@ -612,7 +615,7 @@ class Node:
 
 class Graph:
     def __init__(self):
-        self.__Nodes = {}  # Map of (op, Node)
+        self.__Nodes = {}  # Map of (op, Node).
         # Sequential list of nodes in the order in which its specified in graph_def.
         self.__NodesLi = []
 
@@ -641,7 +644,7 @@ class Graph:
                           cnt, file=sys.stderr)
                     return False
             elif (curToken == "}"):
-                # CurNode ended
+                # CurNode ended.
                 pass
             elif (curToken == "versions"):
                 print("Versions node found. Ignoring remainder graph. Line =",

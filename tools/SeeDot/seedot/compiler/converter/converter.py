@@ -8,7 +8,7 @@ from seedot.compiler.converter.util import *
 
 import seedot.config as config
 
-# Main file which sets the configurations and creates the corresponding object
+# Main file which sets the configurations and creates the corresponding object.
 
 
 class Converter:
@@ -19,7 +19,7 @@ class Converter:
         setDatasetType(datasetType)
         setTarget(target)
 
-        # Set output directories
+        # Set output directories.
         setDatasetOutputDir(datasetOutputDir)
         setOutputDir(outputDir)
 
@@ -47,5 +47,4 @@ class Converter:
             obj = QuantizerFloat(self.numOutputs)
 
         obj.run(self.source)
-
         self.sparseMatrixSizes = obj.sparseMatSizes

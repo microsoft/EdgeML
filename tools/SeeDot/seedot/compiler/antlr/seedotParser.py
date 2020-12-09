@@ -223,25 +223,22 @@ class seedotParser ( Parser ):
         self._predicates = None
 
 
-
     class ExprContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-
         def getRuleIndex(self):
             return seedotParser.RULE_expr
 
-     
         def copyFrom(self, ctx:ParserRuleContext):
             super().copyFrom(ctx)
 
 
     class Bop1Context(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
@@ -253,7 +250,6 @@ class seedotParser ( Parser ):
 
         def binOp(self):
             return self.getTypedRuleContext(seedotParser.BinOpContext,0)
-
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterBop1" ):
@@ -272,7 +268,7 @@ class seedotParser ( Parser ):
 
     class InitContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
@@ -299,7 +295,7 @@ class seedotParser ( Parser ):
 
     class Bop2Context(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
@@ -307,10 +303,10 @@ class seedotParser ( Parser ):
             if i is None:
                 return self.getTypedRuleContexts(seedotParser.ExprContext)
             else:
-                return self.getTypedRuleContext(seedotParser.ExprContext,i)
+                return self.getTypedRuleContext(seedotParser.ExprContext, i)
 
         def addOp(self):
-            return self.getTypedRuleContext(seedotParser.AddOpContext,0)
+            return self.getTypedRuleContext(seedotParser.AddOpContext, 0)
 
 
         def enterRule(self, listener:ParseTreeListener):
@@ -330,12 +326,12 @@ class seedotParser ( Parser ):
 
     class DeclContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def intConstList(self):
-            return self.getTypedRuleContext(seedotParser.IntConstListContext,0)
+            return self.getTypedRuleContext(seedotParser.IntConstListContext, 0)
 
         def In(self):
             return self.getToken(seedotParser.In, 0)
@@ -362,7 +358,7 @@ class seedotParser ( Parser ):
 
     class SpliceContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
@@ -370,7 +366,7 @@ class seedotParser ( Parser ):
             if i is None:
                 return self.getTypedRuleContexts(seedotParser.ExprContext)
             else:
-                return self.getTypedRuleContext(seedotParser.ExprContext,i)
+                return self.getTypedRuleContext(seedotParser.ExprContext, i)
 
         def IntConst(self, i:int=None):
             if i is None:
@@ -395,7 +391,7 @@ class seedotParser ( Parser ):
 
     class IndexContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
@@ -403,8 +399,7 @@ class seedotParser ( Parser ):
             if i is None:
                 return self.getTypedRuleContexts(seedotParser.ExprContext)
             else:
-                return self.getTypedRuleContext(seedotParser.ExprContext,i)
-
+                return self.getTypedRuleContext(seedotParser.ExprContext, i)
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterIndex" ):
@@ -423,19 +418,22 @@ class seedotParser ( Parser ):
 
     class SumContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def Sum(self):
             return self.getToken(seedotParser.Sum, 0)
+
         def Id(self):
             return self.getToken(seedotParser.Id, 0)
+
         def IntConst(self, i:int=None):
             if i is None:
                 return self.getTokens(seedotParser.IntConst)
             else:
                 return self.getToken(seedotParser.IntConst, i)
+
         def expr(self):
             return self.getTypedRuleContext(seedotParser.ExprContext,0)
 
@@ -457,12 +455,13 @@ class seedotParser ( Parser ):
 
     class ReshapeContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def Reshape(self):
             return self.getToken(seedotParser.Reshape, 0)
+
         def expr(self):
             return self.getTypedRuleContext(seedotParser.ExprContext,0)
 
@@ -471,7 +470,6 @@ class seedotParser ( Parser ):
                 return self.getTypedRuleContexts(seedotParser.IntConstListContext)
             else:
                 return self.getTypedRuleContext(seedotParser.IntConstListContext,i)
-
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterReshape" ):
@@ -490,7 +488,7 @@ class seedotParser ( Parser ):
 
     class FloatContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
@@ -514,12 +512,13 @@ class seedotParser ( Parser ):
 
     class ReverseContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def Reverse(self):
             return self.getToken(seedotParser.Reverse, 0)
+
         def expr(self):
             return self.getTypedRuleContext(seedotParser.ExprContext,0)
 
@@ -543,7 +542,7 @@ class seedotParser ( Parser ):
 
     class CondContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
@@ -573,7 +572,7 @@ class seedotParser ( Parser ):
 
     class IntContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
@@ -597,13 +596,12 @@ class seedotParser ( Parser ):
 
     class TranspContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def expr(self):
-            return self.getTypedRuleContext(seedotParser.ExprContext,0)
-
+            return self.getTypedRuleContext(seedotParser.ExprContext, 0)
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterTransp" ):
@@ -622,13 +620,12 @@ class seedotParser ( Parser ):
 
     class ParenContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def expr(self):
             return self.getTypedRuleContext(seedotParser.ExprContext,0)
-
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterParen" ):
@@ -647,7 +644,7 @@ class seedotParser ( Parser ):
 
     class FuncContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
@@ -656,7 +653,6 @@ class seedotParser ( Parser ):
 
         def expr(self):
             return self.getTypedRuleContext(seedotParser.ExprContext,0)
-
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterFunc" ):
@@ -675,25 +671,27 @@ class seedotParser ( Parser ):
 
     class LoopContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def Loop(self):
             return self.getToken(seedotParser.Loop, 0)
+
         def Id(self):
             return self.getToken(seedotParser.Id, 0)
+
         def IntConst(self, i:int=None):
             if i is None:
                 return self.getTokens(seedotParser.IntConst)
             else:
                 return self.getToken(seedotParser.IntConst, i)
+
         def expr(self, i:int=None):
             if i is None:
                 return self.getTypedRuleContexts(seedotParser.ExprContext)
             else:
                 return self.getTypedRuleContext(seedotParser.ExprContext,i)
-
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterLoop" ):
@@ -712,7 +710,7 @@ class seedotParser ( Parser ):
 
     class UopContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
@@ -721,7 +719,6 @@ class seedotParser ( Parser ):
 
         def expr(self):
             return self.getTypedRuleContext(seedotParser.ExprContext,0)
-
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterUop" ):
@@ -740,12 +737,13 @@ class seedotParser ( Parser ):
 
     class ConvolutionContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def Conv2d(self):
             return self.getToken(seedotParser.Conv2d, 0)
+
         def expr(self, i:int=None):
             if i is None:
                 return self.getTypedRuleContexts(seedotParser.ExprContext)
@@ -775,12 +773,13 @@ class seedotParser ( Parser ):
 
     class MbconvContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def MbConv(self):
             return self.getToken(seedotParser.MbConv, 0)
+
         def expr(self, i:int=None):
             if i is None:
                 return self.getTypedRuleContexts(seedotParser.ExprContext)
@@ -810,12 +809,13 @@ class seedotParser ( Parser ):
 
     class LetContext(ExprContext):
 
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a seedotParser.ExprContext
+        def __init__(self, parser, ctx:ParserRuleContext): # Actually a seedotParser.ExprContext.
             super().__init__(parser)
             self.copyFrom(ctx)
 
         def Let(self):
             return self.getToken(seedotParser.Let, 0)
+
         def lhs(self):
             return self.getTypedRuleContext(seedotParser.LhsContext,0)
 
@@ -875,12 +875,12 @@ class seedotParser ( Parser ):
 
         def Id(self):
             return self.getToken(seedotParser.Id, 0)
+
         def expr(self, i:int=None):
             if i is None:
                 return self.getTypedRuleContexts(seedotParser.ExprContext)
             else:
                 return self.getTypedRuleContext(seedotParser.ExprContext,i)
-
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterFuncCall" ):
@@ -905,6 +905,7 @@ class seedotParser ( Parser ):
 
         def Maxpool(self):
             return self.getToken(seedotParser.Maxpool, 0)
+
         def expr(self):
             return self.getTypedRuleContext(seedotParser.ExprContext,0)
 
@@ -929,7 +930,6 @@ class seedotParser ( Parser ):
                 return visitor.visitChildren(self)
 
 
-
     def expr(self, _p:int=0):
         _parentctx = self._ctx
         _parentState = self.state
@@ -947,11 +947,9 @@ class seedotParser ( Parser ):
                 localctx = seedotParser.IntContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-
                 self.state = 13
                 self.match(seedotParser.IntConst)
                 pass
-
             elif la_ == 2:
                 localctx = seedotParser.FloatContext(self, localctx)
                 self._ctx = localctx
@@ -959,7 +957,6 @@ class seedotParser ( Parser ):
                 self.state = 14
                 self.match(seedotParser.FloatConst)
                 pass
-
             elif la_ == 3:
                 localctx = seedotParser.IdContext(self, localctx)
                 self._ctx = localctx
@@ -967,7 +964,6 @@ class seedotParser ( Parser ):
                 self.state = 15
                 self.match(seedotParser.Id)
                 pass
-
             elif la_ == 4:
                 localctx = seedotParser.DeclContext(self, localctx)
                 self._ctx = localctx
@@ -991,7 +987,6 @@ class seedotParser ( Parser ):
                 self.state = 24
                 self.match(seedotParser.T__4)
                 pass
-
             elif la_ == 5:
                 localctx = seedotParser.InitContext(self, localctx)
                 self._ctx = localctx
@@ -1013,7 +1008,6 @@ class seedotParser ( Parser ):
                 self.state = 33
                 self.match(seedotParser.T__1)
                 pass
-
             elif la_ == 6:
                 localctx = seedotParser.ReshapeContext(self, localctx)
                 self._ctx = localctx
@@ -1043,7 +1037,6 @@ class seedotParser ( Parser ):
                 self.state = 46
                 self.match(seedotParser.T__1)
                 pass
-
             elif la_ == 7:
                 localctx = seedotParser.MaxpoolContext(self, localctx)
                 self._ctx = localctx
@@ -1091,7 +1084,6 @@ class seedotParser ( Parser ):
                 self.state = 68
                 self.match(seedotParser.T__1)
                 pass
-
             elif la_ == 8:
                 localctx = seedotParser.ReverseContext(self, localctx)
                 self._ctx = localctx
@@ -1109,7 +1101,6 @@ class seedotParser ( Parser ):
                 self.state = 75
                 self.match(seedotParser.T__1)
                 pass
-
             elif la_ == 9:
                 localctx = seedotParser.FuncCallContext(self, localctx)
                 self._ctx = localctx
@@ -1135,7 +1126,6 @@ class seedotParser ( Parser ):
                 self.state = 87
                 self.match(seedotParser.T__1)
                 pass
-
             elif la_ == 10:
                 localctx = seedotParser.UopContext(self, localctx)
                 self._ctx = localctx
@@ -1145,7 +1135,6 @@ class seedotParser ( Parser ):
                 self.state = 90
                 self.expr(11)
                 pass
-
             elif la_ == 11:
                 localctx = seedotParser.ConvolutionContext(self, localctx)
                 self._ctx = localctx
@@ -1205,7 +1194,6 @@ class seedotParser ( Parser ):
                 self.state = 118
                 self.match(seedotParser.T__1)
                 pass
-
             elif la_ == 12:
                 localctx = seedotParser.MbconvContext(self, localctx)
                 self._ctx = localctx
@@ -1291,7 +1279,6 @@ class seedotParser ( Parser ):
                 self.state = 159
                 self.match(seedotParser.T__1)
                 pass
-
             elif la_ == 13:
                 localctx = seedotParser.FuncContext(self, localctx)
                 self._ctx = localctx
@@ -1305,7 +1292,6 @@ class seedotParser ( Parser ):
                 self.state = 164
                 self.match(seedotParser.T__1)
                 pass
-
             elif la_ == 14:
                 localctx = seedotParser.SumContext(self, localctx)
                 self._ctx = localctx
@@ -1333,7 +1319,6 @@ class seedotParser ( Parser ):
                 self.state = 176
                 self.expr(5)
                 pass
-
             elif la_ == 15:
                 localctx = seedotParser.LoopContext(self, localctx)
                 self._ctx = localctx
@@ -1365,7 +1350,6 @@ class seedotParser ( Parser ):
                 self.state = 189
                 self.expr(4)
                 pass
-
             elif la_ == 16:
                 localctx = seedotParser.LetContext(self, localctx)
                 self._ctx = localctx
@@ -1383,7 +1367,6 @@ class seedotParser ( Parser ):
                 self.state = 196
                 self.expr(2)
                 pass
-
             elif la_ == 17:
                 localctx = seedotParser.ParenContext(self, localctx)
                 self._ctx = localctx
@@ -1395,7 +1378,6 @@ class seedotParser ( Parser ):
                 self.state = 200
                 self.match(seedotParser.T__1)
                 pass
-
 
             self._ctx.stop = self._input.LT(-1)
             self.state = 246
@@ -1421,7 +1403,6 @@ class seedotParser ( Parser ):
                         self.state = 206
                         self.expr(11)
                         pass
-
                     elif la_ == 2:
                         localctx = seedotParser.Bop2Context(self, seedotParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
@@ -1434,7 +1415,6 @@ class seedotParser ( Parser ):
                         self.state = 210
                         self.expr(10)
                         pass
-
                     elif la_ == 3:
                         localctx = seedotParser.CondContext(self, seedotParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
@@ -1455,7 +1435,6 @@ class seedotParser ( Parser ):
                         self.state = 218
                         self.expr(4)
                         pass
-
                     elif la_ == 4:
                         localctx = seedotParser.TranspContext(self, seedotParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
@@ -1466,7 +1445,6 @@ class seedotParser ( Parser ):
                         self.state = 221
                         self.match(seedotParser.T__6)
                         pass
-
                     elif la_ == 5:
                         localctx = seedotParser.SpliceContext(self, seedotParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
@@ -1504,7 +1482,6 @@ class seedotParser ( Parser ):
                             _alt = self._interp.adaptivePredict(self._input,2,self._ctx)
 
                         pass
-
                     elif la_ == 6:
                         localctx = seedotParser.IndexContext(self, seedotParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
@@ -1520,7 +1497,6 @@ class seedotParser ( Parser ):
                         self.match(seedotParser.T__4)
                         pass
 
-             
                 self.state = 248
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,4,self._ctx)
@@ -1533,20 +1509,18 @@ class seedotParser ( Parser ):
             self.unrollRecursionContexts(_parentctx)
         return localctx
 
+
     class LhsContext(ParserRuleContext):
 
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
 
-
         def getRuleIndex(self):
             return seedotParser.RULE_lhs
 
-     
         def copyFrom(self, ctx:ParserRuleContext):
             super().copyFrom(ctx)
-
 
 
     class LeftSpliceContext(LhsContext):
@@ -1608,9 +1582,7 @@ class seedotParser ( Parser ):
                 return visitor.visitChildren(self)
 
 
-
     def lhs(self):
-
         localctx = seedotParser.LhsContext(self, self._ctx, self.state)
         self.enterRule(localctx, 2, self.RULE_lhs)
         self._la = 0 # Token type
@@ -1661,7 +1633,6 @@ class seedotParser ( Parser ):
 
                 pass
 
-
         except RecognitionException as re:
             localctx.exception = re
             self._errHandler.reportError(self, re)
@@ -1669,6 +1640,7 @@ class seedotParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
+
 
     class AddOpContext(ParserRuleContext):
 
@@ -1700,10 +1672,7 @@ class seedotParser ( Parser ):
                 return visitor.visitChildren(self)
 
 
-
-
     def addOp(self):
-
         localctx = seedotParser.AddOpContext(self, self._ctx, self.state)
         self.enterRule(localctx, 4, self.RULE_addOp)
         self._la = 0 # Token type
@@ -1723,6 +1692,7 @@ class seedotParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
+
 
     class BinOpContext(ParserRuleContext):
 
@@ -1763,10 +1733,7 @@ class seedotParser ( Parser ):
                 return visitor.visitChildren(self)
 
 
-
-
     def binOp(self):
-
         localctx = seedotParser.BinOpContext(self, self._ctx, self.state)
         self.enterRule(localctx, 6, self.RULE_binOp)
         self._la = 0 # Token type
@@ -1786,6 +1753,7 @@ class seedotParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
+
 
     class SpecialFuncContext(ParserRuleContext):
 
@@ -1835,10 +1803,7 @@ class seedotParser ( Parser ):
                 return visitor.visitChildren(self)
 
 
-
-
     def specialFunc(self):
-
         localctx = seedotParser.SpecialFuncContext(self, self._ctx, self.state)
         self.enterRule(localctx, 8, self.RULE_specialFunc)
         self._la = 0 # Token type
@@ -1858,6 +1823,7 @@ class seedotParser ( Parser ):
         finally:
             self.exitRule()
         return localctx
+
 
     class IntConstListContext(ParserRuleContext):
 
@@ -1889,10 +1855,7 @@ class seedotParser ( Parser ):
                 return visitor.visitChildren(self)
 
 
-
-
     def intConstList(self):
-
         localctx = seedotParser.IntConstListContext(self, self._ctx, self.state)
         self.enterRule(localctx, 10, self.RULE_intConstList)
         self._la = 0 # Token type
@@ -1920,8 +1883,6 @@ class seedotParser ( Parser ):
             self.exitRule()
         return localctx
 
-
-
     def sempred(self, localctx:RuleContext, ruleIndex:int, predIndex:int):
         if self._predicates == None:
             self._predicates = dict()
@@ -1935,28 +1896,18 @@ class seedotParser ( Parser ):
     def expr_sempred(self, localctx:ExprContext, predIndex:int):
             if predIndex == 0:
                 return self.precpred(self._ctx, 10)
-         
 
             if predIndex == 1:
                 return self.precpred(self._ctx, 9)
-         
 
             if predIndex == 2:
                 return self.precpred(self._ctx, 3)
-         
 
             if predIndex == 3:
                 return self.precpred(self._ctx, 18)
-         
 
             if predIndex == 4:
                 return self.precpred(self._ctx, 16)
-         
 
             if predIndex == 5:
                 return self.precpred(self._ctx, 13)
-         
-
-
-
-

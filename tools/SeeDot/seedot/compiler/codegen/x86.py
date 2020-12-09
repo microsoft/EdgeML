@@ -15,13 +15,14 @@ from seedot.writer import Writer
 
 import time
 
+
 class X86(CodegenBase):
 
     def __init__(self, outputDir, generateAllFiles, printSwitch, idStr, paramInNativeBitwidth, decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables):
         super().__init__(decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables)
         self.outputDir = outputDir
         cppFile = os.path.join(self.outputDir, "seedot_" + getVersion() + ".cpp")
-        # For exploration, multiple inference codes are written into one output C++ file
+        # For exploration, multiple inference codes are written into one output C++ file.
         if generateAllFiles:
             self.out = Writer(cppFile)
         else:
@@ -44,7 +45,6 @@ class X86(CodegenBase):
         self.paramInNativeBitwidth = paramInNativeBitwidth
 
     def printPrefix(self):
-
         if self.generateAllFiles:
             self.printCincludes()
 
@@ -52,7 +52,7 @@ class X86(CodegenBase):
 
         self.printCHeader()
 
-        self.computeScratchLocationsFirstFitPriority() #computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
+        self.computeScratchLocationsFirstFitPriority() # computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
 
         self.printModelParamsWithBitwidth()
 
@@ -104,7 +104,7 @@ class X86(CodegenBase):
             type = "MYINT"
         if forFloat():
             self.out.printf('void seedot%s(%s **X, float* res) {\n' % (func, type), indent=True)
-        else: 
+        else:
             self.out.printf('void seedot%s%s(%s **X%s, int32_t* res) {\n' % (func, self.idStr if not self.generateAllFiles else "", type, "_temp" if config.vbwEnabled else ""), indent=True)
         self.out.increaseIndent()
 
@@ -246,7 +246,6 @@ class X86(CodegenBase):
             debugFile.decreaseIndent()
 
         debugFile.printf("}\n")
-
         debugFile.close()
 
     def printSuffix(self, expr: IR.Expr):
@@ -272,7 +271,6 @@ class X86(CodegenBase):
                 self.out.printf("delete[] X%s;\n" % (Xindexstr), indent=True)
                 Xindexstr = Xindexstr[:-4] if len(Xindexstr) > 0 else Xindexstr
                 assert len(size) < 10, "Too simple logic for printing indices used, cannot handle 10+ Dim Tensors"
-
 
         type = self.decls[expr.idf]
 
@@ -358,7 +356,6 @@ class X86(CodegenBase):
                     typeCast = "(int%d_t*)" % self.varsForBitwidth[arg.idf] if x > 0 else ""
                     self.out.printf(typeCast)
 
-                
                 if self.currentMemMap not in self.scratchSubs or not (isinstance(arg, IR.Var) and arg.idf in self.scratchSubs[self.currentMemMap]):
                     if x != 0:
                         self.out.printf("&")
