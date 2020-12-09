@@ -204,7 +204,8 @@ if __name__ == '__main__':
     f = open('./data/face_val_scutB.txt')
     lines = f.readlines()
 
-    os.mkdir('./{}'.format(args.save_folder))
+    if os.path.exists('./{}'.format(args.save_folder)) is False:
+        os.mkdir('./{}'.format(args.save_folder))
 
     for line in lines:
         line = line.strip().split()
