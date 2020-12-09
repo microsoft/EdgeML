@@ -13,7 +13,6 @@ class Param:
         self.name = name
         self.shape = shape
         self.range = range
-
         self.sparse = False
 
 
@@ -52,7 +51,7 @@ class ParamsBuilder(ASTVisitor):
         self.visit(node.expr)
 
     def visitReverse(self, node: AST.Reverse):
-        self.visit(node.expr)    
+        self.visit(node.expr)
 
     def visitIndex(self, node: AST.Index):
         self.visit(node.expr)

@@ -145,7 +145,6 @@ inline __attribute__((always_inline)) void MatSubBroadCastB(float* A, float* B, 
 
 // C = A * B
 inline __attribute__((always_inline)) void MatMulNN(float* A, float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
-
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
@@ -159,22 +158,25 @@ inline __attribute__((always_inline)) void MatMulNN(float* A, float* B, float* C
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
-				if (depth >= H1)
+				if (depth >= H1) {
 					shr = false;
+				}
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					float sum;
-					if (p < (count >> 1))
+					if (p < (count >> 1)) {
 						sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					else if ((p == (count >> 1)) && ((count & 1) == 1))
+					} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
 						sum = tmp[2 * p];
-					else
+					} else {
 						sum = 0;
+					}
 
-					if (shr)
+					if (shr) {
 						tmp[p] = sum;
-					else
+					} else {
 						tmp[p] = sum;
+					}
 				}
 				count = (count + 1) >> 1;
 
@@ -189,7 +191,6 @@ inline __attribute__((always_inline)) void MatMulNN(float* A, float* B, float* C
 
 // C = A * B
 inline __attribute__((always_inline)) void MatMulCN(const float* A, float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
-
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
@@ -203,22 +204,25 @@ inline __attribute__((always_inline)) void MatMulCN(const float* A, float* B, fl
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
-				if (depth >= H1)
+				if (depth >= H1) {
 					shr = false;
+				}
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					float sum;
-					if (p < (count >> 1))
+					if (p < (count >> 1)) {
 						sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					else if ((p == (count >> 1)) && ((count & 1) == 1))
+					} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
 						sum = tmp[2 * p];
-					else
+					} else {
 						sum = 0;
+					}
 
-					if (shr)
+					if (shr) {
 						tmp[p] = sum;
-					else
+					} else {
 						tmp[p] = sum;
+					}
 				}
 				count = (count + 1) >> 1;
 
@@ -233,7 +237,6 @@ inline __attribute__((always_inline)) void MatMulCN(const float* A, float* B, fl
 
 // C = A * B
 inline __attribute__((always_inline)) void MatMulNC(float* A, const float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
-
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
@@ -247,22 +250,25 @@ inline __attribute__((always_inline)) void MatMulNC(float* A, const float* B, fl
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
-				if (depth >= H1)
+				if (depth >= H1) {
 					shr = false;
+				}
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					float sum;
-					if (p < (count >> 1))
+					if (p < (count >> 1)) {
 						sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					else if ((p == (count >> 1)) && ((count & 1) == 1))
+					} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
 						sum = tmp[2 * p];
-					else
+					} else {
 						sum = 0;
+					}
 
-					if (shr)
+					if (shr) {
 						tmp[p] = sum;
-					else
+					} else {
 						tmp[p] = sum;
+					}
 				}
 				count = (count + 1) >> 1;
 
@@ -277,7 +283,6 @@ inline __attribute__((always_inline)) void MatMulNC(float* A, const float* B, fl
 
 // C = A * B
 inline __attribute__((always_inline)) void MatMulCC(const float* A, const float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
-
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
@@ -291,22 +296,25 @@ inline __attribute__((always_inline)) void MatMulCC(const float* A, const float*
 			bool shr = true;
 
 			while (depth < (H1 + H2)) {
-				if (depth >= H1)
+				if (depth >= H1) {
 					shr = false;
+				}
 
 				for (MYITE p = 0; p < (K / 2 + 1); p++) {
 					float sum;
-					if (p < (count >> 1))
+					if (p < (count >> 1)) {
 						sum = tmp[2 * p] + tmp[(2 * p) + 1];
-					else if ((p == (count >> 1)) && ((count & 1) == 1))
+					} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
 						sum = tmp[2 * p];
-					else
+					} else {
 						sum = 0;
+					}
 
-					if (shr)
+					if (shr) {
 						tmp[p] = sum;
-					else
+					} else {
 						tmp[p] = sum;
+					}
 				}
 				count = (count + 1) >> 1;
 
@@ -321,7 +329,6 @@ inline __attribute__((always_inline)) void MatMulCC(const float* A, const float*
 
 // C = A |*| B
 inline __attribute__((always_inline)) void SparseMatMulX(const MYINT* Aidx, const float* Aval, float* C, MYINT K, MYINT shrA, MYINT shrB, MYINT shrC) {
-
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
 		float b = getFloatFeature(k);
@@ -353,9 +360,9 @@ inline __attribute__((always_inline)) void SparseMatMulX(const MYINT* Aidx, cons
 
 	return;
 }
+
 // C = A |*| B
 inline __attribute__((always_inline)) void SparseMatMul(const MYINT* Aidx, const float* Aval, float* B, float* C, MYINT K, MYINT shrA, MYINT shrB, MYINT shrC) {
-
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
 		float b = B[k];
@@ -417,7 +424,6 @@ inline __attribute__((always_inline)) void TanH(float* A, MYINT I, MYINT J, floa
 
 // index = argmax(A)
 inline __attribute__((always_inline)) void ArgMax(float* A, MYINT I, MYINT J, MYINT* index) {
-
 	float max = A[0];
 	MYITE maxIndex = 0, counter = 0;
 	for (MYITE i = 0; i < I; i++) {
@@ -434,7 +440,6 @@ inline __attribute__((always_inline)) void ArgMax(float* A, MYINT I, MYINT J, MY
 	}
 
 	*index = maxIndex;
-
 	return;
 }
 
@@ -450,7 +455,6 @@ inline __attribute__((always_inline)) void Transpose(float* A, float* B, MYINT I
 
 // C = a * B
 inline __attribute__((always_inline)) void ScalarMul(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
-
 	float a = *A;
 
 	for (MYITE i = 0; i < I; i++) {
@@ -494,22 +498,25 @@ inline __attribute__((always_inline)) void Conv(float* A, const float* B, float*
 					bool shr = true;
 
 					while (depth < (H1 + H2)) {
-						if (depth >= H1)
+						if (depth >= H1) {
 							shr = false;
+						}
 
 						for (MYITE p = 0; p < (totalEle / 2 + 1); p++) {
 							float sum;
-							if (p < (count >> 1))
+							if (p < (count >> 1)) {
 								sum = tmp[2 * p] + tmp[(2 * p) + 1];
-							else if ((p == (count >> 1)) && ((count & 1) == 1))
+							} else if ((p == (count >> 1)) && ((count & 1) == 1)) {
 								sum = tmp[2 * p];
-							else
+							} else {
 								sum = 0;
+							}
 
-							if (shr)
+							if (shr) {
 								tmp[p] = sum;
-							else
+							} else {
 								tmp[p] = sum;
+							}
 						}
 						count = (count + 1) >> 1;
 
@@ -528,7 +535,6 @@ inline __attribute__((always_inline)) void Conv(float* A, const float* B, float*
 // A = A <+> B
 // A[N][H][W][C], B[C]
 inline __attribute__((always_inline)) void AddOrSubCir4D(float* A, const float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
-
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
@@ -538,10 +544,11 @@ inline __attribute__((always_inline)) void AddOrSubCir4D(float* A, const float* 
 					float b = ((float) pgm_read_float_near(&B[c]));
 
 					float res;
-					if (add)
+					if (add) {
 						res = a + b;
-					else
+					} else {
 						res = a - b;
+					}
 
 					A[n * H * W * C + h * W * C + w * C + c] = res;
 				}
@@ -555,7 +562,6 @@ inline __attribute__((always_inline)) void AddOrSubCir4D(float* A, const float* 
 // A = A <+> B
 // A[N][H][W][C], B[C]
 inline __attribute__((always_inline)) void AddOrSubCir2D(float* A, const float* B, MYINT H, MYINT W, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
-
 	for (MYITE h = 0; h < H; h++) {
 		for (MYITE w = 0; w < W; w++) {
 			float a = A[h * W + w];
@@ -563,10 +569,11 @@ inline __attribute__((always_inline)) void AddOrSubCir2D(float* A, const float* 
 			float b = ((float) pgm_read_float_near(&B[w]));
 
 			float res;
-			if (add)
+			if (add) {
 				res = a + b;
-			else
+			} else {
 				res = a - b;
+			}
 
 			A[h * W + w] = res;
 		}
@@ -578,14 +585,14 @@ inline __attribute__((always_inline)) void AddOrSubCir2D(float* A, const float* 
 // A = relu(A)
 // A[N][H][W][C]
 inline __attribute__((always_inline)) void Relu4D(float* A, MYINT N, MYINT H, MYINT W, MYINT C) {
-
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
 				for (MYITE c = 0; c < C; c++) {
 					float a = A[n * H * W * C + h * W * C + w * C + c];
-					if (a < 0)
+					if (a < 0) {
 						a = 0;
+					}
 
 					A[n * H * W * C + h * W * C + w * C + c] = a;
 				}
@@ -599,12 +606,12 @@ inline __attribute__((always_inline)) void Relu4D(float* A, MYINT N, MYINT H, MY
 // A = relu(A)
 // A[N][H][W][C]
 inline __attribute__((always_inline)) void Relu2D(float* A, MYINT H, MYINT W) {
-
 	for (MYITE h = 0; h < H; h++) {
 		for (MYITE w = 0; w < W; w++) {
 			float a = A[h * W + w];
-			if (a < 0)
+			if (a < 0) {
 				a = 0;
+			}
 
 			A[h * W + w] = a;
 		}
@@ -628,8 +635,9 @@ inline __attribute__((always_inline)) void Maxpool(float* A, float* B, MYINT N, 
 					for (MYITE hs = 0; hs < stride; hs++) {
 						for (MYITE ws = 0; ws < stride; ws++) {
 							float a = A[n * H * W * C + ((stride * ho) + hs) * W * C + ((stride * wo) + ws) * C + c];
-							if (a > max)
+							if (a > max) {
 								max = a;
+							}
 						}
 					}
 
@@ -644,7 +652,6 @@ inline __attribute__((always_inline)) void Maxpool(float* A, float* B, MYINT N, 
 
 // B = exp(A)
 inline __attribute__((always_inline)) void Exp(float* A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, float* B) {
-
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float x = A[i * J + j];

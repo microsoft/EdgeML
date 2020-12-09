@@ -4,10 +4,8 @@
 import math
 import numpy as np
 
-
 def getScale(maxabs: float, bits):
     return int(np.ceil(np.log2(maxabs) - np.log2((1 << (bits - 2)) - 1)))
-
 
 def printUspsRNN():
     ite = 16
@@ -17,6 +15,7 @@ def printUspsRNN():
     print("let h0 = tanh(c0 + Bh) in")
     print("let H0 = (zeta * (1.0 - g0) + nu) <*> h0 in ")
     print("")
+
     for i in range(1, ite):
         print("let a%d = (XX[%d] * W) in" % (i, i))
         print("let b%d = (H%d * U) in" % (i, i-1))
@@ -26,9 +25,9 @@ def printUspsRNN():
         print("let H%d = (g%d <*> H%d) + (zeta * (1.0 - g%d) + nu) <*> h%d in " %
               (i, i, i-1, i, i))
         print("\n")
+
     print("let score = (H%d * FC) + FCbias in" % (ite-1))
     print("argmax(score)")
-
 
 def printDsaRNN():
     ite = 125
@@ -38,6 +37,7 @@ def printDsaRNN():
     print("let h0 = tanh(c0 + Bh) in")
     print("let H0 = (zeta * (1.0 - g0) + nu) <*> h0 in ")
     print("")
+
     for i in range(1, ite):
         print("let a%d = (XX[%d] * W1) * W2 in" % (i, i))
         print("let b%d = (H%d * U1) * U2 in" % (i, i-1))
@@ -47,9 +47,9 @@ def printDsaRNN():
         print("let H%d = (g%d <*> H%d) + (zeta * (1.0 - g%d) + nu) <*> h%d in " %
               (i, i, i-1, i, i))
         print("\n")
+
     print("let score = (H%d * FC) + FCbias in" % (ite-1))
     print("argmax(score)")
-
 
 def printSpectakomRNN():
     ite = 7
@@ -59,6 +59,7 @@ def printSpectakomRNN():
     print("let h0 = tanh(c0 + Bh) in")
     print("let H0 = (zeta * (1.0 - g0) + nu) <*> h0 in ")
     print("")
+
     for i in range(1, ite):
         print("let a%d = (XX[%d] * W1) * W2 in" % (i, i))
         print("let b%d = (H%d * U1) * U2 in" % (i, i-1))
@@ -68,12 +69,11 @@ def printSpectakomRNN():
         print("let H%d = (g%d <*> H%d) + (zeta * (1.0 - g%d) + nu) <*> h%d in " %
               (i, i, i-1, i, i))
         print("\n")
+
     print("let score = ((H%d * FC1) * FC2) + FCBias in" % (ite-1))
     print("argmax(score)")
 
-
 def treeSum(tmp, length, height_shr, height_noshr):
-
     count = length
     depth = 0
     shr = True
@@ -94,14 +94,12 @@ def treeSum(tmp, length, height_shr, height_noshr):
                 tmp[p] = sum / 2
             else:
                 tmp[p] = sum
+
         count = (count + 1) >> 1
-
         depth += 1
-
         print(tmp)
 
     return tmp[0]
-
 
 def treeSumNew(tmp, count, height_shr, height_noshr):
     if count == 1:
@@ -133,17 +131,13 @@ def treeSumNew(tmp, count, height_shr, height_noshr):
             tmp[count // 2] = 0
 
         count = (count + 1) >> 1
-
         print(tmp)
 
     return tmp[0]
 
 # printUspsRNN()
-
 # printDsaRNN()
-
 # printSpectakomRNN()
-
 
 def treeSumTest():
     #tmp = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
@@ -158,15 +152,14 @@ def treeSumTest():
     sum = treeSumNew(tmpNew, 1, 0, 1)
     print(sum)
 
-
 def computeScale(val, bits):
     l = np.log2(val)
     if int(l) == l:
         c = l + 1
     else:
         c = np.ceil(l)
-    return -int((bits - 1) - c)
 
+    return -int((bits - 1) - c)
 
 def test(n, bits):
     print(np.log2(n))
@@ -176,7 +169,6 @@ def test(n, bits):
     v2 = int(np.ldexp(n, -s2))
     print("%f scale = %d int = %d" % (n, s1, v1))
     print("%f scale = %d int = %d" % (n, s2, v2))
-
 
 def getShrForMul(scale_A, scale_B):
     bits = 16
@@ -190,13 +182,16 @@ def getShrForMul(scale_A, scale_B):
             shrA, shrB = shr1, shr2
         else:
             shrA, shrB = shr2, shr1
+
         return [shrA, shrB]
     else:
         save = abs(abs(pRes) - abs(MAX_SCALE))
         if save % 2 == 1:
             shr1 -= 1
             save -= 1
+
         save = save // 2
+
         if scale_A <= scale_B:
             shrA = max(shr1 - save, 0)
             shrB = max(shr2 - save, 0)
@@ -205,7 +200,6 @@ def getShrForMul(scale_A, scale_B):
             shrB = max(shr1 - save, 0)
 
         return [shrA, shrB]
-
 
 x = getShrForMul(-12, -12)
 print(x)
