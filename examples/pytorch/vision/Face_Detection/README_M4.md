@@ -92,7 +92,7 @@ In this mode, we test the generated model against the provided SCUT Head Part B 
 For this, first run the following to generate predictions of the model and store output in the '--save_folder' folder. Specify if the model was trained in multigpu setting in --multigpu.
 
 ```shell
-IS_QVGA_MONO=1 python scut_test.py --model_arch RPool_Face_M4 --model ./weights/RPool_Face_M4_best_state.pth --save_folder rpool_face_m4_val --subset val  --multigpu True
+IS_QVGA_MONO=1 python scut_test.py --model_arch RPool_Face_M4 --model ./weights/RPool_Face_M4_best_state.pth --save_folder rpool_face_m4_val --multigpu True
 ```
 
 The above command generates predictions for each image in the "validation" dataset. For each image, a separate prediction file is provided (image_name.txt file in appropriate folder). The first line of the prediction file contains the total number of boxes identified. 
