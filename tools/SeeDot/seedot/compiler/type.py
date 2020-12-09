@@ -11,7 +11,8 @@ import seedot.compiler.ast.astVisitor as astVisitor
 
 import numpy as np
 
-# Performs type inference of the input AST
+# Performs type inference of the input AST.
+
 
 class Type:
     pass
@@ -33,7 +34,7 @@ class Tensor(Type):
         return reduce(operator.mul, self.shape, 1)
 
     # Tensor without any dimension (float) or a tensor with all dimensions
-    # equal to 1
+    # equal to 1.
     def isShapeOne(self):
         return self.dim == 0 or self.size() == 1
 
@@ -41,10 +42,8 @@ class Tensor(Type):
 def isInt(type: Type):
     return isinstance(type, Int)
 
-
 def isTensor(type: Type):
     return isinstance(type, Tensor)
-
 
 def isEqual(type1: Type, type2: Type):
     if isInt(type1) and isInt(type2):
@@ -66,7 +65,7 @@ class InferType(astVisitor.ASTVisitor):
         node.type = Int()
         return node.type
 
-    # Float is represented as a tensor with 0 dimension
+    # Float is represented as a tensor with 0 dimension.
     def visitFloat(self, node: ast.Float):
         node.type = Tensor([])
         return node.type
@@ -83,7 +82,7 @@ class InferType(astVisitor.ASTVisitor):
         node.type = Tensor(node.shape)
         return node.type
 
-    # Matrix transpose
+    # Matrix transpose.
     def visitTransp(self, node: ast.Transp):
         node.expr.gamma = dict(node.gamma)
         exprType = self.visit(node.expr)
@@ -100,10 +99,10 @@ class InferType(astVisitor.ASTVisitor):
         exprType = self.visit(node.expr)
 
         assert isTensor(exprType) and exprType.dim >= 1
-        # For splicing to be valid, the number of dimensions in input variable should match the 
-        # indices provided
+        # For splicing to be valid, the number of dimensions in input variable should match the
+        # indices provided.
         assert exprType.dim == len(node.sizes)
-        # For splicing to be valid, all target dimensions must be lesser than the input variable
+        # For splicing to be valid, all target dimensions must be lesser than the input variable.
         assert np.all(np.array(exprType.shape) >= np.array(node.sizes))
         for var in node.vars:
             var.gamma = dict(node.gamma)
@@ -112,25 +111,25 @@ class InferType(astVisitor.ASTVisitor):
 
         return node.type
 
-    # currently not visited while type checking
+    # Currently not visited while type checking.
     def visitLeftSplice(self, node: ast.LeftSplice):
         node.expr.gamma = dict(node.gamma)
         exprType = self.visit(node.expr)
 
         assert isTensor(exprType) and exprType.dim >= 1
-        # For splicing to be valid, the number of dimensions in input variable should match the 
-        # indices provided
+        # For splicing to be valid, the number of dimensions in input variable should match the
+        # indices provided.
         assert exprType.dim == len(node.sizes)
-        # For splicing to be valid, all target dimensions must be lesser than the input variable
+        # For splicing to be valid, all target dimensions must be lesser than the input variable.
         assert np.all(np.array(exprType.shape) >= np.array(node.sizes))
         for var in node.vars:
             var.gamma = dict(node.gamma)
         assert np.all([self.visit(var).isShapeOne for var in node.vars])
         node.type = Tensor(node.sizes)
 
-        return node.type    
+        return node.type
 
-    # Reshape the tensor with custom dimensions
+    # Reshape the tensor with custom dimensions.
     def visitReshape(self, node: ast.Reshape):
         node.expr.gamma = dict(node.gamma)
         exprType = self.visit(node.expr)
@@ -138,28 +137,28 @@ class InferType(astVisitor.ASTVisitor):
         assert isTensor(exprType) and exprType.dim >= 1
 
         # Reshape is valid if the total number of elements remain same after
-        # reshape
+        # reshape.
         assert reduce(operator.mul, exprType.shape, 1) == reduce(
             operator.mul, node.shape, 1)
         node.type = Tensor(node.shape)
 
         return node.type
 
-    # Reduces the shape of a tensor by choosing the maximum from a filter
+    # Reduces the shape of a tensor by choosing the maximum from a filter.
     def visitMaxpool(self, node: ast.Maxpool):
         node.expr.gamma = dict(node.gamma)
         exprType = self.visit(node.expr)
 
         [n1, H, W, n4] = exprType.shape
 
-        # Implementation only performs maxpool over a 4D input
+        # Implementation only performs maxpool over a 4D input.
         assert isTensor(exprType) and exprType.dim == 4
 
         FH = node.kernelSize[0]
         FW = node.kernelSize[1]
         HPADL = node.padding[0]
         HPADR = node.padding[1]
-        WPADL = node.padding[2]    
+        WPADL = node.padding[2]
         WPADR = node.padding[3]
 
         assert HPADL == HPADR == WPADL == WPADR == 0, "Non zero paddings not supported currently"
@@ -172,7 +171,7 @@ class InferType(astVisitor.ASTVisitor):
 
         return node.type    
 
-    # Indexing a tensor
+    # Indexing a tensor.
     def visitIndex(self, node: ast.Index):
         node.expr.gamma = dict(node.gamma)
         exprType = self.visit(node.expr)
@@ -189,7 +188,7 @@ class InferType(astVisitor.ASTVisitor):
 
         return node.type
 
-    # Currently assuming that the type of each expr is same
+    # Currently assuming that the type of each expr is same.
     def visitFuncCall(self, node: ast.FuncCall):
         type = None
         for expr in node.exprList:
@@ -239,7 +238,6 @@ class InferType(astVisitor.ASTVisitor):
                 node.type = fType
             elif fType.dim == 0:
                 node.type = eType
-
             # Tensor(...) * Tensor(...)
             else:
                 assert eType.dim == 2 and fType.dim == 2
@@ -256,7 +254,7 @@ class InferType(astVisitor.ASTVisitor):
 
     # e <+> f OR e <-> f
     def visitBopAddOrSubCir(self, node: ast.Bop1, eType: Type, fType: Type):
-        assert isTensor(eType) and isTensor(fType)       
+        assert isTensor(eType) and isTensor(fType)
         assert eType.dim >= fType.dim
         assert fType.dim == 1
         assert eType.shape[-1] == fType.shape[-1]
@@ -279,9 +277,9 @@ class InferType(astVisitor.ASTVisitor):
         assert isTensor(eType) and isTensor(fType)
         assert eType.dim == 4 and fType.dim == 4
 
-        # Implementation does Conv on 4D input on 4D filter
+        # Implementation does Conv on 4D input on 4D filter.
         # Input is padded with 0s to ensure that the output dimension of the
-        # matrix is same as the input
+        # matrix is same as the input.
         [n, h, w, cin] = eType.shape
         [_, _, cin_, cout] = fType.shape
         assert cin == cin_
@@ -341,7 +339,7 @@ class InferType(astVisitor.ASTVisitor):
 
         assert F2hf % 2 == F2wf % 2 == 1, "odd filter size necessary for second filter"
 
-        for i in range(0,4): 
+        for i in range(0,4):
             assert node.padding[i] >= 0, "Padding cannot be negative"
         assert node.stride[0] > 0 and node.stride[1] > 0, "Stride must be positive"
 
@@ -375,7 +373,7 @@ class InferType(astVisitor.ASTVisitor):
 
         assert hf % 2 == wf % 2 == 1, "Odd filter sizes supported"
 
-        for i in range(0,4): 
+        for i in range(0,4):
             assert node.padding[i] >= 0, "Padding cannot be negative"
         assert node.stride[0] > 0 and node.stride[1] > 0, "Stride must be positive"
         assert node.dilation[0] > 0 and node.dilation[1] > 0, "Dilation must be positive"
@@ -386,7 +384,6 @@ class InferType(astVisitor.ASTVisitor):
 
         node.type = Tensor(shape)
         return node.type
-        
 
     # e + f OR e - f
     def visitBop2(self, node: ast.Bop2):
@@ -419,42 +416,34 @@ class InferType(astVisitor.ASTVisitor):
         if node.op == seedotParser.seedotParser.RELU:
             assert isTensor(eType) and eType.dim >= 1
             node.type = eType
-
         # relu(e)
         elif node.op == seedotParser.seedotParser.RELU6:
             assert isTensor(eType) and eType.dim >= 1
             node.type = eType
-
         # exp(e)
         elif node.op == seedotParser.seedotParser.EXP:
-            # Currently supports exp() on a tensor with single element
+            # Currently supports exp() on a tensor with single element.
             assert isTensor(eType) and eType.isShapeOne()
             node.type = eType
-
         # argmax(e)
         elif node.op == seedotParser.seedotParser.ARGMAX:
             assert isTensor(eType) and eType.dim >= 1
             node.type = Int()
-
         # sgn(e)
         elif node.op == seedotParser.seedotParser.SGN:
             assert isTensor(eType) and eType.isShapeOne()
             node.type = Int()
-
         # tanh(e)
         elif node.op == seedotParser.seedotParser.TANH:
             assert isTensor(eType) and eType.dim == 2
             node.type = eType
-
         # sigmoid(e)
         elif node.op == seedotParser.seedotParser.SIGMOID:
             assert isTensor(eType) and eType.dim == 2
             node.type = eType
-
         elif node.op == seedotParser.seedotParser.NORMALISEL2:
-            assert isTensor(eType) and eType.dim == 4   
+            assert isTensor(eType) and eType.dim == 4
             node.type = eType
-        
         else:
             assert False
 
@@ -494,7 +483,7 @@ class InferType(astVisitor.ASTVisitor):
 
         return node.type
 
-    # e >= 0?  f : g
+    # e >= 0 ? f : g
     def visitCond(self, node: ast.Cond):
         node.expr.gamma = dict(node.gamma)
         eType = self.visit(node.expr)
@@ -525,12 +514,12 @@ class InferType(astVisitor.ASTVisitor):
 
         if not node.leftSplice: 
             node.expr.gamma[node.name] = eType
-                
+
         fType = self.visit(node.expr)
         node.type = fType
         return node.type
 
-    # Reverse a tensor along given axis
+    # Reverse a tensor along given axis.
     def visitReverse(self, node: ast.Reverse):
         node.expr.gamma = dict(node.gamma)
         exprType = self.visit(node.expr)
@@ -538,4 +527,4 @@ class InferType(astVisitor.ASTVisitor):
         assert isTensor(exprType) and exprType.dim >= 1
         node.type = Tensor(exprType.shape)
 
-        return node.type     
+        return node.type

@@ -15,6 +15,7 @@ from seedot.writer import Writer
 
 import time
 
+
 class M3(CodegenBase):
 
     def __init__(self, outputDir, decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables):
@@ -27,7 +28,7 @@ class M3(CodegenBase):
         self.printCincludes()
         self.printCHeader()
 
-        scratchSize = self.computeScratchLocationsFirstFitPriority() #computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
+        scratchSize = self.computeScratchLocationsFirstFitPriority() # computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
         hFile = os.path.join(self.outputDir, "predict.h")
         hFileOut = Writer(hFile, 'a')
         hFileOut.printf('\n#define MEM_BUF_SIZE %d\n' % scratchSize, indent=True)
@@ -53,7 +54,7 @@ class M3(CodegenBase):
             func = "Fixed"
         if forFloat():
             self.out.printf('void seedot%s(%s* scratch) {\n' % (func, type), indent=True)
-        else: 
+        else:
             self.out.printf('void seedot%s(%s* scratch) {\n' % (func, type), indent=True)
         self.out.increaseIndent()
 
@@ -106,17 +107,17 @@ class M3(CodegenBase):
         self.out.close()
 
     def printForHeader(self, ir):
-        self.out.printf('for (%s ', "S_ITER_T", indent=True) #Loop counter must be int16 else indices can overflow
+        self.out.printf('for (%s ', "S_ITER_T", indent=True) # Loop counter must be int16 else indices can overflow.
         self.print(ir.var)
         self.out.printf(' = %d; ', ir.st)
         self.print(ir.cond)
         self.out.printf('; ')
         self.print(ir.var)
-        self.out.printf('++) {\n') #TODO: What if --?
+        self.out.printf('++) {\n') # TODO: What if --?
 
     def printMemset(self, ir):
         self.out.printf('memset(', indent=True)
-        # If a memory optimized mapping is available for a variable, use that else use original variable name
+        # If a memory optimized mapping is available for a variable, use that else use original variable name.
         if Config.x86MemoryOptimize and forFixed() and self.numberOfMemoryMaps in self.scratchSubs:
             self.out.printf("(scratch + %d)", self.scratchSubs[self.numberOfMemoryMaps][ir.e.idf])
         else:
@@ -131,7 +132,7 @@ class M3(CodegenBase):
                         ("float" if forFloat() else typ_str, ir.len))
 
     def printMemcpy(self, ir):
-        # If one of the variables' offsets are used, this function computes an expression to reach the memory location including offsets
+        # If one of the variables' offsets are used, this function computes an expression to reach the memory location including offsets.
         def printFlattenedIndices(indices, shape):
             remSize = np.prod(shape)
             for i in range(len(shape)):
@@ -144,13 +145,13 @@ class M3(CodegenBase):
         typ_str = "Q15_T"
         if config.vbwEnabled:
             if hasattr(self, 'varsForBitwidth'):
-                # Note ir.to and ir.start are constrained to have the same bitwidth
+                # Note ir.to and ir.start are constrained to have the same bitwidth.
                 typ_str = ("Q%d_T" % (self.varsForBitwidth[ir.to.idf] - 1)) if ir.to.idf in self.varsForBitwidth else typ_str
             else:
                 assert False, "Illegal state, VBW mode but no variable information present"
         typ_str = "float" if forFloat() else typ_str
         self.out.printf('memcpy(', indent=True)
-        # If a memory optimized mapping is available for a variable, use that else use original variable name
+        # If a memory optimized mapping is available for a variable, use that else use original variable name.
         if Config.x86MemoryOptimize and forFixed() and self.numberOfMemoryMaps in self.scratchSubs:
             for (a, b, c) in [(ir.to.idf, ir.toIndex, 0), (ir.start.idf, ir.startIndex, 1)]:
                 self.out.printf("((scratch + %d + sizeof(%s)*(", self.scratchSubs[self.numberOfMemoryMaps][a], typ_str)
@@ -194,7 +195,7 @@ class M3(CodegenBase):
                         x = -1
                 else:
                     x = 0
-                
+
                 if not (isinstance(arg, IR.Var) and arg.idf in self.scratchSubs[self.currentMemMap]):
                     if x != 0:
                         self.out.printf("&")
@@ -207,8 +208,8 @@ class M3(CodegenBase):
                     self.out.printf(", ")
             self.out.printf(");\n")
 
-    # The following method translates function calls made for C++ codegen to function calls required by M3 library
-    # Function names and arguments are modified accordingly
+    # The following method translates function calls made for C++ codegen to function calls required by M3 library.
+    # Function names and arguments are modified accordingly.
     def translateToC(self, varName, argList):
         varName = varName.replace('<', ' ').replace('>', '').replace(',', '')
         varName = varName.split(' ')
@@ -227,9 +228,9 @@ class M3(CodegenBase):
         assert config.vbwEnabled, "Function calls for VBW mode only supported on M3"
         
         # Type checking has already been done so no exhaustive checks here
-        if name[:-2] == "MatAdd" or name == "MatSub":   #MatAddNC MatAddCN MatAddCC MatAddNN
+        if name[:-2] == "MatAdd" or name == "MatSub":   # MatAddNC MatAddCN MatAddCC MatAddNN
             shapeB = self.decls[revArgList["B"].idf].shape
-            if shapeB[1] == 1:  
+            if shapeB[1] == 1:
                 op = "add" if name[3:6] == "Add" else "sub"
                 assert bitwidths[0] == bitwidths[1] == bitwidths[3]
                 if op == "add":
@@ -257,7 +258,7 @@ class M3(CodegenBase):
                 return funcName, args
             else:
                 assert False, "Not Implemented for M3"
-        elif name[:-1] == "MatAdd": #MatAdd4
+        elif name[:-1] == "MatAdd": # MatAdd4
             assert bitwidths[0] == bitwidths[1] == bitwidths[3]
             funcName = "q%d_t_add" % (bitwidths[0] - 1)
             scret = revArgList["shrC"].n * revArgList["demote"].n
@@ -274,7 +275,7 @@ class M3(CodegenBase):
                 IR.Int(scret) : "scret"
             }
             return funcName, args
-        elif name[:6] == "MatAdd" and name[6:-1] == "BroadCast": #MatAddBroadCastA MatAddBroadCastB
+        elif name[:6] == "MatAdd" and name[6:-1] == "BroadCast": # MatAddBroadCastA MatAddBroadCastB
             if name[-1] == "A":
                 shapeVec = self.decls[revArgList["B"].idf].shape
                 vec = revArgList["B"]
@@ -294,7 +295,7 @@ class M3(CodegenBase):
                 funcName = "q15_v_scalar_add"
                 scret = revArgList["shrC"].n * revArgList["demote"].n
                 args = {
-                    IR.Int(self.cnsts[scalar.idf]) : "scalar", #scalar : "scalar",
+                    IR.Int(self.cnsts[scalar.idf]) : "scalar", # scalar : "scalar",
                     vec : "vec",
                     revArgList["I"] : "len",
                     revArgList["C"] : "ret",
@@ -305,7 +306,7 @@ class M3(CodegenBase):
                 return funcName, args
             else:
                 assert False, "Not implemented for M3"
-        elif name[:6] == "MatSub" and name[6:-1] == "BroadCast":            
+        elif name[:6] == "MatSub" and name[6:-1] == "BroadCast":
             assert bitwidths[0] == bitwidths[1] == bitwidths[3] == 16, "Not implemented on M3"
             scret = revArgList["shrC"].n * revArgList["demote"].n
             if name[-1] == "A":
@@ -313,18 +314,18 @@ class M3(CodegenBase):
                 assert shapeB[1] == 1
                 funcName = "q15_v_scalar_sub"
                 args = {
-                    IR.Int(self.cnsts[revArgList["A"].idf]) : "scalar", #revArgList["A"] : "scalar",
+                    IR.Int(self.cnsts[revArgList["A"].idf]) : "scalar", # revArgList["A"] : "scalar",
                     revArgList["B"] : "vec",
                     revArgList["I"] : "len",
                     revArgList["C"] : "ret",
                     revArgList["shrA"] : "scscalar",
                     revArgList["shrB"] : "scvec",
                     IR.Int(scret) : "scret"
-                }   
+                }
             elif name[-1] == "B":
                 assert False, "Not implemented on M3"
             return funcName, args
-        elif name[:-2] == "AddOrSubCir": #AddOrSubCir2D AddOrSubCir4D
+        elif name[:-2] == "AddOrSubCir": # AddOrSubCir2D AddOrSubCir4D
             addOrSub = "add" if revArgList["add"].b else "sub"
             bwA = bitwidths[0]
             bwB = bitwidths[1]
@@ -353,9 +354,9 @@ class M3(CodegenBase):
                 else:
                     assert False, "Not implemented for M3"
             return ("%s_%s_vec" % (bwString, addOrSub)), args
-        elif name == "MulCir": #MulCir
+        elif name == "MulCir": # MulCir
             shapeB = self.decls[revArgList["B"].idf].shape
-            if shapeB[1] == 1:  
+            if shapeB[1] == 1:
                 assert bitwidths[0] == bitwidths[1] == bitwidths[3]
                 funcName = "q%d_v_hadamard" % (bitwidths[0] - 1)
                 scvec2 = revArgList["shrB"].n * revArgList["demote"].n
@@ -370,7 +371,7 @@ class M3(CodegenBase):
                 return funcName, args
             else:
                 assert False, "Not Implemented for M3"
-        elif name[:7] == "Sigmoid": #Sigmoid SigmoidNew16
+        elif name[:7] == "Sigmoid": # Sigmoid SigmoidNew16
             shapeA = self.decls[revArgList["A"].idf].shape
             use_tables = useNewTableExp() or useMathExp()
             if shapeA[1] == 1:
@@ -390,7 +391,7 @@ class M3(CodegenBase):
                 return funcName, args
             else:
                 assert False, "Not Implemented for M3"
-        elif name[:4] == "TanH": #TanH TanHNew16
+        elif name[:4] == "TanH": # TanH TanHNew16
             shapeA = self.decls[revArgList["A"].idf].shape
             use_tables = useNewTableExp() or useMathExp()
             if shapeA[1] == 1:
@@ -407,9 +408,9 @@ class M3(CodegenBase):
                 return funcName, args
             else:
                 assert False, "Not Implemented for M3"
-        elif name[:3] == "Exp": #Exp ExpNew16
+        elif name[:3] == "Exp": # Exp ExpNew16
             assert False, "Not Implemented for M3"
-        elif name[:11] == "AdjustScale": #AdjustScaleShl AdjustScaleShr AdjustScaleShlSaturate
+        elif name[:11] == "AdjustScale": # AdjustScaleShl AdjustScaleShr AdjustScaleShlSaturate
             if name[-8:] == "Saturate":
                 assert False, "Not implemented for M3"
             assert bitwidths[0] == 16, "Not implemented for M3"
@@ -428,9 +429,9 @@ class M3(CodegenBase):
                     revArgList["scale"] : "scvec"
                 }
                 return funcName, args
-        elif name == "Transpose": #Transpose
+        elif name == "Transpose": # Transpose
             assert False, "Not implemented for M3"
-        elif name == "Reverse2": #Reverse
+        elif name == "Reverse2": # Reverse
             assert bitwidths[0] == 16, "Not implemented for M3"
             funcName = "q15_m_reverse"
             args = {
@@ -441,14 +442,14 @@ class M3(CodegenBase):
                 revArgList["B"] : "ret"
             }
             return funcName, args
-        elif name == "ScalarMul": #ScalarMul
+        elif name == "ScalarMul": # ScalarMul
             shapeB = self.decls[revArgList["B"].idf].shape
-            if shapeB[1] == 1:  
+            if shapeB[1] == 1:
                 assert bitwidths[0] == bitwidths[1] == bitwidths[3] == 16
                 funcName = "q15_v_scalar_mul"
                 scvec = revArgList["shrB"].n * revArgList["demote"].n
                 args = {
-                    IR.Int(self.cnsts[revArgList["A"].idf]) : "scalar", #revArgList["A"] : "scalar",
+                    IR.Int(self.cnsts[revArgList["A"].idf]) : "scalar", # revArgList["A"] : "scalar",
                     revArgList["B"] : "vec",
                     revArgList["I"] : "len",
                     revArgList["C"] : "ret",
@@ -458,11 +459,11 @@ class M3(CodegenBase):
                 return funcName, args
             else:
                 assert False, "Not Implemented for M3"
-        elif name[:6] == "MatMul": #MatMulNN MatMulNC MatMulCC MatMulCN
+        elif name[:6] == "MatMul": # MatMulNN MatMulNC MatMulCC MatMulCN
             shapeB = self.decls[revArgList["B"].idf].shape
-            if shapeB[1] == 1:  
-                bwA = bitwidths[0] 
-                bwB = bitwidths[1] 
+            if shapeB[1] == 1:
+                bwA = bitwidths[0]
+                bwB = bitwidths[1]
                 bwC = bitwidths[3]
                 scvec = IR.Int(revArgList["shrA"].n * revArgList["demote"].n)
                 shrB = IR.Int(revArgList["shrB"].n * revArgList["H1"].n)
@@ -472,11 +473,11 @@ class M3(CodegenBase):
                     revArgList["I"] : "nrows",
                     revArgList["J"] : "ncols",
                     revArgList["C"] : "ret",
-                    shrB : "scmat", #revArgList["shrB"]: "scmat",
+                    shrB : "scmat", # revArgList["shrB"]: "scmat",
                     scvec : "scvec",
                     revArgList["H1"] : "scret",
                 }
-                if bwA == bwB == bwC == 16: #Note the order of inputs is reversed
+                if bwA == bwB == bwC == 16: # Note the order of inputs is reversed.
                     bwString = "q15"
                 elif bwA == bwC == 16 and bwB == 8:
                     bwString = "q15xq7_q15"
@@ -486,12 +487,12 @@ class M3(CodegenBase):
                 return funcName, args
             else:
                 assert False, "Not Implemented for M3"
-        elif name[:12] == "SparseMatMul": #SparseMatMul
+        elif name[:12] == "SparseMatMul": # SparseMatMul
             shapeB = self.decls[revArgList["B"].idf].shape
             assert revArgList["B"].idf != "X", "Sparse MatMul for X not supported on M3"
-            if shapeB[1] == 1:  
-                bwA = bitwidths[0] 
-                bwB = bitwidths[2] 
+            if shapeB[1] == 1:
+                bwA = bitwidths[0]
+                bwB = bitwidths[2]
                 bwC = bitwidths[4]
                 shrC = IR.Int(revArgList["shrC"].n * revArgList["demote"].n)
                 args = {
@@ -500,11 +501,11 @@ class M3(CodegenBase):
                     revArgList["B"] : "vec",
                     revArgList["K"] : "nelem",
                     revArgList["C"] : "ret",
-                    revArgList["shrA"] : "scmat", 
+                    revArgList["shrA"] : "scmat",
                     revArgList["shrB"] : "scvec",
                     shrC : "scret",
                 }
-                if bwA == bwB == bwC == 16: #Note the order of inputs is reversed
+                if bwA == bwB == bwC == 16: # Note the order of inputs is reversed.
                     bwString = "q15"
                 elif bwA == bwC == 16 and bwB == 8:
                     bwString = "q15xq7_q15"
@@ -514,9 +515,9 @@ class M3(CodegenBase):
                 return funcName, args
             else:
                 assert False, "Not Implemented for M3"
-        elif name == "ArgMax": #ArgMax 
+        elif name == "ArgMax": # ArgMax
             shapeA = self.decls[revArgList["A"].idf].shape
-            if shapeA[1] == 1: 
+            if shapeA[1] == 1:
                 assert bitwidths[0] == 16, "Not implemented for M3"
                 funcName = "q15_v_argmax"
                 args = {
@@ -527,7 +528,7 @@ class M3(CodegenBase):
                 return funcName, args
             else:
                 assert False, "Not implemented for M3"
-        elif name[:4] == "Relu": #Relu2D Relu4D Relu6
+        elif name[:4] == "Relu": # Relu2D Relu4D Relu6
             if name[-2:] == "4D" or name[-2:] == "2D":
                 assert False, "Not implemented for M3"
             elif name[-1] == "6":
@@ -546,7 +547,7 @@ class M3(CodegenBase):
                 return funcName, args
             else:
                 assert False, "Not implemented for M3"
-        elif name == "NormaliseL2": #NormaliseL2
+        elif name == "NormaliseL2": # NormaliseL2
             assert bitwidths[0] == 16, "Not implemented for M3"
             funcName = "q15_t_l2_norm"
             args = {
@@ -560,9 +561,9 @@ class M3(CodegenBase):
                 revArgList["shrA"] : "scale_out"
             }
             return funcName, args
-        elif name == "Maxpool": #Maxpool
+        elif name == "Maxpool": # Maxpool
             assert False, "Not implemented for M3"
-        elif name == "Convolution": #Convolution
+        elif name == "Convolution": # Convolution
             bwA = bitwidths[0]
             bwB = bitwidths[1]
             bwC = bitwidths[3]
@@ -605,7 +606,7 @@ class M3(CodegenBase):
                 assert False, "Not implemented for M3"
             return "%s_convolution" % bwString, args
         elif name == "MBConv":
-            #TODO: Remove the TreeSum buffer variable from the list of variables to be allocated from the scratch space, because the TreeSum variable is not used in the M3 codegen.
+            # TODO: Remove the TreeSum buffer variable from the list of variables to be allocated from the scratch space, because the TreeSum variable is not used in the M3 codegen.
             bwA = bitwidths[0]
             bwF1 = bitwidths[1]
             bwW1 = bitwidths[2]
@@ -654,11 +655,11 @@ class M3(CodegenBase):
                 revArgList["WSTR"] : "WStride",
                 revArgList["SIX_1"] : "limit1",
                 revArgList["SIX_2"] : "limit2",
-                shr1 : "shrU1", 
+                shr1 : "shrU1",
                 revArgList["shr3"] : "shrX1",
-                shr4 : "shrU2", 
+                shr4 : "shrU2",
                 revArgList["shr6"] : "shrX2",
-                shr7 : "shrU3", 
+                shr7 : "shrU3",
                 revArgList["shr9"] : "shrX3",
                 revArgList["shl1"] : "shlU1",
                 revArgList["shl3"] : "shlX1",

@@ -2,8 +2,8 @@
 # Licensed under the MIT license.
 
 '''
-onnx_run is faster but may not support all operations
-onnx_run_tf uses tensorflow backend to run the inference
+onnx_run is faster but may not support all operations.
+onnx_run_tf uses tensorflow backend to run the inference.
 '''
 
 import numpy as np
@@ -15,7 +15,7 @@ from onnx_tf.backend import prepare
 from onnx import TensorProto
 
 def main():
-	# First read the ONNX file
+	# First read the ONNX file.
 	if (len(sys.argv) < 2):
 		print("TF python file unspecified.", file=sys.stderr)
 		exit(1)
@@ -42,16 +42,16 @@ def main():
 		np.save('debug/' + model_name + '/' + model_name + '_debug', pred)
 		with open('debug/onnx_debug.txt', 'w') as f:
 			f.write(common.numpy_float_array_to_float_val_str(pred))
-		print("Saving the onnx runtime intermediate output for " + intermediate_layer_value_info.name)
-		exit() 
+		print("Saving the ONNX runtime intermediate output for " + intermediate_layer_value_info.name)
+		exit()
 
-	output = prepare(model).run(x) 
+	output = prepare(model).run(x)
 	pred = getattr(output, output_name)
 	np.save('debug/' + model_name + '/' + model_name + '_output', pred)
 	with open('debug/onnx_output.txt', 'w') as f:
 			f.write(common.numpy_float_array_to_float_val_str(pred))
 	output_dims = common.proto_val_to_dimension_tuple(model.graph.output[0])
-	print("Saving the onnx runtime output of dimension " + str(output_dims))
+	print("Saving the ONNX runtime output of dimension " + str(output_dims))
 
 def preprocess_for_tf(model):
 	for init_vals in model.graph.initializer:
@@ -68,8 +68,8 @@ def preprocess_for_tf(model):
 		for i in range(len(node.input)):
 			node.input[i] = 'tf_' + node.input[i]
 		for i in range(len(node.output)):
-			node.output[i] = 'tf_' + node.output[i]	
+			node.output[i] = 'tf_' + node.output[i]
 	return model
 
 if __name__ == "__main__":
-	main()				
+	main()

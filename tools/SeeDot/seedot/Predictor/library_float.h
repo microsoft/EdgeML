@@ -3,8 +3,8 @@
 
 #pragma once
 
-// This file contains declarations for floating point versions of all operators supported by SeeDot
-// Please refer to library_fixed.h for a description of each operator
+// This file contains declarations for floating point versions of all operators supported by SeeDot.
+// Please refer to library_fixed.h for a description of each operator.
 
 void MatAddNN(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
 void MatAddCN(const float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);

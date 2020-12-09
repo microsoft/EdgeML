@@ -118,8 +118,6 @@ class IntBop(IntExpr):
         self.e2 = e2
 
     def subst(self, from_idf: str, to_e: Expr):
-        if isinstance(self.e1, list) or isinstance(self.e2, list):
-            print("WTF?")
         return IntBop(self.e1.subst(from_idf, to_e), self.op, self.e2.subst(from_idf, to_e))
 
 

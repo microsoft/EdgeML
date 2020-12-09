@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 
 '''
-CodegenBase has print functions for the IR classes defined in IR.py
+CodegenBase has print functions for the IR classes defined in IR.py.
 '''
 
 import numpy as np
@@ -24,17 +24,18 @@ from seedot.util import *
 
 from bokeh.plotting import figure, output_file, show
 
-# Base class for code generation
+# Base class for code generation.
 # There are many variables used in the file like scratchSubs, numberOfMemoryMaps etc;
-# They are defined in the child classes (x86.py, arduino.py, m3.py) if used 
+# They are defined in the child classes (x86.py, arduino.py, m3.py) if used.
+
 
 class CodegenBase:
 
     def __init__(self, decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables):
-        # The child classes populate their own writers, which is set to None here
-        self.out = None 
-             
-        # The following variables are the same as described in the IRBuilder.py file
+        # The child classes populate their own writers, which is set to None here.
+        self.out = None
+
+        # The following variables are the same as described in the IRBuilder.py file.
         self.decls = decls
         self.localDecls = localDecls
         self.scales = scales
@@ -45,17 +46,17 @@ class CodegenBase:
         self.internalVars = internalVars
         self.floatConstants = floatConstants
 
-        # The following are pre-populated for VBW exploration
+        # The following are pre-populated for VBW exploration.
         self.demotedVarsOffsets = demotedVarsOffsets
         self.varsForBitwidth = varsForBitwidth
 
-        # The following variables are required for memory optimization
+        # The following variables are required for memory optimization.
         self.varLiveIntervals = varLiveIntervals
         self.scratchSubs = {}
         self.notScratch = notScratch
 
-        # The following variables are required for defragmentation
-        # TODO: Implement defragmentation procedure
+        # The following variables are required for defragmentation.
+        # TODO: Implement defragmentation procedure.
         self.numberOfMemoryMaps = 0
         self.currentMemMap = 0
         self.defragmentationInstructions = []
@@ -79,19 +80,19 @@ class CodegenBase:
         self.out.printf('%ff', ir.n)
 
     def printVar(self, ir, isPointer=False):
-        # If floating point mode is used or VBW mode is off, then the variable is printed normally (see else branch)
+        # If floating point mode is used or VBW mode is off, then the variable is printed normally (see else branch).
         if config.vbwEnabled and forFixed():
-            # varsForBitwidth variable must be populated during VBW mode
+            # varsForBitwidth variable must be populated during VBW mode.
             if hasattr(self, "varsForBitwidth"):
-                # if target code memory optimization is enabled then variables would be renamed to explicit addresses (scratch + N) else they use names like tmpN
+                # If target code memory optimization is enabled then variables would be renamed to explicit addresses (scratch + N) else they use names like tmpN.
                 if Config.x86MemoryOptimize:
-                    # scratchSubs contains the exact offsets each variable is mapped to, must be present if memory optimizations enabled
+                    # scratchSubs contains the exact offsets each variable is mapped to, must be present if memory optimizations enabled.
                     if hasattr(self, 'scratchSubs'):
-                        # if variable has a offset to which it is mapped to, then replace them with addresses, else use original variable names
+                        # If variable has a offset to which it is mapped to, then replace them with addresses, else use original variable names.
                         if self.numberOfMemoryMaps in self.scratchSubs and ir.idf in self.scratchSubs[self.numberOfMemoryMaps]:
                             type = self.decls[ir.idf]
                             offset = self.scratchSubs[self.numberOfMemoryMaps][ir.idf]
-                            # only Tensors are included in memory optimization, scalars are left to use original variable name
+                            # Only Tensors are included in memory optimization, scalars are left to use original variable name.
                             if Type.isTensor(type):
                                 resIndex = ' '
                                 remSize = np.prod(type.shape)
@@ -249,13 +250,13 @@ class CodegenBase:
         self.out.printf('}\n', indent=True)
 
     def printForHeader(self, ir):
-        self.out.printf('for (%s ', "int", indent=True) #Loop counter must be int16 else indices can overflow
+        self.out.printf('for (%s ', "int", indent=True) # Loop counter must be int16 else indices can overflow.
         self.print(ir.var)
         self.out.printf(' = %d; ', ir.st)
         self.print(ir.cond)
         self.out.printf('; ')
         self.print(ir.var)
-        self.out.printf('++) {\n') #TODO: What if --?
+        self.out.printf('++) {\n') # TODO: What if --?
 
     def printWhile(self, ir):
         self.out.printf('while (', indent=True)
@@ -299,7 +300,7 @@ class CodegenBase:
 
     def printMemset(self, ir):
         self.out.printf('memset(', indent=True)
-        # If a memory optimized mapping is available for a variable, use that else use original variable name
+        # If a memory optimized mapping is available for a variable, use that else use original variable name.
         if Config.x86MemoryOptimize and forFixed() and forX86() and self.numberOfMemoryMaps in self.scratchSubs:
             self.out.printf("(scratch + %d)", self.scratchSubs[self.numberOfMemoryMaps][ir.e.idf])
         else:
@@ -314,7 +315,7 @@ class CodegenBase:
                         ("float" if forFloat() else typ_str, ir.len))
 
     def printMemcpy(self, ir):
-        # If one of the variables' offsets are used, this function computes an expression to reach the memory location including offsets
+        # If one of the variables' offsets are used, this function computes an expression to reach the memory location including offsets.
         def printFlattenedIndices(indices, shape):
             remSize = np.prod(shape)
             for i in range(len(shape)):
@@ -327,13 +328,13 @@ class CodegenBase:
         typ_str = "MYINT"
         if config.vbwEnabled:
             if hasattr(self, 'varsForBitwidth'):
-                # Note ir.to and ir.start are constrained to have the same bitwidth
+                # Note ir.to and ir.start are constrained to have the same bit-width.
                 typ_str = ("int%d_t" % (self.varsForBitwidth[ir.to.idf])) if ir.to.idf in self.varsForBitwidth else typ_str
             else:
                 assert False, "Illegal state, VBW mode but no variable information present"
         typ_str = "float" if forFloat() else typ_str
         self.out.printf('memcpy(', indent=True)
-        # If a memory optimized mapping is available for a variable, use that else use original variable name
+        # If a memory optimized mapping is available for a variable, use that else use original variable name.
         if Config.x86MemoryOptimize and forFixed() and self.numberOfMemoryMaps in self.scratchSubs:
             for (a, b, c, d) in [(ir.to.idf, ir.toIndex, 0, ir.to.idx), (ir.start.idf, ir.startIndex, 1, ir.start.idx)]:
                 self.out.printf("((scratch + %d + sizeof(%s)*(", self.scratchSubs[self.numberOfMemoryMaps][a], typ_str)
@@ -520,22 +521,22 @@ class CodegenBase:
     # c) computeScratchLocationsFirstFitPriority
     # d) computeScratchLocationsDLX
     #
-    # are used to compute exact memory locations of a variable
-    # 
-    # The first 3 functions follow heuristic for variable allocation, which works in O(nlogn) time where n is the number of variables
-    # 
+    # are used to compute exact memory locations of a variable.
+    #
+    # The first 3 functions follow heuristic for variable allocation, which works in O(nlogn) time where n is the number of variables.
+    #
     # Function d) attempts to compute a memory allocation using the minimum possible memory, but is an exponential exploration which 
     # may take a long time to complete, due to which it has timeouts built into it.
     # Function d) uses a technique called dancing links or DLX.
     #
     # It is only recommended to use function d) without timeouts when no other tuning is required for the code (only use for codegen 
-    # of the target arduino or m3 device, not during codegen of x86 code which is mostly used by the compiler during exploration)
+    # of the target arduino or m3 device, not during codegen of x86 code which is mostly used by the compiler during exploration).
     #
     # Function preProcessRawMemData is a helper method used to preprocess information about variable sizes and live ranges, and the
-    # output of this method is consequently used by each of the functions a) through d)
+    # output of this method is consequently used by each of the functions a) through d).
 
-    # This method uses block based allocation and is used for memory allocation for the results presented in OOPSLA'20 paper
-    # Works well for FastGRNN benchmarks, but does not work very well on larger models (can use memory around twice the optimum)
+    # This method uses block based allocation and is used for memory allocation for the results presented in OOPSLA'20 paper.
+    # Works well for FastGRNN benchmarks, but does not work very well on larger models (can use memory around twice the optimum).
     def computeScratchLocations(self):
         if not Config.x86MemoryOptimize or forFloat():
             return
@@ -588,7 +589,7 @@ class CodegenBase:
                             continue
                     if breakOutOfWhile:
                         break
-                # TODO: Add defragmentation call
+                # TODO: Add defragmentation call.
                 usedSpaceMap[var] = (endIns, (potentialStart, potentialStart + spaceNeeded - 1))
                 totalScratchSize = max(totalScratchSize, potentialStart + spaceNeeded - 1)
                 if self.numberOfMemoryMaps not in self.scratchSubs.keys():
@@ -611,8 +612,8 @@ class CodegenBase:
             self.out.printf("/* %s */"%(str(self.scratchSubs)))
             return totalScratchSize + 1
 
-    # This method uses a greedy first fit heuristic which works well on RNNPool benchmarks
-    # It does not compute the optimum assignment (10-20% more memory ), however works very fast
+    # This method uses a greedy first fit heuristic which works well on RNNPool benchmarks.
+    # It does not compute the optimum assignment (10 - 20% more memory), however works very fast.
     def computeScratchLocationsFirstFit(self):
         if not Config.x86MemoryOptimize or forFloat():
             return
@@ -671,7 +672,7 @@ class CodegenBase:
                         break
                     else:
                         continue
-               
+
                 usedSpaceMap[var] = (endIns, (potentialStart, potentialEnd))
                 freeSpaceEnd = freeSpace[potentialStart]
                 del freeSpace[potentialStart]
@@ -702,7 +703,7 @@ class CodegenBase:
             return totalScratchSize + 1
 
     # A variation of the computeScratchLocationsFirstFit where it prioritises allocation of
-    # larger variables in lower memory addresses, though it also does not compute optimum assignment (10-20% more memory)
+    # larger variables in lower memory addresses, though it also does not compute optimum assignment (10 - 20% more memory).
     def computeScratchLocationsFirstFitPriority(self):
         if not Config.x86MemoryOptimize or forFloat():
             return
@@ -731,7 +732,7 @@ class CodegenBase:
                 ([startIns, endIns], var, size, atomSize) = varToLiveRange[i]
                 if var in self.notScratch:
                     continue
-                spaceNeeded = size * atomSize // 8 #256 * np.ceil(size * atomSize // 8 /256)
+                spaceNeeded = size * atomSize // 8 # 256 * np.ceil(size * atomSize // 8 /256)
                 varsToKill = []
                 for activeVar in usedSpaceMap.keys():
                     endingIns = usedSpaceMap[activeVar][0]
@@ -764,9 +765,9 @@ class CodegenBase:
                         break
                     spaceNeeded_ = (size_ * atomSize_) // 8
                     if spaceNeeded_ >= priorityMargin and spaceNeeded < priorityMargin:
-                    #if spaceNeeded_ > spaceNeeded or (spaceNeeded_ == spaceNeeded and spaceNeeded < priorityMargin and (endIns_ - startIns_ > endIns - startIns)):
+                    # if spaceNeeded_ > spaceNeeded or (spaceNeeded_ == spaceNeeded and spaceNeeded < priorityMargin and (endIns_ - startIns_ > endIns - startIns)):
                         offset = max(offset, spaceNeeded_)
-                
+
                 if offset not in freeSpace.keys() and offset > 0:
                     j = 0
                     for key in sorted(freeSpace.keys()):
@@ -780,7 +781,6 @@ class CodegenBase:
                         freeSpace[offset] = en
                         freeSpaceRev[en] = offset
                         freeSpaceRev[offset] = st
-                    
 
                 for start in sorted(freeSpace.keys()):
                     if start < offset:
@@ -792,8 +792,7 @@ class CodegenBase:
                         break
                     else:
                         continue
-               
-                
+
                 usedSpaceMap[var] = (endIns, (potentialStart, potentialEnd))
                 freeSpaceEnd = freeSpace[potentialStart]
                 del freeSpace[potentialStart]
@@ -825,9 +824,9 @@ class CodegenBase:
             self.out.printf("/* %s */"%(str(self.scratchSubs)))
             return totalScratchSize + 1
 
-    # This method uses the DLX library to attempt to compute an optimum memory assignment
+    # This method uses the DLX library to attempt to compute an optimum memory assignment.
     # The underlying DLX library performs an exponential search, and can take a long time
-    # Timeouts can be changed to allow more time to find an optimum
+    # Timeouts can be changed to allow more time to find an optimum.
     def computeScratchLocationsDLX(self):
         assert not Config.faceDetectionHacks, "Please turn off Config.faceDetectionHacks flag to use DLX"
         if not Config.x86MemoryOptimize or forFloat():
@@ -844,7 +843,7 @@ class CodegenBase:
             bestCaseMemUsage = DLXInputGen.generateDLXInput(memAlloc, 1, 0, True)
             if maxAllowedMemUsage < bestCaseMemUsage:
                 assert False, "Cannot fit the code within stipulated memory limit of %d" % maxAllowedMemUsage
-            alignment = 1               
+            alignment = 1
             dlxDumpFilesDirectory = os.path.join('seedot', 'compiler', 'codegen', 'dlx')
             dlxInputDumpDirectory = os.path.join(dlxDumpFilesDirectory, 'dlx.input')
             dlxOutputDumpDirectory = os.path.join(dlxDumpFilesDirectory, 'dlx.output')
@@ -907,7 +906,7 @@ class CodegenBase:
                 self.out.printf("char scratch[%d];\n"%(totalScratchSize), indent=True)
             self.out.printf("/* %s */"%(str(self.scratchSubs)))
             return totalScratchSize + 1
-            
+
     def preProcessRawMemData(self):
         varToLiveRange = []
         todelete = []
@@ -933,8 +932,8 @@ class CodegenBase:
             size = np.prod(decls[var].shape)
             if not Config.faceDetectionHacks:
                 varf = var
-                # Two co located variables can use the same memory location. Hence, the live range of one is 
-                # updated and the other variable is ignored during memory allocation
+                # Two co located variables can use the same memory location. Hence, the live range of one is
+                # updated and the other variable is ignored during memory allocation.
                 while varf in self.coLocatedVariables:
                     variableToBeRemoved = self.coLocatedVariables[varf]
                     if self.varLiveIntervals[var][1] == self.varLiveIntervals[variableToBeRemoved][0]:
@@ -954,8 +953,8 @@ class CodegenBase:
         for var in todelete:
             del decls[var]
         return varToLiveRange, decls
-    
-    # Helper method used by computeScratchLocationsDLX to check whether the memory allocation was succesful within the timeout
+
+    # Helper method used by computeScratchLocationsDLX to check whether the memory allocation was succesful within the timeout.
     def checkDlxSuccess(self, errorFile):
         found = False
         try:
@@ -967,7 +966,7 @@ class CodegenBase:
             pass
         return found
 
-    # Helper method used by computeScratchLocationsDLX to read the memory allocation generated by the DLX executable
+    # Helper method used by computeScratchLocationsDLX to read the memory allocation generated by the DLX executable.
     def readDlxAllocation(self, outputfile, alignment, varOrderAndSize):
         patternRegex = re.compile(r'v(\d*).l(\d*)')
         memUsage = 0

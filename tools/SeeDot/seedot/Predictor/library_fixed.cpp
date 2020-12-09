@@ -183,15 +183,15 @@ void MatMulNN(MYINT* A, MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYINT K, MYINT 
 				MYINT a = A[i * K + k];
 				MYINT b = B[k * J + j];
 
-#ifdef FASTAPPROX
-				a = a / shrA;
-				b = b / shrB;
+				#ifdef FASTAPPROX
+					a = a / shrA;
+					b = b / shrB;
 
-				tmp[k] = a * b;
-#else
-				int64_t prod = ((int64_t)a * (int64_t)b);
-				tmp[k] = Saturate<MYINT>((prod / ((int64_t)shrB * (int64_t)shrA)));
-#endif
+					tmp[k] = a * b;
+				#else
+					int64_t prod = ((int64_t)a * (int64_t)b);
+					tmp[k] = Saturate<MYINT>((prod / ((int64_t)shrB * (int64_t)shrA)));
+				#endif
 			}
 
 			MYITE count = K, depth = 0;
@@ -241,15 +241,15 @@ void MatMulCN(const MYINT* A, MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYINT K, 
 				MYINT a = A[i * K + k];
 				MYINT b = B[k * J + j];
 
-#ifdef FASTAPPROX
-				a = a / shrA;
-				b = b / shrB;
+				#ifdef FASTAPPROX
+					a = a / shrA;
+					b = b / shrB;
 
-				tmp[k] = a * b;
-#else
-				int64_t prod = ((int64_t)a * (int64_t)b);
-				tmp[k] = Saturate<MYINT>((prod / ((int64_t)shrB * (int64_t)shrA)));
-#endif
+					tmp[k] = a * b;
+				#else
+					int64_t prod = ((int64_t)a * (int64_t)b);
+					tmp[k] = Saturate<MYINT>((prod / ((int64_t)shrB * (int64_t)shrA)));
+				#endif
 			}
 
 			MYITE count = K, depth = 0;
@@ -299,15 +299,15 @@ void MatMulNC(MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYINT K, 
 				MYINT a = A[i * K + k];
 				MYINT b = B[k * J + j];
 
-#ifdef FASTAPPROX
-				a = a / shrA;
-				b = b / shrB;
+				#ifdef FASTAPPROX
+					a = a / shrA;
+					b = b / shrB;
 
-				tmp[k] = a * b;
-#else
-				int64_t prod = ((int64_t)a * (int64_t)b);
-				tmp[k] = Saturate<MYINT>((prod / ((int64_t)shrB * (int64_t)shrA)));
-#endif
+					tmp[k] = a * b;
+				#else
+					int64_t prod = ((int64_t)a * (int64_t)b);
+					tmp[k] = Saturate<MYINT>((prod / ((int64_t)shrB * (int64_t)shrA)));
+				#endif
 			}
 
 			MYITE count = K, depth = 0;
@@ -357,15 +357,15 @@ void MatMulCC(const MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYI
 				MYINT a = A[i * K + k];
 				MYINT b = B[k * J + j];
 
-#ifdef FASTAPPROX
-				a = a / shrA;
-				b = b / shrB;
+				#ifdef FASTAPPROX
+					a = a / shrA;
+					b = b / shrB;
 
-				tmp[k] = a * b;
-#else
-				int64_t prod = ((int64_t)a * (int64_t)b);
-				tmp[k] = Saturate<MYINT>((prod / ((int64_t)shrB * (int64_t)shrA)));
-#endif
+					tmp[k] = a * b;
+				#else
+					int64_t prod = ((int64_t)a * (int64_t)b);
+					tmp[k] = Saturate<MYINT>((prod / ((int64_t)shrB * (int64_t)shrA)));
+				#endif
 			}
 
 			MYITE count = K, depth = 0;
@@ -414,21 +414,21 @@ void SparseMatMulX(const MYINT* Aidx, const MYINT* Aval, MYINT** B, MYINT* C, in
 	for (MYITE k = 0; k < K; k++) {
 		MYINT b = B[k * 1][0];
 
-#ifdef FASTAPPROX
-		b = b / shrB;
-#endif
+		#ifdef FASTAPPROX
+			b = b / shrB;
+		#endif
 		MYITE idx = Aidx[ite_idx];
 		while (idx != 0) {
 			MYINT a = Aval[ite_val];
 
-#ifdef FASTAPPROX
-			a = a / shrA;
+			#ifdef FASTAPPROX
+				a = a / shrA;
 
-			MYINT c = a * b;
-			c = c / shrC;
-#else
-			MYINT c = Saturate<MYINT>(((int64_t)a * (int64_t)b) / ((int64_t)shrC * (int64_t)shrA * (int64_t)shrB));
-#endif
+				MYINT c = a * b;
+				c = c / shrC;
+			#else
+				MYINT c = Saturate<MYINT>(((int64_t)a * (int64_t)b) / ((int64_t)shrC * (int64_t)shrA * (int64_t)shrB));
+			#endif
 			C[idx - 1] += c;
 
 			ite_idx++;
@@ -436,9 +436,9 @@ void SparseMatMulX(const MYINT* Aidx, const MYINT* Aval, MYINT** B, MYINT* C, in
 
 			idx = Aidx[ite_idx];
 		}
+
 		ite_idx++;
 	}
-
 	return;
 }
 
@@ -449,21 +449,21 @@ void SparseMatMul(const MYINT* Aidx, const MYINT* Aval, MYINT* B, MYINT* C, int1
 	for (MYITE k = 0; k < K; k++) {
 		MYINT b = B[k];
 
-#ifdef FASTAPPROX
-		b = b / shrB;
-#endif
+		#ifdef FASTAPPROX
+			b = b / shrB;
+		#endif
 		MYITE idx = Aidx[ite_idx];
 		while (idx != 0) {
 			MYINT a = Aval[ite_val];
 
-#ifdef FASTAPPROX
-			a = a / shrA;
+			#ifdef FASTAPPROX
+				a = a / shrA;
 
-			MYINT c = a * b;
-			c = c / shrC;
-#else
-			MYINT c = Saturate<MYINT>(((int64_t)a * (int64_t)b) / ((int64_t)shrC * (int64_t)shrA * (int64_t)shrB));
-#endif
+				MYINT c = a * b;
+				c = c / shrC;
+			#else
+				MYINT c = Saturate<MYINT>(((int64_t)a * (int64_t)b) / ((int64_t)shrC * (int64_t)shrA * (int64_t)shrB));
+			#endif
 			C[idx - 1] += c;
 
 			ite_idx++;
@@ -471,9 +471,9 @@ void SparseMatMul(const MYINT* Aidx, const MYINT* Aval, MYINT* B, MYINT* C, int1
 
 			idx = Aidx[ite_idx];
 		}
+
 		ite_idx++;
 	}
-
 	return;
 }
 
@@ -484,15 +484,15 @@ void MulCir(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT sh
 			MYINT a = A[i * J + j];
 			MYINT b = B[i * J + j];
 
-#ifdef FASTAPPROX
-			a = a / shrA;
-			b = b / shrB;
+			#ifdef FASTAPPROX
+				a = a / shrA;
+				b = b / shrB;
 
-			C[i * J + j] = a * b;
-#else
-			int64_t prod = ((int64_t)a * (int64_t)b);
-			C[i * J + j] = Saturate<MYINT>(prod / ((int64_t)shrB * (int64_t)shrA));
-#endif
+				C[i * J + j] = a * b;
+			#else
+				int64_t prod = ((int64_t)a * (int64_t)b);
+				C[i * J + j] = Saturate<MYINT>(prod / ((int64_t)shrB * (int64_t)shrA));
+			#endif
 		}
 	}
 	return;
@@ -502,30 +502,29 @@ void MulCir(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT sh
 void TanH(MYINT* A, MYINT I, MYINT J, MYINT scale_in, MYINT scale_out, MYINT* B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
+			#ifdef FLOATEXP
+				float x = float(A[i * J + j]) / scale_in;
+				float y = tanh(x);
+				MYINT z = MYINT(y * scale_out);
 
-#ifdef FLOATEXP
-			float x = float(A[i * J + j]) / scale_in;
-			float y = tanh(x);
-			MYINT z = MYINT(y * scale_out);
+				B[i * J + j] = z;
+			#else
+				MYINT x = A[i * J + j], y;
 
-			B[i * J + j] = z;
-#else
-			MYINT x = A[i * J + j], y;
+				if (x >= scale_in) {
+					y = scale_in;
+				} else if (x <= -scale_in) {
+					y = -scale_in;
+				} else {
+					y = x;
+				}
 
-			if (x >= scale_in) {
-				y = scale_in;
-			} else if (x <= -scale_in) {
-				y = -scale_in;
-			} else {
-				y = x;
-			}
+				MYINT scale_diff = scale_out / scale_in;
 
-			MYINT scale_diff = scale_out / scale_in;
+				y *= scale_diff;
 
-			y *= scale_diff;
-
-			B[i * J + j] = y;
-#endif
+				B[i * J + j] = y;
+			#endif
 		}
 	}
 	return;
@@ -578,20 +577,20 @@ void Transpose(MYINT* A, MYINT* B, MYINT I, MYINT J) {
 void ScalarMul(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
 	MYINT a = *A;
 
-#ifdef FASTAPPROX
-	a = a / shrA;
-#endif
+	#ifdef FASTAPPROX
+		a = a / shrA;
+	#endif
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			MYINT b = B[i * J + j];
 
-#ifdef FASTAPPROX
-			b = b / shrB;
-			C[i * J + j] = a * b;
-#else
-			int64_t prod = ((int64_t)a * (int64_t)b);
-			C[i * J + j] = Saturate<MYINT>(prod / ((int64_t)shrA * (int64_t)shrB));
-#endif
+			#ifdef FASTAPPROX
+				b = b / shrB;
+				C[i * J + j] = a * b;
+			#else
+				int64_t prod = ((int64_t)a * (int64_t)b);
+				C[i * J + j] = Saturate<MYINT>(prod / ((int64_t)shrA * (int64_t)shrB));
+			#endif
 		}
 	}
 	return;
@@ -615,15 +614,15 @@ void Conv(MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT N, MYINT H, MYIN
 								MYINT a = (((((h + hf) < padH) || ((h + hf) >= (H + padH))) || (((w + wf) < padW) || ((w + wf) >= (W + padW)))) ? 0 : A[n * H * W * CI + ((h + hf) - padH) * W * CI + ((w + wf) - padW) * CI + ci]);
 								MYINT b = B[hf * WF * CI * CO + wf * CI * CO + ci * CO + co];
 
-							#ifdef FASTAPPROX
-								a = a / shrA;
-								b = b / shrB;
+								#ifdef FASTAPPROX
+									a = a / shrA;
+									b = b / shrB;
 
-								tmp[counter] = a * b;
-							#else
-								int64_t temp = (((int64_t) a) * ((int64_t)b)) / (((int64_t)shrA) * ((int64_t)shrB));
-								tmp[counter] = Saturate<MYINT>(temp);
-							#endif
+									tmp[counter] = a * b;
+								#else
+									int64_t temp = (((int64_t) a) * ((int64_t)b)) / (((int64_t)shrA) * ((int64_t)shrB));
+									tmp[counter] = Saturate<MYINT>(temp);
+								#endif
 								counter++;
 							}
 						}
@@ -693,15 +692,15 @@ void Convolution(MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT N, MYINT 
 									MYINT a = (((h + HDL * hf) < 0) || ((h + HDL * hf) >= H) || ((w + WDL * wf) < 0) || ((w + WDL * wf) >= W)) ? 0 : A[n * H * W * CIN + (h + HDL * hf) * W * CIN + (w + WDL * wf) * CIN + (ci + g * CINF)];
 									MYINT b = B[g * HF * WF * CINF * COUTF + (hf + HF/2) * WF * CINF * COUTF + (wf + WF/2) * CINF * COUTF + ci * COUTF + co];
 
-								#ifdef FASTAPPROX
-									a = a / shrA;
-									b = b / shrB;
+									#ifdef FASTAPPROX
+										a = a / shrA;
+										b = b / shrB;
 
-									tmp[counter] = a * b;
-								#else
-									int64_t temp = (((int64_t) a) * ((int64_t)b)) / (((int64_t)shrA) * ((int64_t)shrB));
-									tmp[counter] = Saturate<MYINT>(temp);
-								#endif
+										tmp[counter] = a * b;
+									#else
+										int64_t temp = (((int64_t) a) * ((int64_t)b)) / (((int64_t)shrA) * ((int64_t)shrB));
+										tmp[counter] = Saturate<MYINT>(temp);
+									#endif
 									counter++;
 								}
 							}
@@ -748,7 +747,6 @@ void Convolution(MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT N, MYINT 
 		}
 	}
 }
-
 
 // A = A <+> B
 // A[N][H][W][C], B[C]
@@ -896,37 +894,36 @@ void NormaliseL2(MYINT* A, MYINT* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
 
-				// calculate the sum square
+				// Calculate the sum square.
 				int32_t sumSquare = 0;
 				MYINT shrAdiv = (1 << shrA);
 
 				for (MYITE c = 0; c < C; c++) {
-#ifdef FASTAPPROX
-				MYINT tmp = (A[n * H * W * C + h * W * C + w * C + c] / shrAdiv);
-				sumSquare += tmp*tmp;
-#else           
-				int32_t tmp = A[n * H * W * C + h * W * C + w * C + c];
-				sumSquare += (((tmp * tmp) / shrAdiv) / shrAdiv);
-#endif
+					#ifdef FASTAPPROX
+						MYINT tmp = (A[n * H * W * C + h * W * C + w * C + c] / shrAdiv);
+						sumSquare += tmp*tmp;
+					#else
+						int32_t tmp = A[n * H * W * C + h * W * C + w * C + c];
+						sumSquare += (((tmp * tmp) / shrAdiv) / shrAdiv);
+					#endif
 				}
-				
 
-				// calculate the inverse square root of sumSquare
+				// Calculate the inverse square root of sumSquare.
 				MYINT yLow = 1;
 
 				// yHigh: A number of length shrA with all 1s in binary representation e.g. for shrA=8 --> y_high = 0b11111111
 				MYINT yHigh = (1 << shrA - 1);
 
-				// one: value of 1 with same scale as y*y*sumSquare
+				// one: value of 1 with same scale as y * y * sumSquare.
 				// scale of sumSquare = 2*scale_in + 2*shrA
 				// since we assume scale of y = 1 - shrA
 				// scale of y*y*sumSquare =  2*scale_in + 2*shrA + 2(1-shrA) = 2*scale_in + 2
 				int32_t one = (1 << (-(2 * scaleA + 2)));
 
-				//binary search for the inverse square root 
+				// Binary search for the inverse square root.
 				while (yLow + 1 < yHigh) {
 
-					//using int32_t sotherwise (y*y*sumSquare) will overflow
+					// Using int32_t sotherwise (y*y*sumSquare) will overflow.
 					MYINT yMid = ((yHigh + yLow) >> 1);
 
 					int64_t cmpValue = (int64_t)sumSquare * yMid * yMid;
@@ -939,17 +936,15 @@ void NormaliseL2(MYINT* A, MYINT* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 				}
 				MYINT inverseNorm = yLow;
 
-
-				// multiply all elements by the 1/sqrt(sumSquare)
+				// Multiply all elements by the 1/sqrt(sumSquare).
 				for (MYITE c = 0; c < C; c++) {
 						B[n * H * W * C + h * W * C + w * C + c]  = (A[n * H * W * C + h * W * C + w * C + c]  / shrAdiv) * inverseNorm;
-				}	
+				}
 			}
 		}
 	}
 	return;
 }
-
 
 // B = exp(A)
 void Exp(MYINT* A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT* B) {
@@ -966,33 +961,32 @@ void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_lim
 	MYINT scale_diff = scale_out / scale_in;
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
+			#ifdef FLOATEXP
+				float x = float(A[i * J + j]) / scale_in;
 
-#ifdef FLOATEXP
-			float x = float(A[i * J + j]) / scale_in;
+				float y = 1 / (1 + exp(-x));
 
-			float y = 1 / (1 + exp(-x));
+				MYINT z = MYINT(y * scale_out);
 
-			MYINT z = MYINT(y * scale_out);
+				B[i * J + j] = z;
+			#else
+				MYINT x = A[i * J + j];
 
-			B[i * J + j] = z;
-#else
-			MYINT x = A[i * J + j];
+				x = (x / div) + add;
 
-			x = (x / div) + add;
+				MYINT y;
+				if (x >= sigmoid_limit) {
+					y = sigmoid_limit;
+				} else if (x <= 0) {
+					y = 0;
+				} else {
+					y = x;
+				}
 
-			MYINT y;
-			if (x >= sigmoid_limit) {
-				y = sigmoid_limit;
-			} else if (x <= 0) {
-				y = 0;
-			} else {
-				y = x;
-			}
+				y = y * scale_diff;
 
-			y = y * scale_diff;
-
-			B[i * J + j] = y;
-#endif
+				B[i * J + j] = y;
+			#endif
 		}
 	}
 	return;

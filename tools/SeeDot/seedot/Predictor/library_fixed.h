@@ -7,29 +7,29 @@
 
 /**
  * Notation used:
- * 		By default, 'matrix' is to be interpreted as a matrix in fixed point representation
- * 		dim(X) = dimension of matrix X
- * 		bw(X) = number of bits each value of X uses
- * 		sc(X) = scale of matrix X
+ * 		By default, 'matrix' is to be interpreted as a matrix in fixed point representation.
+ * 		dim(X) = dimension of matrix X.
+ * 		bw(X) = number of bits each value of X uses.
+ * 		sc(X) = scale of matrix X.
  * 		scale of a fixed point matrix X is an integer S such that
  * 			Xq (floating point matrix) = (2 ^ -S) * X where
  * 				a ^ b (a and b are integers) is a raised to the power b, and
- * 				a * b (a is integer and b is a matrix) is a multiplied to each element of b
+ * 				a * b (a is integer and b is a matrix) is a multiplied to each element of b.
  **/
 
 /**
  * Dimensions: 	A, B, C are matrices, dim(A) = dim(B) = dim(C) = [I][J]; I, J, shrA, shrB, shrC are integers
  *
  * Matrix Addition
- * Compute A + B and store it in C
- * shrA, shrB, shrC are scaling constants which are computed in irBuilder.py::getScaleForAddAndSub(sc(A), sc(B), sc(C))
- * 		shrA, shrB are used to bring matrices A and B to the same scale for addition
- * 		shrC adjusts the output matrix if required to prevent overflows
+ * Compute A + B and store it in C.
+ * shrA, shrB, shrC are scaling constants which are computed in irBuilder.py::getScaleForAddAndSub(sc(A), sc(B), sc(C)).
+ * 		shrA, shrB are used to bring matrices A and B to the same scale for addition.
+ * 		shrC adjusts the output matrix if required to prevent overflows.
  * The last two letters, which can be either C or N, denote the following:
- * 		If the last letter is N, it means the matrix B is an intermediate variable in RAM
- * 		If the last letter is C, it means the matrix B is a read only parameter which must be extracted from flash
- * 		Similarly, the second last letter controls the input of matrix A
- * 		On Arduino-like devices with Harvard architecture, the reading of RAM and flash variables is different, hence the different functions
+ * 		If the last letter is N, it means the matrix B is an intermediate variable in RAM.
+ * 		If the last letter is C, it means the matrix B is a read only parameter which must be extracted from flash.
+ * 		Similarly, the second last letter controls the input of matrix A.
+ * 		On Arduino-like devices with Harvard architecture, the reading of RAM and flash variables is different, hence the different functions.
  **/
 void MatAddNN(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
 void MatAddCN(const MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
@@ -43,23 +43,23 @@ void MatAddCC(const MYINT* A, const MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT 
  * 				For MatAddBroadCastB, A is a matrix, dim(A) = [I][J], B represents a scalar
  *
  * Broadcasted Matrix Addition
- * 		For MatAddBroadCastA, add scalar A to all elements of B and store result in C
- * 		For MatAddBroadCastB, add scalar B to all elements of A and store result in C
- * shrA, shrB, shrC are scaling constants which are computed in irBuilder.py::getScaleForAddAndSub(sc(A), sc(B), sc(C))
- * 		shrA, shrB are used to bring matrices A and B to the same scale for addition
- * 		shrC adjusts the output matrix if required to prevent overflows
+ * 		For MatAddBroadCastA, add scalar A to all elements of B and store result in C.
+ * 		For MatAddBroadCastB, add scalar B to all elements of A and store result in C.
+ * shrA, shrB, shrC are scaling constants which are computed in irBuilder.py::getScaleForAddAndSub(sc(A), sc(B), sc(C)).
+ * 		shrA, shrB are used to bring matrices A and B to the same scale for addition.
+ * 		shrC adjusts the output matrix if required to prevent overflows.
  **/
 void MatAddBroadCastA(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
 void MatAddBroadCastB(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC);
 
 /**
- * Dimensions: 	A, B, C are matrices, dim(A) = dim(B) = dim(C) = [I][J]; I, J, shrA, shrB, shrC are integers
+ * Dimensions: 	A, B, C are matrices, dim(A) = dim(B) = dim(C) = [I][J]; I, J, shrA, shrB, shrC are integers.
  *
  * Matrix Subtraction
- * Compute A - B and store it in C
- * shrA, shrB, shrC are scaling constants which are computed in irBuilder.py::getScaleForAddAndSub(sc(A), sc(B), sc(C))
- * 		shrA, shrB are used to bring matrices A and B to the same scale for addition
- * 		shrC adjusts the output matrix if required to prevent overflows
+ * Compute A - B and store it in C.
+ * shrA, shrB, shrC are scaling constants which are computed in irBuilder.py::getScaleForAddAndSub(sc(A), sc(B), sc(C)).
+ * 		shrA, shrB are used to bring matrices A and B to the same scale for addition.
+ * 		shrC adjusts the output matrix if required to prevent overflows.
  * Mostly this operation is used for mean normalisation where the mean (matrix B) is known beforehand and hence stored on read only memory.
  **/
 void MatSub(MYINT* A, const MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC);
@@ -71,30 +71,30 @@ void MatSub(MYINT* A, const MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, in
  * 				For MatSubBroadCastB, A is a matrix, dim(A) = [I][J], B represents a scalar
  *
  * Broadcasted Matrix Subtraction
- * 		For MatSubBroadCastA, add scalar A to all elements of B and store result in C
- * 		For MatSubBroadCastB, add scalar B to all elements of A and store result in C
- * shrA, shrB, shrC are scaling constants which are computed in irBuilder.py::getScaleForAddAndSub(sc(A), sc(B), sc(C))
- * 		shrA, shrB are used to bring matrices A and B to the same scale for addition
- * 		shrC adjusts the output matrix if required to prevent overflows
+ * 		For MatSubBroadCastA, add scalar A to all elements of B and store result in C.
+ * 		For MatSubBroadCastB, add scalar B to all elements of A and store result in C.
+ * shrA, shrB, shrC are scaling constants which are computed in irBuilder.py::getScaleForAddAndSub(sc(A), sc(B), sc(C)).
+ * 		shrA, shrB are used to bring matrices A and B to the same scale for addition.
+ * 		shrC adjusts the output matrix if required to prevent overflows.
  **/
 void MatSubBroadCastA(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC);
 void MatSubBroadCastB(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, int32_t shrB, MYINT shrC);
 
 /**
- * Dimensions: 	A, B, C are matrices, dim(A) = [I][J], dim(B) = [J][K], dim(C) = [I][K]; tmp is a vector, dim(tmp) = [J] I, K, J, shrA, shrB, H1, H2 are integers
+ * Dimensions: 	A, B, C are matrices, dim(A) = [I][J], dim(B) = [J][K], dim(C) = [I][K]; tmp is a vector, dim(tmp) = [J] I, K, J, shrA, shrB, H1, H2 are integers.
  *
  * Matrix Multiplication
  * Compute A * B and store it in C, using tmp as a buffer.
  * 		To compute C[i][k], we have to compute summation_j[0:J](A[i][j]*B[j][k]). We store the J values in the vector tmp,
  * 		and carry out Tree Sum (described below) on the vector to ensure minimum loss of bits
- * shrA, shrB, H1, H2 are scaling constants which are computed in irBuilder.py::getShrTreeSumAndDemoteParamsForMul(bw(A), sc(A), bw(B), sc(B), bw(tmp), sc(tmp), bw(C), sc(C), J)
- * 		shrA, shrB are used to alter the scales of matrices A and B so that the multiplication avoids overflows but maintains as many bits as possible
+ * shrA, shrB, H1, H2 are scaling constants which are computed in irBuilder.py::getShrTreeSumAndDemoteParamsForMul(bw(A), sc(A), bw(B), sc(B), bw(tmp), sc(tmp), bw(C), sc(C), J).
+ * 		shrA, shrB are used to alter the scales of matrices A and B so that the multiplication avoids overflows but maintains as many bits as possible.
  * 		H1, H2 are used for Tree Sum. Usage is described below
  * The last two letters, which can be either C or N, denote the following:
- * 		If the last letter is N, it means the matrix B is an intermediate variable in RAM
- * 		If the last letter is C, it means the matrix B is a read only parameter which must be extracted from flash
- * 		Similarly, the second last letter controls the input of matrix A
- * 		On Arduino-like devices with Harvard architecture, the reading of RAM and flash variables is different, hence the different functions
+ * 		If the last letter is N, it means the matrix B is an intermediate variable in RAM.
+ * 		If the last letter is C, it means the matrix B is a read only parameter which must be extracted from flash.
+ * 		Similarly, the second last letter controls the input of matrix A.
+ * 		On Arduino-like devices with Harvard architecture, the reading of RAM and flash variables is different, hence the different functions.
  *
  * Tree Sum
  * This is a technique used to sum up a long vector. To sum up a vector [a0, a1, a2, a3, a4, a5, a6...],
@@ -102,7 +102,7 @@ void MatSubBroadCastB(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA
  * Next stage we store index 0 + index 2 at index 0, index 4 + index 6 at index 4, and so on.
  * We continue this till all elements are summed up at index 0.
  * For fixed point arithmetic, in the first H1 (parameter) stages, we divide the addition result by 2 to avoid overflows,
- * and in the next H2 (parameter) stages (assuming no overflows), we do not do the division to conserve prevision
+ * and in the next H2 (parameter) stages (assuming no overflows), we do not do the division to conserve precision.
  **/
 void MatMulNN(MYINT* A, MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2);
 void MatMulCN(const MYINT* A, MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2);
@@ -120,36 +120,36 @@ void MatMulCC(const MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT I, MYI
  * Sparse Matrix Multiplication
  * Compute A * B and store it in C.
  * shrA, shrB, shrC are constants used to scale down the result of individual multiplications to not cause overflows.
- * 		Computed at irBuilder.py::getShrTreeSumAndDemoteParamsForMul(bw(A), sc(A), bw(B), sc(B), bw(C), sc(C), bw(C), sc(C), J)
+ * 		Computed at irBuilder.py::getShrTreeSumAndDemoteParamsForMul(bw(A), sc(A), bw(B), sc(B), bw(C), sc(C), bw(C), sc(C), J).
  */
 void SparseMatMulX(const MYINT* Aidx, const MYINT* Aval, MYINT** B, MYINT* C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC);
 void SparseMatMul(const MYINT* Aidx, const MYINT* Aval, MYINT* B, MYINT* C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC);
 
 /**
- * Dimensions: 	A, B, C are matrices, dim(A) = dim(B) = dim(C) = [I][J]; I, J, shrA, shrB, shrC are integers
+ * Dimensions: 	A, B, C are matrices, dim(A) = dim(B) = dim(C) = [I][J]; I, J, shrA, shrB, shrC are integers.
  *
  * Hadamard Matrix Product
- * Compute A * B element-wise and store it in C
- * shrA, shrB are scaling constants which are computed in irBuilder.py::getShrTreeSumAndDemoteParamsForMul(bw(A), sc(A), bw(B), sc(B), bw(C), sc(C), bw(C), sc(C), 1)
- * 		shrA, shrB are used to alter the scales of matrices A and B so that the multiplication avoids overflows but maintains as many bits as possible
+ * Compute A * B element-wise and store it in C.
+ * shrA, shrB are scaling constants which are computed in irBuilder.py::getShrTreeSumAndDemoteParamsForMul(bw(A), sc(A), bw(B), sc(B), bw(C), sc(C), bw(C), sc(C), 1).
+ * 		shrA, shrB are used to alter the scales of matrices A and B so that the multiplication avoids overflows but maintains as many bits as possible.
  **/
 void MulCir(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB);
 
 /**
- * Dimensions:	A, B are matrices, dim(A) = dim(B) = [I][J]. I, J, scale_in, scale_out are integers
+ * Dimensions:	A, B are matrices, dim(A) = dim(B) = [I][J]. I, J, scale_in, scale_out are integers.
  *
  * TanH
- * Computes tanH(A) element-wise and stores the result in B
- * scale_in is the scale of the input matrix A, and scale_out is the scale of the output matrix B
+ * Computes tanH(A) element-wise and stores the result in B.
+ * scale_in is the scale of the input matrix A, and scale_out is the scale of the output matrix B.
  */
 void TanH(MYINT* A, MYINT I, MYINT J, MYINT scale_in, MYINT scale_out, MYINT* B);
 
 /**
  * Dimensions:	A is a matrix, dim(A) = [I][J]. I, J are integers, index points to an integer.
- * 				Currently assumes either I or J = 1
+ * 				Currently assumes either I or J = 1.
  *
  * ArgMax
- * Computes argmax(A) and stores the result in index
+ * Computes argmax(A) and stores the result in index.
  */
 void ArgMax(MYINT* A, MYINT I, MYINT J, MYINT* index);
 
@@ -157,7 +157,7 @@ void ArgMax(MYINT* A, MYINT I, MYINT J, MYINT* index);
  * Dimensions:	A, B are matrices. dim(A) = [J][I], dim(B) = [I][J]
  *
  * Transpose
- * Computes transpose(A) and stores the result in B
+ * Computes transpose(A) and stores the result in B.
  */
 void Transpose(MYINT* A, MYINT* B, MYINT I, MYINT J);
 
@@ -167,30 +167,30 @@ void Transpose(MYINT* A, MYINT* B, MYINT I, MYINT J);
  * 				A represents a scalar
  *
  * Scalar Matrix Addition
- * 		Multiply scalar A to all elements of B and store result in C
- * shrA, shrB are scaling constants which are computed in irBuilder.py::getShrTreeSumAndDemoteParamsForMul(bw(A), sc(A), bw(B), sc(B), bw(C), sc(C), bw(C), sc(C), 1)
- * 		shrA, shrB are used to alter the scales of matrices A and B so that the multiplication avoids overflows but maintains as many bits as possible
+ * 		Multiply scalar A to all elements of B and store result in C.
+ * shrA, shrB are scaling constants which are computed in irBuilder.py::getShrTreeSumAndDemoteParamsForMul(bw(A), sc(A), bw(B), sc(B), bw(C), sc(C), bw(C), sc(C), 1).
+ * 		shrA, shrB are used to alter the scales of matrices A and B so that the multiplication avoids overflows but maintains as many bits as possible.
  */
 void ScalarMul(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB);
 
 /**
- * (only second signature is described as it encompasses the first method)
+ * (Only second signature is described as it encompasses the first method.)
  *
  * Dimensions:	A, B, C are matrices, dim(A) = [N][H][W][CI], dim(B) = [G][HF][WF][CINF][COUTF], dim(C) = [N][HOUT][WOUT][COUTF*G]
  * 				computation of HOUT and WOUT is in type.py::visitConvolution()
  * 				tmp is a vector, dim(tmp) = [HF*WF*CINF]; all other parameters are integers
  *
  * Convolution
- * Computes the convolution of batched and multi-channeled 2D image A with filter B, and stores the result in C, using tmp as a buffer
- * Precomputed parameters: (computed using irBuilder.py::getShrTreeSumAndDemoteParamsForMul(bw(A), sc(A), bw(B), sc(B), bw(tmp), sc(tmp), bw(C), sc(C), HF*WF*CINF))
- * 		shrA, shrB: dividing input matrices' elements to prevent overflows
- * 		H1, H2 : parameters for Tree Sum, described below
+ * Computes the convolution of batched and multi-channeled 2D image A with filter B, and stores the result in C, using tmp as a buffer.
+ * Pre-computed parameters: (computed using irBuilder.py::getShrTreeSumAndDemoteParamsForMul(bw(A), sc(A), bw(B), sc(B), bw(tmp), sc(tmp), bw(C), sc(C), HF*WF*CINF))
+ * 		shrA, shrB: dividing input matrices' elements to prevent overflows.
+ * 		H1, H2 : parameters for Tree Sum, described below.
  * Raw parameters (directly passed from input code to function):
- * 		HPADL, HPADR : Thickness of padding on top, bottom of the image
- * 		WPADL, WPADR : Thickness of padding on left, right of the image
- * 		HSTR, WSTR : Convolution horizontal, vertical stride
- * 		HDL, WDL : Convolution horizontal, vertical dilations
- * 		G : Number of groups
+ * 		HPADL, HPADR : Thickness of padding on top, bottom of the image.
+ * 		WPADL, WPADR : Thickness of padding on left, right of the image.
+ * 		HSTR, WSTR : Convolution horizontal, vertical stride.
+ * 		HDL, WDL : Convolution horizontal, vertical dilations.
+ * 		G : Number of groups.
  *
  * Tree Sum
  * This is a technique used to sum up a long vector. To sum up a vector [a0, a1, a2, a3, a4, a5, a6...],
@@ -198,34 +198,34 @@ void ScalarMul(MYINT* A, MYINT* B, MYINT* C, MYINT I, MYINT J, MYINT shrA, MYINT
  * Next stage we store index 0 + index 2 at index 0, index 4 + index 6 at index 4, and so on.
  * We continue this till all elements are summed up at index 0.
  * For fixed point arithmetic, in the first H1 (parameter) stages, we divide the addition result by 2 to avoid overflows,
- * and in the next H2 (parameter) stages (assuming no overflows), we do not do the division to conserve prevision
+ * and in the next H2 (parameter) stages (assuming no overflows), we do not do the division to conserve precision.
  */
 void Conv(MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2);
 void Convolution(MYINT* A, const MYINT* B, MYINT* C, MYINT* tmp, MYINT N, MYINT H, MYINT W, MYINT CIN, MYINT HF, MYINT WF, MYINT CINF, MYINT COUTF, MYINT HOUT, MYINT WOUT, MYINT HPADL, MYINT HPADR, MYINT WPADL, MYINT WPADR, MYINT HSTR, MYINT WSTR, MYINT HDL, MYINT WDL, MYINT G, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2);
 
 /**
- * (only describing first signature. second signature is the same, just without N and C dimensions)
+ * (Only describing first signature. Second signature is the same, just without N and C dimensions.)
  *
  * Dimensions: 	A, B, X are matrices, dim(A) = dim(X) = [N][H][W][C], dim(B) = [C]
  * 				N, H, W, C, shrA, shrB are integers
- * 				add is a boolean. If true, A + B is computed. If false, A - B is computed
+ * 				add is a boolean. If true, A + B is computed. If false, A - B is computed.
  *
  * Channel-wise addition/subtraction
  * For c over all channel (C) dimensions, add/subtract scalar B[c] to all values of A[:][:][:][c] and store in X.
- * shrA, shrB, shrC are scaling constants which are computed in irBuilder.py::getScaleForAddAndSub(sc(A), sc(B), sc(X))
- *		shrA, shrB are used to bring matrices A and B to the same scale for addition
- *		shrC adjusts the output matrix if required to prevent overflows
+ * shrA, shrB, shrC are scaling constants which are computed in irBuilder.py::getScaleForAddAndSub(sc(A), sc(B), sc(X)).
+ *		shrA, shrB are used to bring matrices A and B to the same scale for addition.
+ *		shrC adjusts the output matrix if required to prevent overflows.
  */
 void AddOrSubCir4D(MYINT* A, const MYINT* B, MYINT* X, MYINT N, MYINT H, MYINT W, MYINT C, MYINT shrA, MYINT shrB, MYINT shrC, bool add);
 void AddOrSubCir2D(MYINT* A, const MYINT* B, MYINT* X, MYINT H, MYINT W, MYINT shrA, MYINT shrB, MYINT shrC, bool add);
 
 /**
- * (describing first signature. second signature is the same, just without the N and C dimensions)
+ * (Describing first signature. Second signature is the same, just without the N and C dimensions.)
  *
  * Dimensions: A is a matrix, dim(A) = [N][H][W][C]; N, H, W, C are integers
  *
- * Relu
- * Computes relu(A) for all elements and stores the result back in A
+ * ReLU
+ * Computes relu(A) for all elements and stores the result back in A.
  */
 void Relu4D(MYINT* A, MYINT N, MYINT H, MYINT W, MYINT C);
 void Relu2D(MYINT* A, MYINT H, MYINT W);
@@ -236,12 +236,12 @@ void Relu6(MYINT* A, MYINT* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT six, MY
  * 				FH, FW, strideH, strideW, HPADL, HPADR, WPADL, WPADR
  *
  * Maxpool
- * Computes the maxpool of A and stores the result in B
+ * Computes the maxpool of A and stores the result in B.
  * Raw parameters (directly passed from input code to function):
- * 		FH, FW : Size of filter amongst which max is taken
- * 		HPADL, HPADR : Thickness of padding on top, bottom of the image
- * 		WPADL, WPADR : Thickness of padding on left, right of the image
- * 		strideH, strideW : Convolution horizontal, vertical stride
+ * 		FH, FW : Size of filter amongst which max is taken.
+ * 		HPADL, HPADR : Thickness of padding on top, bottom of the image.
+ * 		WPADL, WPADR : Thickness of padding on left, right of the image.
+ * 		strideH, strideW : Convolution horizontal, vertical stride.
  */
 void Maxpool(MYINT* A, MYINT* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT FH, MYINT FW, MYINT strideH, MYINT strideW, MYINT HPADL, MYINT HPADR, MYINT WPADL, MYINT WPADR);
 
@@ -250,7 +250,7 @@ void Maxpool(MYINT* A, MYINT* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT FH, M
  * 				scaleA, shrA are integers
  *
  * Exponentiation
- * For each channel computes the L2 norm of all its elements. And divides each number in that channel by the norm.
+ * For each channel computes the L2 norm of all its elements, and divides each number in that channel by the norm.
  */
 void NormaliseL2(MYINT* A, MYINT* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT scaleA, MYINT shrA);
 
@@ -259,37 +259,37 @@ void NormaliseL2(MYINT* A, MYINT* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
  * 				shrA, shrB are integers
  *
  * Exponentiation
- * Computes exponentiation of all elements in A (interpreted as a floating point value) to the base e and stores the result in B
+ * Computes exponentiation of all elements in A (interpreted as a floating point value) to the base e and stores the result in B.
  * shrA, shrB are integers which satisfy the following:
- * 		Dividing (float division) each element of matrix A by shrA gives the floating point matrix of A
- * 		Dividing (float division) each element of matrix B by shrB gives the floating point matrix of B
+ * 		Dividing (float division) each element of matrix A by shrA gives the floating point matrix of A.
+ * 		Dividing (float division) each element of matrix B by shrB gives the floating point matrix of B.
  */
 void Exp(MYINT* A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT* B);
 
 /**
- * Dimensions:	A, B are matrices, dim(A) = dim(B) = [I][J]; div, add, sigmoid_limit, scale_in, scale_out are integers
+ * Dimensions:	A, B are matrices, dim(A) = dim(B) = [I][J]; div, add, sigmoid_limit, scale_in, scale_out are integers.
  *
  * Sigmoid activation
- * Computes the sigmoid activation for all elements of A and stores the result in B
+ * Computes the sigmoid activation for all elements of A and stores the result in B.
  * scale_in, scale_out are integers which satisfy the following:
- * 		Dividing (float division) each element of matrix A by scale_in gives the floating point matrix of A
- * 		Dividing (float division) each element of matrix B by scale_out gives the floating point matrix of B
+ * 		Dividing (float division) each element of matrix A by scale_in gives the floating point matrix of A.
+ * 		Dividing (float division) each element of matrix B by scale_out gives the floating point matrix of B.
  *
- * Ifn some cases, a piecewise linear approximation is used for sigmoid: min(max((X+2.0)/4.0, 0.0), 1.0) in floating point version
+ * In some cases, a piecewise linear approximation is used for sigmoid: min(max((X+2.0)/4.0, 0.0), 1.0) in floating point version.
  * In this case,
- * 		div represents the fixed point version of 4.0 in the expression
- * 		add represents the fixed point version of 2.0 in the expression
- * 		sigmoid_limit represents the fixed point version of 1.0 in the expression
- * If flag FLOATEXP is disabled, and if new table exponentiation (Util.py::class Config) is not used, this piecewise approximation is used. Else, the above 3 parameters are not used
+ * 		div represents the fixed point version of 4.0 in the expression.
+ * 		add represents the fixed point version of 2.0 in the expression.
+ * 		sigmoid_limit represents the fixed point version of 1.0 in the expression.
+ * If flag FLOATEXP is disabled, and if new table exponentiation (Util.py::class Config) is not used, this piecewise approximation is used. Else, the above 3 parameters are not used.
  */
 void Sigmoid(MYINT* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_limit, MYINT scale_in, MYINT scale_out, MYINT* B);
 
 /**
- * Dimensions:	A is a matrix, dim(A) = [I][J][K][L] or [I][J]; scale, I, J, (K, L) are integers
+ * Dimensions:	A is a matrix, dim(A) = [I][J][K][L] or [I][J]; scale, I, J, (K, L) are integers.
  *
  * Scale adjustment methods
- * AdjustScaleShr divides all elements of A by scale and stores the result in A
- * AdjustScaleShl multiplies all elements of A by scale and stores the result in A
+ * AdjustScaleShr divides all elements of A by scale and stores the result in A.
+ * AdjustScaleShl multiplies all elements of A by scale and stores the result in A.
  */
 void AdjustScaleShr(MYINT* A, MYINT I, MYINT J, MYINT scale);
 void AdjustScaleShl(MYINT* A, MYINT I, MYINT J, MYINT scale);
@@ -297,14 +297,14 @@ void AdjustScaleShr(MYINT* A, MYINT I, MYINT J, MYINT K, MYINT L, MYINT scale);
 void AdjustScaleShl(MYINT* A, MYINT I, MYINT J, MYINT K, MYINT L, MYINT scale);
 
 /**
- * Dimensions:	A, B is a matrix, dim(A) = dim(B) = [I][J], axis, I, J are integers
+ * Dimensions:	A, B is a matrix, dim(A) = dim(B) = [I][J], axis, I, J are integers.
  *
  * Reverse a Matrix
- * Reverses the matrix A along axis (can be 0 for axis I and 1 for axis J) and stores the result in B
+ * Reverses the matrix A along axis (can be 0 for axis I and 1 for axis J) and stores the result in B.
  */
 void Reverse2(MYINT* A, MYINT axis, MYINT I, MYINT J, MYINT* B);
 
-//Templated Operations: For cases when Variable BitWidth is enabled
+//Templated Operations: For cases when Variable BitWidth is enabled.
 
 template<class TypeA>
 inline TypeA Saturate(int32_t inp) {
@@ -746,17 +746,18 @@ void SparseMatMulX(const TypeAidx* Aidx, const TypeA* Aval, TypeB** B, TypeC* C,
 	}
 	return;
 }
+
 template<class TypeA, class TypeAidx, class TypeB, class TypeTemp, class TypeC>
 void SparseMatMul(const TypeAidx* Aidx, const TypeA* Aval, TypeB* B, TypeC* C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC, MYINT demote) {
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
 		TypeTemp b = (TypeTemp) B[k];
-		
+
 		MYITE idx = Aidx[ite_idx];
 		while (idx != 0) {
 			TypeTemp a = (TypeTemp) Aval[ite_val];
 			TypeTemp c = (TypeTemp) (a * b);
-		
+
 			C[idx - 1] += Saturate<TypeC>((((c / shrA) / shrB) / shrC) / demote);
 
 			ite_idx++;
@@ -826,7 +827,6 @@ void Confidence(TypeA* A, MYINT I, MYINT J, MYITE* index, float* confidence) {
 	return;
 }
 
-
 template<class TypeA>
 void ArgMax(TypeA* A, MYINT I, MYINT J, int* index) {
 	TypeA max = A[0];
@@ -869,7 +869,6 @@ void ScalarMul(TypeA* A, TypeB* B, TypeC* C, MYINT I, MYINT J, MYINT shrA, MYINT
 			C[i * J + j] = Saturate<TypeC>(((prod / shrA) / shrB) / demote);
 		}
 	}
-
 	return;
 }
 
@@ -1200,7 +1199,6 @@ void AddOrSubCir2D(TypeA* A, const TypeB* B, TypeC* X, MYINT H, MYINT W, MYINT s
 			X[h * W + w] = Saturate<TypeC>(res / demote);
 		}
 	}
-
 	return;
 }
 
@@ -1291,35 +1289,35 @@ void NormaliseL2(TypeA* A, TypeA* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
 
-				// calculate the sum square
+				// Calculate the sum square.
 				int32_t sumSquare = 0;
 				MYINT shrAdiv = (1 << shrA);
 
 				for (MYITE c = 0; c < C; c++) {
-#ifdef FASTAPPROX
-				MYINT tmp = (A[n * H * W * C + h * W * C + w * C + c] / shrAdiv);
-				sumSquare += tmp * tmp;
-#else           
-				int32_t tmp = A[n * H * W * C + h * W * C + w * C + c];
-				sumSquare += (((tmp * tmp) / shrAdiv) / shrAdiv);
-#endif
+					#ifdef FASTAPPROX
+						MYINT tmp = (A[n * H * W * C + h * W * C + w * C + c] / shrAdiv);
+						sumSquare += tmp * tmp;
+					#else
+						int32_t tmp = A[n * H * W * C + h * W * C + w * C + c];
+						sumSquare += (((tmp * tmp) / shrAdiv) / shrAdiv);
+					#endif
 				}
 
-				// calculate the inverse square root of sumSquare
+				// Calculate the inverse square root of sumSquare.
 				MYINT yLow = 1;
 
 				// yHigh: A number of length shrA with all 1s in binary representation e.g. for shrA=8 --> y_high = 0b11111111
 				MYINT yHigh = (1 << shrA - 1);
 
-				// one: value of 1 with same scale as y*y*sumSquare
+				// one: value of 1 with same scale as y * y * sumSquare.
 				// scale of sumSquare = 2*scale_in + 2*shrA
 				// since we assume scale of y = 1 - shrA
 				// scale of y*y*sumSquare =  2*scale_in + 2*shrA + 2(1-shrA) = 2*scale_in + 2
 				int32_t one = (1 << (-(2 * scaleA + 2)));
 
-				//binary search for the inverse square root
+				// Binary search for the inverse square root.
 				while (yLow + 1 < yHigh) {
-					//using int32_t sotherwise (y*y*sumSquare) will overflow
+					// Using int32_t sotherwise (y*y*sumSquare) will overflow.
 					MYINT yMid = ((yHigh + yLow) >> 1);
 
 					int64_t cmpValue = (int64_t) sumSquare * yMid * yMid;
@@ -1332,7 +1330,7 @@ void NormaliseL2(TypeA* A, TypeA* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 				}
 				MYINT inverseNorm = yLow;
 
-				// multiply all elements by the 1/sqrt(sumSquare)
+				// Multiply all elements by the 1 / sqrt(sumSquare).
 				for (MYITE c = 0; c < C; c++) {
 					B[n * H * W * C + h * W * C + w * C + c]  = (A[n * H * W * C + h * W * C + w * C + c]  / shrAdiv) * inverseNorm;
 				}
@@ -1342,7 +1340,7 @@ void NormaliseL2(TypeA* A, TypeA* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 	return;
 }
 
-//shrB overflows int16_t
+// shrB overflows int16_t.
 template<class TypeA, class TypeB>
 void Exp(TypeA* A, MYINT I, MYINT J, MYINT shrA, int32_t shrB, TypeB* B, MYINT demote) {
 	for (MYITE i = 0; i < I; i++) {
@@ -1354,6 +1352,7 @@ void Exp(TypeA* A, MYINT I, MYINT J, MYINT shrA, int32_t shrB, TypeB* B, MYINT d
 }
 
 const int8_t expTable8[128] = {64, 60, 56, 53, 50, 47, 44, 41, 39, 36, 34, 32, 30, 28, 27, 25, 24, 22, 21, 20, 18, 17, 16, 15, 14, 13, 13, 12, 11, 10, 10, 9, 9, 8, 8, 7, 7, 6, 6, 6, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 template<class TypeB>
 inline TypeB expBase8(int8_t A, MYINT adjust) {
 	int8_t val = (A == -128) ? 127 : -A;
@@ -1365,6 +1364,7 @@ inline TypeB expBase8(int8_t A, MYINT adjust) {
 
 const int16_t expTable16A[256] = {16384, 15391, 14459, 13583, 12760, 11987, 11261, 10578, 9937, 9335, 8770, 8238, 7739, 7270, 6830, 6416, 6027, 5662, 5319, 4997, 4694, 4410, 4143, 3892, 3656, 3434, 3226, 3031, 2847, 2675, 2513, 2360, 2217, 2083, 1957, 1838, 1727, 1622, 1524, 1432, 1345, 1263, 1187, 1115, 1047, 984, 924, 868, 816, 766, 720, 676, 635, 597, 561, 527, 495, 465, 437, 410, 385, 362, 340, 319, 300, 282, 265, 249, 234, 220, 206, 194, 182, 171, 161, 151, 142, 133, 125, 118, 110, 104, 97, 92, 86, 81, 76, 71, 67, 63, 59, 56, 52, 49, 46, 43, 41, 38, 36, 34, 32, 30, 28, 26, 25, 23, 22, 20, 19, 18, 17, 16, 15, 14, 13, 12, 12, 11, 10, 10, 9, 9, 8, 8, 7, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const int16_t expTable16B[128] = {16384, 16376, 16368, 16360, 16352, 16344, 16336, 16328, 16320, 16312, 16304, 16296, 16288, 16280, 16272, 16264, 16256, 16249, 16241, 16233, 16225, 16217, 16209, 16201, 16193, 16185, 16177, 16169, 16162, 16154, 16146, 16138, 16130, 16122, 16114, 16106, 16099, 16091, 16083, 16075, 16067, 16059, 16051, 16044, 16036, 16028, 16020, 16012, 16004, 15997, 15989, 15981, 15973, 15965, 15958, 15950, 15942, 15934, 15927, 15919, 15911, 15903, 15895, 15888, 15880, 15872, 15864, 15857, 15849, 15841, 15833, 15826, 15818, 15810, 15803, 15795, 15787, 15779, 15772, 15764, 15756, 15749, 15741, 15733, 15726, 15718, 15710, 15703, 15695, 15687, 15680, 15672, 15664, 15657, 15649, 15641, 15634, 15626, 15618, 15611, 15603, 15596, 15588, 15580, 15573, 15565, 15558, 15550, 15542, 15535, 15527, 15520, 15512, 15504, 15497, 15489, 15482, 15474, 15467, 15459, 15452, 15444, 15437, 15429, 15421, 15414, 15406, 15399};
+
 template<class TypeB>
 inline TypeB expBase16(int16_t A, MYINT adjust) {
 	int16_t val = (A == -32768) ? 32767 : -A;
@@ -1399,39 +1399,38 @@ void Sigmoid(TypeA* A, MYINT I, MYINT J, MYINT div, MYINT add, MYINT sigmoid_lim
 	TypeA scale_diff = scale_out / scale_in;
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-		#ifdef FLOATEXP
-			float x = float(A[i * J + j]) / scale_in;
+			#ifdef FLOATEXP
+				float x = float(A[i * J + j]) / scale_in;
 
-			float y = 1 / (1 + exp(-x));
+				float y = 1 / (1 + exp(-x));
 
-			TypeA z = (TypeA)(y * scale_out);
+				TypeA z = (TypeA)(y * scale_out);
 
-			B[i * J + j] = z;
-		#else
-			TypeA x = A[i * J + j];
+				B[i * J + j] = z;
+			#else
+				TypeA x = A[i * J + j];
 
-			x = (x / div) + add;
+				x = (x / div) + add;
 
-			TypeA y;
-			if (x >= sigmoid_limit) {
-				y = sigmoid_limit;
-			} else if (x <= 0) {
-				y = 0;
-			} else {
-				y = x;
-			}
+				TypeA y;
+				if (x >= sigmoid_limit) {
+					y = sigmoid_limit;
+				} else if (x <= 0) {
+					y = 0;
+				} else {
+					y = x;
+				}
 
-			y = y * scale_diff;
+				y = y * scale_diff;
 
-			B[i * J + j] = y;
-		#endif
+				B[i * J + j] = y;
+			#endif
 		}
 	}
-
 	return;
 }
 
-// Integer sigmoid using new table exponentiation
+// Integer Sigmoid using new table exponentiation.
 template<int dummy>
 void SigmoidNew8(int8_t* A, MYINT I, MYINT J, int8_t* B) {
 	for (MYITE i = 0; i < I; i++) {
@@ -1468,36 +1467,36 @@ template<class TypeA>
 void TanH(TypeA* A, MYINT I, MYINT J, TypeA scale_in, TypeA scale_out, TypeA* B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-		#ifdef FLOATEXP
-			float x = float(A[i * J + j]) / scale_in;
-			float y = tanh(x);
+			#ifdef FLOATEXP
+				float x = float(A[i * J + j]) / scale_in;
+				float y = tanh(x);
 
-			MYINT z = (TypeA)(y * scale_out);
+				MYINT z = (TypeA)(y * scale_out);
 
-			B[i * J + j] = z;
-		#else
-			TypeA x = A[i * J + j], y;
+				B[i * J + j] = z;
+			#else
+				TypeA x = A[i * J + j], y;
 
-			if (x >= scale_in) {
-				y = scale_in;
-			} else if (x <= -scale_in) {
-				y = -scale_in;
-			} else {
-				y = x;
-			}
+				if (x >= scale_in) {
+					y = scale_in;
+				} else if (x <= -scale_in) {
+					y = -scale_in;
+				} else {
+					y = x;
+				}
 
-			TypeA scale_diff = scale_out / scale_in;
+				TypeA scale_diff = scale_out / scale_in;
 
-			y *= scale_diff;
+				y *= scale_diff;
 
-			B[i * J + j] = y;
-		#endif
+				B[i * J + j] = y;
+			#endif
 		}
 	}
 	return;
 }
 
-// Integer TanH using new table exponentiation
+// Integer TanH using new table exponentiation.
 template<int dummy>
 void TanHNew8(int8_t* A, MYINT I, MYINT J, int8_t* B) {
 	for (MYITE i = 0; i < I; i++) {

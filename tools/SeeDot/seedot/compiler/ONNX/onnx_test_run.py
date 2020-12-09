@@ -37,7 +37,7 @@ for i in range(test.shape[0] if run_all else 1):
 		intermediate_layer_value_info.name = intermediate
 		model.graph.output.extend([intermediate_layer_value_info])
 		onnx.save(model, file_path + '_1')
-		sess = onnxruntime.InferenceSession(file_path + '_1') 
+		sess = onnxruntime.InferenceSession(file_path + '_1')
 		pred = sess.run([intermediate_layer_value_info.name], {input_name: x})
 		# np.save('debug/' + model_name + '/' + model_name + '_debug', pred)
 		# with open('debug/onnx_debug.txt', 'w') as f:
@@ -47,15 +47,14 @@ for i in range(test.shape[0] if run_all else 1):
 		print(pred[0])
 		exit()
 
-
 	pred = sess.run(None, {input_name: x})
 
-	predicted_class = pred[0][0]+1
+	predicted_class = pred[0][0] + 1
 	print(predicted_class)
 	print(int(output))
 
 	correct += (predicted_class == int(output))
-	total += 1	
+	total += 1
 
 	# np.save('debug/' + model_name + '/' + model_name + '_output', pred)
 	# with open('debug/onnx_output.txt', 'w') as f:
