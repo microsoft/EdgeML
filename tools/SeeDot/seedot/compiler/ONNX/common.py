@@ -13,28 +13,27 @@ def numpy_float_array_to_fixed_point_val_str(input_array, scale):
 	cnt = 0
 	chunk = ''
 	for val in numpy.nditer(input_array):
-		val = int(val*(2**scale))
+		val = int(val * (2 ** scale))
 		chunk += str(val) + '\n'
 		cnt += 1
-	return (chunk, cnt)	
+	return (chunk, cnt)
 
 def numpy_float_array_to_float_val_str(input_array):
 	chunk = ''
 	for val in numpy.nditer(input_array):
 		chunk += str(val) + '\n'
-	return chunk		
+	return chunk
 
 def write_debug_info(node_name_to_out_var_dict):
 	if not os.path.exists('debug'):
-		os.makedirs('debug')	
+		os.makedirs('debug')
 
 	with open('debug/onnx_seedot_name_map.pkl', 'wb') as f:
-		pickle.dump(node_name_to_out_var_dict, f)	
+		pickle.dump(node_name_to_out_var_dict, f)
 
 	with open('debug/onnx_seedot_name_map.txt', 'w') as f:
 		for val in node_name_to_out_var_dict:
 			f.write(val + '   ' + node_name_to_out_var_dict[val] + '\n')
-
 
 def merge_name_map():
 	onnx_seedot_name_map = pickle.load(open('debug/onnx_seedot_name_map.pkl', 'rb'))
@@ -42,7 +41,7 @@ def merge_name_map():
 
 	with open('debug/onnx_ezpc_name_map.txt', 'w') as f:
 		for val in onnx_seedot_name_map:
-			f.write(val + '   ' + seedot_ezpc_name_map[onnx_seedot_name_map[val]])	
+			f.write(val + '   ' + seedot_ezpc_name_map[onnx_seedot_name_map[val]])
 
 def get_seedot_name_from_onnx_name(onnx_name):
 	onnx_seedot_name_map = pickle.load(open('debug/onnx_seedot_name_map.pkl', 'rb'))
@@ -52,10 +51,10 @@ def parse_output(scale):
 	f = open('debug/cpp_output_raw.txt', 'r')
 	g = open('debug/cpp_output.txt', 'w')
 	chunk = ''
-	for line in f:	
-		if line.rstrip().replace('-','0').isdigit():
+	for line in f:
+		if line.rstrip().replace('-', '0').isdigit():
 			val = float(line.rstrip())
-			val = val/(2**scale)
+			val = val / (2 ** scale)
 			chunk += str(val) + '\n'
 	g.write(chunk)
 	g.close()
@@ -69,20 +68,19 @@ def extract_txt_to_numpy_array(file):
 def match_debug(decimal=4):
 	a = extract_txt_to_numpy_array('debug/onnx_debug.txt')
 	b = extract_txt_to_numpy_array('debug/cpp_output.txt')
-	numpy.testing.assert_almost_equal(a, b, decimal)	
+	numpy.testing.assert_almost_equal(a, b, decimal)
 
 def match_output(decimal=4):
 	a = extract_txt_to_numpy_array('debug/onnx_output.txt')
 	b = extract_txt_to_numpy_array('debug/cpp_output.txt')
-	numpy.testing.assert_almost_equal(a, b, decimal)		
-		
+	numpy.testing.assert_almost_equal(a, b, decimal)
+
 def add_openmp_threading_to_convolution(file):
 	with open(file, 'r+') as f:
-		newfilename = file[:-5]+'1.cpp'
+		newfilename = file[:-5] + '1.cpp'
 		g = open(newfilename, 'w')
 		content = f.read()
 		content1 =  re.sub('void Conv3D\(.*','\g<0> \n #pragma omp parallel for collapse(5) ', content)
 		content2 =  re.sub('void ConvTranspose3D\(.*','\g<0> \n #pragma omp parallel for collapse(5) ', content1)
 		g.write(content2)
 		g.close()
-

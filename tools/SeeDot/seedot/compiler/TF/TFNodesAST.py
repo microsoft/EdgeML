@@ -7,9 +7,9 @@ import seedot.compiler.ast.ast as AST
 
 import seedot.compiler.TF.Graph as Graph
 
-
 # Contains code for each of the TF nodes encountered in the benchmarks.
 # For each such TF node, outputs the corresponding SeeDot AST.
+
 
 class TFNodesAST:
     class UninterpFuncCallNames(Enum):
@@ -20,7 +20,7 @@ class TFNodesAST:
         CreateCopy = auto()
         CreateIdentity = auto()
         CreateTensor = auto()
-        # TODO : hack right now, for assign node :: fix this after discussing with Aseem
+        # TODO : For assign node :: fix this after discussing with Aseem; hack right now.
         CopyTensor = auto()
         Const = auto()
         Cast = auto()
@@ -40,7 +40,7 @@ class TFNodesAST:
         TempFusedBatchNorm = auto()
 
     def getOperatorsIdx(token):
-        # TODO : remove usage of this
+        # TODO : Remove usage of this.
         return AST.Operators.convSymbolToEnumValue(token)
 
     def MatMul(graph: Graph.Graph, curNode: Graph.Node, dictNodeNameToOutVarStr: dict, extraNodeInfoDict: dict):
@@ -64,7 +64,7 @@ class TFNodesAST:
         return (None, AST.BOp(inp1AST, TFNodesAST.getOperatorsIdx('*'), inp2AST))
 
     def Placeholder(graph: Graph.Graph, curNode: Graph.Node, dictNodeNameToOutVarStr: dict, extraNodeInfoDict: dict):
-        #curNodeShapeLi = curNode.getAttrMapRef()["\"shape\""].getShape().getDimRef()
+        # curNodeShapeLi = curNode.getAttrMapRef()["\"shape\""].getShape().getDimRef()
         curNodeShapeLi = extraNodeInfoDict[curNode.getName()][0]
         curNodeInputType = curNode.getAttrMapRef()["\"dtype\""].getDataType()
         assert(curNodeInputType is not Graph.DataTypeEnum.DT_INVALID)
@@ -172,7 +172,7 @@ class TFNodesAST:
         curNodeShape = extraNodeInfoDict[curNode.getName()][0]
 
         # TODO_TAB : for inference, have commented the copyTensor function calls.
-        # TODO : Hack -- fix this later after discussing with Aseem
+        # TODO : Hack -- fix this later after discussing with Aseem.
         # return (None, AST.UninterpFuncCall(curNodeShape,
         # 									TFNodesAST.UninterpFuncCallNames.CopyTensor.name,
         # 									[AST.ID(dictNodeNameToOutVarStr[inputsRef[0]]),
@@ -184,12 +184,12 @@ class TFNodesAST:
         assert(len(curNode.getInputsRef()) == 0)
         tensor = curNode.getAttrMapRef()["\"value\""].getTensor()
         curNodeDataType = curNode.getAttrMapRef()["\"dtype\""].getDataType()
-        # create a different copy to not change the original copy
+        # Create a different copy to not change the original copy.
         curNodeShape = tensor.getShapeRef()[:]
 
         tensorConstantVal = tensor.getConstantVal()
         if tensorConstantVal is not None:
-            # Use uinterpreted call of CreateTensor to create the tensor and fill it with a constant value
+            # Use uinterpreted call of CreateTensor to create the tensor and fill it with a constant value.
             dataPassed = None
             if curNodeDataType == Graph.DataTypeEnum.DT_INT32:
                 dataPassed = AST.Int(tensorConstantVal, 32)
@@ -199,7 +199,7 @@ class TFNodesAST:
                 assert False
 
             if (len(curNodeShape) == 0):
-                # This is a constant element
+                # This is a constant element.
                 retAST = dataPassed
             else:
                 retAST = AST.UninterpFuncCall(curNodeShape,
@@ -207,7 +207,7 @@ class TFNodesAST:
                                               [dataPassed],
                                               isSecret=False)
         else:
-            # The tensor content is given as byte array. Extract val array from the byte array and create ast.
+            # The tensor content is given as byte array. Extract val array from the byte array and create AST.
             if curNodeDataType == Graph.DataTypeEnum.DT_INT32:
                 dataPassed = list(map(lambda x: AST.Int(
                     x, 32), tensor.getContentAsValArr()[:]))
@@ -273,7 +273,7 @@ class TFNodesAST:
         inputsRef = curNode.getInputsRef()
         assert(len(inputsRef) == 2)
         curNodeOutputShape = extraNodeInfoDict[inputsRef[0]][0]
-        # inputsRef[0] denotes a shape and should have a rank of 1
+        # inputsRef[0] denotes a shape and should have a rank of 1.
         assert(len(curNodeOutputShape) == 1)
 
         curNodeOutputType = curNode.getAttrMapRef()["\"T\""].getDataType()
@@ -323,8 +323,8 @@ class TFNodesAST:
         assert(len(inputsRef) == 2)
 
         options = {}
-        # TODO : Parse other options and make sure backend is consuming those
-        # Other options left to parse include T, data_format, dilations
+        # TODO : Parse other options and make sure backend is consuming those.
+        # Other options left to parse include T, data_format, dilations.
 
         paddingUsed = curNode.getAttrMapRef()["\"padding\""].getS()
         if (paddingUsed == "\"SAME\""):
@@ -441,7 +441,7 @@ class TFNodesAST:
                                            [AST.ID(dictNodeNameToOutVarStr[inputsRef[0]]), AST.ID(dictNodeNameToOutVarStr[inputsRef[1]])]))
 
     def ShapeN(graph: Graph.Graph, curNode: Graph.Node, dictNodeNameToOutVarStr: dict, extraNodeInfoDict: dict):
-        # TODO : generalize -- remove usage of Declare
+        # TODO : generalize -- remove usage of Declare.
         inputsRef = curNode.getInputsRef()
         assert(len(inputsRef) == 2)
         N = curNode.getAttrMapRef()["\"N\""].getI()
@@ -505,15 +505,15 @@ class TFNodesAST:
         return (None, AST.ID(dictNodeNameToOutVarStr[inputsRef[0]]))
 
     def SoftmaxCrossEntropyWithLogits(graph: Graph.Graph, curNode: Graph.Node, dictNodeNameToOutVarStr: dict, extraNodeInfoDict: dict):
-        # Input1 is logits and Input2 is the one-hot encoding true distribution
-        # Calculate softmax on input1 and cross-entropy between that (p(x)) and true-distribution (q(x))
-        # Cross-entropy = \summation_x{-q(x)*log(p(x))}
+        # Input1 is logits and Input2 is the one-hot encoding true distribution.
+        # Calculate softmax on input1 and cross-entropy between that (p(x)) and true-distribution (q(x)).
+        # Cross-entropy = \summation_x{-q(x)*log(p(x))}.
         inputsRef = curNode.getInputsRef()
         assert(len(inputsRef) == 2)
         logitsInpt = AST.ID(dictNodeNameToOutVarStr[inputsRef[0]])
         labelsInpt = AST.ID(dictNodeNameToOutVarStr[inputsRef[1]])
 
-        # reduce along column to get row-vector
+        # Reduce along column to get row-vector.
         # TODO : softmax or implement here ?
         retAST = AST.Let(AST.ID('temp_softmax'), AST.Func(
             TFNodesAST.getOperatorsIdx('softmax'), logitsInpt), None)
@@ -607,7 +607,7 @@ class TFNodesAST:
                                            ))
 
     def Pad(graph: Graph.Graph, curNode: Graph.Node, dictNodeNameToOutVarStr: dict, extraNodeInfoDict: dict):
-        # Mode refers to 'CONSTANT', 'REFLECT' or 'SYMMETRIC'
+        # Mode refers to 'CONSTANT', 'REFLECT' or 'SYMMETRIC'.
         mode = 0
         if ("\"mode\"" in curNode.getAttrMapRef()):
             mode = curNode.getAttrMapRef()["\"mode\""].getI()
@@ -617,7 +617,7 @@ class TFNodesAST:
             constant_values = curNode.getAttrMapRef()[
                 "\"constant_values\""].getI()
 
-        # For now to make life easy - deal with SYMMETRIC AND REFLECT when time comes
+        # For now to make life easy - deal with SYMMETRIC AND REFLECT when time comes.
         assert(mode == 0 and constant_values == 0)
         inputsRef = curNode.getInputsRef()
         inputTensorShapeLi = extraNodeInfoDict[inputsRef[0]][0]
@@ -655,7 +655,7 @@ class TFNodesAST:
                                            ))
 
     def Squeeze(graph: Graph.Graph, curNode: Graph.Node, dictNodeNameToOutVarStr: dict, extraNodeInfoDict: dict):
-        # TODO : Do this in somewhat better way
+        # TODO : Do this in somewhat better way.
         inputsRef = curNode.getInputsRef()
         inputTensorShape = extraNodeInfoDict[inputsRef[0]][0]
         inputTensorRank = len(inputTensorShape)

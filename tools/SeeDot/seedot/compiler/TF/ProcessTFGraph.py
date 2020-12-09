@@ -12,24 +12,20 @@ from seedot.compiler.ast.mtdAST import MtdAST
 import seedot.compiler.TF.Graph as Graph
 from seedot.compiler.TF.TFNodesAST import TFNodesAST
 
-
 def checkTFNodeNameForEq(curNodeOp: str, givenOp: str):
     return (curNodeOp == "\"" + givenOp + "\"")
-
 
 def generateASTForNode(graph, curNode, dictNodeNameToOutVarStr, extraNodeInfoDict):
     # print("===>>> Generating AST for (nodeOp, nodeName) : (" + curNode.getOp() + ", " + curNode.getName() + ")")
     curNodeOp = curNode.getOp()
     ast = None
-    # To remove the " at the begin and end
+    # To remove the " at the begin and end.
     func = getattr(TFNodesAST, curNodeOp[1:-1])
     (assignedVarAST, curAST) = func(graph, curNode,
                                     dictNodeNameToOutVarStr, extraNodeInfoDict)
     return (assignedVarAST, curAST)
 
-# Takes the graph DS and outputs IR in SeeDot for the same
-
-
+# Takes the graph DS and outputs IR in SeeDot for the same.
 def generateIRCode(graph, extraInfoDict):
     program = None
     innerMostLetASTNode = None
@@ -39,7 +35,7 @@ def generateIRCode(graph, extraInfoDict):
     mtdAST = MtdAST()
     for curNode in graph.getAllNodesRef():
         for curInp in curNode.getInputsRef():
-            # Consequence of topological sorting of the TF graph
+            # Consequence of topological sorting of the TF graph.
             assert(curInp in dictNodeNameToOutVarStr)
         (assignedVarAST, curAst) = generateASTForNode(
             graph, curNode, dictNodeNameToOutVarStr, extraInfoDict)
@@ -69,7 +65,6 @@ def generateIRCode(graph, extraInfoDict):
         outVarCt += 1
     return (program, dictNodeNameToOutVarStr)
 
-
 def countUniqueOps(graph):
     allOps = []
     for curNode in graph.getAllNodesRef():
@@ -83,7 +78,6 @@ def countUniqueOps(graph):
     print("allOps ct for gradient descent optimiser = ", len(gradientDesOps))
     return allOps
 
-
 def readSizeInfo(fileName):
     allLines = None
     with open(fileName) as f:
@@ -91,7 +85,7 @@ def readSizeInfo(fileName):
     sizeInfo = {}
     for line in allLines:
         tokens = line.split()
-        # assert(len(tokens) > 1) # Nodes with no size info are not getting outputted right now
+        # assert(len(tokens) > 1) # Nodes with no size info are not getting output right now.
         nodeName = tokens[0]
         tokens = tokens[1:]
         nodeOPSize = []
@@ -105,60 +99,57 @@ def readSizeInfo(fileName):
         sizeInfo[nodeName] = nodeOPSize
     return sizeInfo
 
-# Since later on in the pipeline, the placeholder nodes which come up as cin statements
-# 	are to be excluded from the timing calculation, output all such PlaceHolder nodes together first.
-#	This doesn't violate the topological ordering because all such PlaceHolder nodes are leaf nodes
-# 	in the graph.
-
-
+# Since later on, in the pipeline, the placeholder nodes which come up as cin statements
+# are to be excluded from the timing calculation, output all such PlaceHolder nodes together first.
+# This doesn't violate the topological ordering because all such PlaceHolder nodes are leaf nodes
+# in the graph.
 def prefixAllPlaceHolderNodes(graph):
     allNodes = graph.getAllNodesRef()
     placeHolderNodes = []
     remNodes = []
     for curNode in allNodes:
         if (curNode.getOp() == "\"Placeholder\"" or curNode.getOp() == "\"VariableV2\""):
-            # Assert this is indeed a leaf node
+            # Assert this is indeed a leaf node.
             assert(len(curNode.getInputsRef()) == 0)
             placeHolderNodes.append(curNode)
         else:
             remNodes.append(curNode)
     graph.setNodesList(placeHolderNodes + remNodes)
 
-
 def main():
     sys.setrecursionlimit(5000)
-    # First read the graph file
+    # First read the graph file.
     # if (len(sys.argv) < 2):
     #	print("FolderName unspecified.", file=sys.stderr)
     #	exit(1)
 
-    #folderName = sys.argv[2]
+    # folderName = sys.argv[2]
     graphFileName = os.path.join('graphDef.txt')
     graph = Graph.Graph()
     with open(graphFileName) as file:
         graph.readFromFilePointer(file)
 
-    # # Read the sizeInfo also
+    # # Read the sizeInfo also.
     sizeInfoFileName = os.path.join('sizeInfo.txt')
     sizeInfo = readSizeInfo(sizeInfoFileName)
 
-    # Place all PlaceHolder nodes together at the beginning
+    # Place all PlaceHolder nodes together at the beginning.
     prefixAllPlaceHolderNodes(graph)
 
-    # Re-format the input names of nodes
+    # Re-format the input names of nodes.
     for curNode in graph.getAllNodesRef():
         inputsRef = curNode.getInputsRef()
         for i, curInput in enumerate(inputsRef):
-            # TODO for training : below is not correct
+            # TODO for training : Below is not correct.
             # if (curInput.endswith(':1"')):
             # 	inputsRef[i] = curInput.split(':1')[0] + '"'
             if (curInput.startswith('"^')):
                 # My hypothesis from empirical observation is that inputs which have '^' ahead of the node name
-                #	denote control flow dependency and not data dependency.
-                #	For all purposes for this compilation, control and data dependency is considered same.
+                # denote control flow dependency and not data dependency.
+                # For all purposes for this compilation, control and data dependency is considered same.
                 inputsRef[i] = '"' + curInput.split('^')[-1]
 
-    # Create extra info dict
+    # Create extra info dict.
     # Format : (sizeInfo)
     extraInfoDict = {}
     for k, v in sizeInfo.items():
@@ -169,11 +160,11 @@ def main():
 
     print("Generating code from TF graph def : ", graphFileName, " ...")
     (program, dictNodeNameToOutVarStr) = generateIRCode(graph, extraInfoDict)
-    #printAST = PrintAST()
+    # printAST = PrintAST()
     # printAST.visit(program)
 
     return program
-    #print("SeeDot AST generation done. Pickling the AST.")
+    # print("SeeDot AST generation done. Pickling the AST.")
     # with open('astOutput.pkl', 'wb') as f:
     #	pickle.dump(program, f)
 
@@ -183,7 +174,6 @@ def main():
 #    with open(filename) as file:
 #        graph1.readFromFilePointer(file)
 #    xx2 = countUniqueOps(graph1)
-
 
 if __name__ == "__main__":
     main()
