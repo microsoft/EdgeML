@@ -159,6 +159,9 @@ class Arduino(CodegenBase):
     def printFor(self, ir):
         self.printForHeader(ir)
         self.out.increaseIndent()
+        # The following is used for memory management within a for loop only.
+        # All the variables stored in ir.varDecls are those variables with scope limited to within the for loop.
+        # Currently, ir.varDecls is never populated as alternate memory management mechanism in codegen.py is used.
         varToLiveRange = []
         for var in ir.varDecls.keys():
             size = np.prod(self.localDecls[var].shape)
