@@ -39,8 +39,10 @@ class Dataset:
              "HAR-2", "HAR-6", "MNIST-10", "Google-12", "Google-30", "Wakeword-2",
              "wider-regression", "wider-mbconv", "face-1", "face-2", "face-2-rewrite", 
              "face-3", "face-4", "test"]
+    # Datasets for ProtoNN and Bonsai.
     default = common
-    #default = ["spectakoms", "usps10", "HAR-2", "HAR-6", "dsa", "MNIST-10", "Google-12", "Google-30", "Wakeword-2"]
+    # Datasets for FastGRNN.
+    # default = ["spectakoms", "usps10", "HAR-2", "HAR-6", "dsa", "MNIST-10", "Google-12", "Google-30", "Wakeword-2"]
     all = common + extra
 
     datasetDir = os.path.join("..", "datasets", "datasets")
@@ -75,9 +77,6 @@ class MainDriver:
                             metavar='', help="Max scaling factor for code generation")
         parser.add_argument("--load-sf", action="store_true",
                             help="Use a pre-determined value for max scale factor")
-
-        parser.add_argument("--convert", action="store_true",
-                            help="Convert raw input and model files to standard numpy format")
 
         parser.add_argument("--tempdir", metavar='',
                             help="Scratch directory for intermediate files")
@@ -154,59 +153,22 @@ class MainDriver:
                   (algo, version, dataset, target))
             print("========================================\n")
 
-            if self.args.convert:
-                datasetDir = os.path.join(Dataset.datasetDir, dataset)
-                modelDir = os.path.join(Dataset.modelDir, dataset)
+            datasetDir = os.path.join(
+                Dataset.datasetProcessedDir, algo, dataset)
+            modelDir = os.path.join(
+                Dataset.modelProcessedDir, algo, dataset)
 
-                if algo == config.Algo.bonsai:
-                    modelDir = os.path.join(
-                        modelDir, "BonsaiResults", "Params")
-                elif algo == config.Algo.lenet:
-                    modelDir = os.path.join(modelDir, "LenetModel")
-                else:
-                    modelDir = os.path.join(modelDir, "ProtoNNResults")
+            source_update = ""
+            if self.args.source == config.Source.onnx:
+                source_update = "_onnx"
 
-                trainingInput = os.path.join(datasetDir, "training-full.tsv")
-                testingInput = os.path.join(datasetDir, "testing.tsv")
-
-                datasetOutputDir = os.path.join(
-                    "temp", "dataset-processed", algo, dataset)
-                modelOutputDir = os.path.join(
-                    "temp", "model-processed", algo, dataset)
-
-                os.makedirs(datasetOutputDir, exist_ok=True)
-                os.makedirs(modelOutputDir, exist_ok=True)
-
-                if algo == config.Algo.bonsai:
-                    obj = bonsai.Bonsai(trainingInput, testingInput,
-                                        modelDir, datasetOutputDir, modelOutputDir)
-                    obj.run()
-                elif algo == config.Algo.protonn:
-                    obj = protonn.Protonn(trainingInput, testingInput,
-                                          modelDir, datasetOutputDir, modelOutputDir)
-                    obj.run()
-
-                source_update = ""
-                if self.args.source == config.Source.onnx:
-                    source_update = "_onnx"
-
-                trainingInput = os.path.join(datasetOutputDir, "train"+source_update+".npy")
-                testingInput = os.path.join(datasetOutputDir, "test"+source_update+".npy")
-                modelDir = modelOutputDir
-            else:
-                datasetDir = os.path.join(
-                    Dataset.datasetProcessedDir, algo, dataset)
-                modelDir = os.path.join(
-                    Dataset.modelProcessedDir, algo, dataset)
-
-                source_update = ""
-                if self.args.source == config.Source.onnx:
-                    source_update = "_onnx"
-
-                trainingInput = os.path.join(datasetDir, "train"+source_update+".npy")
-                testingInput = os.path.join(datasetDir, "test"+source_update+".npy")
+            trainingInput = os.path.join(datasetDir, "train" + source_update + ".npy")
+            testingInput = os.path.join(datasetDir, "test" + source_update + ".npy")
 
             try:
+                # The following is particularly for old SeeDot (PLDI '19).
+                # In the new version of SeeDot (named Shiftry, OOPSLA '20), config.wordLength is ALWAYS expected to be 16, which is the base bit-width.
+                # Some variables are demoted to 8 bits, and intermediate variables for multiplication may use 32 bits.
                 if version == config.Version.floatt:
                     bitwidth = 'float'
                 elif config.wordLength == 8:
@@ -252,6 +214,8 @@ class MainDriver:
 
     def loadResultsFile(self):
         results = {}
+        # Results.csv contains some benchmark results for old SeeDot (PLDI '19).
+        # The CSV file can be updated with better accuracy numbers if a better model is obtained.
         with open(os.path.join("Results.csv")) as csvFile:
             reader = csv.reader(csvFile)
             for row in reader:

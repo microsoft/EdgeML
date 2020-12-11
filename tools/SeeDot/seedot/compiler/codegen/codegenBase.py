@@ -905,7 +905,7 @@ class CodegenBase:
             if not forM3():
                 self.out.printf("char scratch[%d];\n"%(totalScratchSize), indent=True)
             self.out.printf("/* %s */"%(str(self.scratchSubs)))
-            return totalScratchSize + 1
+            return totalScratchSize
 
     def preProcessRawMemData(self):
         varToLiveRange = []
