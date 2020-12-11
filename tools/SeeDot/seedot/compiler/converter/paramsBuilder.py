@@ -6,6 +6,9 @@ from seedot.compiler.antlr.seedotParser import seedotParser as SeeDotParser
 import seedot.compiler.ast.ast as AST
 from seedot.compiler.ast.astVisitor import ASTVisitor
 
+# ParamsBuilder iterates over the AST and extracts the list of model parameters and their metadata.
+# The extracted metadata is used by the converter module to print out the model parameters in the output code.
+
 
 class Param:
 

@@ -90,6 +90,7 @@ class Quantizer:
             else:
                 totalVal += len(param.data) * len(param.data[0])
 
+        # Printing logs. Used for old SeeDot.
         with open(self.infoFile, 'a') as file:
             file.write("nnz values: %d\n" % (totalVal))
             file.write("# indexes: %d\n\n" % (totalIndex))
