@@ -14,17 +14,17 @@
             "console": "integratedTerminal",
             "args": [
                 "-a",
-                "rnn",
+                "rnnpool",
                 "-v",
                 "fixed",
                 "-d",
-                "spectakoms",
+                "face-4",
                 "-m",
-                "red_disagree",
+                "disagree",
                 "-t",
-                "x86",
+                "m3",
                 "-n",
-                "1"
+                "18000"
             ]
         }
     ]

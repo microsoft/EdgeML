@@ -839,7 +839,7 @@ class CodegenBase:
             memAlloc = [(l * m // 8, i, j) for ([i, j], k, l, m) in varToLiveRange if k not in self.notScratch]
             varOrderAndSize = [(k, l * m // 8) for ([i, j], k, l, m) in varToLiveRange if k not in self.notScratch]
             maxAllowedMemUsage = 200000
-            timeout = 60
+            timeout = 600
             bestCaseMemUsage = DLXInputGen.generateDLXInput(memAlloc, 1, 0, True)
             if maxAllowedMemUsage < bestCaseMemUsage:
                 assert False, "Cannot fit the code within stipulated memory limit of %d" % maxAllowedMemUsage

@@ -342,229 +342,66 @@ class Main:
     #   so we try out multiple scales (config.offsetsPerDemotedVariable different scales).
     # STAGE IV: Cumulatively demoting variables one after the other to reduce latency and model size, as long as accuracy remains good.
     def performSearch(self):
-        start, end = config.maxScaleRange
-        lastStageAcc = -1
+        if self.dataset == 'face-2':
+            keys1 = {'X':0, 'tmp22':0, 'tmp23':-1, 'tmp25':0} #before rnnpool
+            keys2 = {'tmp27':0} #before mbconv
+            keys3 = []
+            for i in [9, 10, 11, 12, 13]:
+                for j in range(1, 4):
+                    keys3.append('L%dF%d'%(i, j))
+                    keys3.append('L%dW%d'%(i, j))
+                    keys3.append('L%dB%d'%(i, j))
+            keys4 = {'tmp433':0, 'tmp446':0, 'tmp449':0, 'tmp460':0, 'tmp463':0, 'tmp469':0, 'tmp470':0} #after 3rd detection mbconvs
+        elif self.dataset == 'face-3':
+            keys1 = {'X':0, 'tmp22':-1, 'tmp23':-1, 'tmp25':0} # before rnnpool
+            keys2 = {} # {'tmp27':0} # before mbonv
+            keys3 = []
+            for i in []: # [2, 3]:
+                for j in range(1, 4):
+                    keys3.append('L%dF%d'%(i, j))
+                    keys3.append('L%dW%d'%(i, j))
+                    keys3.append('L%dB%d'%(i, j)) # 1. not needed for face-3, if done it tanks accuracy
+            keys4 = {} # {'tmp433':0, 'tmp446':0, 'tmp449':0, 'tmp460':0, 'tmp463':0, 'tmp469':0, 'tmp470':0} #after 3rd detection mbconvs
+        elif self.dataset == 'face-4':
+            keys1 = {'X':0, 'tmp22':0, 'tmp23':0, 'tmp25':0}
+            keys2 = {'tmp27':0}
+            keys3 = []
+            keys4 = {}
+        else:
+            raise Exception('Incorrect Dataset Configuration')
 
-        fixedPointCounter = 0
-        while True:
-            # STAGE I exploration.
-            fixedPointCounter += 1
-            if config.fixedPointVbwIteration:
-                print("Will compile until conversion to fixed point. Iteration %d"%fixedPointCounter)
-            highestValidScale = start
-            firstCompileSuccess = False
-            while firstCompileSuccess == False:
-                if highestValidScale == end:
-                    print("Compilation not possible for any Scale Factor. Abort")
-                    return False
+        a = {}
+        b = {}
+        c = []
+        for key in self.variableToBitwidthMap.keys():
+            a[key] = 16
+        for key in keys1.keys():
+            a[key] = 8
+            b[key] = keys1[key]
+            c.append(key)
+        for key in keys2.keys():
+            a[key] = 8
+            b[key] = keys2[key]
+            c.append(key)
+        for key in keys3:
+            a[key] = 8
+            b[key] = 0
+            c.append(key)
+        for key in keys4.keys():
+            a[key] = 8
+            b[key] = keys4[key]
+            c.append(key)
+        self.sf = -7
+        self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, True, None, 0, a, c, b, paramInNativeBitwidth=False)
+        self.convert(config.Version.fixed,
+                    config.DatasetType.testing, config.Target.x86, a, b)
+        self.runAll(config.Version.fixed, config.DatasetType.testing, None, {}, True)
 
-                # Refactor and remove this try/catch block in the future.
-                try:
-                    firstCompileSuccess = self.partialCompile(config.Version.fixed, config.Target.x86, highestValidScale, True, None, 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
-                except:
-                    firstCompileSuccess = False
+        self.demotedVarsOffsets = b
+        self.variableToBitwidthMap = a
+        self.demotedVarsList = c
 
-                if firstCompileSuccess:
-                    break
-                highestValidScale -= 1
-
-            lowestValidScale = end + 1
-            firstCompileSuccess = False
-            while firstCompileSuccess == False:
-                try:
-                    firstCompileSuccess = self.partialCompile(config.Version.fixed, config.Target.x86, lowestValidScale, True, None, 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
-                except:
-                    firstCompileSuccess = False
-                if firstCompileSuccess:
-                    break
-                lowestValidScale += 1
-
-            # Ignored.
-            self.partialCompile(config.Version.fixed, config.Target.x86, lowestValidScale, True, None, -1, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
-
-            # The iterator logic is as follows:
-            # Search begins when the first valid scaling factor is found (runOnce returns True).
-            # Search ends when the execution fails on a particular scaling factor (runOnce returns False).
-            # This is the window where valid scaling factors exist and we
-            # select the one with the best accuracy.
-            numCodes = highestValidScale - lowestValidScale + 1
-            codeId = 0
-            codeIdToScaleFactorMap = {}
-            for i in range(highestValidScale, lowestValidScale - 1, -1):
-                if config.ddsEnabled:
-                    print("Testing with DDS and scale of X as " + str(i))
-                else:
-                    print("Testing with max scale factor of " + str(i))
-
-                codeId += 1
-                try:
-                    compiled = self.partialCompile(
-                        config.Version.fixed, config.Target.x86, i, False, codeId, -1 if codeId != numCodes else codeId, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
-                except: # If some code in the middle fails to compile.
-                    codeId -=1
-                    continue
-                if compiled == False:
-                    return False
-                codeIdToScaleFactorMap[codeId] = i
-
-            res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, codeIdToScaleFactorMap)
-
-            if exit == True or res == False:
-                return False
-
-            print("\nSearch completed\n")
-            print("----------------------------------------------")
-            print("Best performing scaling factors with accuracy, disagreement, reduced disagreement:")
-
-            self.sf = self.getBestScale()
-            if self.accuracy[self.sf][0] != lastStageAcc:
-                lastStageAcc = self.accuracy[self.sf][0]
-            elif config.fixedPointVbwIteration:
-                print("No difference in iteration %d Stage 2 and iteration %d Stage 1. Stopping search"%(fixedPointCounter-1, fixedPointCounter))
-                break
-
-            if config.vbwEnabled:
-                # Stage III exploration.
-                assert config.ddsEnabled, "Currently VBW on maxscale not supported"
-                if config.wordLength != 16:
-                    assert False, "VBW mode only supported if native bitwidth is 16"
-                print("Scales computed in native bitwidth. Starting exploration over other bitwidths.")
-
-                # We attempt to demote all possible variables in the code. We try out multiple different scales
-                # (controlled by config.offsetsPerDemotedVariable) for each demoted variable. When a variable is
-                # demoted, it is assigned a scale given by :
-                # demoted Scale = self.allScales[var] + 8 - offset
-
-                attemptToDemote = [var for var in self.variableToBitwidthMap if (var[-3:] != "val" and var not in self.demotedVarsList)]
-                numCodes = config.offsetsPerDemotedVariable * len(attemptToDemote) + ((9 - config.offsetsPerDemotedVariable) if 'X' in attemptToDemote else 0)
-                # 9 offsets tried for X while 'offsetsPerDemotedVariable' tried for other variables.
-
-                # We approximately club batchSize number of codes in one generated C++ code, so that one generated code does
-                # not become too large.
-                batchSize = int(np.ceil(50 / np.ceil(len(attemptToDemote) / 50)))
-                redBatchSize = np.max((batchSize, 16)) / config.offsetsPerDemotedVariable
-
-                totalSize = len(attemptToDemote)
-                numBatches = int(np.ceil(totalSize / redBatchSize))
-
-                self.varDemoteDetails = []
-                for i in range(numBatches):
-                    print("=====\nBatch %i out of %d\n=====" %(i + 1, numBatches))
-
-                    firstVarIndex = (totalSize * i) // numBatches
-                    lastVarIndex = (totalSize * (i + 1)) // numBatches
-                    demoteBatch = [attemptToDemote[i] for i in range(firstVarIndex, lastVarIndex)]
-                    numCodes = config.offsetsPerDemotedVariable * len(demoteBatch) + ((9 - config.offsetsPerDemotedVariable) if 'X' in demoteBatch else 0)
-                    # 9 offsets tried for X while 'config.offsetsPerDemotedVariable' tried for other variables.
-
-                    self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, True, None, -1 if len(demoteBatch) > 0 else 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
-                    codeId = 0
-                    contentToCodeIdMap = {}
-
-                    for demoteVar in demoteBatch:
-                        # For each variable being demoted, we populate some variables containing information regarding demoted variable.
-                        newbitwidths = dict(self.variableToBitwidthMap)
-                        newbitwidths[demoteVar] = config.wordLength // 2
-                        if demoteVar + "val" in newbitwidths:
-                            newbitwidths[demoteVar + "val"] = config.wordLength // 2
-                        for alreadyDemotedVars in self.demotedVarsList: # In subsequent iterations during fixed point compilation, this variable will have the variables demoted during the previous runs.
-                            newbitwidths[alreadyDemotedVars] = config.wordLength // 2
-                        demotedVarsList = [i for i in newbitwidths.keys() if newbitwidths[i] != config.wordLength]
-                        demotedVarsOffsets = {}
-                        for key in self.demotedVarsList:
-                            demotedVarsOffsets[key] = self.demotedVarsOffsets[key]
-
-                        contentToCodeIdMap[tuple(demotedVarsList)] = {}
-                        # We try out multiple offsets for each variable to find best scale assignment for each variable.
-                        for demOffset in (range(0, -config.offsetsPerDemotedVariable, -1) if demoteVar != 'X' else range(0, -9, -1)):
-                            codeId += 1
-                            for k in demotedVarsList:
-                                if k not in self.demotedVarsList:
-                                    demotedVarsOffsets[k] = demOffset
-                            contentToCodeIdMap[tuple(demotedVarsList)][demOffset] = codeId
-                            compiled = self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, False, codeId, -1 if codeId != numCodes else codeId, dict(newbitwidths), list(demotedVarsList), dict(demotedVarsOffsets))
-                            if compiled == False:
-                                print("Variable Bitwidth exploration resulted in a compilation error")
-                                return False
-
-                    res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, None, contentToCodeIdMap)
-
-                # Stage IV exploration.
-                # Again, we compute only a limited number of inference codes per generated C++ so as to not bloat up the memory usage of the compiler.
-                redBatchSize *= config.offsetsPerDemotedVariable
-                totalSize = len(self.varDemoteDetails)
-                numBatches = int(np.ceil(totalSize / redBatchSize))
-
-                sortedVars = [i for (i, j) in self.varDemoteDetails]
-
-                self.varDemoteDetails = []
-                demotedVarsOffsets = dict(self.demotedVarsOffsets)
-                demotedVarsList = list(self.demotedVarsList)
-                demotedVarsListToOffsets = {}
-
-                # Knowing the accuracy when each single variable is demoted to 8-bits one at a time, we proceed to cumulatively
-                # demoting all of them one after the other ensuring accuracy of target code does not fall below a threshold. The
-                # following for loop controls generation of inference codes.
-                for i in range(numBatches):
-                    print("=====\nBatch %i out of %d\n=====" %(i + 1, numBatches))
-
-                    firstVarIndex = (totalSize * i) // numBatches
-                    lastVarIndex = (totalSize * (i+1)) // numBatches
-                    demoteBatch = [sortedVars[i] for i in range(firstVarIndex, lastVarIndex)]
-
-                    self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, True, None, -1 if len(attemptToDemote) > 0 else 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
-                    contentToCodeIdMap = {}
-                    codeId = 0
-                    numCodes = len(demoteBatch)
-                    for (demoteVars, offset) in demoteBatch:
-                        newbitwidths = dict(self.variableToBitwidthMap)
-                        for var in demoteVars:
-                            if var not in self.demotedVarsList:
-                                newbitwidths[var] = config.wordLength // 2
-                                demotedVarsOffsets[var] = offset
-                            if var not in demotedVarsList:
-                                demotedVarsList.append(var)
-                        codeId += 1
-                        contentToCodeIdMap[tuple(demotedVarsList)] = {}
-                        contentToCodeIdMap[tuple(demotedVarsList)][offset] = codeId
-                        demotedVarsListToOffsets[tuple(demotedVarsList)] = dict(demotedVarsOffsets)
-                        compiled = self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, False, codeId, -1 if codeId != numCodes else codeId, dict(newbitwidths), list(demotedVarsList), dict(demotedVarsOffsets))
-                        if compiled == False:
-                            print("Variable Bitwidth exploration resulted in another compilation error")
-                            return False
-
-                    res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, None, contentToCodeIdMap, True)
-
-                if exit == True or res == False:
-                    return False
-
-                # The following for loop controls how many variables are actually demoted in the final output code, which has
-                # as many variables as possible in 8-bits, while ensuring accuracy drop compared to floating point is reasonable:
-                okToDemote = ()
-                acceptedAcc = lastStageAcc
-                for ((demotedVars, _), metrics) in self.varDemoteDetails:
-                    acc = metrics[0]
-                    if self.problemType == config.ProblemType.classification and (self.flAccuracy - acc) > 2.0:
-                        break
-                    elif self.problemType == config.ProblemType.regression and acc > 90.0:
-                        break
-                    else:
-                        okToDemote = demotedVars
-                        acceptedAcc = acc
-
-                self.demotedVarsList = [i for i in okToDemote] + [i for i in self.demotedVarsList]
-                self.demotedVarsOffsets.update(demotedVarsListToOffsets.get(okToDemote, {}))
-
-                if acceptedAcc != lastStageAcc:
-                    lastStageAcc = acceptedAcc
-                else:
-                    print("No difference in iteration %d's stages 1 & 2. Stopping search."%fixedPointCounter)
-                    break
-
-            if not config.vbwEnabled or not config.fixedPointVbwIteration:
-                break
-
-        return True
+        return
 
     # Reverse sort the accuracies, print the top 5 accuracies and return the
     # best scaling factor.
