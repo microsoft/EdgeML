@@ -9,8 +9,11 @@ import numpy as np
 
 import edgeml_pytorch.utils as utils
 
-if utils.findCUDA() is not None:
-    import fastgrnn_cuda
+try:
+    if utils.findCUDA() is not None:
+        import fastgrnn_cuda
+except:
+    pass
 
 
 # All the matrix vector computations of the form Wx are done 
