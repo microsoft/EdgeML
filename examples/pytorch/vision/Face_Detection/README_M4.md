@@ -103,7 +103,7 @@ If IS_QVGA_MONO=1 then testing is done by converting images to monochrome and QV
 ###### For calculating mAP scores:
 Now using these boxes, we can compute the standard mAP score that is widely used in this literature (see [here](https://medium.com/@jonathan_hui/map-mean-average-precision-for-object-detection-45c121a31173) for more details).
 
-In this directory run:
+In the current Face_Detection directory run:
 ``` 
 git clone https://github.com/wondervictor/WiderFace-Evaluation.git
 cd WiderFace-Evaluation 
@@ -111,9 +111,9 @@ python3 setup.py build_ext --inplace
 mv ../scut_evaluation.py ./
 ```
 
-Run ```IS_QVGA_MONO=1 python3 scut_evaluation.py -p <your_save_folder> ``` in WiderFace-Evaluation folder.
+Run ```IS_QVGA_MONO=1 python3 scut_evaluation.py -p ../rpool_face_m4_val ``` in WiderFace-Evaluation folder.
 
-where `prediction_dir` is the '--save_folder' used for `scut_test.py` above. 
+where `-p` is the '--save_folder' used for `scut_test.py` above. 
 
 This script should output the mAP on SCUT Head Part B Validation set. Our best performance using RPool_Face_M4 model is: 0.61.
 

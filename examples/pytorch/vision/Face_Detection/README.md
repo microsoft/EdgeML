@@ -132,10 +132,10 @@ python3 setup.py build_ext --inplace
 
 3. Run ```python3 evaluation.py -p <your_save_folder> -g <groud truth dir>``` in WiderFace-Evaluation folder
 
-where `prediction_dir` is the '--save_folder' used for `wider_test.py` above and <groud truth dir> is the subfolder `eval_tools/ground_truth`. That is in, WiderFace-Evaluation directory, run: 
+where `-p` is the '--save_folder' used for `wider_test.py` above and <groud truth dir> is the subfolder `eval_tools/ground_truth`. That is in, WiderFace-Evaluation directory, run: 
 
 ```shell
-python3 evaluation.py -p <your_save_folder> -g ../ground_truth
+python3 evaluation.py -p ../../rpool_face_qvgamono_val -g ../ground_truth
 ```
 This script should output the mAP for the WIDER-easy, WIDER-medium, and WIDER-hard subsets of the dataset. Our best performance using RPool_Face_Quant model is: 0.80 (WIDER-easy), 0.78 (WIDER-medium), 0.53 (WIDER-hard). 
 
