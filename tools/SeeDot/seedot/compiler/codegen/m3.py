@@ -28,7 +28,7 @@ class M3(CodegenBase):
         self.printCincludes()
         self.printCHeader()
 
-        scratchSize = self.computeScratchLocationsFirstFitPriority() # computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
+        scratchSize = self.computeScratchLocationsDLX() # computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
         hFile = os.path.join(self.outputDir, "predict.h")
         hFileOut = Writer(hFile, 'a')
         hFileOut.printf('\n#define MEM_BUF_SIZE %d\n' % scratchSize, indent=True)
