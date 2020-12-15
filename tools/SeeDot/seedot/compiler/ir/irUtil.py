@@ -5,9 +5,9 @@ import numpy as np
 
 from seedot.compiler.ir.ir import *
 
-import seedot.common as Common
 from seedot.util import *
 
+# Util functions used by IR.py and IRBuilder.py
 
 def init():
     global zero, one, negone, negmax

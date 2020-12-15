@@ -2,29 +2,38 @@
 # Licensed under the MIT license.
 
 CC=g++
-CFLAGS= -Wall -p -g -fPIC -O3 -std=c++11
+CFLAGS=-Wall -p -g -fPIC -O3 -std=c++11 -pthread
 
-PREDICTOR_INCLUDES = bonsai_float_model.h \
-					datatypes.h \
-					library.h predictors.h \
-					profile.h \
-					protonn_float_model.h \
-					seedot_fixed_model.h
-				  
-PREDICTOR_OBJS = bonsai_float.o library.o \
-				main.o profile.o \
-				protonn_float.o \
-				seedot_fixed.o
+PREDICTOR_INCLUDES=datatypes.h \
+                   library_fixed.h \
+                   library_float.h \
+                   model_fixed.h \
+                   model_float.h \
+                   predictors.h \
+                   profile.h \
+                   vars_fixed.h \
+                   vars_float.h \
+
+PREDICTOR_OBJS=debug.o \
+               library_fixed.o \
+               library_float.o \
+               main.o \
+               profile.o \
+               seedot_fixed.o \
+               seedot_float.o \
 
 all: Predictor
 
-Predictor: bonsai_float.o library.o main.o profile.o protonn_float.o seedot_fixed.o
+Predictor: $(PREDICTOR_OBJS)
 	$(CC) -o $@ $^ $(CFLAGS)
 
-bonsai_float.o: bonsai_float.cpp $(PREDICTOR_INCLUDES)
+debug.o: debug.cpp $(PREDICTOR_INCLUDES)
 	$(CC) -c -o $@ $(CFLAGS) $<
 
-library.o: library.cpp $(PREDICTOR_INCLUDES)
+library_fixed.o: library_fixed.cpp $(PREDICTOR_INCLUDES)
+	$(CC) -c -o $@ $(CFLAGS) $<
+
+library_float.o: library_float.cpp $(PREDICTOR_INCLUDES)
 	$(CC) -c -o $@ $(CFLAGS) $<
 
 main.o: main.cpp $(PREDICTOR_INCLUDES)
@@ -33,10 +42,10 @@ main.o: main.cpp $(PREDICTOR_INCLUDES)
 profile.o: profile.cpp $(PREDICTOR_INCLUDES)
 	$(CC) -c -o $@ $(CFLAGS) $<
 
-protonn_float.o: protonn_float.cpp $(PREDICTOR_INCLUDES) 
+seedot_fixed.o: seedot_fixed.cpp $(PREDICTOR_INCLUDES)
 	$(CC) -c -o $@ $(CFLAGS) $<
 
-seedot_fixed.o: seedot_fixed.cpp $(PREDICTOR_INCLUDES) 
+seedot_float.o: seedot_float.cpp $(PREDICTOR_INCLUDES)
 	$(CC) -c -o $@ $(CFLAGS) $<
 
 clean: 

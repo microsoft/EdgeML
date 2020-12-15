@@ -3,12 +3,25 @@
 
 from enum import Enum
 import numpy as np
+import traceback
 
-import seedot.common as Common
+import seedot.config as config
 from seedot.util import *
+
+# Primitives used by the Intermediate Representation (IR).
+# For most primitives, there would be in __init__() function and one subst() function.
+# __init__() initialises all the metadata required by the IR primitive.
+# subst() is used for substitutions, for example:
+#   In the input code, suppose we have a + b.
+#   In the AST, it will be represented as add(var(a), var(b)).
+#   The compiler substitutes 'a' with tmp1.
+#   The substitution tmp1/'a' (read as tmp1 for 'a', or 'a' should be replaced with tmp1) is applied on the whole program.
+#   All the subst() calls are written in a way that within the AST, all instances of 'a' would be replaced by tmp1.
+#   The updated AST would look like add(var(tmp1), var(b)).
 
 
 class Op:
+
     Op = Enum('Op', '+ - * / << >> & | ^ ~ ! && || < <= > >= == !=')
     Op.print = lambda self, writer: writer.printf('%s', self.name)
     Op.op_list = lambda op_str: list(map(lambda x: Op.Op[x], op_str.split()))
@@ -26,6 +39,18 @@ class BoolExpr(Expr):
     pass
 
 
+class String(Expr):
+
+	def __init__(self, s):
+		self.s = s
+
+	def subst(self, from_idf:str, to_e:Expr):
+		if self.s.idf == from_idf:
+			return String(Var(to_e.idf))
+		else:
+			return String(self.s)
+
+
 class Int(IntExpr):
 
     @staticmethod
@@ -40,23 +65,33 @@ class Int(IntExpr):
         self.n = DataType.getInt(n)
 
     def subst(self, from_idf: str, to_e: Expr):
-        return Int(self.n)
+        return self
+
+
+class Float(IntExpr):
+
+    def __init__(self, n: float):
+        self.n = n
+
+    def subst(self, from_idf: str, to_e: Expr):
+        return Float(self.n)
 
 
 class Var(IntExpr):
 
-    def __init__(self, idf: str, idx: list=[], inputVar=False):
+    def __init__(self, idf: str, idx: list = [], inputVar=False, internalVar=False):
         self.idf = idf
         self.idx = idx
         self.inputVar = inputVar
+        self.internalVar = internalVar
 
     def subst(self, from_idf: str, to_e: Expr):
         idx_new = list(map(lambda e: e.subst(from_idf, to_e), self.idx))
         if self.idf != from_idf:
-            return Var(self.idf, idx_new, self.inputVar)
+            return Var(self.idf, idx_new, self.inputVar, self.internalVar)
         else:
             if isinstance(to_e, Var):
-                return Var(to_e.idf, to_e.idx + idx_new, to_e.inputVar and self.inputVar)
+                return Var(to_e.idf, to_e.idx + idx_new, to_e.inputVar and self.inputVar, self.internalVar)
             elif isinstance(to_e, Int):
                 return to_e
             else:
@@ -195,17 +230,18 @@ class If(Cmd):
 
 class For(Cmd):
 
-    def __init__(self, var: Var, st: int, cond: Expr, cmd_l: CmdList, fac=0):
+    def __init__(self, var: Var, st: int, cond: Expr, cmd_l: CmdList, fac=0, varDecls={}):
         self.var = var
         self.st = DataType.getInt(st)
         self.cond = cond
         self.cmd_l = cmd_l
         self.factor = fac
+        self.varDecls = varDecls
 
     def subst(self, from_idf: str, to_e: Expr):
         cmd_l_new = list(
             map(lambda cmd: cmd.subst(from_idf, to_e), self.cmd_l))
-        return For(self.var, self.st, self.cond.subst(from_idf, to_e), cmd_l_new, self.factor)
+        return For(self.var, self.st, self.cond.subst(from_idf, to_e), cmd_l_new, self.factor, self.varDecls)
 
 
 class While(Cmd):
@@ -221,14 +257,15 @@ class While(Cmd):
 
 class FuncCall(Cmd):
 
-    def __init__(self, name, argList):
+    def __init__(self, name, argList, varDecls={}):
         self.name = name
         self.argList = argList
+        self.varDecls = varDecls
 
     def subst(self, from_idf: str, to_e: Expr):
         argList_new = dict(
             map(lambda cmd: (cmd[0].subst(from_idf, to_e), cmd[1]), self.argList.items()))
-        return FuncCall(self.name, argList_new)
+        return FuncCall(self.name, argList_new, self.varDecls)
 
 
 class Memset(Cmd):
@@ -241,6 +278,21 @@ class Memset(Cmd):
 
     def subst(self, from_idf: str, to_e: Expr):
         return Memset(self.e.subst(from_idf, to_e), self.len)
+
+
+class Memcpy(Cmd):
+
+    def __init__(self, to: Var, start: Var, length: int, toIndex: list, startIndex: list):
+        self.to = to
+        self.start = start
+        self.length = length
+        self.toIndex = toIndex
+        self.startIndex = startIndex
+
+    def subst(self, from_idf: str, to_e: Expr):
+        return Memcpy(self.to.subst(from_idf, to_e), self.start.subst(from_idf, to_e), self.length,
+            list(map(lambda var: var.subst(from_idf, to_e), self.toIndex)),
+            list(map(lambda var: var.subst(from_idf, to_e), self.startIndex)))
 
 
 class Print(Cmd):
@@ -264,11 +316,12 @@ class PrintAsFloat(Cmd):
 
 class Comment(Cmd):
 
-    def __init__(self, msg):
+    def __init__(self, msg, instructionId=None):
         self.msg = msg
+        self.instructionId = instructionId
 
     def subst(self, from_idf: str, to_e: Expr):
-        return Comment(self.msg)
+        return Comment(self.msg, self.instructionId)
 
 
 class Prog:
@@ -284,24 +337,40 @@ class Prog:
 
 
 class DataType:
-    intType = {Common.Target.Arduino: {8: np.int8, 16: np.int16, 32: np.int32, 64: np.int64},
-               Common.Target.X86: {8: np.int8, 16: np.int16, 32: np.int32, 64: np.int64}
+
+    intType = {config.Target.arduino: {8: np.int8, 16: np.int16, 32: np.int32, 64: np.int64},
+               config.Target.x86: {8: np.int8, 16: np.int16, 32: np.int32, 64: np.int64},
+               config.Target.m3: {8: np.int8, 16: np.int16, 32: np.int32, 64: np.int64}
                }
-    intStr = {Common.Target.Arduino: 'MYINT',
-              Common.Target.X86: 'MYINT'
+    intStr = {config.Target.arduino: 'MYINT',
+              config.Target.x86: 'MYINT',
+              config.Target.m3: 'MYINT'
               }
     floatStr = "float"
 
     @staticmethod
     def getInt(x: int):
+        '''
+        Function returns the numpy int object for x.
+        The datatype of x is determined by config.wordLength.
+        The function tries to handle overflows, by using a higher bit-width when needed
+        but reports a warning if the higher bit-width also overflows.
+        '''
         target = getTarget()
-        wordLen = Common.wordLength
-        return DataType.intType[target][wordLen](x)
+        wordLen = config.wordLength
+        x_np = DataType.intType[target][wordLen](x)
+        if x_np != x:
+            x_np = DataType.intType[target][wordLen * 2](x)
+            if x_np != x:
+                print('Warning: Integer overflow for %d' % (x))
+            else:
+                print('Integer overflow for %d handled' % (x))
+        return x_np
 
     @staticmethod
     def getIntClass():
         target = getTarget()
-        wordLen = Common.wordLength
+        wordLen = config.wordLength
         return DataType.intType[target][wordLen]
 
     @staticmethod
