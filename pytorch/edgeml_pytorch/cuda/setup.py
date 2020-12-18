@@ -8,8 +8,8 @@ if findCUDA() is not None:
         name='fastgrnn_cuda',
         ext_modules=[
             CUDAExtension('fastgrnn_cuda', [
-                'edgeml_pytorch/cuda/fastgrnn_cuda.cpp',
-                'edgeml_pytorch/cuda/fastgrnn_cuda_kernel.cu',
+                'fastgrnn_cuda.cpp',
+                'fastgrnn_cuda_kernel.cu',
             ]),
         ],
         cmdclass={
