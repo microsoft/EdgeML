@@ -1064,7 +1064,7 @@ class IRBuilder(ASTVisitor):
 
         # Reading input scales.
         bitwidth_in_A, scale_in_A = self.getBitwidthAndScale(expr_in_A.idf)
-        bitwidth_in_Aid = (config.wordLength // 2) if (expr_in_A.idf[0] + 'idx') in self.demotedVarsList else config.wordLength
+        bitwidth_in_Aid = (config.wordLength // 2) if (expr_in_A.idf + 'idx') in self.demotedVarsList else config.wordLength
         bitwidth_in_B, scale_in_B = self.getBitwidthAndScale(expr_in_B.idf)
         # Read output scales and bit-widths. In data-driven scaling, the output scale is directly profiled from floating-point runtime.
         # In static scaling used by old SeeDot (PLDI '19), output scale and bitwidth is set to None is statically computed later.
