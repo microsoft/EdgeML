@@ -1,5 +1,4 @@
 model/**/*.npy
-datasets/**/*.npy
 arduinodump/
 m3dump/
 temp/
