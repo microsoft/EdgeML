@@ -11,7 +11,7 @@ and is to be adapted as needed for other embedded platforms.
 The `EdgeML/c_reference/` directory is broadly structured into the following sub-directories:
 
 - **include/**: Contains the header files for various lower level operators and layers.
-- **models/**: Contains the optimized source code and header files for various models built by stiching together different layers and operators. Also contains the layer weights and hyper-parameters for the corresponding models as well (stored using `Git LFS`).
+- **models/**: Contains the optimized source code and header files for various models built by stiching together different layers and operators. Also contains the layer weights and hyper-parameters for the corresponding models as well (stored using `Git LFS`). (**Note:** Cloning the repo without installing `Git LFS` would fail to clone the actual headers. It's recommended to follow instructions on setting up `LFS` from [here](https://git-lfs.github.com/) before cloning.)
 - **src/**: Contains the optimized source code files for various lower level operators and layers.
 - **tests/**: Contains extensive test cases for individual operators and layers, as well as the implemented models. The executables are generated in the main directory itself, while the test scripts and their configurations can be accessed in the appropriate sub-directories.
 

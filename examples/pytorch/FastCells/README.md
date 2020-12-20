@@ -15,8 +15,8 @@ features like low-rank parameterisation and custom non-linearities. Akin to
 Bonsai and ProtoNN, the three-phase training routine for FastRNN and FastGRNN
 is decoupled from the custom cells to facilitate a plug and play behaviour of 
 the custom RNN cells in other architectures (NMT, Encoder-Decoder etc.).
-Additionally, numerically  equivalent CUDA-based implementations FastRNNCuda
-and FastGRNNCuda are provided for faster training. 
+Additionally, numerically equivalent CUDA-based implementations **FastRNNCUDA**
+and **FastGRNNCUDA** are provided for faster training. 
 `edgeml_pytorch.graph.rnn` also contains modified RNN cells of **UGRNNCell**, 
 **GRUCell**, and **LSTMCell**, which can be substituted for Fast(G)RNN,
 as well as untrolled RNNs which are equivalent to `nn.LSTM` and `nn.GRU`. 
@@ -67,9 +67,9 @@ Final Test Accuracy: 0.9347
 
 Non-Zeros: 1932 Model Size: 7.546875 KB hasSparse: False
 ```
-`usps10/` directory will now have a consolidated results file called `FastRNNResults.txt` or 
-`FastGRNNResults.txt` depending on the choice of the RNN cell. A directory `FastRNNResults` or
-`FastGRNNResults` with the corresponding models with each run of the code on the `usps10` dataset.
+`usps10/` directory will now have a consolidated results file called `FastRNNResults.txt`, 
+`FastGRNNResults.txt` or `FastGRNNCUDAResults.txt` depending on the choice of the RNN cell. A directory `FastRNNResults`, 
+`FastGRNNResults` or `FastGRNNCUDAResults` with the corresponding models with each run of the code on the `usps10` dataset.
 
 Note that the scalars like `alpha`, `beta`, `zeta` and `nu` correspond to the values before
 the application of the sigmoid function.

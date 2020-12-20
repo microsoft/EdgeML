@@ -9,8 +9,12 @@ import numpy as np
 
 import edgeml_pytorch.utils as utils
 
-if utils.findCUDA() is not None:
-    import fastgrnn_cuda
+try:
+    if utils.findCUDA() is not None:
+        import fastgrnn_cuda
+except:
+    print("Running without FastGRNN CUDA")
+    pass
 
 
 # All the matrix vector computations of the form Wx are done 
@@ -351,29 +355,29 @@ class FastGRNNCUDACell(RNNCell):
         self._name = name
 
         if wRank is None:
-            self.W = nn.Parameter(0.1 * torch.randn([hidden_size, input_size], self.device))
+            self.W = nn.Parameter(0.1 * torch.randn([hidden_size, input_size], device=self.device))
             self.W1 = torch.empty(0)
             self.W2 = torch.empty(0)
         else:
             self.W = torch.empty(0)
-            self.W1 = nn.Parameter(0.1 * torch.randn([wRank, input_size], self.device))
-            self.W2 = nn.Parameter(0.1 * torch.randn([hidden_size, wRank], self.device))
+            self.W1 = nn.Parameter(0.1 * torch.randn([wRank, input_size], device=self.device))
+            self.W2 = nn.Parameter(0.1 * torch.randn([hidden_size, wRank], device=self.device))
 
         if uRank is None:
-            self.U = nn.Parameter(0.1 * torch.randn([hidden_size, hidden_size], self.device))
+            self.U = nn.Parameter(0.1 * torch.randn([hidden_size, hidden_size], device=self.device))
             self.U1 = torch.empty(0)
             self.U2 = torch.empty(0)
         else:
             self.U = torch.empty(0)
-            self.U1 = nn.Parameter(0.1 * torch.randn([uRank, hidden_size], self.device))
-            self.U2 = nn.Parameter(0.1 * torch.randn([hidden_size, uRank], self.device))
+            self.U1 = nn.Parameter(0.1 * torch.randn([uRank, hidden_size], device=self.device))
+            self.U2 = nn.Parameter(0.1 * torch.randn([hidden_size, uRank], device=self.device))
 
         self._gate_non_linearity = NON_LINEARITY[gate_nonlinearity]
 
-        self.bias_gate = nn.Parameter(torch.ones([1, hidden_size], self.device))
-        self.bias_update = nn.Parameter(torch.ones([1, hidden_size], self.device))
-        self.zeta = nn.Parameter(self._zetaInit * torch.ones([1, 1], self.device))
-        self.nu = nn.Parameter(self._nuInit * torch.ones([1, 1], self.device))
+        self.bias_gate = nn.Parameter(torch.ones([1, hidden_size], device=self.device))
+        self.bias_update = nn.Parameter(torch.ones([1, hidden_size], device=self.device))
+        self.zeta = nn.Parameter(self._zetaInit * torch.ones([1, 1], device=self.device))
+        self.nu = nn.Parameter(self._nuInit * torch.ones([1, 1], device=self.device))
 
     @property
     def name(self):
