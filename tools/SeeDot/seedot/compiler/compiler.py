@@ -31,6 +31,8 @@ import seedot.writer as writer
 
 import seedot.config as config
 
+import numpy as np
+
 # The Compiler class reads in the input code, converts it first into an AST, and subsequently into an IR which
 # contains a sequence of function calls (which are implemented by hand in a library). The IR is fed into the 
 # desired target codegen, which outputs the C/C++ code which can be run on the target device.
@@ -55,6 +57,7 @@ class Compiler:
         self.generateAllFiles = generateAllFiles
         self.id = str(id) if id is not None else ""
         self.printSwitch = printSwitch
+        self.varSizes = {}
 
         self.intermediateScales = {}
         self.substitutions = substitutions
@@ -144,6 +147,14 @@ class Compiler:
 
         # All state variables are used for codegen.
         state = [compiler.varDeclarations, compiler.varDeclarationsLocal, compiler.varScales, compiler.varIntervals, compiler.intConstants, compiler.expTables, compiler.globalVars, compiler.internalVars, compiler.floatConstants, compiler.substitutions, compiler.demotedVarsOffsets, compiler.varsForBitwidth, compiler.varLiveIntervals, compiler.notScratch, compiler.coLocatedVariables]
+
+        for key in compiler.varDeclarations.keys():
+            val = compiler.varDeclarations[key]
+            if type.isTensor(val):
+                dims = val.shape
+                self.varSizes[key] = np.prod(dims)
+            else:
+                self.varSizes[key] = 1
 
         # Raw live ranges do not capture the scope of the first/last usage of a variable, so they require post-processing.
         state[12] = self.adjustLiveRanges(state[12], compiler.allDepths)

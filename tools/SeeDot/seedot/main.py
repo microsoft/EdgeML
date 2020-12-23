@@ -84,6 +84,8 @@ class Main:
         self.biasShifts = {}
             # For simplifying bias addition, populated after every code run, used for M3 codegen.
             # In operations like WX + B, B is mostly used once in the code. So all the fixed point computations are clubbed into one.
+        self.varSizes = {}
+            # Map from a variable to number of elements it holds. Populated in floating point mode.
 
     # This function is invoked right at the beginning for moving around files into the working directory.
     def setup(self):
@@ -181,6 +183,7 @@ class Main:
         if version == config.Version.floatt:
             self.variableSubstitutions = obj.substitutions
             self.variableToBitwidthMap = dict.fromkeys(obj.independentVars, config.wordLength)
+            self.varSizes = obj.varSizes
 
         self.problemType = obj.problemType
         if id is None:
@@ -495,7 +498,23 @@ class Main:
                 totalSize = len(self.varDemoteDetails)
                 numBatches = int(np.ceil(totalSize / redBatchSize))
 
-                sortedVars = [i for (i, j) in self.varDemoteDetails]
+                sortedVars1 = []
+                sortedVars2 = []
+                for ((demoteVars, offset), _) in self.varDemoteDetails:
+                    variableInMap = False
+                    for demoteVar in demoteVars:
+                        if demoteVar in self.varSizes:
+                            variableInMap = True
+                            if self.varSizes[demoteVar] >= Util.Config.largeVariableLimit:
+                                sortedVars1.append((demoteVars, offset))
+                                break
+                            else:
+                                sortedVars2.append((demoteVars, offset))
+                                break
+                    if not variableInMap:
+                        sortedVars2.append((demoteVars, offset))
+
+                sortedVars = sortedVars1 + sortedVars2
 
                 self.varDemoteDetails = []
                 demotedVarsOffsets = dict(self.demotedVarsOffsets)
@@ -544,9 +563,9 @@ class Main:
                 acceptedAcc = lastStageAcc
                 for ((demotedVars, _), metrics) in self.varDemoteDetails:
                     acc = metrics[0]
-                    if self.problemType == config.ProblemType.classification and (self.flAccuracy - acc) > 2.0:
+                    if self.problemType == config.ProblemType.classification and (self.flAccuracy - acc) > config.permittedClassificationAccuracyLoss:
                         break
-                    elif self.problemType == config.ProblemType.regression and acc > 90.0:
+                    elif self.problemType == config.ProblemType.regression and acc > config.permittedRegressionNumericalLossMargin:
                         break
                     else:
                         okToDemote = demotedVars

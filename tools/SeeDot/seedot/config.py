@@ -6,9 +6,11 @@ wordLength = 16
 availableBitwidths = [8, 16, 32]
 
 # Range of max scale factor used for exploration.
+# In the old SeeDot (PLDI'19), this explores across the maxscale parameter.
+# In the new SeeDot (OOPSLA'20), this explores across the scale of the input variable 'X'.
 maxScaleRange = 0, -wordLength
 
-# TanH approximation limit.
+# TanH approximation limit. Used by old SeeDot (PLDI'19).
 tanhLimit = 1.0
 
 # MSBuild location
@@ -18,7 +20,7 @@ msbuildPathOptions = [r"C:\Program Files (x86)\Microsoft Visual Studio\2019\Comm
                       r"C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe"
                       ]
 
-# Not supported (ddsEnabled = False and vbwEnabled = True).
+# IMPORTANT NOTE: Unsupported configuration (ddsEnabled = False and vbwEnabled = True).
 
 # Enable data-driven scale computation. Turning this to False reverts the compiler to old verion (PLDI'19).
 ddsEnabled = True
@@ -42,6 +44,12 @@ fixedPointVbwIteration = False
 
 # Number of offsets tried out for each variable (except X, for which 9 are tried) when they are demoted to 8 bits one at a time.
 offsetsPerDemotedVariable = 3
+
+# For a classification algorithm, fixed point code can have this much drop in accuracy compared to floating point code. Not used in regression algorithms.
+permittedClassificationAccuracyLoss = 2.0
+
+# For a regression algorithm, fixed point code can have this much more numerical loss compared to floating point code. Not used in classification algorithms.
+permittedRegressionNumericalLossMargin = 90.0
 
 # Following classes are used sanity checks for arguments passed to the compiler, to prevent unexpected arguments being passed.
 # These lists should be updated as the compiler is expanded to multiple algorithms and datasets.
