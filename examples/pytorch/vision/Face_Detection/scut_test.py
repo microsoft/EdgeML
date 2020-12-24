@@ -43,7 +43,7 @@ parser.add_argument('--multigpu',
                     help='Specify whether model was trained with multigpu')
 parser.add_argument('--model_arch',
                     default='RPool_Face_M4', type=str,
-                    choices=['RPool_Face_M4'],
+                    choices=['RPool_Face_M4', 'RPool_Face_QVGA_monochrome'],
                     help='choose architecture among rpool variants')
 parser.add_argument('--save_folder', type=str,
                     default='rpool_face_predictions', help='folder for saving predictions')
