@@ -47,24 +47,24 @@ class RNNPool(nn.Module):
         row_timestack = torch.cat(torch.unbind(inputs, dim=3),dim=0) 
 
         stateList = self.static_single(torch.stack(torch.unbind(row_timestack,dim=2)),
-                        (torch.zeros(1, batch_size * self.nRows, self.nHiddenDims).to(torch.device("cuda")),
-                        torch.zeros(1, batch_size * self.nRows, self.nHiddenDims).to(torch.device("cuda"))),batch_size)       
+                        (torch.zeros(1, batch_size * self.nRows, self.nHiddenDims).to(inputs.device),
+                        torch.zeros(1, batch_size * self.nRows, self.nHiddenDims).to(inputs.device)),batch_size)       
 
         outputs_cols = self.cell_bidirrnn(torch.stack(stateList),
-                        torch.zeros(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")),
-                        torch.zeros(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")))
+                        torch.zeros(2, batch_size, self.nHiddenDimsBiDir).to(inputs.device),
+                        torch.zeros(2, batch_size, self.nHiddenDimsBiDir).to(inputs.device))
 
 
         ## across columns
         col_timestack = torch.cat(torch.unbind(inputs, dim=2),dim=0)
 
         stateList = self.static_single(torch.stack(torch.unbind(col_timestack,dim=2)),
-                        (torch.zeros(1, batch_size * self.nRows, self.nHiddenDims).to(torch.device("cuda")),
-                        torch.zeros(1, batch_size * self.nRows, self.nHiddenDims).to(torch.device("cuda"))),batch_size)
+                        (torch.zeros(1, batch_size * self.nRows, self.nHiddenDims).to(inputs.device),
+                        torch.zeros(1, batch_size * self.nRows, self.nHiddenDims).to(inputs.device)),batch_size)
 
         outputs_rows = self.cell_bidirrnn(torch.stack(stateList),
-                        torch.zeros(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")),
-                        torch.zeros(2, batch_size, self.nHiddenDimsBiDir).to(torch.device("cuda")))
+                        torch.zeros(2, batch_size, self.nHiddenDimsBiDir).to(inputs.device),
+                        torch.zeros(2, batch_size, self.nHiddenDimsBiDir).to(inputs.device))
 
 
 
