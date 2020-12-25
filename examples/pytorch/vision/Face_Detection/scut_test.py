@@ -241,4 +241,4 @@ if __name__ == '__main__':
             ymax = dets[i][3]
             score = dets[i][4]
             fout.write('{:.1f} {:.1f} {:.1f} {:.1f} {:.3f}\n'.
-                       format(xmin, ymin, (xmax - xmin + 1), (ymax - ymin + 1), score)      
+                       format(xmin, ymin, (xmax - xmin + 1), (ymax - ymin + 1), score))
