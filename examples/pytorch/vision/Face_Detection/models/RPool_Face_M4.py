@@ -49,7 +49,7 @@ class S3FD(nn.Module):
         self.unfold = nn.Unfold(kernel_size=(8,8),stride=(4,4))
 
         self.rnn_model = RNNPool(8, 8, 16, 16, 4, 
-                                w1Sparsity=0.5, u1Sparsity=0.3, w2Sparsity=0.3, u2Sparsity=0.3)#num_init_features)
+                            w1Sparsity=0.5, u1Sparsity=0.3, w2Sparsity=0.3, u2Sparsity=0.3)
         
         self.mob = nn.ModuleList(base)
         # Layer learns to scale the l2 normalized features from conv4_3
@@ -174,7 +174,7 @@ class S3FD(nn.Module):
                 conf.view(conf.size(0), -1, self.num_classes),
                 self.priors
             )
-        return output
+        return output, loc, conf
 
     def load_weights(self, base_file):
         other, ext = os.path.splitext(base_file)

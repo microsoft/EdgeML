@@ -172,7 +172,7 @@ class S3FD(nn.Module):
                 conf.view(conf.size(0), -1, self.num_classes),
                 self.priors
             )
-        return output
+        return output, loc, conf
 
     def load_weights(self, base_file):
         other, ext = os.path.splitext(base_file)

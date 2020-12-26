@@ -156,7 +156,7 @@ def train():
 
               
             t0 = time.time()
-            out = net(images)
+            out,_,_ = net(images)
             # backprop
             optimizer.zero_grad()
             loss_l, loss_c = criterion(out, targets)
@@ -210,7 +210,7 @@ def val(epoch):
                 images = images
                 targets = [ann for ann in targets]
 
-            out = net(images)
+            out,_,_ = net(images)
             loss_l, loss_c = criterion(out, targets)
             loss = loss_l + loss_c
             loc_loss += loss_l.item()
@@ -252,4 +252,3 @@ def adjust_learning_rate(optimizer, epoch, iteration, num_iter):
 
 if __name__ == '__main__':
     train()
-    

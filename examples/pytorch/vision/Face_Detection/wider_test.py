@@ -81,7 +81,7 @@ def detect_face(net, img, shrink):
     if use_cuda:
         x = x.cuda()
 
-    y = net(x)
+    y,_,_ = net(x)
     detections = y.data
     detections = detections.cpu().numpy()
 

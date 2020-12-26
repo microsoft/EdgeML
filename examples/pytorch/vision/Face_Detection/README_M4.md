@@ -86,6 +86,17 @@ If IS_QVGA_MONO=0 the evaluation code accepts an image of any size and resizes i
 
 If IS_QVGA_MONO=1 the evaluation code accepts an image of any size and resizes and converts it to monochrome to make it 320x240x1 while preserving original image aspect ratio.
 
+
+#### Saving Full Model Traces
+Setting the flag --save_traces as True will save input output traces in two separate .npy files for each image in <your_image_folder>, given the architecture and trained model. Run:
+
+
+```shell
+IS_QVGA_MONO=1 python eval.py --model_arch RPool_Face_M4 --model ./weights/RPool_Face_M4_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder> --thresh 0.5  --multigpu True  --save_traces True
+```
+
+For generating traces on SCUT Head images, set <your_image_folder> as $DATA_HOME/SCUT_HEAD_Part_B/JPEGImages/
+
 #### SCUT Head Validation Set Test
 In this mode, we test the generated model against the provided SCUT Head Part B validation dataset. Use the SCUT Head finetuned model for this step.
 

@@ -39,6 +39,9 @@ parser.add_argument('--model_arch',
                     choices=['RPool_Face_C', 'RPool_Face_Quant', 'RPool_Face_QVGA_monochrome', 'RPool_Face_M4'],
                     help='choose architecture among rpool variants')
 parser.add_argument('--image_folder', default=None, type=str, help='folder containing images')
+parser.add_argument('--save_traces',
+                    default=False, type=str2bool,
+                    help='Specify whether to save input output traces')
 
 
 args = parser.parse_args()
@@ -54,7 +57,7 @@ else:
     torch.set_default_tensor_type('torch.FloatTensor')
 
 
-def detect(net, img_path, thresh):
+def detect(net, img_path, thresh, save_traces):
     img = Image.open(img_path)
     img = img.convert('RGB')
     img = np.array(img)
@@ -67,9 +70,14 @@ def detect(net, img_path, thresh):
         max_im_shrink = np.sqrt(
             640 * 480 / (img.shape[0] * img.shape[1]))
 
-    image = cv2.resize(img, None, None, fx=max_im_shrink,
+    if save_traces==True and os.environ['IS_QVGA_MONO'] == '1':
+        image = cv2.resize(img, (320, 240))
+    elif save_traces==True:
+        image = cv2.resize(img, (640, 480))
+    else:
+        image = cv2.resize(img, None, None, fx=max_im_shrink,
                       fy=max_im_shrink, interpolation=cv2.INTER_LINEAR)
-    # img = cv2.resize(img, (640, 640))
+
     x = to_chw_bgr(image)
     x = x.astype('float32')
     x -= cfg.img_mean
@@ -84,7 +92,7 @@ def detect(net, img_path, thresh):
     if use_cuda:
         x = x.cuda()
     t1 = time.time()
-    y = net(x)
+    y, loc, conf = net(x)
     detections = y.data
     scale = torch.Tensor([img.shape[1], img.shape[0],
                           img.shape[1], img.shape[0]])
@@ -108,6 +116,9 @@ def detect(net, img_path, thresh):
     print('detect:{} timer:{}'.format(img_path, t2 - t1))
 
     cv2.imwrite(os.path.join(args.save_dir, os.path.basename(img_path)), img)
+
+    if save_traces == True:
+        return x, loc, conf
 
 
 if __name__ == '__main__':
@@ -135,6 +146,18 @@ if __name__ == '__main__':
     img_path = args.image_folder
     img_list = [os.path.join(img_path, x)
                 for x in os.listdir(img_path)]
+    x = []
+    loc = []
+    conf = []
     for path in img_list:
-        detect(net, path, args.thresh)
-        
+        if args.save_traces == True:
+            x_temp, loc_temp, conf_temp = detect(net, path, args.thresh, args.save_traces)
+            x.append(x_temp)
+            loc.append(loc_temp)
+            conf.append(conf_temp)
+        else:
+            detect(net, path, args.thresh, args.save_traces)
+
+    if args.save_traces == True:
+        np.save('trace_inputs.npy', torch.cat(x).cpu().detach().numpy())
+        np.save('trace_outputs.npy', torch.cat([torch.cat(conf), torch.cat(loc)], dim=1).cpu().detach().numpy())
