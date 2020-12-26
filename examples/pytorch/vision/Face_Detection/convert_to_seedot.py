@@ -6,11 +6,11 @@ import numpy as np
 
 from models import RPool_Face_M4 as module
 
-save_dir = '../../../../tools/SeeDot/model/rnnpool/face-4/'
+save_dir = '../../../../tools/SeeDot/model/rnnpool/face-2/'
 
 net = module.build_s3fd('test', num_classes = 2)
 
-checkpoint_dict = torch.load('./weights/RPool_Face_M4_best_state.pth')
+checkpoint_dict = torch.load('./weights/RPool_Face_QVGA_monochrome_best_state.pth')
 
 model_dict = {}
 net = torch.nn.DataParallel(net)
@@ -21,9 +21,9 @@ net.load_state_dict(model_dict, strict = False)
 net.eval()
 
 i = 15
-a = np.load('traces_rnnpool_face_m4/trace_inputs_%d.npy' % i)
+a = np.load('traces_rnnpool_face_qvga_monochrome/trace_inputs_%d.npy' % i)
 a = np.squeeze(a, axis = 1)
-b = np.load('traces_rnnpool_face_m4/trace_outputs_%d.npy' % i)
+b = np.load('traces_rnnpool_face_qvga_monochrome/trace_outputs_%d.npy' % i)
 inputs = torch.tensor(a)
 output = torch.tensor(net(inputs))
 
