@@ -107,9 +107,9 @@ def detect(net, img_path, thresh, save_traces):
             left_up, right_bottom = (pt[0], pt[1]), (pt[2], pt[3])
             j += 1
             cv2.rectangle(img, left_up, right_bottom, (0, 0, 255), 2)
-            conf = "{:.3f}".format(score)
+            conf_score = "{:.3f}".format(score)
             point = (int(left_up[0]), int(left_up[1] - 5))
-            cv2.putText(img, conf, point, cv2.FONT_HERSHEY_COMPLEX,
+            cv2.putText(img, conf_score, point, cv2.FONT_HERSHEY_COMPLEX,
                        0.6, (0, 255, 0), 1)
 
     t2 = time.time()
