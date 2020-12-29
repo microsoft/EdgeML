@@ -20,10 +20,9 @@ model_dict.update(checkpoint_dict)
 net.load_state_dict(model_dict, strict = False)
 net.eval()
 
-i = 15
-a = np.load('traces_rnnpool_face_m4/trace_inputs_%d.npy' % i)
+a = np.load('traces_rnnpool_face_m4/trace_inputs.npy')
 a = np.squeeze(a, axis = 1)
-b = np.load('traces_rnnpool_face_m4/trace_outputs_%d.npy' % i)
+b = np.load('traces_rnnpool_face_m4/trace_outputs.npy')
 inputs = torch.tensor(a)
 output = torch.tensor(net(inputs))
 
