@@ -1507,7 +1507,7 @@ class SRNN2(nn.Module):
 class FastGRNNFunction(Function):
     @staticmethod
     def forward(ctx, input, bias_gate, bias_update, zeta, nu, old_h, w, u, w1, w2, u1, u2, gate_non_linearity):
-        outputs = fastgrnn_cuda.forward(input, w, u, bias_gate, bias_update, zeta, nu, old_h, gate_non_linearity, w1, w2, u1, u2)
+        outputs = fastgrnn_cuda.forward(input.contiguous(), w, u, bias_gate, bias_update, zeta, nu, old_h, gate_non_linearity, w1, w2, u1, u2)
         new_h = outputs[0]
         variables = [input, old_h, zeta, nu, w, u] + outputs[1:] + [w1, w2, u1, u2]
         ctx.save_for_backward(*variables)
@@ -1523,7 +1523,7 @@ class FastGRNNFunction(Function):
 class FastGRNNUnrollFunction(Function):
     @staticmethod
     def forward(ctx, input, bias_gate, bias_update, zeta, nu, old_h, w, u, w1, w2, u1, u2, gate_non_linearity):
-        outputs = fastgrnn_cuda.forward_unroll(input, w, u, bias_gate, bias_update, zeta, nu, old_h, gate_non_linearity, w1, w2, u1, u2)
+        outputs = fastgrnn_cuda.forward_unroll(input.contiguous(), w, u, bias_gate, bias_update, zeta, nu, old_h, gate_non_linearity, w1, w2, u1, u2)
         hidden_states = outputs[0]
         variables = [input, hidden_states, zeta, nu, w, u] + outputs[1:] + [old_h, w1, w2, u1, u2]
         ctx.save_for_backward(*variables)
