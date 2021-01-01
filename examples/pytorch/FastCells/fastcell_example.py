@@ -57,6 +57,11 @@ def main():
                                 gate_nonlinearity=gate_non_linearity,
                                 update_nonlinearity=update_non_linearity,
                                 wRank=wRank, uRank=uRank)
+    elif cell == "FastGRNNCUDA":
+        FastCell = FastGRNNCUDACell(inputDims, hiddenDims,
+                                    gate_nonlinearity=gate_non_linearity,
+                                    update_nonlinearity=update_non_linearity,
+                                    wRank=wRank, uRank=uRank)
     elif cell == "FastRNN":
         FastCell = FastRNNCell(inputDims, hiddenDims,
                                update_nonlinearity=update_non_linearity,

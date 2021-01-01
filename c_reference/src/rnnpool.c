@@ -20,7 +20,7 @@ int rnnpool_block(const float* const patch, unsigned inputDims,
       patch + stride * r * inputDims, inputDims, patchDim,
       rnn1_params, rnn1_buffers, 0, 0);
 
-  // Bidirectional vertical pass over the row summaries
+  // Bi-directional vertical pass over the row summaries
   rnn2(output, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params, rnn2_buffers, 0, 0);
   rnn2(output + hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params, rnn2_buffers, 1, 0);
 
@@ -32,7 +32,7 @@ int rnnpool_block(const float* const patch, unsigned inputDims,
         patch + (stride * r + c) * inputDims, inputDims, 1,
         rnn1_params, rnn1_buffers, 0, 0);
 
-  // Bidirectional horizantal pass over the columns summaries
+  // Bi-directional horizontal pass over the columns summaries
   rnn2(output + 2 * hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params, rnn2_buffers, 0, 0);
   rnn2(output + 3 * hiddenDims2, hiddenDims2, buffer, hiddenDims1, patchDim, rnn2_params, rnn2_buffers, 1, 0);
 

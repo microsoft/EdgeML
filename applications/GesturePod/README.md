@@ -19,4 +19,4 @@ To learn more about GesturePod, refer our [UIST'19 publication](https://github.c
 
 The benchmark dataset for Gesture recognition can be downloaded [here](https://www.microsoft.com/en-us/research/uploads/prod/2018/05/dataTR_v1.tar.gz) [MIT Open source license].
 
-_If you are using the dataset please [cite](https://dl.acm.org/downformats.cfm?id=3347881&parent_id=3332165&expformat=bibtex) GesturePod._
+_If you are using the dataset please [cite](https://dl.acm.org/doi/10.1145/3332165.3347881) GesturePod._

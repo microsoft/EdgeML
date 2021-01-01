@@ -17,6 +17,8 @@ Algorithms that shine in this setting in terms of both model size and compute, n
  - **EMI-RNN**: Training routine to recover the critical signature from time series data for faster and accurate RNN predictions.
  - **Shallow RNN**: A meta-architecture for training RNNs that can be applied to streaming data.
  - **FastRNN & FastGRNN - FastCells**: **F**ast, **A**ccurate, **S**table and **T**iny (**G**ated) RNN cells.
+ - **DROCC**: **D**eep **R**obust **O**ne-**C**lass **C**lassfiication for training robust anomaly detectors.
+ - **RNNPool**: An efficient non-linear pooling operator for RAM constrained inference.
 
 These algorithms can train models for classical supervised learning problems
 with memory requirements that are orders of magnitude lower than other modern
@@ -36,9 +38,10 @@ Applications demonstrating usecases of these algorithms:
    and `examples/tf` contains sample training routines for these algorithms.
  - The `pytorch` directory contains the `edgeml_pytorch` package which specifies these architectures in PyTorch,
    and `examples/pytorch` contains sample training routines for these algorithms.
- - The `cpp` directory has training and inference code for Bonsai and ProtoNN algorithms in C++.
+ - The `cpp` directory has training and inference code for `Bonsai` and `ProtoNN` algorithms in C++.
  - The `applications` directory has code/demonstrations of applications of the EdgeML algorithms. 
  - The `tools/SeeDot` directory has the quantization tool to generate fixed-point inference code.  
+ - The `c_reference` directory contains the inference code (floating-point or quantized) for various algorithms in C.
 
 Please see install/run instructions in the README pages within these directories.
 
@@ -51,9 +54,11 @@ the ICML '17 publications on [Bonsai](/docs/publications/Bonsai.pdf) and
 the NeurIPS '18 publications on [EMI-RNN](/docs/publications/emi-rnn-nips18.pdf) and
 [FastGRNN](/docs/publications/FastGRNN.pdf),
 the PLDI '19 publication on [SeeDot compiler](/docs/publications/SeeDot.pdf),
-the UIST '19 publication on [Gesturepod](/docs/publications/ICane-UIST19.pdf), 
+the UIST '19 publication on [Gesturepod](/docs/publications/GesturePod-UIST19.pdf), 
 the BuildSys '19 publication on [MSC-RNN](/docs/publications/MSCRNN.pdf),
-and the NeurIPS '19 publication on [Shallow RNNs](/docs/publications/Sha-RNN.pdf).
+the NeurIPS '19 publication on [Shallow RNNs](/docs/publications/Sha-RNN.pdf),
+the ICML '20 publication on [DROCC](/docs/publications/drocc.pdf),
+and the NeurIPS '20 publication on [RNNPool](/docs/publications/RNNPool.pdf).
 
 
 Also checkout the [ELL](https://github.com/Microsoft/ELL) project which can
@@ -64,12 +69,15 @@ Code for algorithms, applications and tools contributed by:
   - [Don Dennis](https://dkdennis.xyz)
   - [Yash Gaurkar](https://github.com/mr-yamraj/)
   - [Sridhar Gopinath](http://www.sridhargopinath.in/)
+  - [Sachin Goyal](https://saching007.github.io/)
   - [Chirag Gupta](https://aigen.github.io/)
   - [Moksh Jain](https://github.com/MJ10)
+  - [Shikhar Jaiswal](https://shikharj.github.io/)
   - [Ashish Kumar](https://ashishkumar1993.github.io/)
   - [Aditya Kusupati](https://adityakusupati.github.io/)
   - [Chris Lovett](https://github.com/lovettchris)
   - [Shishir Patil](https://shishirpatil.github.io/)
+  - [Oindrila Saha](https://github.com/oindrilasaha)
   - [Harsha Vardhan Simhadri](http://harsha-simhadri.org)
 
 [Contributors](https://microsoft.github.io/EdgeML/People) to this project. New contributors welcome.
@@ -79,13 +87,14 @@ Please [email us](mailto:edgeml@microsoft.com) your comments, criticism, and que
 If you use software from this library in your work, please use the BibTex entry below for citation.
 
 ```
-@software{edgeml03,
-   author = {{Dennis, Don Kurian and Gaurkar, Yash and Gopinath, Sridhar and Gupta, Chirag and
-              Jain, Moksh and Kumar, Ashish and Kusupati, Aditya and Lovett, Chris 
-              and Patil, Shishir G and Simhadri, Harsha Vardhan}},
+@misc{edgeml04,
+   author = {{Dennis, Don Kurian and Gaurkar, Yash and Gopinath, Sridhar and Goyal, Sachin 
+              and Gupta, Chirag and Jain, Moksh and Jaiswal, Shikhar and Kumar, Ashish and
+              Kusupati, Aditya and  Lovett, Chris and Patil, Shishir G and Saha, Oindrila and
+              Simhadri, Harsha Vardhan}},
    title = {{EdgeML: Machine Learning for resource-constrained edge devices}},
    url = {https://github.com/Microsoft/EdgeML},
-   version = {0.3},
+   version = {0.4},
 }
 ```
 

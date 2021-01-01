@@ -88,8 +88,8 @@ def getArgs():
                         'train.npy and test.npy')
 
     parser.add_argument('-c', '--cell', type=str, default="FastGRNN",
-                        help='Choose between [FastGRNN, FastRNN, UGRNN' +
-                        ', GRU, LSTM], default: FastGRNN')
+                        help='Choose between [FastGRNN, FastGRNNCUDA, FastRNN,' +
+                         ' UGRNN, GRU, LSTM], default: FastGRNN')
 
     parser.add_argument('-id', '--input-dim', type=checkIntNneg, required=True,
                         help='Input Dimension of RNN, each timestep will ' +
