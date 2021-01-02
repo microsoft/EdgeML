@@ -65,7 +65,7 @@ python examples/pytorch/FastCells/train_classifier.py \
 	--lr_min 0.0005 --lr_scheduler CosineAnnealingLR --lr_peaks 0
 ```
 Drop the `--rolling` and `--max_rolling_length` options if you are going to run inference on 1 second clips,
-and do not plan to stream data through the model without resettting. `$MODEL_DIR` should be set to the output path of the model. The training script will generate
+and do not plan to stream data through the model without resetting. `$MODEL_DIR` should be set to the output path of the model. The training script will generate
 the following files in the output directory: `FastGRNN128KeywordSpotter.pt`, `FastGRNN128KeywordSpotter.onnx`, `mean.npy`, `std.npy` and a few other `.txt` files, along with a `config.json` in the current directory. Note: The names of the `.pt` and `.onnx` file may change based on the parameters passed for training.
 
 #### Run a demo with the model

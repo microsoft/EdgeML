@@ -85,7 +85,7 @@ stride = int(50 * (samplerate / 1000))
 CHUNK_SIZE = stride
 queue = Queue(10000000)
 
- 
+
 def extract_features(audio_data, data_len, num_filters,
                         sample_rate, window_len, window_step):
     """
@@ -202,10 +202,13 @@ if __name__ == '__main__':
     fastgrnn = create_model(config.model, num_filt, 35)
     fastgrnn.load_state_dict(torch.load(fastgrnn_model_path, map_location=torch.device('cpu')))
     fastgrnn.normalize(None, None)
+    
+    # Start streaming prediction
     pred = PredictionThread()
     rec = RecordingThread()
     
     pred.start()
     rec.start()
+
     pred.join()
     rec.join()
