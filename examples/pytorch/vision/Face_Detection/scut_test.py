@@ -28,28 +28,26 @@ import warnings
 warnings.filterwarnings("ignore")
 
 HOME = os.environ['DATA_HOME']
+SCUT_ROOT = os.path.join(HOME, 'SCUT_HEAD_Part_B')
 
 def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 
 parser = argparse.ArgumentParser(description='s3fd evaluatuon wider')
 parser.add_argument('--model', type=str,
-                    default='./weights/rpool_face_c.pth', help='trained model')
+                    default='./weights/rpool_face_m4.pth', help='trained model')
 parser.add_argument('--thresh', default=0.05, type=float,
                     help='Final confidence threshold')
 parser.add_argument('--multigpu',
                     default=False, type=str2bool,
                     help='Specify whether model was trained with multigpu')
 parser.add_argument('--model_arch',
-                    default='RPool_Face_C', type=str,
-                    choices=['RPool_Face_C', 'RPool_Face_Quant', 'RPool_Face_QVGA_monochrome'],
+                    default='RPool_Face_M4', type=str,
+                    choices=['RPool_Face_M4', 'RPool_Face_QVGA_monochrome'],
                     help='choose architecture among rpool variants')
 parser.add_argument('--save_folder', type=str,
                     default='rpool_face_predictions', help='folder for saving predictions')
-parser.add_argument('--subset', type=str,
-                    default='val',
-                    choices=['val', 'test'],
-                    help='choose which set to run testing on')
+
 
 args = parser.parse_args()
 
@@ -81,7 +79,7 @@ def detect_face(net, img, shrink):
     if use_cuda:
         x = x.cuda()
 
-    y,_,_ = net(x)
+    y = net(x)
     detections = y.data
     detections = detections.cpu().numpy()
 
@@ -182,100 +180,65 @@ def bbox_vote(det):
     return dets
 
 
-def get_data():
-    subset = args.subset
-
-    WIDER_ROOT = os.path.join(HOME, 'WIDER_FACE')
-    if subset == 'val':
-        wider_face = sio.loadmat(
-            os.path.join(WIDER_ROOT, 'wider_face_split',
-                               'wider_face_val.mat'))
-    else:
-        wider_face = sio.loadmat(
-            os.path.join(WIDER_ROOT, 'wider_face_split',
-                               'wider_face_test.mat'))
-    event_list = wider_face['event_list']
-    file_list = wider_face['file_list']
-    del wider_face
-
-    imgs_path = os.path.join(
-        WIDER_ROOT, 'WIDER_{}'.format(subset), 'images')
-    save_path = './{}'.format(args.save_folder)
-
-    return event_list, file_list, imgs_path, save_path
-
 if __name__ == '__main__':
-    event_list, file_list, imgs_path, save_path = get_data()
     cfg.USE_NMS = False
-
     module = import_module('models.' + args.model_arch)
     net = module.build_s3fd('test', cfg.NUM_CLASSES)
     
     if args.multigpu == True:
         net = torch.nn.DataParallel(net)
-    
 
     checkpoint_dict = torch.load(args.model)
-
     model_dict = net.state_dict()
-
-
     model_dict.update(checkpoint_dict) 
     net.load_state_dict(model_dict)
 
-    
     net.eval()
-    
 
     if use_cuda:
         net.cuda()
         cudnn.benckmark = True
 
-
     counter = 0
 
-    for index, event in enumerate(event_list):
-        filelist = file_list[index][0]
-        path = os.path.join(save_path, str(event[0][0]))#.encode('utf-8'))
-        if not os.path.exists(path):
-            os.makedirs(path)
+    f = open('./data/face_val_scutB.txt')
+    lines = f.readlines()
 
-        for num, file in enumerate(filelist):
-            im_name = str(file[0][0])#.encode('utf-8')
-            in_file = os.path.join(imgs_path, event[0][0], im_name[:] + '.jpg')
-            img = Image.open(in_file)
-            if img.mode == 'L':
-                img = img.convert('RGB')
-            img = np.array(img)
+    if os.path.exists('./{}'.format(args.save_folder)) is False:
+        os.mkdir('./{}'.format(args.save_folder))
 
+    for line in lines:
+        line = line.strip().split()
+        im_name = SCUT_ROOT + '/' + line[0]
 
-            max_im_shrink = np.sqrt(
-                1700 * 1200 / (img.shape[0] * img.shape[1]))
+        img = Image.open(im_name)
+        img = img.convert('RGB')
+        img = np.array(img)
 
-            shrink = max_im_shrink if max_im_shrink < 1 else 1
-            counter += 1
+        max_im_shrink = np.sqrt(
+            320 * 240 / (img.shape[0] * img.shape[1]))
 
-            t1 = time.time()
-            det0 = detect_face(net, img, shrink)
+        shrink = max_im_shrink if max_im_shrink < 1 else 1
+        counter += 1
 
-            det1 = flip_test(net, img, shrink)    # flip test
-            [det2, det3] = multi_scale_test(net, img, max_im_shrink)
+        t1 = time.time()
+        det0 = detect_face(net, img, shrink)
 
-            det = np.row_stack((det0, det1, det2, det3))
-            dets = bbox_vote(det)
+        dets = det0
 
-            t2 = time.time()
-            print('Detect %04d th image costs %.4f' % (counter, t2 - t1))
+        t2 = time.time()
+        print('Detect %04d th image costs %.4f' % (counter, t2 - t1))
 
-            fout = open(osp.join(save_path, str(event[0][
-                        0]), im_name + '.txt'), 'w')
-            fout.write('{:s}\n'.format(str(event[0][0]) + '/' + im_name + '.jpg'))
-            fout.write('{:d}\n'.format(dets.shape[0]))
-            for i in range(dets.shape[0]):
-                xmin = dets[i][0]
-                ymin = dets[i][1]
-                xmax = dets[i][2]
-                ymax = dets[i][3]
-                score = dets[i][4]
-                fout.write('{:.1f} {:.1f} {:.1f} {:.1f} {:.3f}\n'.
-                           format(xmin, ymin, (xmax - xmin + 1), (ymax - ymin + 1), score))
+        imgname = osp.split(line[0])[1]
+        save_path = './{}'.format(args.save_folder)
+        fout = open(osp.join(save_path, imgname[0:-4] + '.txt'), 'w')
+        fout.write('{:s}\n'.format(imgname[0:-4] + '.txt'))
+        fout.write('{:d}\n'.format(dets.shape[0]))
+        for i in range(dets.shape[0]):
+            xmin = dets[i][0]
+            ymin = dets[i][1]
+            xmax = dets[i][2]
+            ymax = dets[i][3]
+            score = dets[i][4]
+            fout.write('{:.1f} {:.1f} {:.1f} {:.1f} {:.3f}\n'.
+                       format(xmin, ymin, (xmax - xmin + 1), (ymax - ymin + 1), score))

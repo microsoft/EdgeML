@@ -171,7 +171,7 @@ class S3FD(nn.Module):
 
        
         if self.phase == 'test':
-            output = detect_function(
+            output = detect_function(cfg,
                 loc.view(loc.size(0), -1, 4),                   # loc preds
                 self.softmax(conf.view(conf.size(0), -1,
                                        self.num_classes)),                # conf preds
@@ -184,7 +184,7 @@ class S3FD(nn.Module):
                 conf.view(conf.size(0), -1, self.num_classes),
                 self.priors
             )
-        return output
+        return output, loc, conf
 
     def load_weights(self, base_file):
         other, ext = os.path.splitext(base_file)
@@ -304,7 +304,6 @@ class MobileNetV2(nn.Module):
 
         # building first layer
         input_channel = _make_divisible(input_channel * width_mult, round_nearest)
-        self.last_channel = _make_divisible(last_channel * max(1.0, width_mult), round_nearest)
         self.layers = []
         # building inverted residual blocks
         for t, c, n, s in inverted_residual_setting:
@@ -379,4 +378,3 @@ if __name__ == '__main__':
     net = build_s3fd('train', num_classes=2)
     inputs = Variable(torch.randn(4, 3, 640, 640))
     output = net(inputs)
-

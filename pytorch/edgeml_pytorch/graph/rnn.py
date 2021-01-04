@@ -186,7 +186,9 @@ class RNNCell(nn.Module):
             mats[i] = utils.hardThreshold(mats[i], self._wSparsity)
         for i in range(endW, endU):
             mats[i] = utils.hardThreshold(mats[i], self._uSparsity)
-        self.copy_previous_UW()
+        self.W.data.copy_(mats[0])
+        self.U.data.copy_(mats[1])
+        # self.copy_previous_UW()
 
     def sparsifyWithSupport(self):
         mats = self.getVars()

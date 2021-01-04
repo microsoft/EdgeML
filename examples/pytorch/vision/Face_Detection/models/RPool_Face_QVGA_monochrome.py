@@ -172,7 +172,7 @@ class S3FD(nn.Module):
                 conf.view(conf.size(0), -1, self.num_classes),
                 self.priors
             )
-        return output
+        return output, loc, conf
 
     def load_weights(self, base_file):
         other, ext = os.path.splitext(base_file)
@@ -289,7 +289,6 @@ class MobileNetV2(nn.Module):
 
         # building first layer
         input_channel = _make_divisible(input_channel * width_mult, round_nearest)
-        self.last_channel = _make_divisible(last_channel * max(1.0, width_mult), round_nearest)
         self.layers = []
         # building inverted residual blocks
         for t, c, n, s in inverted_residual_setting:

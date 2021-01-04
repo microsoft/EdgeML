@@ -7,13 +7,19 @@ import torch.utils.data as data
 import numpy as np
 import random
 import sys; sys.path.append('../')
-from utils.augmentations import preprocess
+from utils.augmentations import preprocess, preprocess_qvga
+from data.choose_config import cfg
+cfg = cfg.cfg
+import os
+
+HOME = os.environ['DATA_HOME']
+SCUT_ROOT = os.path.join(HOME, 'SCUT_HEAD_Part_B')
 
 
 class WIDERDetection(data.Dataset):
     """docstring for WIDERDetection"""
 
-    def __init__(self, list_file, mode='train', mono_mode=False):
+    def __init__(self, list_file, mode='train', mono_mode=False, is_scut=False):
         super(WIDERDetection, self).__init__()
         self.mode = mode
         self.mono_mode = mono_mode
@@ -40,7 +46,10 @@ class WIDERDetection(data.Dataset):
                 box.append([x, y, x + w, y + h])
                 label.append(c)
             if len(box) > 0:
-                self.fnames.append(line[0])
+                if is_scut==True:
+                    self.fnames.append(SCUT_ROOT + '/' + line[0])
+                else:
+                    self.fnames.append(line[0])
                 self.boxes.append(box)
                 self.labels.append(label)
 
@@ -65,8 +74,13 @@ class WIDERDetection(data.Dataset):
                 np.array(self.boxes[index]), im_width, im_height)
             label = np.array(self.labels[index])
             bbox_labels = np.hstack((label[:, np.newaxis], boxes)).tolist()
-            img, sample_labels = preprocess(
-                img, bbox_labels, self.mode, image_path)
+
+            if self.mono_mode==False:
+                img, sample_labels = preprocess(
+                    img, bbox_labels, self.mode, image_path)
+            else:
+                img, sample_labels = preprocess_qvga(
+                    img, bbox_labels, self.mode, image_path)
             sample_labels = np.array(sample_labels)
             if len(sample_labels) > 0:
                 target = np.hstack(

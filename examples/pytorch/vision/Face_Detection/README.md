@@ -1,9 +1,10 @@
-# Code for Face Detection experiments with RNNPool
+# Code for Face Detection Experiments with RNNPool
+Refer to README_M4.md for instructions related to the M4 model
 ## Requirements
-1. Follow instructions to install requirements for EdgeML operators and the EdgeML operators [here](https://github.com/microsoft/EdgeML/blob/master/pytorch/README.md).
+1. Follow instructions to install EdgeML operators and their pre-requisites [here](https://github.com/microsoft/EdgeML/blob/master/pytorch/README.md).
 2. Install requirements for face detection model using
 ``` pip install -r requirements.txt ``` 
-We have tested the installation and the code on Ubuntu 18.04 with Cuda 10.2 and CuDNN 7.6
+We have tested the installation and the code on Ubuntu 18.04 with Python 3.6, Cuda 10.2 and CuDNN 7.6
 
 ## Dataset
 1. Download WIDER face dataset images and annotations from http://shuoyang1213.me/WIDERFACE/ and place them all in a folder with name 'WIDER_FACE'. That is, download WIDER_train.zip, WIDER_test.zip, WIDER_val.zip, wider_face_split.zip and place it in WIDER_FACE folder, and unzip files using: 
@@ -18,12 +19,17 @@ cd ..
 
 ```
 
-2. In `data/config.py` , set _C.HOME to the parent directory of the above folder, and set the _C.FACE.WIDER_DIR to the folder path. 
-That is, if the WIDER_FACE folder is created in /mnt folder, then _C.HOME='/mnt'
-_C.FACE.WIDER_DIR='/mnt/WIDER_FACE'.
-Similarly, change `data/config_qvga.py` to set _C.HOME and _C.FACE.WIDER_DIR.
+2. Set environment variable DATA_HOME to the parent directory of the above folder
+That is, if the WIDER_FACE folder is created in /mnt folder
+
+``` export DATA_HOME='/mnt' ```
+
+Note that for Windows '/' should be replaced by '\'.
+For all following commands the environment variable IS_QVGA_MONO has to be set as 0 for using config.py (to use RGB 640x480 images) and as 1 for using config_qvga.py (to use monochrome 320x240 images) as the configuration file.
+
+
 3. Run
-``` python prepare_wider_data.py ```
+``` IS_QVGA_MONO=1 python prepare_wider_data.py ```
 
 
 # Usage
@@ -64,15 +70,15 @@ There are two modes of testing the trained model -- the evaluation mode to gener
 
 #### Evaluation Mode
 
-Given a set of images in <your_image_folder>, `eval/py` generates bounding boxes around faces (where the confidence is higher than certain threshold) and write the images in <your_save_folder>. To evaluate the `rpool_face_best_state.pth` model (stored in ./weights), execute the following command: 
+Given a set of images in <your_image_folder>, `eval/py` generates bounding boxes around faces (where the confidence is higher than certain threshold) and write the images in <your_save_folder>. Specify if the model was trained in multigpu setting in --multigpu. To evaluate the `rpool_face_best_state.pth` model (stored in ./weights), execute the following command: 
 
 ```shell
-IS_QVGA_MONO=0 python eval.py --model_arch RPool_Face_Quant --model ./weights/RPool_Face_Quant_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
+IS_QVGA_MONO=0 python eval.py --model_arch RPool_Face_Quant --model ./weights/RPool_Face_Quant_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder> --multigpu True
 ```
 
 For QVGA:
 ```shell
-IS_QVGA_MONO=1 python eval.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder>
+IS_QVGA_MONO=1 python eval.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --image_folder <your_image_folder> --save_dir <your_save_folder> --multigpu True
 ```
 
 This will save images in <your_save_folder> with bounding boxes around faces, where the confidence is high. Here is an example image with a single bounding box.
@@ -86,15 +92,15 @@ If IS_QVGA_MONO=1 the evaluation code accepts an image of any size and resizes a
 #### WIDER Set Test
 In this mode, we test the generated model against the provided WIDER_FACE validation and test dataset. 
 
-For this, first run the following to generate predictions of the model and store output in the '--save_folder' folder. 
+For this, first run the following to generate predictions of the model and store output in the '--save_folder' folder. Specify if the model was trained in multigpu setting in --multigpu.
 
 ```shell
-IS_QVGA_MONO=0 python wider_test.py --model_arch RPool_Face_Quant --model ./weights/RPool_Face_Quant_best_state.pth --save_folder rpool_face_quant_val --subset val
+IS_QVGA_MONO=0 python wider_test.py --model_arch RPool_Face_Quant --model ./weights/RPool_Face_Quant_best_state.pth --save_folder rpool_face_quant_val --subset val --multigpu True
 ```
 
 For QVGA:
 ```shell
-IS_QVGA_MONO=1 python wider_test.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --save_folder rpool_face_qvgamono_val --subset val
+IS_QVGA_MONO=1 python wider_test.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --save_folder rpool_face_qvgamono_val --subset val --multigpu True
 ```
 
 The above command generates predictions for each image in the "validation" dataset. For each image, a separate prediction file is provided (image_name.txt file in appropriate folder). The first line of the prediction file contains the total number of boxes identified. 
@@ -104,8 +110,8 @@ If IS_QVGA_MONO=1 then testing is done by converting images to monochrome and QV
 
 The architecture RPool_Face_QVGA_monochrome is for QVGA monochrome format while RPool_Face_C and RPool_Face_Quant are for VGA RGB format.
 
-###### For calculating MAP scores:
-Now using these boxes, we can compute the standard MAP score that is widely used in this literature (see [here](https://medium.com/@jonathan_hui/map-mean-average-precision-for-object-detection-45c121a31173) for more details) as follows:
+###### For calculating mAP scores:
+Now using these boxes, we can compute the standard mAP score that is widely used in this literature (see [here](https://medium.com/@jonathan_hui/map-mean-average-precision-for-object-detection-45c121a31173) for more details) as follows:
 
 1. Download eval_tools.zip from http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip and unzip in a folder of same name in this directory.
 
@@ -116,7 +122,7 @@ wget http://shuoyang1213.me/WIDERFACE/support/eval_script/eval_tools.zip
 unzip eval_tools.zip
 ```
 
-2. Set up scripts to use the Matlab '.mat' data files in eval_tools/ground_truth folder for MAP calculation: The following installs python files that provide the same functionality as the '.m' matlab scripts in eval_tools folder.
+2. Set up scripts to use the Matlab '.mat' data files in eval_tools/ground_truth folder for mAP calculation: The following installs python files that provide the same functionality as the '.m' matlab scripts in eval_tools folder.
 ``` 
 cd eval_tools
 git clone https://github.com/wondervictor/WiderFace-Evaluation.git
@@ -126,20 +132,20 @@ python3 setup.py build_ext --inplace
 
 3. Run ```python3 evaluation.py -p <your_save_folder> -g <groud truth dir>``` in WiderFace-Evaluation folder
 
-where `prediction_dir` is the '--save_folder' used for `wider_test.py` above and <groud truth dir> is the subfolder `eval_tools/ground_truth`. That is in, WiderFace-Evaluation directory, run: 
+where `-p` is the '--save_folder' used for `wider_test.py` above and <groud truth dir> is the subfolder `eval_tools/ground_truth`. That is in, WiderFace-Evaluation directory, run: 
 
 ```shell
-python3 evaluation.py -p <your_save_folder> -g ../ground_truth
+python3 evaluation.py -p ../../rpool_face_qvgamono_val -g ../ground_truth
 ```
-This script should output the MAP for the WIDER-easy, WIDER-medium, and WIDER-hard subsets of the dataset. Our best performance using RPool_Face_Quant model is: 0.80 (WIDER-easy), 0.78 (WIDER-medium), 0.53 (WIDER-hard). 
+This script should output the mAP for the WIDER-easy, WIDER-medium, and WIDER-hard subsets of the dataset. Our best performance using RPool_Face_Quant model is: 0.80 (WIDER-easy), 0.78 (WIDER-medium), 0.53 (WIDER-hard). 
 
 
 ##### Dump RNNPool Input Output Traces and Weights
 
-To save model weights and/or input output pairs for each patch through RNNPool in numpy format use the command below. Put images which you want to save traces for in <your_image_folder> . Specify output folder for saving model weights in numpy format in <your_save_model_numpy_folder>. Specify output folder for saving input output traces of RNNPool in numpy format in <your_save_traces_numpy_folder>. Note that input traces will be saved in a folder named 'inputs' and output traces in a folder named 'outputs' inside <your_save_traces_numpy_folder>.
+For saving model weights and/or input output pairs for each patch through RNNPool in numpy format use the command below. Put images which you want to save traces for in <your_image_folder> . Specify output folder for saving model weights in numpy format in <your_save_model_numpy_folder>. Specify output folder for saving input output traces of RNNPool in numpy format in <your_save_traces_numpy_folder>. Note that input traces will be saved in a folder named 'inputs' and output traces in a folder named 'outputs' inside <your_save_traces_numpy_folder>.
 
 ```shell
-python3 dump_model.py --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --model_arch RPool_Face_Quant --image_folder <your_image_folder> --save_model_npy_dir <your_save_model_numpy_folder> --save_traces_npy_dir <your_save_traces_numpy_folder>
+python3 dump_model.py --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth --model_arch RPool_Face_QVGA_monochrome --image_folder <your_image_folder> --save_model_npy_dir <your_save_model_numpy_folder> --save_traces_npy_dir <your_save_traces_numpy_folder>
 ```
 If you wish to save only model weights, do not specify --save_traces_npy_dir. If you wish to save only traces do not specify --save_model_npy_dir.
 
