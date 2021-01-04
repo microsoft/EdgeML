@@ -158,7 +158,8 @@ class S3FD(nn.Module):
 
         loc = torch.cat([o.view(o.size(0), -1) for o in loc], 1)
         conf = torch.cat([o.view(o.size(0), -1) for o in conf], 1)
-
+        conf_loc = torch.cat((conf, loc), 1)
+        return conf_loc
        
         if self.phase == 'test':
             output = detect_function(cfg,
