@@ -177,6 +177,8 @@ def get_model_class(inheritance_class=nn.Module):
             else:
                 for l in range(self.num_layers):
                     rnn = self.rnn_list[l]
+                    if self.hidden_states[l] is not None:
+                        self.hidden_states[l] = self.hidden_states[l].clone().unsqueeze(0)
                     model_output = rnn(rnn_in, hiddenState=self.hidden_states[l])
                     self.hidden_states[l] = model_output.detach()[-1, :, :]
                     if self.tracking:
