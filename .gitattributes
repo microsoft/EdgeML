@@ -60,3 +60,5 @@ c_reference/models/q_scut_head_b_face4_model/mbconv2.h filter=lfs diff=lfs merge
 c_reference/models/q_scut_head_b_face4_model/mbconv4.h filter=lfs diff=lfs merge=lfs -text
 c_reference/models/q_scut_head_b_face4_model/rnn2.h filter=lfs diff=lfs merge=lfs -text
 c_reference/models/q_scut_head_b_face4_model/detection2.h filter=lfs diff=lfs merge=lfs -text
+examples/pytorch/vision/Face_Detection/sample[[:space:]]codes/M4[[:space:]]Deployment[[:space:]]Codes.zip filter=lfs diff=lfs merge=lfs -text
+examples/pytorch/vision/Face_Detection/sample[[:space:]]codes/M4[[:space:]]Initialization[[:space:]]Codes.zip filter=lfs diff=lfs merge=lfs -text
