@@ -20,12 +20,6 @@ model_dict.update(checkpoint_dict)
 net.load_state_dict(model_dict, strict = False)
 net.eval()
 
-a = np.load('traces_rnnpool_face_m4/trace_inputs.npy')
-a = np.squeeze(a, axis = 1)
-b = np.load('traces_rnnpool_face_m4/trace_outputs.npy')
-inputs = torch.tensor(a)
-output = torch.tensor(net(inputs))
-
 C1 = net.state_dict()['module.conv.0.weight']
 C1m = C1.permute(2, 3, 1, 0).detach().numpy().flatten()
 w = net.state_dict()['module.conv.1.weight']
