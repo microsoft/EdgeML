@@ -839,11 +839,11 @@ class CodegenBase:
             memAlloc = [(l * m // 8, i, j) for ([i, j], k, l, m) in varToLiveRange if k not in self.notScratch]
             varOrderAndSize = [(k, l * m // 8) for ([i, j], k, l, m) in varToLiveRange if k not in self.notScratch]
             maxAllowedMemUsage = Config.memoryLimit
-            timeout = 60
+            timeout = 600
             bestCaseMemUsage = DLXInputGen.generateDLXInput(memAlloc, 1, 0, True)
             if maxAllowedMemUsage < bestCaseMemUsage:
                 assert False, "Cannot fit the code within stipulated memory limit of %d" % maxAllowedMemUsage
-            alignment = 1
+            alignment = 4096
             dlxDumpFilesDirectory = os.path.join('seedot', 'compiler', 'codegen', 'dlx')
             dlxInputDumpDirectory = os.path.join(dlxDumpFilesDirectory, 'dlx.input')
             dlxOutputDumpDirectory = os.path.join(dlxDumpFilesDirectory, 'dlx.output')
@@ -864,7 +864,7 @@ class CodegenBase:
                 p.terminate()
                 p.join()
                 optimalInputGenSuccess = False
-                print("Timeout while generating DLX input files for optimal memory usage, attempting to fit variables within %d bytes" % maxAllowedMemUsage)
+                Util.getLogger().error("Timeout while generating DLX input files for optimal memory usage, attempting to fit variables within %d bytes" % maxAllowedMemUsage)
                 alignment = getBestAlignment(memAlloc, alignment, 0, maxAllowedMemUsage, operator.le)
                 p = mp.Process(target=DLXInputGen.generateDLXInput, args=(memAlloc, alignment, maxAllowedMemUsage, False, dlxInputDumpDirectory))
                 p.start()
@@ -881,7 +881,7 @@ class CodegenBase:
                 try:
                     process = subprocess.call([exeFile], stdin=fin, stdout=fout, stderr=ferr, timeout=timeout)
                 except subprocess.TimeoutExpired:
-                    print("Memory Allocator Program Timed out.")
+                    Util.getLogger().error("Memory Allocator Program Timed out.")
             if not self.checkDlxSuccess(dlxErrorDumpDirectory):
                 if not optimalInputGenSuccess:
                     assert False, "Unable to allocate variables within %d bytes. ABORT" % maxAllowedMemUsage
@@ -898,7 +898,7 @@ class CodegenBase:
                         try:
                             process = subprocess.call([exeFile], stdin=fin, stdout=fout, stderr=ferr, timeout=timeout)
                         except subprocess.TimeoutExpired:
-                            print("Memory Allocator Program Timed out.")
+                            Util.getLogger().error("Memory Allocator Program Timed out.")
                     if not self.checkDlxSuccess(dlxErrorDumpDirectory):
                         assert False, "Unable to allovate variables within %d bytes. ABORT" % maxAllowedMemUsage
             totalScratchSize = self.readDlxAllocation(dlxOutputDumpDirectory, alignment, varOrderAndSize)

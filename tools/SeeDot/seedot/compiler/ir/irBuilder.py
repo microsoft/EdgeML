@@ -68,7 +68,7 @@ class IRBuilder(ASTVisitor):
                 # Large value which makes MAX_SCALE ineffective.
         elif getMaxScale() == None:
             if forFloat():
-                print(
+                getLogger().info(
                     "Setting MAX_SCALE = 0. This value will not affect the generated code.")
                 self.MAX_SCALE = 0
             else:
@@ -2818,7 +2818,7 @@ class IRBuilder(ASTVisitor):
         intv_out = self.updateTanhIntv(intv_in, tanh_intv)
 
         scale_new = self.getScale(config.tanhLimit)
-        print("Scale changes in TanH operation: old = %d, new = %d, diff = %d" % (
+        getLogger().debug("Scale changes in TanH operation: old = %d, new = %d, diff = %d" % (
             scale_in, scale_new, abs(scale_in - scale_new)))
 
         expr_in.inputVar = False
@@ -3605,7 +3605,7 @@ class IRBuilder(ASTVisitor):
 
             # TODO: When is this triggered and why is this required?
             if forFixed() and idf in self.mutableVars:
-                print("TODO: Fix this if condition")
+                getLogger().warning("TODO: Fix this if condition")
                 idfs = idf
                 while idfs in self.substitutions.keys():
                     idfs = self.substitutions[idfs]
@@ -3965,7 +3965,7 @@ class IRBuilder(ASTVisitor):
         # Last stage, adjusting scale to avoid invalid values.
         demote = totalShr - shr_A - shr_B - H1
         if height < H1:
-            print("Rolling back H1 in matrix multiplication. Current H1: %d height: %d" % (H1, height))
+            getLogger().info("Rolling back H1 in matrix multiplication. Current H1: %d height: %d" % (H1, height))
         if height < H1:
             diff = H1 - height
             H1 = height
@@ -3976,7 +3976,7 @@ class IRBuilder(ASTVisitor):
                 shr_B += diff // 2
                 shr_A += diff - diff // 2
         if demote < 0:
-            print("Rolling back shr in matrix multiplication. Current demote: %d" % (demote))
+            getLogger().info("Rolling back shr in matrix multiplication. Current demote: %d" % (demote))
         if demote < 0:
             if demote + H1 >= 0:
                 H1 += demote

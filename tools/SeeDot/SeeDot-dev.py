@@ -15,7 +15,7 @@ import seedot.config as config
 import seedot.main as main
 import seedot.predictor as predictor
 import seedot.util as util
-
+import logging
 import seedot.compiler.converter.converter as converter
 
 # This is the file which is invoked to run the compiler (Refer to README.md).
@@ -136,6 +136,8 @@ class MainDriver:
         np.seterr(all='warn')
 
     def run(self):
+        logging.basicConfig(level=os.environ.get("LOGLEVEL", "ERROR"))
+
         if util.windows():
             self.checkMSBuildPath()
 

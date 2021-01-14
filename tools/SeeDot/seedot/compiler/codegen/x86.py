@@ -15,6 +15,8 @@ from seedot.writer import Writer
 
 import time
 
+import logging
+log = logging.getLogger("SeeDotLogger")
 
 class X86(CodegenBase):
 
@@ -26,16 +28,16 @@ class X86(CodegenBase):
         if generateAllFiles:
             self.out = Writer(cppFile)
         else:
-            print("Opening file to output cpp code: ID" + idStr)
+            log.info("Opening file to output cpp code: ID" + idStr)
             for i in range(3):
-                print("Try %d" % (i+1))
+                log.debug("Try %d" % (i+1))
                 try:
                     self.out = Writer(cppFile, "a")
                 except:
-                    print("OS prevented file from opening. Sleeping for %d seconds" % (i+1))
+                    log.exception("OS prevented file from opening. Sleeping for %d seconds" % (i+1))
                     time.sleep(i+1)
                 else:
-                    print("Opened")
+                    log.debug("Opened")
                     break
 
         self.generateAllFiles = generateAllFiles
@@ -52,7 +54,7 @@ class X86(CodegenBase):
 
         self.printCHeader()
 
-        self.computeScratchLocationsFirstFitPriority() # computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
+        self.computeScratchLocationsDLX() # computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
 
         self.printModelParamsWithBitwidth()
 
@@ -323,7 +325,7 @@ class X86(CodegenBase):
                 self.out.decreaseIndent()
                 self.out.printf('}\n', indent=True)
 
-        print("Closing File after outputting cpp code: ID " + self.idStr)
+        log.debug("Closing File after outputting cpp code: ID " + self.idStr)
         self.out.close()
 
     def printFor(self, ir):
