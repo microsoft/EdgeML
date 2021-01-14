@@ -356,7 +356,7 @@ class Main:
         fixedPointCounter = 0
         while True:
             # STAGE I exploration.
-            print("Stage I Exploration...")
+            print("Stage I Exploration: Determining scale for input \'X\'...")
             fixedPointCounter += 1
             if config.fixedPointVbwIteration:
                 Util.getLogger().debug("Will compile until conversion to fixed point. Iteration %d"%fixedPointCounter)
@@ -396,7 +396,7 @@ class Main:
             # Ignored.
             self.partialCompile(config.Version.fixed, config.Target.x86, lowestValidScale, True, None, -1, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
 
-            print("Stage II Exploration...")
+            print("Stage II Exploration: Determining scale for all non-\'X\' variables...")
             # The iterator logic is as follows:
             # Search begins when the first valid scaling factor is found (runOnce returns True).
             # Search ends when the execution fails on a particular scaling factor (runOnce returns False).
@@ -422,9 +422,9 @@ class Main:
                     return False
                 codeIdToScaleFactorMap[codeId] = i
 
-            print("Stage II Run Started...")
+            print("Stage II Code Run Started...")
             res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, codeIdToScaleFactorMap)
-            print("Stage II Run Completed!\n")
+            print("Stage II Code Run Completed!\n")
             if exit == True or res == False:
                 return False
 
@@ -441,7 +441,8 @@ class Main:
 
             if config.vbwEnabled:
                 # Stage III exploration.
-                print("Stage III Exploration...")
+                print("Stage III Exploration: Demoting varibles one at a time...")
+
                 assert config.ddsEnabled, "Currently VBW on maxscale not supported"
                 if config.wordLength != 16:
                     assert False, "VBW mode only supported if native bitwidth is 16"
@@ -506,7 +507,7 @@ class Main:
 
                     res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, None, contentToCodeIdMap)
                 
-                print("Stage IV Exploration...")
+                print("Stage IV Exploration: Cumulatively demoting variables...")
                 # Stage IV exploration.
                 # Again, we compute only a limited number of inference codes per generated C++ so as to not bloat up the memory usage of the compiler.
                 redBatchSize *= config.offsetsPerDemotedVariable
