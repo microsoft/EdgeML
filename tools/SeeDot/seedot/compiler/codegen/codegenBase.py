@@ -864,7 +864,7 @@ class CodegenBase:
                 p.terminate()
                 p.join()
                 optimalInputGenSuccess = False
-                Util.getLogger().error("Timeout while generating DLX input files for optimal memory usage, attempting to fit variables within %d bytes" % maxAllowedMemUsage)
+                Util.getLogger().error("Timeout while generating DLX input files for optimal memory usage, attempting to fit variables within %d bytes. Returning to exploration..." % maxAllowedMemUsage)
                 alignment = getBestAlignment(memAlloc, alignment, 0, maxAllowedMemUsage, operator.le)
                 p = mp.Process(target=DLXInputGen.generateDLXInput, args=(memAlloc, alignment, maxAllowedMemUsage, False, dlxInputDumpDirectory))
                 p.start()
@@ -881,10 +881,10 @@ class CodegenBase:
                 try:
                     process = subprocess.call([exeFile], stdin=fin, stdout=fout, stderr=ferr, timeout=timeout)
                 except subprocess.TimeoutExpired:
-                    Util.getLogger().error("Memory Allocator Program Timed out.")
+                    Util.getLogger().error("DLX progream for memory management timed out. Retrying with maximum allowed memory...")
             if not self.checkDlxSuccess(dlxErrorDumpDirectory):
                 if not optimalInputGenSuccess:
-                    assert False, "Unable to allocate variables within %d bytes. ABORT" % maxAllowedMemUsage
+                    assert False, "DLX unable to allocate variables within %d bytes. ABORT" % maxAllowedMemUsage
                 else:
                     alignment = getBestAlignment(memAlloc, alignment, 0, maxAllowedMemUsage, operator.le)
                     p = mp.Process(target=DLXInputGen.generateDLXInput, args=(memAlloc, alignment, maxAllowedMemUsage, False, dlxInputDumpDirectory))

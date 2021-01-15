@@ -110,3 +110,12 @@ class Source:
     onnx = "onnx"
     default = seedot
     all = [seedot, tf, onnx]
+
+class Log:
+    error = "ERROR"
+    critical = "CRITICAL"
+    warning = "WARNING"
+    info = "INFO"
+    debug = "DEBUG"
+    default = error
+    all = [error, critical, warning, info, debug]

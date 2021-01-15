@@ -365,7 +365,7 @@ class Main:
             stage_1_bar = tqdm(total=(2*abs(start-end)+2),mininterval=0, miniters=1, leave=True)
             while firstCompileSuccess == False:
                 if highestValidScale == end:
-                    Util.getLogger().error("Compilation not possible for any Scale Factor. Abort")
+                    Util.getLogger().error("Compilation not possible for any Scale Factor of variable \'X\'. Aborting Code!")
                     return False
 
                 # Refactor and remove this try/catch block in the future.
@@ -407,7 +407,7 @@ class Main:
             codeIdToScaleFactorMap = {}
             for i in tqdm(range(highestValidScale, lowestValidScale - 1, -1)):
                 if config.ddsEnabled:
-                    Util.getLogger().info("Testing with DDS and scale of X as " + str(i) + "\n")
+                    Util.getLogger().debug("Testing with DDS and scale of X as " + str(i) + "\n")
                 else:
                     Util.getLogger().debug("Testing with max scale factor of " + str(i) + "\n")
 

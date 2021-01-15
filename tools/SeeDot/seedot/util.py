@@ -167,5 +167,5 @@ def computeScalingFactorForInlineCodegen(val):
 
 # Logging Section
 def getLogger():
-    log =  logging.getLogger("SeeDotLogger")    
+    log =  logging.getLogger()    
     return log

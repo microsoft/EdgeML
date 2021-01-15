@@ -82,6 +82,8 @@ class MainDriver:
                             help="Scratch directory for intermediate files")
         parser.add_argument("-o", "--outdir", metavar='',
                             help="Directory to output the generated Arduino sketch")
+        parser.add_argument("-l", "--log", choices=config.Log.all,
+                            default=config.Log.default, metavar='', help="Log Level to use")
 
         self.args = parser.parse_args()
 
@@ -135,8 +137,11 @@ class MainDriver:
     def setGlobalFlags(self):
         np.seterr(all='warn')
 
+    def setLogLevel(self):
+        logging.basicConfig(level=os.environ.get("LOGLEVEL", self.args.log))
+
     def run(self):
-        logging.basicConfig(level=os.environ.get("LOGLEVEL", "ERROR"))
+        self.setLogLevel()
 
         if util.windows():
             self.checkMSBuildPath()
