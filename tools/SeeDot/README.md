@@ -26,21 +26,23 @@ This document describes the tool usage with an example.
 SeeDot can be invoked using **`SeeDot-dev.py`** file. The arguments for the script are supplied as follows:
 
 ```
-usage: SeeDot-dev.py [-h] [-a] [-v] [-d] [-m] [-n] [-dt] [-t] [-s] [-sf] [-l]
-                     [--load-sf] [--convert] [--tempdir] [-o]
+usage: SeeDot-dev.py [-h] [-a] [-v] [-d] [-m] [-n] [-dt] [-t] [-s] [-sf] [-l] [-lsf] [-tdr] [-o]
 
 optional arguments:
-  -h, --help            Show this help message and exit
-  -a , --algo           Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn']
-  -v , --version        Floating-point ['float'] or fixed-point ['fixed']
-  -d , --dataset        Dataset to use
-  -m , --maximisingMetric ['acc', 'disagree', 'red_disagree']
-                        What metric to maximise during exploration
-  -n , --numOutputs     Number of simultaneous outputs of the inference
-                        procedure (1 for a single-class classification problem)
-  -t , --target         Target device ['x86', 'arduino', 'm3']
-  -s , --source         model source type ['seedot', 'onnx', 'tf']
-  -l , --log            Logging level (in increasing order) ['error', 'critical', 'warning', 'info', 'debug']
+  -h,   --help             Show this help message and exit
+  -a,   --algo             Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn']
+  -v,   --version          Floating-point ['float'] or fixed-point ['fixed']
+  -d,   --dataset          Dataset to use
+  -m,   --maximisingMetric What metric to maximise during exploration ['acc', 'disagree', 'red_disagree']
+  -n,   --numOutputs       Number of simultaneous outputs of the inference procedure (1 for a single-class classification problem)
+  -dt,  --datasetType      Dataset type being used ['training', 'testing']
+  -t,   --target           Target device ['x86', 'arduino', 'm3']
+  -s,   --source           Model source type ['seedot', 'onnx', 'tf']
+  -sf,  --max-scale-factor Max scaling factor for code generation
+  -l,   --log              Logging level (in increasing order) ['error', 'critical', 'warning', 'info', 'debug']
+  -lsf, --load-sf          Use a pre-determined value for max scale factor
+  -tdr, --tempdir          Scratch directory for intermediate files
+  -o,   --outdir           Directory to output the generated Arduino sketch
 ```
 
 An example invocation is as follows:

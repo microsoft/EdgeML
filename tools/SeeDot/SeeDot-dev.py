@@ -75,10 +75,11 @@ class MainDriver:
                             default=config.Source.default, help="model source type seedot/onnx/tf")
         parser.add_argument("-sf", "--max-scale-factor", type=int,
                             metavar='', help="Max scaling factor for code generation")
-        parser.add_argument("--load-sf", action="store_true",
+        parser.add_argument("-l", "--log", choices=config.Log.all,
+                            default=config.Log.default, metavar='', help="Log Level to use")
+        parser.add_argument("-lsf", "--load-sf", action="store_true",
                             help="Use a pre-determined value for max scale factor")
-
-        parser.add_argument("--tempdir", metavar='',
+        parser.add_argument("-tdr", "--tempdir", metavar='',
                             help="Scratch directory for intermediate files")
         parser.add_argument("-o", "--outdir", metavar='',
                             help="Directory to output the generated Arduino sketch")

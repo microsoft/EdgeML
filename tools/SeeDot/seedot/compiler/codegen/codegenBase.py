@@ -900,7 +900,7 @@ class CodegenBase:
                         except subprocess.TimeoutExpired:
                             Util.getLogger().error("DLX program for memory management timed out.")
                     if not self.checkDlxSuccess(dlxErrorDumpDirectory):
-                        assert False, "DLX unable to allovate variables within %d bytes. ABORT" % maxAllowedMemUsage
+                        assert False, "DLX unable to allocate variables within %d bytes. ABORT" % maxAllowedMemUsage
             totalScratchSize = self.readDlxAllocation(dlxOutputDumpDirectory, alignment, varOrderAndSize)
             if not forM3():
                 self.out.printf("char scratch[%d];\n"%(totalScratchSize), indent=True)
