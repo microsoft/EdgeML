@@ -100,10 +100,10 @@ class Predictor:
             process = subprocess.call(args, stdout=file, stderr=subprocess.STDOUT)
 
         if process == 1:
-            Util.getLogger().debug("FAILED!!\n\n")
+            Util.getLogger().debug("FAILED!!\n")
             return False
         else:
-            Util.getLogger().debug("success\n")
+            Util.getLogger().debug("success")
             return True
 
     def buildForLinux(self):

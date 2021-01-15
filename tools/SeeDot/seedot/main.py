@@ -20,7 +20,6 @@ from seedot.compiler.compiler import Compiler
 from seedot.predictor import Predictor
 import seedot.util as Util
 
-
 # Overall compiler logic is maintained in this file. Please refer to architecture.md for a 
 # detailed explanation of how the various modules interact with each other.
 
@@ -142,7 +141,7 @@ class Main:
     #   paramInNativeBitwidth:  if False, it means model parameters are stored as 8-bit/16-bit integers mixed.
     #                           If True, it means model parameters are stored as 16-bit integers only (16 is native bit-width).
     def compile(self, version, target, sf, generateAllFiles=True, id=None, printSwitch=-1, scaleForX=None, variableToBitwidthMap=None, demotedVarsList=[], demotedVarsOffsets={}, paramInNativeBitwidth=True):
-        Util.getLogger().debug("Generating code...\n")
+        Util.getLogger().debug("Generating code...")
 
         if variableToBitwidthMap is None:
             variableToBitwidthMap = dict(self.variableToBitwidthMap)
@@ -195,7 +194,7 @@ class Main:
             self.scalesForX[id] = obj.scaleForX
             self.scalesForY[id] = obj.scaleForY
 
-        Util.getLogger().debug("completed\n")
+        Util.getLogger().debug("completed")
         return True
 
     # Runs the converter project to generate the input files using reading the training model.
@@ -243,7 +242,7 @@ class Main:
             traceback.print_exc()
             return False
 
-        Util.getLogger().debug("done\n\n")
+        Util.getLogger().debug("done")
         return True
 
     # Build and run the Predictor project.
@@ -285,9 +284,8 @@ class Main:
         if self.algo == config.Algo.test:
             for codeId, sf in codeIdToScaleFactorMap.items():
                 self.accuracy[sf] = execMap[str(codeId)]
-                Util.getLogger().debug("The 95th percentile error for sf" + str(sf) + "with respect to dataset is " + str(execMap[str(codeId)][0]) + "%.\n")
+                Util.getLogger().debug("The 95th percentile error for sf" + str(sf) + "with respect to dataset is " + str(execMap[str(codeId)][0]) + "%.")
                 Util.getLogger().debug("The 95th percentile error for sf" + str(sf) + "with respect to float execution is " + str(execMap[str(codeId)][1]) + "%.\n")
-                Util.getLogger().debug("\n\n")
             return True, False
 
         # During the third exploration phase, when multiple codes are generated at once, codeIdToScaleFactorMap
@@ -362,6 +360,7 @@ class Main:
                 Util.getLogger().debug("Will compile until conversion to fixed point. Iteration %d"%fixedPointCounter)
             highestValidScale = start
             firstCompileSuccess = False
+            # Bar longer than actually required
             stage_1_bar = tqdm(total=(2*abs(start-end)+2),mininterval=0, miniters=1, leave=True)
             while firstCompileSuccess == False:
                 if highestValidScale == end:
@@ -379,7 +378,6 @@ class Main:
                 highestValidScale -= 1
                 stage_1_bar.update(1)
             
-            # Bar longer than actually required
             lowestValidScale = end + 1
             firstCompileSuccess = False
             while firstCompileSuccess == False:

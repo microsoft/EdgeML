@@ -141,7 +141,6 @@ class Compiler:
         res = compiler.visit(ast)
 
         util.getLogger().debug(compiler.varScales)
-        util.getLogger().debug("\n")
         self.biasShifts = compiler.biasShifts
         self.varScales = dict(compiler.varScales)
 
