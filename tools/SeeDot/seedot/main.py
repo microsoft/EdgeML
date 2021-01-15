@@ -194,7 +194,7 @@ class Main:
             self.scalesForX[id] = obj.scaleForX
             self.scalesForY[id] = obj.scaleForY
 
-        Util.getLogger().debug("completed")
+        Util.getLogger().debug("Completed")
         return True
 
     # Runs the converter project to generate the input files using reading the training model.
@@ -242,7 +242,7 @@ class Main:
             traceback.print_exc()
             return False
 
-        Util.getLogger().debug("done")
+        Util.getLogger().debug("Done")
         return True
 
     # Build and run the Predictor project.
@@ -361,7 +361,7 @@ class Main:
             highestValidScale = start
             firstCompileSuccess = False
             # Bar longer than actually required
-            stage_1_bar = tqdm(total=(2*abs(start-end)+2),mininterval=0, miniters=1, leave=True)
+            stage_1_bar = tqdm(total=(2 * abs(start - end) + 2), mininterval=0, miniters=1, leave=True)
             while firstCompileSuccess == False:
                 if highestValidScale == end:
                     Util.getLogger().error("Compilation not possible for any scale factor of variable \'X\'. Aborting code!")
@@ -374,6 +374,7 @@ class Main:
                     firstCompileSuccess = False
 
                 if firstCompileSuccess:
+                    stage_1_bar.update(highestValidScale - end + 1)
                     break
                 highestValidScale -= 1
                 stage_1_bar.update(1)
@@ -386,6 +387,7 @@ class Main:
                 except:
                     firstCompileSuccess = False
                 if firstCompileSuccess:
+                    stage_1_bar.update(start - lowestValidScale + 2)
                     break
                 lowestValidScale += 1
                 stage_1_bar.update(1)
@@ -439,7 +441,7 @@ class Main:
 
             if config.vbwEnabled:
                 # Stage III exploration.
-                print("Stage III Exploration: Demoting Varibles one at a time...")
+                print("Stage III Exploration: Demoting variables one at a time...")
 
                 assert config.ddsEnabled, "Currently VBW on maxscale not supported"
                 if config.wordLength != 16:
