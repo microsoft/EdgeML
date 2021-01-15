@@ -26,16 +26,16 @@ class X86(CodegenBase):
         if generateAllFiles:
             self.out = Writer(cppFile)
         else:
-            print("Opening file to output cpp code: ID" + idStr)
+            getLogger().info("Opening file to output cpp code: ID" + idStr)
             for i in range(3):
-                print("Try %d" % (i+1))
+                getLogger().debug("Try %d" % (i+1))
                 try:
                     self.out = Writer(cppFile, "a")
                 except:
-                    print("OS prevented file from opening. Sleeping for %d seconds" % (i+1))
+                    getLogger().exception("OS prevented file from opening. Sleeping for %d seconds" % (i+1))
                     time.sleep(i+1)
                 else:
-                    print("Opened")
+                    getLogger().debug("Opened")
                     break
 
         self.generateAllFiles = generateAllFiles
@@ -323,7 +323,7 @@ class X86(CodegenBase):
                 self.out.decreaseIndent()
                 self.out.printf('}\n', indent=True)
 
-        print("Closing File after outputting cpp code: ID " + self.idStr)
+        getLogger().debug("Closing file after outputting cpp code: ID " + self.idStr)
         self.out.close()
 
     def printFor(self, ir):

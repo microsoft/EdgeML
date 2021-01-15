@@ -362,9 +362,9 @@ class DataType:
         if x_np != x:
             x_np = DataType.intType[target][wordLen * 2](x)
             if x_np != x:
-                print('Warning: Integer overflow for %d' % (x))
+                getLogger().debug('Warning: Integer overflow for %d' % (x))
             else:
-                print('Integer overflow for %d handled' % (x))
+                getLogger().debug('Integer overflow for %d handled' % (x))
         return x_np
 
     @staticmethod

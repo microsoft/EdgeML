@@ -89,7 +89,7 @@ class Predictor:
         Builds using the Predictor.vcxproj project file and creates the executable.
         The target platform is currently set to x64.
         '''
-        print("Build...", end='')
+        Util.getLogger().debug("Build...")
 
         projFile = "Predictor.vcxproj"
         args = [config.msbuildPath, projFile, r"/t:Build",
@@ -100,14 +100,14 @@ class Predictor:
             process = subprocess.call(args, stdout=file, stderr=subprocess.STDOUT)
 
         if process == 1:
-            print("FAILED!!\n")
+            Util.getLogger().debug("FAILED!!\n")
             return False
         else:
-            print("success")
+            Util.getLogger().debug("SUCCESS")
             return True
 
     def buildForLinux(self):
-        print("Build...", end='')
+        Util.getLogger().debug("Build...")
 
         args = ["make"]
 
@@ -116,10 +116,10 @@ class Predictor:
             process = subprocess.call(args, stdout=file, stderr=subprocess.STDOUT)
 
         if process == 1:
-            print("FAILED!!\n")
+            Util.getLogger().debug("FAILED!!\n\n")
             return False
         else:
-            print("success")
+            Util.getLogger().debug("SUCCESS\n")
             return True
 
     def build(self):
@@ -132,7 +132,7 @@ class Predictor:
         '''
         Invokes the executable with arguments.
         '''
-        print("Execution...", end='')
+        Util.getLogger().debug("Execution...")
 
         exeFile = os.path.join("x64", "Release", "Predictor.exe")
         args = [exeFile, self.version, self.datasetType, self.problemType, str(self.numOutputs)]
@@ -142,15 +142,15 @@ class Predictor:
             process = subprocess.call(args, stdout=file, stderr=subprocess.STDOUT)
 
         if process == 1:
-            print("FAILED!!\n")
+            Util.getLogger().debug("FAILED!!\n\n")
             return None
         else:
-            print("success")
+            Util.getLogger().debug("SUCCESS\n")
             execMap = self.readStatsFile()
             return execMap
 
     def executeForLinux(self):
-        print("Execution...", end='')
+        Util.getLogger().debug("Execution...")
 
         exeFile = os.path.join("./Predictor")
         args = [exeFile, self.version, self.datasetType, self.problemType, str(self.numOutputs)]
@@ -160,10 +160,10 @@ class Predictor:
             process = subprocess.call(args, stdout=file, stderr=subprocess.STDOUT)
 
         if process == 1:
-            print("FAILED!!\n")
+            Util.getLogger().debug("FAILED!!\n\n")
             return None
         else:
-            print("success")
+            Util.getLogger().debug("SUCCESS\n")
             execMap = self.readStatsFile()
             return execMap
 
