@@ -323,7 +323,7 @@ class X86(CodegenBase):
                 self.out.decreaseIndent()
                 self.out.printf('}\n', indent=True)
 
-        getLogger().debug("Closing File after outputting cpp code: ID " + self.idStr)
+        getLogger().debug("Closing file after outputting cpp code: ID " + self.idStr)
         self.out.close()
 
     def printFor(self, ir):

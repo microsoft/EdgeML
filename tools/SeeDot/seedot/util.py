@@ -7,6 +7,7 @@ import platform
 import seedot.config as config
 import logging
 
+
 class Config:
 
     expBigLength = 6

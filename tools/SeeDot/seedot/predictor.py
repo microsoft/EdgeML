@@ -103,7 +103,7 @@ class Predictor:
             Util.getLogger().debug("FAILED!!\n")
             return False
         else:
-            Util.getLogger().debug("success")
+            Util.getLogger().debug("SUCCESS")
             return True
 
     def buildForLinux(self):
@@ -119,7 +119,7 @@ class Predictor:
             Util.getLogger().debug("FAILED!!\n\n")
             return False
         else:
-            Util.getLogger().debug("success\n")
+            Util.getLogger().debug("SUCCESS\n")
             return True
 
     def build(self):
@@ -145,7 +145,7 @@ class Predictor:
             Util.getLogger().debug("FAILED!!\n\n")
             return None
         else:
-            Util.getLogger().debug("success\n")
+            Util.getLogger().debug("SUCCESS\n")
             execMap = self.readStatsFile()
             return execMap
 
@@ -163,7 +163,7 @@ class Predictor:
             Util.getLogger().debug("FAILED!!\n\n")
             return None
         else:
-            Util.getLogger().debug("success\n")
+            Util.getLogger().debug("SUCCESS\n")
             execMap = self.readStatsFile()
             return execMap
 

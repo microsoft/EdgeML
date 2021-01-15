@@ -881,7 +881,7 @@ class CodegenBase:
                 try:
                     process = subprocess.call([exeFile], stdin=fin, stdout=fout, stderr=ferr, timeout=timeout)
                 except subprocess.TimeoutExpired:
-                    Util.getLogger().error("DLX progream for memory management timed out. Retrying with maximum allowed memory...")
+                    Util.getLogger().error("DLX program for memory management timed out. Retrying with maximum allowed memory...")
             if not self.checkDlxSuccess(dlxErrorDumpDirectory):
                 if not optimalInputGenSuccess:
                     assert False, "DLX unable to allocate variables within %d bytes. ABORT" % maxAllowedMemUsage
@@ -898,9 +898,9 @@ class CodegenBase:
                         try:
                             process = subprocess.call([exeFile], stdin=fin, stdout=fout, stderr=ferr, timeout=timeout)
                         except subprocess.TimeoutExpired:
-                            Util.getLogger().error("Memory Allocator Program Timed out.")
+                            Util.getLogger().error("DLX program for memory management timed out.")
                     if not self.checkDlxSuccess(dlxErrorDumpDirectory):
-                        assert False, "Unable to allovate variables within %d bytes. ABORT" % maxAllowedMemUsage
+                        assert False, "DLX unable to allovate variables within %d bytes. ABORT" % maxAllowedMemUsage
             totalScratchSize = self.readDlxAllocation(dlxOutputDumpDirectory, alignment, varOrderAndSize)
             if not forM3():
                 self.out.printf("char scratch[%d];\n"%(totalScratchSize), indent=True)

@@ -111,6 +111,7 @@ class Source:
     default = seedot
     all = [seedot, tf, onnx]
 
+
 class Log:
     error = "ERROR"
     critical = "CRITICAL"
