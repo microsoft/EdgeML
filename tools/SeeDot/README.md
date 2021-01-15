@@ -103,8 +103,8 @@ More information on using the FastGRNN trainer can be found [here](https://githu
 1. Copy the dataset and model files into the correct directory.
      ```
      cd ../../../tools/SeeDot/
-     mkdir datasets/rnn/usps10
-     mkdir model/rnn/usps10
+     mkdir -p datasets/rnn/usps10
+     mkdir -p model/rnn/usps10
      cp ../../examples/tf/FastCells/usps10/*.npy ./datasets/rnn/usps10/
      cp ../../examples/tf/FastCells/usps10/FastGRNNResults/<timestamp>/* ./model/rnn/usps10/
      ```
