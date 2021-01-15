@@ -5,6 +5,7 @@ import numpy as np
 import platform
 
 import seedot.config as config
+import logging
 
 
 class Config:
@@ -163,3 +164,9 @@ def computeScalingFactorForFuncCalls(val):
 
 def computeScalingFactorForInlineCodegen(val):
     return int(np.ceil(np.log2(val) - np.log2((1 << (config.wordLength - 2)) - 1)))
+
+
+# Logging Section
+def getLogger():
+    log =  logging.getLogger()    
+    return log

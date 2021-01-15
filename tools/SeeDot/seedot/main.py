@@ -10,6 +10,7 @@ import sys
 import operator
 import tempfile
 import traceback
+from tqdm import tqdm
 import numpy as np
 
 from seedot.compiler.converter.converter import Converter
@@ -140,7 +141,7 @@ class Main:
     #   paramInNativeBitwidth:  if False, it means model parameters are stored as 8-bit/16-bit integers mixed.
     #                           If True, it means model parameters are stored as 16-bit integers only (16 is native bit-width).
     def compile(self, version, target, sf, generateAllFiles=True, id=None, printSwitch=-1, scaleForX=None, variableToBitwidthMap=None, demotedVarsList=[], demotedVarsOffsets={}, paramInNativeBitwidth=True):
-        print("Generating code...", end='')
+        Util.getLogger().debug("Generating code...")
 
         if variableToBitwidthMap is None:
             variableToBitwidthMap = dict(self.variableToBitwidthMap)
@@ -193,7 +194,7 @@ class Main:
             self.scalesForX[id] = obj.scaleForX
             self.scalesForY[id] = obj.scaleForY
 
-        print("completed")
+        Util.getLogger().debug("completed")
         return True
 
     # Runs the converter project to generate the input files using reading the training model.
@@ -205,8 +206,8 @@ class Main:
     #                           default bitwidth 16 used for all variables.
     #   demotedVarsOffsets:     Keys are list of variables which use 8 bits.
     def convert(self, version, datasetType, target, varsForBitwidth={}, demotedVarsOffsets={}):
-        print("Generating input files for %s %s dataset..." %
-              (version, datasetType), end='')
+        Util.getLogger().debug("Generating input files for %s %s dataset..." %
+              (version, datasetType))
 
         # Create output dirs.
         if target == config.Target.arduino:
@@ -241,7 +242,7 @@ class Main:
             traceback.print_exc()
             return False
 
-        print("done\n")
+        Util.getLogger().debug("done")
         return True
 
     # Build and run the Predictor project.
@@ -274,7 +275,7 @@ class Main:
 
     # Runs the C++ file which contains multiple inference codes. Reads the output of all inference codes,
     # arranges them and returns a map of inference code descriptor to performance.
-    def runAll(self, version, datasetType, codeIdToScaleFactorMap, demotedVarsToOffsetToCodeId=None, doNotSort=False):
+    def runAll(self, version, datasetType, codeIdToScaleFactorMap, demotedVarsToOffsetToCodeId=None, doNotSort=False, printAlso=False):
         execMap = self.predict(version, datasetType)
         if execMap == None:
             return False, True
@@ -283,9 +284,8 @@ class Main:
         if self.algo == config.Algo.test:
             for codeId, sf in codeIdToScaleFactorMap.items():
                 self.accuracy[sf] = execMap[str(codeId)]
-                print("The 95th percentile error for sf" + str(sf) + "with respect to dataset is " + str(execMap[str(codeId)][0]) + "%.")
-                print("The 95th percentile error for sf" + str(sf) + "with respect to float execution is " + str(execMap[str(codeId)][1]) + "%.")
-                print("\n")
+                Util.getLogger().debug("The 95th percentile error for sf" + str(sf) + "with respect to dataset is " + str(execMap[str(codeId)][0]) + "%.")
+                Util.getLogger().debug("The 95th percentile error for sf" + str(sf) + "with respect to float execution is " + str(execMap[str(codeId)][1]) + "%.\n")
             return True, False
 
         # During the third exploration phase, when multiple codes are generated at once, codeIdToScaleFactorMap
@@ -294,7 +294,10 @@ class Main:
         if codeIdToScaleFactorMap is not None:
             for codeId, sf in codeIdToScaleFactorMap.items():
                 self.accuracy[sf] = execMap[str(codeId)]
-                print("Accuracy at scale factor %d is %.3f%%, Disagreement Count is %d, Reduced Disagreement Count is %d\n" % (sf, execMap[str(codeId)][0], execMap[str(codeId)][1], execMap[str(codeId)][2]))
+                if printAlso:
+                    print("Accuracy at scale factor %d is %.3f%%, Disagreement Count is %d, Reduced Disagreement Count is %d" % (sf, execMap[str(codeId)][0], execMap[str(codeId)][1], execMap[str(codeId)][2]))
+                else:
+                    Util.getLogger().info("Accuracy at scale factor %d is %.3f%%, Disagreement Count is %d, Reduced Disagreement Count is %d\n" % (sf, execMap[str(codeId)][0], execMap[str(codeId)][1], execMap[str(codeId)][2]))
                 if datasetType == config.DatasetType.testing and self.target == config.Target.arduino:
                     outdir = os.path.join(config.outdir, str(config.wordLength), self.algo, self.dataset)
                     os.makedirs(outdir, exist_ok=True)
@@ -318,7 +321,7 @@ class Main:
             allVars = []
             for demotedVars in demotedVarsToOffsetToCodeId:
                 offsetToCodeId = demotedVarsToOffsetToCodeId[demotedVars]
-                print("Demoted vars: %s\n" % str(demotedVars))
+                Util.getLogger().debug("Demoted vars: %s\n" % str(demotedVars))
 
                 x = [(i, execMap[str(offsetToCodeId[i])]) for i in offsetToCodeId]
                 x.sort(key=getMaximisingMetricValue, reverse=True)
@@ -326,7 +329,7 @@ class Main:
 
                 for offset in offsetToCodeId:
                     codeId = offsetToCodeId[offset]
-                    print("Offset %d (Code ID %d): Accuracy %.3f%%, Disagreement Count %d, Reduced Disagreement Count %d\n" %(offset, codeId, execMap[str(codeId)][0], execMap[str(codeId)][1], execMap[str(codeId)][2]))
+                    Util.getLogger().debug("Offset %d (Code ID %d): Accuracy %.3f%%, Disagreement Count %d, Reduced Disagreement Count %d\n" %(offset, codeId, execMap[str(codeId)][0], execMap[str(codeId)][1], execMap[str(codeId)][2]))
             self.varDemoteDetails += allVars
             # For the sec
             if not doNotSort:
@@ -351,14 +354,17 @@ class Main:
         fixedPointCounter = 0
         while True:
             # STAGE I exploration.
+            print("Stage I Exploration: Determining scale for input \'X\'...")
             fixedPointCounter += 1
             if config.fixedPointVbwIteration:
-                print("Will compile until conversion to fixed point. Iteration %d"%fixedPointCounter)
+                Util.getLogger().debug("Will compile until conversion to fixed point. Iteration %d"%fixedPointCounter)
             highestValidScale = start
             firstCompileSuccess = False
+            # Bar longer than actually required
+            stage_1_bar = tqdm(total=(2*abs(start-end)+2),mininterval=0, miniters=1, leave=True)
             while firstCompileSuccess == False:
                 if highestValidScale == end:
-                    print("Compilation not possible for any Scale Factor. Abort")
+                    Util.getLogger().error("Compilation not possible for any scale factor of variable \'X\'. Aborting code!")
                     return False
 
                 # Refactor and remove this try/catch block in the future.
@@ -370,7 +376,8 @@ class Main:
                 if firstCompileSuccess:
                     break
                 highestValidScale -= 1
-
+                stage_1_bar.update(1)
+            
             lowestValidScale = end + 1
             firstCompileSuccess = False
             while firstCompileSuccess == False:
@@ -381,10 +388,13 @@ class Main:
                 if firstCompileSuccess:
                     break
                 lowestValidScale += 1
+                stage_1_bar.update(1)
+            stage_1_bar.close()
 
             # Ignored.
             self.partialCompile(config.Version.fixed, config.Target.x86, lowestValidScale, True, None, -1, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
 
+            print("Stage II Exploration: Determining scale for all non-\'X\' variables...")
             # The iterator logic is as follows:
             # Search begins when the first valid scaling factor is found (runOnce returns True).
             # Search ends when the execution fails on a particular scaling factor (runOnce returns False).
@@ -393,11 +403,11 @@ class Main:
             numCodes = highestValidScale - lowestValidScale + 1
             codeId = 0
             codeIdToScaleFactorMap = {}
-            for i in range(highestValidScale, lowestValidScale - 1, -1):
+            for i in tqdm(range(highestValidScale, lowestValidScale - 1, -1)):
                 if config.ddsEnabled:
-                    print("Testing with DDS and scale of X as " + str(i))
+                    Util.getLogger().debug("Testing with DDS and scale of X as " + str(i) + "\n")
                 else:
-                    print("Testing with max scale factor of " + str(i))
+                    Util.getLogger().debug("Testing with max scale factor of " + str(i) + "\n")
 
                 codeId += 1
                 try:
@@ -410,28 +420,31 @@ class Main:
                     return False
                 codeIdToScaleFactorMap[codeId] = i
 
+            print("Stage II Code Run Started...")
             res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, codeIdToScaleFactorMap)
-
+            print("Stage II Code Run Completed!\n")
             if exit == True or res == False:
                 return False
 
-            print("\nSearch completed\n")
-            print("----------------------------------------------")
-            print("Best performing scaling factors with accuracy, disagreement, reduced disagreement:")
+            Util.getLogger().info("\nSearch completed\n")
+            Util.getLogger().info("----------------------------------------------\n\n")
+            Util.getLogger().info("Best performing scaling factors with accuracy, disagreement, reduced disagreement:")
 
             self.sf = self.getBestScale()
             if self.accuracy[self.sf][0] != lastStageAcc:
                 lastStageAcc = self.accuracy[self.sf][0]
             elif config.fixedPointVbwIteration:
-                print("No difference in iteration %d Stage 2 and iteration %d Stage 1. Stopping search"%(fixedPointCounter-1, fixedPointCounter))
+                Util.getLogger().info("No difference in iteration %d Stage 2 and iteration %d Stage 1. Stopping search\n"%(fixedPointCounter-1, fixedPointCounter))
                 break
 
             if config.vbwEnabled:
                 # Stage III exploration.
+                print("Stage III Exploration: Demoting Varibles one at a time...")
+
                 assert config.ddsEnabled, "Currently VBW on maxscale not supported"
                 if config.wordLength != 16:
                     assert False, "VBW mode only supported if native bitwidth is 16"
-                print("Scales computed in native bitwidth. Starting exploration over other bitwidths.")
+                Util.getLogger().debug("Scales computed in native bitwidth. Starting exploration over other bitwidths.")
 
                 # We attempt to demote all possible variables in the code. We try out multiple different scales
                 # (controlled by config.offsetsPerDemotedVariable) for each demoted variable. When a variable is
@@ -451,8 +464,8 @@ class Main:
                 numBatches = int(np.ceil(totalSize / redBatchSize))
 
                 self.varDemoteDetails = []
-                for i in range(numBatches):
-                    print("=====\nBatch %i out of %d\n=====" %(i + 1, numBatches))
+                for i in tqdm(range(numBatches)):
+                    Util.getLogger().info("=====\nBatch %i out of %d\n=====\n" %(i + 1, numBatches))
 
                     firstVarIndex = (totalSize * i) // numBatches
                     lastVarIndex = (totalSize * (i + 1)) // numBatches
@@ -487,11 +500,12 @@ class Main:
                             contentToCodeIdMap[tuple(demotedVarsList)][demOffset] = codeId
                             compiled = self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, False, codeId, -1 if codeId != numCodes else codeId, dict(newbitwidths), list(demotedVarsList), dict(demotedVarsOffsets))
                             if compiled == False:
-                                print("Variable Bitwidth exploration resulted in a compilation error")
+                                Util.getLogger().error("Variable bitwidth exploration resulted in a compilation error\n")
                                 return False
 
                     res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, None, contentToCodeIdMap)
-
+                
+                print("Stage IV Exploration: Cumulatively demoting variables...")
                 # Stage IV exploration.
                 # Again, we compute only a limited number of inference codes per generated C++ so as to not bloat up the memory usage of the compiler.
                 redBatchSize *= config.offsetsPerDemotedVariable
@@ -524,8 +538,8 @@ class Main:
                 # Knowing the accuracy when each single variable is demoted to 8-bits one at a time, we proceed to cumulatively
                 # demoting all of them one after the other ensuring accuracy of target code does not fall below a threshold. The
                 # following for loop controls generation of inference codes.
-                for i in range(numBatches):
-                    print("=====\nBatch %i out of %d\n=====" %(i + 1, numBatches))
+                for i in tqdm(range(numBatches)):
+                    Util.getLogger().info("=====\nBatch %i out of %d\n=====\n" %(i + 1, numBatches))
 
                     firstVarIndex = (totalSize * i) // numBatches
                     lastVarIndex = (totalSize * (i+1)) // numBatches
@@ -549,7 +563,7 @@ class Main:
                         demotedVarsListToOffsets[tuple(demotedVarsList)] = dict(demotedVarsOffsets)
                         compiled = self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, False, codeId, -1 if codeId != numCodes else codeId, dict(newbitwidths), list(demotedVarsList), dict(demotedVarsOffsets))
                         if compiled == False:
-                            print("Variable Bitwidth exploration resulted in another compilation error")
+                            Util.getLogger().error("Variable bitwidth exploration resulted in another compilation error\n")
                             return False
 
                     res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, None, contentToCodeIdMap, True)
@@ -577,7 +591,7 @@ class Main:
                 if acceptedAcc != lastStageAcc:
                     lastStageAcc = acceptedAcc
                 else:
-                    print("No difference in iteration %d's stages 1 & 2. Stopping search."%fixedPointCounter)
+                    Util.getLogger().warning("No difference in iteration %d's stages 1 & 2. Stopping search."%fixedPointCounter)
                     break
 
             if not config.vbwEnabled or not config.fixedPointVbwIteration:
@@ -602,15 +616,15 @@ class Main:
         x = [(i, self.accuracy[i]) for i in self.accuracy]
         x.sort(key=getMaximisingMetricValue, reverse=True)
         sorted_accuracy = x[:5]
-        print(sorted_accuracy)
+        Util.getLogger().info(sorted_accuracy)
         return sorted_accuracy[0][0]
 
     # Find the scaling factor which works best on the training dataset and
     # predict on the testing dataset.
     def findBestScalingFactor(self):
-        print("-------------------------------------------------")
-        print("Performing search to find the best scaling factor")
-        print("-------------------------------------------------\n")
+        print("-------------------------")
+        print("Performing Exploration...")
+        print("-------------------------\n")
 
         # Generate input files for training dataset.
         res = self.convert(config.Version.fixed,
@@ -623,7 +637,7 @@ class Main:
         if res == False:
             return False
 
-        print("Best scaling factor = %d" % (self.sf))
+        Util.getLogger().info("Best scaling factor = %d" % (self.sf))
         return True
 
     # After exploration is completed, this function is invoked to show the performance of the final quantised code on a testing dataset,
@@ -633,10 +647,10 @@ class Main:
         print("Prediction on testing dataset")
         print("-------------------------------\n")
 
-        print("Setting max scaling factor to %d\n" % (self.sf))
+        Util.getLogger().debug("Setting max scaling factor to %d\n" % (self.sf))
 
         if config.vbwEnabled:
-            print("Demoted Vars with Offsets: %s\n" % (str(self.demotedVarsOffsets)))
+            Util.getLogger().debug("Demoted Vars with Offsets: %s\n" % (str(self.demotedVarsOffsets)))
 
         # Generate files for the testing dataset.
         res = self.convert(config.Version.fixed,
@@ -652,7 +666,7 @@ class Main:
         if compiled == False:
             return False
 
-        res, exit = self.runAll(config.Version.fixed, config.DatasetType.testing, {"default" : self.sf})
+        res, exit = self.runAll(config.Version.fixed, config.DatasetType.testing, {"default" : self.sf}, printAlso=True)
         if res == False:
             return False
 
@@ -661,9 +675,9 @@ class Main:
     # This function is invoked before the exploration to obtain floating point accuracy, as well as profiling each variable
     # in the floating point code to compute their ranges and consequently their fixed-point ranges.
     def collectProfileData(self):
-        print("-----------------------")
-        print("Collecting profile data")
-        print("-----------------------")
+        Util.getLogger().info("-----------------------\n")
+        Util.getLogger().info("Collecting profile data\n")
+        Util.getLogger().info("-----------------------\n")
 
         res = self.convert(config.Version.floatt,
                            config.DatasetType.training, config.Target.x86)
@@ -679,9 +693,9 @@ class Main:
             return False
 
         self.flAccuracy = execMap["default"][0]
-        print("Accuracy is %.3f%%\n" % (execMap["default"][0]))
-        print("Disagreement is %.3f%%\n" % (execMap["default"][1]))
-        print("Reduced Disagreement is %.3f%%\n" % (execMap["default"][2]))
+        Util.getLogger().info("Accuracy is %.3f%%\n" % (execMap["default"][0]))
+        Util.getLogger().info("Disagreement is %.3f%%\n" % (execMap["default"][1]))
+        Util.getLogger().info("Reduced Disagreement is %.3f%%\n" % (execMap["default"][2]))
 
     # Generate code for Arduino.
     def compileFixedForTarget(self):
@@ -785,9 +799,9 @@ class Main:
 
     # Floating point x86 code.
     def runForFloat(self):
-        print("---------------------------")
-        print("Executing for X86 target...")
-        print("---------------------------\n")
+        Util.getLogger().info("---------------------------")
+        Util.getLogger().info("Executing for X86 target...")
+        Util.getLogger().info("---------------------------\n")
 
         res = self.convert(config.Version.floatt,
                            config.DatasetType.testing, config.Target.x86)
@@ -804,7 +818,7 @@ class Main:
         else:
             self.testingAccuracy = execMap["default"][0]
 
-        print("Accuracy is %.3f%%\n" % (self.testingAccuracy))
+        Util.getLogger().info("Accuracy is %.3f%%\n" % (self.testingAccuracy))
 
         if self.target == config.Target.arduino:
             self.compileFloatForTarget()
