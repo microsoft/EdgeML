@@ -113,10 +113,10 @@ class Source:
 
 
 class Log:
-    error = "ERROR"
-    critical = "CRITICAL"
-    warning = "WARNING"
-    info = "INFO"
-    debug = "DEBUG"
+    error = "error"
+    critical = "critical"
+    warning = "warning"
+    info = "info"
+    debug = "debug"
     default = error
     all = [error, critical, warning, info, debug]

@@ -138,7 +138,7 @@ class MainDriver:
         np.seterr(all='warn')
 
     def setLogLevel(self):
-        logging.basicConfig(level=os.environ.get("LOGLEVEL", self.args.log))
+        logging.basicConfig(level=os.environ.get("LOGLEVEL", self.args.log.upper()))
 
     def run(self):
         self.setLogLevel()

@@ -364,7 +364,7 @@ class Main:
             stage_1_bar = tqdm(total=(2*abs(start-end)+2),mininterval=0, miniters=1, leave=True)
             while firstCompileSuccess == False:
                 if highestValidScale == end:
-                    Util.getLogger().error("Compilation not possible for any Scale Factor of variable \'X\'. Aborting Code!")
+                    Util.getLogger().error("Compilation not possible for any scale factor of variable \'X\'. Aborting code!")
                     return False
 
                 # Refactor and remove this try/catch block in the future.
@@ -439,7 +439,7 @@ class Main:
 
             if config.vbwEnabled:
                 # Stage III exploration.
-                print("Stage III Exploration: Demoting varibles one at a time...")
+                print("Stage III Exploration: Demoting Varibles one at a time...")
 
                 assert config.ddsEnabled, "Currently VBW on maxscale not supported"
                 if config.wordLength != 16:
@@ -500,7 +500,7 @@ class Main:
                             contentToCodeIdMap[tuple(demotedVarsList)][demOffset] = codeId
                             compiled = self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, False, codeId, -1 if codeId != numCodes else codeId, dict(newbitwidths), list(demotedVarsList), dict(demotedVarsOffsets))
                             if compiled == False:
-                                Util.getLogger().error("Variable Bitwidth exploration resulted in a compilation error\n")
+                                Util.getLogger().error("Variable bitwidth exploration resulted in a compilation error\n")
                                 return False
 
                     res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, None, contentToCodeIdMap)
@@ -563,7 +563,7 @@ class Main:
                         demotedVarsListToOffsets[tuple(demotedVarsList)] = dict(demotedVarsOffsets)
                         compiled = self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, False, codeId, -1 if codeId != numCodes else codeId, dict(newbitwidths), list(demotedVarsList), dict(demotedVarsOffsets))
                         if compiled == False:
-                            Util.getLogger().error("Variable Bitwidth exploration resulted in another compilation error\n")
+                            Util.getLogger().error("Variable bitwidth exploration resulted in another compilation error\n")
                             return False
 
                     res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, None, contentToCodeIdMap, True)
