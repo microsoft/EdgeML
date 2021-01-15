@@ -31,7 +31,7 @@ class Config:
         #   -> Similarly in multiplication-like functions convolution, hadamard product etc.
     x86MemoryOptimize = True
         # Enable memory optimization in the generated fixed-point code in x86, arduino or m3 codegen.
-    memoryLimit = 400000
+    memoryLimit = 200000
         # The maximum memory present on the target device. Used if memory optimizations are enabled in the target codegen.
     largeVariableLimit = 50000
         # Any variable with more elements than this are prioritized for demotion to 8 bits.

@@ -1,4 +1,4 @@
-antlr4-python3-runtime==4.9.1
+antlr4-python3-runtime==4.7
 bokeh==2.2.3
 certifi==2020.12.5
 Jinja2==2.11.2

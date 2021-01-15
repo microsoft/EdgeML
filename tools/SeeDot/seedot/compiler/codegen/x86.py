@@ -52,7 +52,7 @@ class X86(CodegenBase):
 
         self.printCHeader()
 
-        self.computeScratchLocationsDLX() # computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
+        self.computeScratchLocationsFirstFitPriority() # computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
 
         self.printModelParamsWithBitwidth()
 

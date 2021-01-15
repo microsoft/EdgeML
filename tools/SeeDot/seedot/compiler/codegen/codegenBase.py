@@ -839,11 +839,11 @@ class CodegenBase:
             memAlloc = [(l * m // 8, i, j) for ([i, j], k, l, m) in varToLiveRange if k not in self.notScratch]
             varOrderAndSize = [(k, l * m // 8) for ([i, j], k, l, m) in varToLiveRange if k not in self.notScratch]
             maxAllowedMemUsage = Config.memoryLimit
-            timeout = 600
+            timeout = 60
             bestCaseMemUsage = DLXInputGen.generateDLXInput(memAlloc, 1, 0, True)
             if maxAllowedMemUsage < bestCaseMemUsage:
                 assert False, "Cannot fit the code within stipulated memory limit of %d" % maxAllowedMemUsage
-            alignment = 4096
+            alignment = 1
             dlxDumpFilesDirectory = os.path.join('seedot', 'compiler', 'codegen', 'dlx')
             dlxInputDumpDirectory = os.path.join(dlxDumpFilesDirectory, 'dlx.input')
             dlxOutputDumpDirectory = os.path.join(dlxDumpFilesDirectory, 'dlx.output')
