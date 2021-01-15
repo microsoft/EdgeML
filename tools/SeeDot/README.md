@@ -26,7 +26,7 @@ This document describes the tool usage with an example.
 SeeDot can be invoked using **`SeeDot-dev.py`** file. The arguments for the script are supplied as follows:
 
 ```
-usage: SeeDot-dev.py [-h] [-a] [-v] [-d] [-m] [-n] [-dt] [-t] [-s] [-sf]
+usage: SeeDot-dev.py [-h] [-a] [-v] [-d] [-m] [-n] [-dt] [-t] [-s] [-sf] [-l]
                      [--load-sf] [--convert] [--tempdir] [-o]
 
 optional arguments:
@@ -40,11 +40,12 @@ optional arguments:
                         procedure (1 for a single-class classification problem)
   -t , --target         Target device ['x86', 'arduino', 'm3']
   -s , --source         model source type ['seedot', 'onnx', 'tf']
+  -l , --log            Logging level (in increasing order) ['ERROR', 'CRITICAL', 'WARNING', 'INFO', 'DEBUG']
 ```
 
 An example invocation is as follows:
 ```
-python SeeDot-dev.py -a rnn -v fixed -d usps10 -n 1 -t arduino -m red_disagree
+python SeeDot-dev.py -a rnn -v fixed -d usps10 -n 1 -t arduino -m red_disagree -l INFO
 ```
 
 SeeDot expects the `train` and the `test` data files in a specific format. Each data file should be of the shape `[numberOfDataPoints, numberOfFeatures + n]`, where the ground truth/output is in the first `n` columns. The tool currently supports numpy arrays (.npy) for inputting model parameters.
