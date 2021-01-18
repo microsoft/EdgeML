@@ -41,9 +41,9 @@ class Converter:
         if self.inputSet != True:
             raise Exception("Set input paths before running Converter")
 
-        if getVersion() == config.Version.fixed:
+        if getVersion() == config.Encoding.fixed:
             obj = QuantizerFixed(self.varsForBitwidth, self.allScales, self.numOutputs, self.biasShifts, self.scaleForY)
-        elif getVersion() == config.Version.floatt:
+        elif getVersion() == config.Encoding.floatt:
             obj = QuantizerFloat(self.numOutputs)
 
         obj.run(self.source)

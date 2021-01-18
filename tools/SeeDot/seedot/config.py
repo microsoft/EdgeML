@@ -75,7 +75,7 @@ class Algo:
     all = [bonsai, lenet, protonn, rnn, rnnpool, mbconv, test]
 
 
-class Version:
+class Encoding:
     fixed = "fixed"
     floatt = "float"
     default = [fixed, floatt]

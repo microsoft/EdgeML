@@ -67,10 +67,10 @@ def setVersion(version: str):
     Config.version = version
 
 def forFixed():
-    return Config.version == config.Version.fixed
+    return Config.version == config.Encoding.fixed
 
 def forFloat():
-    return Config.version == config.Version.floatt
+    return Config.version == config.Encoding.floatt
 
 def getTarget():
     return Config.target

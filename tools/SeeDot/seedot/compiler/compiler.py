@@ -134,7 +134,7 @@ class Compiler:
     def genCodeWithFuncCalls(self, ast):
         outputLog = writer.Writer(self.outputLogFile)
 
-        if util.getVersion() == config.Version.fixed and config.ddsEnabled:
+        if util.getVersion() == config.Encoding.fixed and config.ddsEnabled:
             self.intermediateScales = self.readDataDrivenScales()
 
         compiler = irBuilder.IRBuilder(outputLog, self.intermediateScales, self.substitutions, self.scaleForX, self.variableToBitwidthMap, self.sparseMatrixSizes, self.demotedVarsList, self.demotedVarsOffsets)
@@ -166,7 +166,7 @@ class Compiler:
             state[13].append(i)
 
         # In floating-point code used for profiling, the set of variables which are profiled using training data are collected.
-        if util.getVersion() == config.Version.floatt:
+        if util.getVersion() == config.Encoding.floatt:
             self.independentVars = list(compiler.independentVars)
             self.independentVars += compiler.globalVars
 

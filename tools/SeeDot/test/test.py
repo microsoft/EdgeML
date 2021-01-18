@@ -94,7 +94,7 @@ class TestNode(unittest.TestCase):
 		config.ddsEnabled = False
 		config.vbwEnabled = False
 
-		obj = main.Main(config.Algo.test, config.Version.fixed, config.Target.x86, training_input, testing_input,
+		obj = main.Main(config.Algo.test, config.Encoding.fixed, config.Target.x86, training_input, testing_input,
 			'model', None, None, None, self.get_list_prod(output_shape), config.Source.onnx)
 		obj.run()
 

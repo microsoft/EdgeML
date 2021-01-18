@@ -30,8 +30,8 @@ usage: SeeDot-dev.py [-h] [-a] [-v] [-d] [-m] [-n] [-dt] [-t] [-s] [-sf] [-l] [-
 
 optional arguments:
   -h,   --help             Show this help message and exit
-  -a,   --algo             Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn']
-  -v,   --version          Floating-point ['float'] or fixed-point ['fixed']
+  -a,   --algo             Algorithm to run ['bonsai' or 'protonn' or 'rnn' or 'rnnpool']
+  -e,   --encoding         Floating-point ['float'] or fixed-point ['fixed']
   -d,   --dataset          Dataset to use
   -m,   --maximisingMetric What metric to maximise during exploration ['acc', 'disagree', 'red_disagree']
   -n,   --numOutputs       Number of simultaneous outputs of the inference procedure (1 for a single-class classification problem)

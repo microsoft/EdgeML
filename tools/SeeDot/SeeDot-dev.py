@@ -59,14 +59,14 @@ class MainDriver:
 
         parser.add_argument("-a", "--algo", choices=config.Algo.all,
                             default=config.Algo.default, metavar='', help="Algorithm to run")
-        parser.add_argument("-v", "--version", choices=config.Version.all,
-                            default=config.Version.default, metavar='', help="Floating-point or fixed-point")
+        parser.add_argument("-e", "--encoding", choices=config.Encoding.all,
+                            default=config.Encoding.default, metavar='', help="Floating-point or fixed-point")
         parser.add_argument("-d", "--dataset", choices=Dataset.all,
                             default=Dataset.default, metavar='', help="Dataset to use")
         parser.add_argument("-m", "--maximisingMetric", choices=config.MaximisingMetric.all, metavar='',
                             help="What metric to maximise during exploration",default=config.MaximisingMetric.default)
         parser.add_argument("-n", "--numOutputs", type=int, metavar='',
-                            help="Number of simultaneous outputs of the inference procedure",default=1)
+                            help="Number of outputs (e.g., classification problems have only 1 output, i.e., the class label)",default=1)
         parser.add_argument("-dt", "--datasetType", choices=config.DatasetType.all,
                             default=config.DatasetType.default, metavar='', help="Training dataset or testing dataset")
         parser.add_argument("-t", "--target", choices=config.Target.all,
@@ -83,15 +83,13 @@ class MainDriver:
                             help="Scratch directory for intermediate files")
         parser.add_argument("-o", "--outdir", metavar='',
                             help="Directory to output the generated Arduino sketch")
-        parser.add_argument("-l", "--log", choices=config.Log.all,
-                            default=config.Log.default, metavar='', help="Log Level to use")
-
+        
         self.args = parser.parse_args()
 
         if not isinstance(self.args.algo, list):
             self.args.algo = [self.args.algo]
-        if not isinstance(self.args.version, list):
-            self.args.version = [self.args.version]
+        if not isinstance(self.args.encoding, list):
+            self.args.encoding = [self.args.encoding]
         if not isinstance(self.args.dataset, list):
             self.args.dataset = [self.args.dataset]
         if not isinstance(self.args.datasetType, list):
@@ -151,14 +149,12 @@ class MainDriver:
         self.runMainDriver()
 
     def runMainDriver(self):
-        results = self.loadResultsFile()
-
-        for iter in product(self.args.algo, self.args.version, self.args.dataset, self.args.target, self.args.maximisingMetric, [16]):
-            algo, version, dataset, target, maximisingMetric, wordLength = iter
+        for iter in product(self.args.algo, self.args.encoding, self.args.dataset, self.args.target, self.args.maximisingMetric, [16]):
+            algo, encoding, dataset, target, maximisingMetric, wordLength = iter
 
             print("\n========================================")
             print("Executing on %s %s %s %s" %
-                  (algo, version, dataset, target))
+                  (algo, encoding, dataset, target))
             print("========================================\n")
 
             datasetDir = os.path.join(
@@ -177,7 +173,7 @@ class MainDriver:
                 # The following is particularly for old SeeDot (PLDI '19).
                 # In the new version of SeeDot (named Shiftry, OOPSLA '20), config.wordLength is ALWAYS expected to be 16, which is the base bit-width.
                 # Some variables are demoted to 8 bits, and intermediate variables for multiplication may use 32 bits.
-                if version == config.Version.floatt:
+                if encoding == config.Encoding.floatt:
                     bitwidth = 'float'
                 elif config.wordLength == 8:
                     bitwidth = 'int8'
@@ -188,67 +184,16 @@ class MainDriver:
                 else:
                     assert False
 
-                curr = results[algo][bitwidth][dataset]
-
-                expectedAcc = curr['accuracy']
-                if version == config.Version.fixed:
-                    bestScale = curr['scaleFactor']
-                else:
-                    bestScale = results[algo]['int16'][dataset]['scaleFactor']
-
             except Exception as _:
                 assert self.args.load_sf == False
-                expectedAcc = 0
 
-            if self.args.load_sf:
-                sf = bestScale
-            else:
-                sf = self.args.max_scale_factor
+            sf = self.args.max_scale_factor
 
             numOutputs = self.args.numOutputs
 
-            obj = main.Main(algo, version, target, trainingInput,
+            obj = main.Main(algo, encoding, target, trainingInput,
                             testingInput, modelDir, sf, maximisingMetric, dataset, numOutputs, self.args.source)
             obj.run()
-
-            acc = obj.testingAccuracy
-
-            if acc != expectedAcc:
-                print("FAIL: Expected accuracy %f%%" % (expectedAcc))
-            elif version == config.Version.fixed and obj.sf != bestScale:
-                print("FAIL: Expected best scale %d" % (bestScale))
-            else:
-                print("PASS")
-
-    def loadResultsFile(self):
-        results = {}
-        # Results.csv contains some benchmark results for old SeeDot (PLDI '19).
-        # The CSV file can be updated with better accuracy numbers if a better model is obtained.
-        with open(os.path.join("Results.csv")) as csvFile:
-            reader = csv.reader(csvFile)
-            for row in reader:
-                algo, bitwidth, dataset = row[0], row[1], row[2]
-
-                if algo not in results:
-                    results[algo] = {}
-
-                if bitwidth not in results[algo]:
-                    results[algo][bitwidth] = {}
-
-                if dataset not in results[algo][bitwidth]:
-                    results[algo][bitwidth][dataset] = {}
-
-                accuracy, scaleFactor = row[3], row[4]
-
-                if not accuracy:
-                    accuracy = 100
-                if not scaleFactor:
-                    scaleFactor = 9999
-
-                results[algo][bitwidth][dataset] = {"accuracy": float(accuracy), "scaleFactor": int(scaleFactor)}
-
-        return results
-
 
 if __name__ == "__main__":
     obj = MainDriver()

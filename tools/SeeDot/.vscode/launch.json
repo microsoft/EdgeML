@@ -15,7 +15,7 @@
             "args": [
                 "-a",
                 "rnn",
-                "-v",
+                "-e",
                 "fixed",
                 "-d",
                 "spectakoms",
