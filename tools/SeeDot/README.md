@@ -50,7 +50,7 @@ An example invocation is as follows:
 python SeeDot-dev.py -a rnn -v fixed -d usps10 -n 1 -t arduino -m red_disagree -l info
 ```
 
-SeeDot expects the `train` and the `test` data files in a specific format. Each data file should be of the shape `[numberOfDataPoints, numberOfFeatures + n]`, where the ground truth/output is in the first `n` columns. The tool currently supports numpy arrays (.npy) for inputting model parameters.
+SeeDot expects the `train` and the `test` data files in a specific format. Each data file should be of the shape `[numberOfDataPoints, n + numberOfFeatures]`, where the ground truth/output is in the first `n` columns. The tool currently supports numpy arrays (.npy) for inputting model parameters.
 The data files must be present in the directory `datasets/<algo>/<dataset>`.
 
 After training, the learned parameters are stored in this directory in a specific format. For FastGRNN, the learned parameters are `W`, `U`, `Bg`, `Bh`, `FC`, `FCBias`, `zeta` and `nu`. These parameters are numpy arrays (.npy). The model files must be present in the directory `model/<algo>/<dataset>`.
