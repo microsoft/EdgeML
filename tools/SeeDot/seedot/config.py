@@ -67,18 +67,18 @@ class Algo:
     bonsai = "bonsai"
     lenet = "lenet"
     protonn = "protonn"
-    rnn = "rnn"
+    fastgrnn = "fastgrnn"
     rnnpool = "rnnpool"
     mbconv = "mbconv"
     test = "test"
-    default = [bonsai, protonn]
-    all = [bonsai, lenet, protonn, rnn, rnnpool, mbconv, test]
+    default = [protonn]
+    all = [bonsai, lenet, protonn, fastgrnn, rnnpool, mbconv, test]
 
 
 class Encoding:
     fixed = "fixed"
     floatt = "float"
-    default = [fixed, floatt]
+    default = [fixed]
     all = default
 
 

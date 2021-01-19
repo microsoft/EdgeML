@@ -30,19 +30,53 @@ usage: SeeDot-dev.py [-h] [-a] [-v] [-d] [-m] [-n] [-dt] [-t] [-s] [-sf] [-l] [-
 
 optional arguments:
   -h,   --help             Show this help message and exit
-  -a,   --algo             Algorithm to run ['bonsai' or 'protonn' or 'rnn' or 'rnnpool']
-  -e,   --encoding         Floating-point ['float'] or fixed-point ['fixed']
-  -d,   --dataset          Dataset to use
-  -m,   --maximisingMetric What metric to maximise during exploration ['acc', 'disagree', 'red_disagree']
-  -n,   --numOutputs       Number of simultaneous outputs of the inference procedure (1 for a single-class classification problem)
+  -a,   --algo             Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn'] 
+                           (Default: ['bonsai', 'protonn'])
+
+  -e,   --encoding         Floating-point ['float'] or Fixed-point ['fixed'] 
+                           (Default: ['fixed', 'float'])
+
+  -d,   --dataset          Dataset to use 
+                           (Default: ["cifar-binary", "cr-binary", "cr-multiclass", "curet-multiclass",
+                                      "letter-multiclass", "mnist-binary", "mnist-multiclass",
+                                      "usps-binary", "usps-multiclass", "ward-binary"])
+
+  -m,   --maximisingMetric What metric to maximise during exploration (valid only for Classification) 
+                              1) Accuracy ('acc'):                The accuracy of prediction will be used as a metric for 
+                                                                  correctness. (A maximising metric).
+
+                              2) Disagreement Count ('disagree'): The correctness will be measured against the floating-point 
+                                                                  code's output. (A minimising metric).
+                              3) Reduced Disagreement Count 
+                                                ('red_disagree'): The correctness will be measured against the floating-point 
+                                                                  code's output only when the output matches the correct labels. 
+                                                                  (A minimising metric).
+                           (Default: 'acc')
+
+  -n,   --numOutputs       Number of outputs (e.g., classification problems have only 1 output, i.e., the class label)
+                           (Default: 1)
+
   -dt,  --datasetType      Dataset type being used ['training', 'testing']
+                           (Default: 'testing')
+
   -t,   --target           Target device ['x86', 'arduino', 'm3']
+                           (Default: 'x86')
+
   -s,   --source           Model source type ['seedot', 'onnx', 'tf']
-  -sf,  --max-scale-factor Max scaling factor for code generation
+                           (Default: 'seedot')
+  
+  -sf,  --max-scale-factor Max scaling factor for code generation (If not specified then it will be inferred from data)
+  
   -l,   --log              Logging level (in increasing order) ['error', 'critical', 'warning', 'info', 'debug']
+                           (Default: 'error')
+
   -lsf, --load-sf          Use a pre-determined value for max scale factor
+
   -tdr, --tempdir          Scratch directory for intermediate files
-  -o,   --outdir           Directory to output the generated Arduino sketch
+                           (Default: 'temp/')
+
+  -o,   --outdir           Directory to output the generated targetdevice sketch
+                           (Default: 'arduinodump/' for Arduino, 'temp/' for x86 and, 'm3/' for M3)
 ```
 
 An example invocation is as follows:

@@ -40,7 +40,7 @@ class Dataset:
              "wider-regression", "wider-mbconv", "face-1", "face-2", "face-2-rewrite", 
              "face-3", "face-4", "test"]
     # Datasets for ProtoNN and Bonsai.
-    default = common
+    default = ["cifar-binary"]
     # Datasets for FastGRNN.
     # default = ["spectakoms", "usps10", "HAR-2", "HAR-6", "dsa", "MNIST-10", "Google-12", "Google-30", "Wakeword-2"]
     all = common + extra
@@ -55,34 +55,57 @@ class Dataset:
 class MainDriver:
 
     def parseArgs(self):
+        metricHelpString = "\
+        \n\
+            1) Accuracy ('acc'):\t\t\t\t        The accuracy of prediction will be used as a metric for\
+                                                correctness. (A maximising metric).\n\n\
+            2) Disagreement Count ('disagree'):\t\t\t\t \
+                                                The correctness will be measured against the floating-point \
+                                                code's output. (A minimising metric).\n\
+            3) Reduced Disagreement Count \
+                            ('red_disagree'):\t\t\t\t The correctness will be measured against the floating-point \
+                                                code's output only when the output matches the correct labels. \
+                                                (A minimising metric).\n\
+        (Default: 'acc')\n"
         parser = argparse.ArgumentParser()
 
         parser.add_argument("-a", "--algo", choices=config.Algo.all,
-                            default=config.Algo.default, metavar='', help="Algorithm to run")
+                            default=config.Algo.default, metavar='', help="Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn'] \
+                           (Default: ['protonn'])")
         parser.add_argument("-e", "--encoding", choices=config.Encoding.all,
-                            default=config.Encoding.default, metavar='', help="Floating-point or fixed-point")
+                            default=config.Encoding.default, metavar='', help="Floating-point ['float'] or Fixed-point ['fixed'] \
+                           (Default: ['fixed'])")
         parser.add_argument("-d", "--dataset", choices=Dataset.all,
-                            default=Dataset.default, metavar='', help="Dataset to use")
+                            default=Dataset.default, metavar='', help="Dataset to use\
+                            (Default: ['cifar-binary'])")
         parser.add_argument("-m", "--maximisingMetric", choices=config.MaximisingMetric.all, metavar='',
-                            help="What metric to maximise during exploration",default=config.MaximisingMetric.default)
+                            help="What metric to maximise during exploration (valid only for Classification) \
+                                ['acc', 'disagree', 'red_diagree'] (Default: 'acc')",default=config.MaximisingMetric.default)
         parser.add_argument("-n", "--numOutputs", type=int, metavar='',
-                            help="Number of outputs (e.g., classification problems have only 1 output, i.e., the class label)",default=1)
+                            help="Number of outputs (e.g., classification problems have only 1 output, i.e., the class label)\
+                           (Default: 1)",default=1)
         parser.add_argument("-dt", "--datasetType", choices=config.DatasetType.all,
-                            default=config.DatasetType.default, metavar='', help="Training dataset or testing dataset")
+                            default=config.DatasetType.default, metavar='', help="Dataset type being used ['training', 'testing']\
+                           (Default: 'testing')")
         parser.add_argument("-t", "--target", choices=config.Target.all,
-                            default=config.Target.default, metavar='', help="X86 code or Arduino sketch")
+                            default=config.Target.default, metavar='', help="Target device ['x86', 'arduino', 'm3'] \
+                            (Default: 'x86')")
         parser.add_argument("-s", "--source", metavar='', choices=config.Source.all,
-                            default=config.Source.default, help="model source type seedot/onnx/tf")
+                            default=config.Source.default, help="Model source type ['seedot', 'onnx', 'tf']\
+                           (Default: 'seedot')")
         parser.add_argument("-sf", "--max-scale-factor", type=int,
-                            metavar='', help="Max scaling factor for code generation")
+                            metavar='', help="Max scaling factor for code generation (If not specified then it will be inferred from data)")
         parser.add_argument("-l", "--log", choices=config.Log.all,
-                            default=config.Log.default, metavar='', help="Log Level to use")
+                            default=config.Log.default, metavar='', help="Logging level (in increasing order)\
+                             ['error', 'critical', 'warning', 'info', 'debug'] (Default: 'error')")
         parser.add_argument("-lsf", "--load-sf", action="store_true",
                             help="Use a pre-determined value for max scale factor")
         parser.add_argument("-tdr", "--tempdir", metavar='',
-                            help="Scratch directory for intermediate files")
+                            help="Scratch directory for intermediate files\
+                           (Default: 'temp/')")
         parser.add_argument("-o", "--outdir", metavar='',
-                            help="Directory to output the generated Arduino sketch")
+                            help="Directory to output the generated targetdevice sketch\
+                           (Default: 'arduinodump/' for Arduino, 'temp/' for x86 and, 'm3/' for M3)")
         
         self.args = parser.parse_args()
 
