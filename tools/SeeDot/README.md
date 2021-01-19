@@ -43,12 +43,11 @@ optional arguments:
                               1) Accuracy ('acc'):                The accuracy of prediction will be used as a metric for 
                                                                   correctness. (A maximising metric).
 
-                              2) Disagreement Count ('disagree'): The correctness will be measured against the floating-point 
-                                                                  code's output. (A minimising metric).
+                              2) Disagreement Count ('disagree'): The correctness will be measured against the
+                                                                  floating-point code's output. (A minimising metric).
                               3) Reduced Disagreement Count 
-                                                ('red_disagree'): The correctness will be measured against the floating-point 
-                                                                  code's output only when the output matches the correct labels. 
-                                                                  (A minimising metric).
+                                                ('red_disagree'): The correctness will be measured against the
+                                                                  floating-point code's output only when the output matches the correct label. (A minimising metric).
                            (Default: 'acc')
 
   -n,   --numOutputs       Number of outputs (e.g., classification problems have only 1 output, i.e., the class label)
