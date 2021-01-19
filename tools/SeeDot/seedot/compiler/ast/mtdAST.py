@@ -1,6 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+'''
+MtdAST contains the code to navigate the Meta-Data Ast.
+'''
+
 import seedot.compiler.ast.ast as AST
 from seedot.compiler.ast.astVisitor import ASTVisitor
 

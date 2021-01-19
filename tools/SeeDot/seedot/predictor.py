@@ -1,6 +1,12 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+'''
+File Info: This file contains the code to generate datatypes.h which 
+controls the execution of CPP codes. 
+It also contains the code that compiles the CPP prediction codes and runs them. 
+'''
+
 import os
 import subprocess
 

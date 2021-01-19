@@ -1,6 +1,11 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+'''
+File Info: This file stores the configuration parameters for SeeDot's run. 
+It also contains the various classes for CLI arguments.  
+'''
+
 # Target word length. Currently set to match the word length of Arduino (2 bytes).
 wordLength = 16
 availableBitwidths = [8, 16, 32]

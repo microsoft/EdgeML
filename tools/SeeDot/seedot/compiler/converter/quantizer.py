@@ -1,6 +1,11 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+'''
+The Quantizer class contains the code for running the converter that creates the 
+main AST and morphs the dataset accroding to the scale and bitwidth of SeeDot. 
+'''
+
 from antlr4 import *
 import os
 

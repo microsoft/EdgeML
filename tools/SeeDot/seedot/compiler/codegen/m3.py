@@ -1,6 +1,11 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+'''
+M3 has the overridden function calls to generate M3 device
+compatible code. 
+'''
+
 import numpy as np
 import os
 

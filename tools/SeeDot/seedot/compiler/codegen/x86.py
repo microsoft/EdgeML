@@ -1,6 +1,10 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+'''
+Code to generate the x86 compatible Prediction code. 
+'''
+
 import numpy as np
 import os
 
