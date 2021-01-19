@@ -55,18 +55,6 @@ class Dataset:
 class MainDriver:
 
     def parseArgs(self):
-        metricHelpString = "\
-        \n\
-            1) Accuracy ('acc'):\t\t\t\t        The accuracy of prediction will be used as a metric for\
-                                                correctness. (A maximising metric).\n\n\
-            2) Disagreement Count ('disagree'):\t\t\t\t \
-                                                The correctness will be measured against the floating-point \
-                                                code's output. (A minimising metric).\n\
-            3) Reduced Disagreement Count \
-                            ('red_disagree'):\t\t\t\t The correctness will be measured against the floating-point \
-                                                code's output only when the output matches the correct labels. \
-                                                (A minimising metric).\n\
-        (Default: 'acc')\n"
         parser = argparse.ArgumentParser()
 
         parser.add_argument("-a", "--algo", choices=config.Algo.all,
@@ -94,18 +82,18 @@ class MainDriver:
                             default=config.Source.default, help="Model source type ['seedot', 'onnx', 'tf']\
                            (Default: 'seedot')")
         parser.add_argument("-sf", "--max-scale-factor", type=int,
-                            metavar='', help="Max scaling factor for code generation (If not specified then it will be inferred from data)")
+                            metavar='', help="Use the old max-scale mechanism of SeeDot's PLDI’19 paper to determine the scales (If not specified then it will be inferred from data)")
         parser.add_argument("-l", "--log", choices=config.Log.all,
                             default=config.Log.default, metavar='', help="Logging level (in increasing order)\
                              ['error', 'critical', 'warning', 'info', 'debug'] (Default: 'error')")
         parser.add_argument("-lsf", "--load-sf", action="store_true",
-                            help="Use a pre-determined value for max scale factor")
+                            help="use a user-provided max scale in the mechanish of SeeDot's PLDI' 19 paper. (Default: 'False')")
         parser.add_argument("-tdr", "--tempdir", metavar='',
                             help="Scratch directory for intermediate files\
                            (Default: 'temp/')")
         parser.add_argument("-o", "--outdir", metavar='',
                             help="Directory to output the generated targetdevice sketch\
-                           (Default: 'arduinodump/' for Arduino, 'temp/' for x86 and, 'm3/' for M3)")
+                           (Default: 'arduinodump/' for Arduino, 'temp/' for x86 and, 'm3dump/' for M3)")
         
         self.args = parser.parse_args()
 
@@ -210,6 +198,7 @@ class MainDriver:
             except Exception as _:
                 assert self.args.load_sf == False
 
+            #TODO: Check if a flag needs to be added
             sf = self.args.max_scale_factor
 
             numOutputs = self.args.numOutputs

@@ -76,7 +76,7 @@ optional arguments:
                            (Default: 'temp/')
 
   -o,   --outdir           Directory to output the generated targetdevice sketch
-                           (Default: 'arduinodump/' for Arduino, 'temp/' for x86 and, 'm3/' for M3)
+                           (Default: 'arduinodump/' for Arduino, 'temp/' for x86 and, 'm3dump/' for M3)
 ```
 
 An example invocation is as follows:
@@ -89,7 +89,7 @@ The data files must be present in the directory `datasets/<algo>/<dataset>`.
 
 After training, the learned parameters are stored in this directory in a specific format. For FastGRNN, the learned parameters are `W`, `U`, `Bg`, `Bh`, `FC`, `FCBias`, `zeta` and `nu`. These parameters are numpy arrays (.npy). The model files must be present in the directory `model/<algo>/<dataset>`.
 
-The compiler output is present in `temp` directory for x86, `arduinodump` directory for arduino, and `m3` directory for m3.
+The compiler output is present in `temp` directory for x86, `arduinodump` directory for arduino, and `m3dump` directory for m3.
 
 ## Getting started: Quantizing FastGRNN on usps10
 
@@ -97,7 +97,7 @@ To help get started with SeeDot, we provide 1) a pre-loaded fixed-point model, a
 
 ### Generating fixed-point code
 
-This process consists of four steps: 1) installing EdgeML TensorFlow library, 2) training ProtoNN on usps10, 3) quantizing the trained model with SeeDot, and 4) performing prediction on the device.
+This process consists of four steps: 1) installing EdgeML TensorFlow library, 2) training FastGRNN on usps10, 3) quantizing the trained model with SeeDot, and 4) performing prediction on the device.
 
 #### **Step 1: Installing EdgeML TensorFlow library**
 
@@ -126,7 +126,7 @@ This process consists of four steps: 1) installing EdgeML TensorFlow library, 2)
      python process_usps.py
      ```
 
-3. Invoke ProtoNN trainer using the following command.
+3. Invoke FastGRNN trainer using the following command.
       ```
       python fastcell_example.py --data-dir ./usps10 --input-dim 16 --hidden-dim 32
       ```
