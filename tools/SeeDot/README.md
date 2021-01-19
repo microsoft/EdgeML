@@ -31,15 +31,13 @@ usage: SeeDot-dev.py [-h] [-a] [-v] [-d] [-m] [-n] [-dt] [-t] [-s] [-sf] [-l] [-
 optional arguments:
   -h,   --help             Show this help message and exit
   -a,   --algo             Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn'] 
-                           (Default: ['bonsai', 'protonn'])
+                           (Default: 'protonn')
 
   -e,   --encoding         Floating-point ['float'] or Fixed-point ['fixed'] 
-                           (Default: ['fixed', 'float'])
+                           (Default: 'fixed')
 
   -d,   --dataset          Dataset to use 
-                           (Default: ["cifar-binary", "cr-binary", "cr-multiclass", "curet-multiclass",
-                                      "letter-multiclass", "mnist-binary", "mnist-multiclass",
-                                      "usps-binary", "usps-multiclass", "ward-binary"])
+                           (Default: 'cifar-binary')
 
   -m,   --maximisingMetric What metric to maximise during exploration (valid only for Classification) 
                               1) Accuracy ('acc'):                The accuracy of prediction will be used as a metric for 
