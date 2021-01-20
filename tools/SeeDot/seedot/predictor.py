@@ -1,11 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-'''
-File Info: This file contains the code to generate datatypes.h which 
-controls the execution of CPP codes. 
-It also contains the code that compiles the CPP prediction codes and runs them. 
-'''
 
 import os
 import subprocess
@@ -13,8 +8,14 @@ import subprocess
 import seedot.config as config
 import seedot.util as Util
 
-# Program to build and run the predictor project using MSBuild (C++ build tool for windows).
-# The accuracy and other statistics are written to the output file specified.
+'''
+This file contains the code to generate datatypes.h which 
+controls the execution of CPP codes. 
+It also contains the code that compiles the CPP prediction codes for Linux and runs them. 
+Additionally, it contains the windows program to build and run the predictor project
+using MSBuild (C++ build tool for windows).
+The accuracy and other statistics are written to the output file specified.
+'''
 
 
 class Predictor:

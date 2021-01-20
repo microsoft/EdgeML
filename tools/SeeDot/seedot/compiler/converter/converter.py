@@ -8,7 +8,9 @@ from seedot.compiler.converter.util import *
 
 import seedot.config as config
 
-# Main file which sets the configurations and creates the corresponding object.
+'''
+Main file which sets the configurations and creates the corresponding object.
+'''
 
 
 class Converter:

@@ -8,16 +8,18 @@ import traceback
 import seedot.config as config
 from seedot.util import *
 
-# Primitives used by the Intermediate Representation (IR).
-# For most primitives, there would be in __init__() function and one subst() function.
-# __init__() initialises all the metadata required by the IR primitive.
-# subst() is used for substitutions, for example:
-#   In the input code, suppose we have a + b.
-#   In the AST, it will be represented as add(var(a), var(b)).
-#   The compiler substitutes 'a' with tmp1.
-#   The substitution tmp1/'a' (read as tmp1 for 'a', or 'a' should be replaced with tmp1) is applied on the whole program.
-#   All the subst() calls are written in a way that within the AST, all instances of 'a' would be replaced by tmp1.
-#   The updated AST would look like add(var(tmp1), var(b)).
+'''
+Primitives used by the Intermediate Representation (IR).
+For most primitives, there would be in __init__() function and one subst() function.
+__init__() initialises all the metadata required by the IR primitive.
+subst() is used for substitutions, for example:
+  In the input code, suppose we have a + b.
+  In the AST, it will be represented as add(var(a), var(b)).
+  The compiler substitutes 'a' with tmp1.
+  The substitution tmp1/'a' (read as tmp1 for 'a', or 'a' should be replaced with tmp1) is applied on the whole program.
+  All the subst() calls are written in a way that within the AST, all instances of 'a' would be replaced by tmp1.
+  The updated AST would look like add(var(tmp1), var(b)).
+'''
 
 
 class Op:

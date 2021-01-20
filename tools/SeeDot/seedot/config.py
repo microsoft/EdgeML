@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 
 '''
-File Info: This file stores the configuration parameters for SeeDot's run. 
+This file stores the configuration parameters for SeeDot's run. 
 It also contains the various classes for CLI arguments.  
 '''
 

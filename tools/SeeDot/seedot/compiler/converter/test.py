@@ -4,6 +4,10 @@
 import math
 import numpy as np
 
+'''
+Test codes for the converter.
+'''
+
 def getScale(maxabs: float, bits):
     return int(np.ceil(np.log2(maxabs) - np.log2((1 << (bits - 2)) - 1)))
 

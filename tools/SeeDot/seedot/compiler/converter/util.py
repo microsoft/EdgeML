@@ -9,9 +9,10 @@ from sklearn.datasets import load_svmlight_file
 import seedot.config as config
 import seedot.util as Util
 
-# Utility functions commonly used by Bonsai, ProtoNN and FastGRNN
-
-# Configurations class which can be modified based on the requirement.
+'''
+Utility functions commonly used by Bonsai, ProtoNN and FastGRNN
+Configurations class which can be modified based on the requirement.
+'''
 
 
 class Config:

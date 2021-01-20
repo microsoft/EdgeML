@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 
 '''
-MtdAST contains the code to navigate the Meta-Data Ast.
+MtdAST contains the code to traverse the Meta-Data Ast.
 '''
 
 import seedot.compiler.ast.ast as AST

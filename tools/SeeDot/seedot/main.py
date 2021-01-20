@@ -1,11 +1,6 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-'''
-File Info: This file Main class called by SeeDot-dev.py. 
-It contains the code to perform the exploration over scales 
-and bitwidths, by invoking the compiler and cpp code runner. 
-'''
 
 import argparse
 import datetime
@@ -26,8 +21,10 @@ from seedot.compiler.compiler import Compiler
 from seedot.predictor import Predictor
 import seedot.util as Util
 
-# Overall compiler logic is maintained in this file. Please refer to architecture.md for a 
-# detailed explanation of how the various modules interact with each other.
+'''
+Overall compiler logic is maintained in this file. Please refer to architecture.md for a 
+detailed explanation of how the various modules interact with each other.
+'''
 
 
 class Main:

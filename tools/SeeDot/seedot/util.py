@@ -1,18 +1,19 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
-'''
-File Info: This code contains the Configuration information to control
-the exploration of SeeDot.
-Additionally it contains the helper utility functions that are used by 
-the entire program. 
-'''
 
 import numpy as np
 import platform
 
 import seedot.config as config
 import logging
+
+'''
+This code contains the Configuration information to control
+the exploration of SeeDot.
+Additionally it contains the helper utility functions that are used by 
+the entire program. 
+'''
 
 
 class Config:

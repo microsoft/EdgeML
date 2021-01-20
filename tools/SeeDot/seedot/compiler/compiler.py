@@ -33,10 +33,11 @@ import seedot.config as config
 
 import numpy as np
 
-
-# The Compiler class reads in the input code, converts it first into an AST, and subsequently into an IR which
-# contains a sequence of function calls (which are implemented by hand in a library). The IR is fed into the 
-# desired target codegen, which outputs the C/C++ code which can be run on the target device.
+'''
+The Compiler class reads in the input code, converts it first into an AST, and subsequently into an IR which
+contains a sequence of function calls (which are implemented by hand in a library). The IR is fed into the 
+desired target codegen, which outputs the C/C++ code which can be run on the target device.
+'''
 
 
 class Compiler:

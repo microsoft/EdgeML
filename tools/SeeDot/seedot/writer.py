@@ -2,9 +2,10 @@
 # Licensed under the MIT license.
 
 '''
-File Info: This file contains the Writer class that is used by 
+This file contains the Writer class that is used by 
 code generator module to output the target-device code.  
 '''
+
 
 class Writer:
 
