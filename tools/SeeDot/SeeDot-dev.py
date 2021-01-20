@@ -160,6 +160,8 @@ class MainDriver:
         self.runMainDriver()
 
     def runMainDriver(self):
+        legacy_scales = self.loadScalesFile()
+
         for iter in product(self.args.algo, self.args.encoding, self.args.dataset, self.args.target, self.args.maximisingMetric, [16]):
             algo, encoding, dataset, target, maximisingMetric, wordLength = iter
 
@@ -195,17 +197,66 @@ class MainDriver:
                 else:
                     assert False
 
+                curr = legacy_scales[algo][bitwidth][dataset]
+
+                expectedAcc = curr['accuracy']
+                if encoding == config.Encoding.fixed:
+                    bestScale = curr['scaleFactor']
+                else:
+                    bestScale = legacy_scales[algo]['int16'][dataset]['scaleFactor']
+
             except Exception as _:
                 assert self.args.load_sf == False
+                expectedAcc = 0
 
-            #TODO: Check if a flag needs to be added
-            sf = self.args.max_scale_factor
+            if self.args.load_sf:
+                sf = bestScale
+            else:
+                sf = self.args.max_scale_factor
 
             numOutputs = self.args.numOutputs
 
             obj = main.Main(algo, encoding, target, trainingInput,
                             testingInput, modelDir, sf, maximisingMetric, dataset, numOutputs, self.args.source)
             obj.run()
+
+            acc = obj.testingAccuracy
+
+            if acc != expectedAcc:
+                print("FAIL: Expected accuracy %f%%" % (expectedAcc))
+            elif version == config.Encoding.fixed and obj.sf != bestScale:
+                print("FAIL: Expected best scale %d" % (bestScale))
+            else:
+                print("PASS")
+
+    def loadScalesFile(self):
+        scales = {}
+        # legacy_scales.csv contains some benchmark results for old SeeDot (PLDI '19).
+        # The CSV file can be updated with better accuracy numbers if a better model is obtained.
+        with open(os.path.join("legacy_scales.csv")) as csvFile:
+            reader = csv.reader(csvFile)
+            for row in reader:
+                algo, bitwidth, dataset = row[0], row[1], row[2]
+
+                if algo not in scales:
+                    scales[algo] = {}
+
+                if bitwidth not in scales[algo]:
+                    scales[algo][bitwidth] = {}
+
+                if dataset not in scales[algo][bitwidth]:
+                    scales[algo][bitwidth][dataset] = {}
+
+                accuracy, scaleFactor = row[3], row[4]
+
+                if not accuracy:
+                    accuracy = 100
+                if not scaleFactor:
+                    scaleFactor = 9999
+
+                scales[algo][bitwidth][dataset] = {"accuracy": float(accuracy), "scaleFactor": int(scaleFactor)}
+
+        return scales
 
 if __name__ == "__main__":
     obj = MainDriver()
