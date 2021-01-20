@@ -14,7 +14,7 @@
             "console": "integratedTerminal",
             "args": [
                 "-a",
-                "rnn",
+                "fastgrnn",
                 "-e",
                 "fixed",
                 "-d",
