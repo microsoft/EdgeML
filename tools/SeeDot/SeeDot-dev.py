@@ -227,7 +227,7 @@ class MainDriver:
 
             if acc != expectedAcc:
                 print("FAIL: Expected accuracy %f%%" % (expectedAcc))
-            elif version == config.Encoding.fixed and obj.sf != bestScale:
+            elif encoding == config.Encoding.fixed and obj.sf != bestScale:
                 print("FAIL: Expected best scale %d" % (bestScale))
             else:
                 print("PASS")

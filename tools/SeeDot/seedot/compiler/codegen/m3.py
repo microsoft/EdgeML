@@ -95,12 +95,12 @@ class M3(CodegenBase):
                 if forFixed() and idf_str in self.varsForBitwidth and idf_str[:3] == "tmp":
                     if globalVarDecl:
                         for bw in config.availableBitwidths:
-                            self.out.printf("Q%d_T vars_%s::%s_%d%s;\n", bw - 1, getVersion(), idf_str, bw, shape_str, indent=True)
+                            self.out.printf("Q%d_T vars_%s::%s_%d%s;\n", bw - 1, getEncoding(), idf_str, bw, shape_str, indent=True)
                     else:
                         self.out.printf("Q%d_T %s_%d%s;\n", self.varsForBitwidth[idf_str] - 1, idf_str, bw, shape_str, indent=True)
                 else:
                     if globalVarDecl:
-                        self.out.printf("%s vars_%s::%s%s;\n", typ_str, getVersion(), idf_str, shape_str, indent=True)
+                        self.out.printf("%s vars_%s::%s%s;\n", typ_str, getEncoding(), idf_str, shape_str, indent=True)
                     else:
                         self.out.printf("%s %s%s;\n", typ_str, idf_str, shape_str, indent=True)
 

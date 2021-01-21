@@ -25,7 +25,7 @@ class X86(CodegenBase):
     def __init__(self, outputDir, generateAllFiles, printSwitch, idStr, paramInNativeBitwidth, decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables):
         super().__init__(decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables)
         self.outputDir = outputDir
-        cppFile = os.path.join(self.outputDir, "seedot_" + getVersion() + ".cpp")
+        cppFile = os.path.join(self.outputDir, "seedot_" + getEncoding() + ".cpp")
         # For exploration, multiple inference codes are written into one output C++ file.
         if generateAllFiles:
             self.out = Writer(cppFile)
@@ -74,14 +74,14 @@ class X86(CodegenBase):
         self.out.printf('#include "predictors.h"\n', indent=True)
         self.out.printf('#include "profile.h"\n', indent=True)
         self.out.printf('#include "library_%s.h"\n' %
-                        (getVersion()), indent=True)
+                        (getEncoding()), indent=True)
         self.out.printf('#include "model_%s.h"\n' %
-                        (getVersion()), indent=True)
+                        (getEncoding()), indent=True)
         self.out.printf('#include "vars_%s.h"\n\n' %
-                        (getVersion()), indent=True)
+                        (getEncoding()), indent=True)
         self.out.printf('using namespace std;\n', indent=True)
         self.out.printf('using namespace seedot_%s;\n' %
-                        (getVersion()), indent=True)
+                        (getEncoding()), indent=True)
 
     def printExpTables(self):
         for exp, [table, [tableVarA, tableVarB]] in self.expTables.items():
@@ -150,12 +150,12 @@ class X86(CodegenBase):
     def printVarDecls(self, globalVarDecl=True):
         if self.generateAllFiles:
             varsFilePath = os.path.join(
-                self.outputDir, "vars_" + getVersion() + ".h")
+                self.outputDir, "vars_" + getEncoding() + ".h")
             varsFile = Writer(varsFilePath)
 
             varsFile.printf("#pragma once\n\n")
             varsFile.printf("#include \"datatypes.h\"\n\n")
-            varsFile.printf("namespace vars_%s {\n" % (getVersion()))
+            varsFile.printf("namespace vars_%s {\n" % (getEncoding()))
             varsFile.increaseIndent()
 
         for decl in self.decls:
@@ -189,12 +189,12 @@ class X86(CodegenBase):
                 if forFixed() and idf_str in self.varsForBitwidth and idf_str[:3] == "tmp":
                     if globalVarDecl:
                         for bw in config.availableBitwidths:
-                            self.out.printf("int%d_t vars_%s::%s_%d%s;\n", bw, getVersion(), idf_str, bw, shape_str, indent=True)
+                            self.out.printf("int%d_t vars_%s::%s_%d%s;\n", bw, getEncoding(), idf_str, bw, shape_str, indent=True)
                     else:
                         self.out.printf("int%d_t %s_%d%s;\n", self.varsForBitwidth[idf_str], idf_str, bw, shape_str, indent=True)
                 else:
                     if globalVarDecl:
-                        self.out.printf("%s vars_%s::%s%s;\n", typ_str, getVersion(), idf_str, shape_str, indent=True)
+                        self.out.printf("%s vars_%s::%s%s;\n", typ_str, getEncoding(), idf_str, shape_str, indent=True)
                     else:
                         self.out.printf("%s %s%s;\n", typ_str, idf_str, shape_str, indent=True)
 

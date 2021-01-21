@@ -15,9 +15,9 @@ Main file which sets the configurations and creates the corresponding object.
 
 class Converter:
 
-    def __init__(self, algo, version, datasetType, target, source, datasetOutputDir, outputDir, varsForBitwidth={}, allScales={}, numOutputs=1, biasShifts={}, scaleForY=None):
+    def __init__(self, algo, encoding, datasetType, target, source, datasetOutputDir, outputDir, varsForBitwidth={}, allScales={}, numOutputs=1, biasShifts={}, scaleForY=None):
         setAlgo(algo)
-        setVersion(version)
+        setEncoding(encoding)
         setDatasetType(datasetType)
         setTarget(target)
 
@@ -43,9 +43,9 @@ class Converter:
         if self.inputSet != True:
             raise Exception("Set input paths before running Converter")
 
-        if getVersion() == config.Encoding.fixed:
+        if getEncoding() == config.Encoding.fixed:
             obj = QuantizerFixed(self.varsForBitwidth, self.allScales, self.numOutputs, self.biasShifts, self.scaleForY)
-        elif getVersion() == config.Encoding.floatt:
+        elif getEncoding() == config.Encoding.floatt:
             obj = QuantizerFloat(self.numOutputs)
 
         obj.run(self.source)

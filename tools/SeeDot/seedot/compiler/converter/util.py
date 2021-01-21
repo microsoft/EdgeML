@@ -32,11 +32,11 @@ def setAlgo(algo: str):
     Config.algo = algo
 
 # Fixed-point or float-point.
-def getVersion():
-    return Config.version
+def getEncoding():
+    return Config.encoding
 
-def setVersion(version: str):
-    Config.version = version
+def setEncoding(encoding: str):
+    Config.encoding = encoding
 
 # Training or testing dataset.
 def getDatasetType():
