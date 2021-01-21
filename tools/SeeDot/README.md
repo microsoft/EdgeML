@@ -26,7 +26,7 @@ This document describes the tool's usage with an example.
 SeeDot can be invoked using **`SeeDot-dev.py`** file. The arguments for the script are supplied as follows:
 
 ```
-usage: SeeDot-dev.py [-h] [-a] [-v] [-d] [-m] [-n] [-dt] [-t] [-s] [-sf] [-l] [-lsf] [-tdr] [-o]
+usage: SeeDot-dev.py [-h] [-a] [-e] [-d] [-m] [-n] [-dt] [-t] [-s] [-sf] [-l] [-lsf] [-tdr] [-o]
 
 optional arguments:
   -h,   --help             Show this help message and exit
@@ -76,7 +76,7 @@ optional arguments:
 
 An example invocation is as follows:
 ```
-python SeeDot-dev.py -a rnn -v fixed -d usps10 -n 1 -t arduino -m red_disagree -l info
+python SeeDot-dev.py -a fastgrnn -e fixed -d usps10 -n 1 -t arduino -m red_disagree -l info
 ```
 
 SeeDot expects the `train` and the `test` data files in a specific format. Each data file should be of the shape `[numberOfDataPoints, n + numberOfFeatures]`, where the ground truth/output is in the first `n` columns. The tool currently supports numpy arrays (.npy) for inputting model parameters.
@@ -134,19 +134,19 @@ More information on using the FastGRNN trainer can be found [here](https://githu
 1. Copy the dataset and model files into the correct directory.
      ```
      cd ../../../tools/SeeDot/
-     mkdir -p datasets/rnn/usps10
-     mkdir -p model/rnn/usps10
-     cp ../../examples/tf/FastCells/usps10/*.npy ./datasets/rnn/usps10/
-     cp ../../examples/tf/FastCells/usps10/FastGRNNResults/<timestamp>/* ./model/rnn/usps10/
+     mkdir -p datasets/fastgrnn/usps10
+     mkdir -p model/fastgrnn/usps10
+     cp ../../examples/tf/FastCells/usps10/*.npy ./datasets/fastgrnn/usps10/
+     cp ../../examples/tf/FastCells/usps10/FastGRNNResults/<timestamp>/* ./model/fastgrnn/usps10/
      ```
 2. Copy the example code for FastGRNN in the SeeDot language:
      ```
-     cp seedot/compiler/input/fastgrnn.sd model/rnn/usps10/input.sd
+     cp seedot/compiler/input/fastgrnn.sd model/fastgrnn/usps10/input.sd
      ```
 
 3. Invoke SeeDot compiler using the following command.
       ```
-      python SeeDot-dev.py -a rnn -v fixed -t arduino -m red_disagree -n 1 -d usps10
+      python SeeDot-dev.py -a fastgrnn -e fixed -t arduino -m red_disagree -n 1 -d usps10
       ```
 
    The SeeDot-generated code would give around 92-95% classification accuracy. The difference in classification accuracy is 0-3% compared to the floating-point code. The generated code is stored in the `arduinodump` folder which contains the sketch along with two files: model.h and predict.cpp. `model.h` contains the quantized model and `predict.cpp` contains the inference code.
@@ -155,7 +155,7 @@ More information on using the FastGRNN trainer can be found [here](https://githu
 
 Follow the below steps to perform prediction on the device, where the SeeDot-generated code is run on a single data-point stored on the device's flash memory.
 
-1. The model files are generated within `arduinodump/arduino/16/rnn/usps10`. Copy all the files to `arduinodump/arduino`.
+1. The model files are generated within `arduinodump/arduino/16/fastgrnn/usps10`. Copy all the files to `arduinodump/arduino`.
 2. Open the Arduino sketch file located at `arduinodump/arduino/arduino.ino` in the [Arduino IDE](https://www.arduino.cc/en/main/software).
 3. Connect the Arduino micro-controller to the computer and choose the correct board configuration.
 4. Upload the sketch to the device.

@@ -29,7 +29,7 @@ detailed explanation of how the various modules interact with each other.
 
 class Main:
 
-    def __init__(self, algo, version, target, trainingFile, testingFile, modelDir, sf, maximisingMetric, dataset, numOutputs, source):
+    def __init__(self, algo, version, target, trainingFile, testingFile, modelDir, sf, metric, dataset, numOutputs, source):
         self.algo, self.version, self.target = algo, version, target
         self.trainingFile, self.testingFile, self.modelDir = trainingFile, testingFile, modelDir
         self.sf = sf
@@ -40,7 +40,7 @@ class Main:
         self.accuracy = {}
             # SeeDot examines accuracy of multiple codes.
             # This variable contains a map from code ID -> corresponding accuracy.
-        self.maximisingMetric = maximisingMetric
+        self.metric = metric
             # This can be accuracy, disagreements (see OOPSLA'20 paper: disagreement ratio) or
             # reduced disagreement (disagreement ratio for only those parameters where float model prediction is correct).
         self.numOutputs = numOutputs
@@ -314,12 +314,12 @@ class Main:
         else:
             # During fourth exploration phase, when the accuracy drops of every variable is known, the variables are cumulatively demoted
             # in order of better accuracy/disagreement count which is handled in this block.
-            def getMaximisingMetricValue(a):
-                if self.maximisingMetric == config.MaximisingMetric.accuracy:
+            def getMetricValue(a):
+                if self.metric == config.Metric.accuracy:
                     return (a[1][0], -a[1][1], -a[1][2])
-                elif self.maximisingMetric == config.MaximisingMetric.disagreements:
+                elif self.metric == config.Metric.disagreements:
                     return (-a[1][1], -a[1][2], a[1][0])
-                elif self.maximisingMetric == config.MaximisingMetric.reducedDisagreements:
+                elif self.metric == config.Metric.reducedDisagreements:
                     return (-a[1][2], -a[1][1], a[1][0])
             allVars = []
             for demotedVars in demotedVarsToOffsetToCodeId:
@@ -327,7 +327,7 @@ class Main:
                 Util.getLogger().debug("Demoted vars: %s\n" % str(demotedVars))
 
                 x = [(i, execMap[str(offsetToCodeId[i])]) for i in offsetToCodeId]
-                x.sort(key=getMaximisingMetricValue, reverse=True)
+                x.sort(key=getMetricValue, reverse=True)
                 allVars.append(((demotedVars, x[0][0]), x[0][1]))
 
                 for offset in offsetToCodeId:
@@ -336,7 +336,7 @@ class Main:
             self.varDemoteDetails += allVars
             # For the sec
             if not doNotSort:
-                self.varDemoteDetails.sort(key=getMaximisingMetricValue, reverse=True)
+                self.varDemoteDetails.sort(key=getMetricValue, reverse=True)
         return True, False
 
     # This function performs an exploration and determines the scales and bit-widths of all variables. Described in OOPSLA'20 Paper Section 6.2.
@@ -608,11 +608,11 @@ class Main:
     # best scaling factor.
     def getBestScale(self):
         def getMaximisingMetricValue(a):
-            if self.maximisingMetric == config.MaximisingMetric.accuracy:
+            if self.metric == config.Metric.accuracy:
                 return (a[1][0], -a[1][1], -a[1][2]) if not config.higherOffsetBias else (a[1][0], -a[0])
-            elif self.maximisingMetric == config.MaximisingMetric.disagreements:
+            elif self.metric == config.Metric.disagreements:
                 return (-a[1][1], -a[1][2], a[1][0]) if not config.higherOffsetBias else (-max(5, a[1][1]), -a[0])
-            elif self.maximisingMetric == config.MaximisingMetric.reducedDisagreements:
+            elif self.metric == config.Metric.reducedDisagreements:
                 return (-a[1][2], -a[1][1], a[1][0]) if not config.higherOffsetBias else (-max(5, a[1][2]), -a[0])
             elif self.algo == config.Algo.test:
                 # Minimize regression error.

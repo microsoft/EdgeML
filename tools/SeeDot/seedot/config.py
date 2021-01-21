@@ -60,7 +60,7 @@ permittedRegressionNumericalLossMargin = 90.0
 # These lists should be updated as the compiler is expanded to multiple algorithms and datasets.
 
 
-class MaximisingMetric:
+class Metric:
     accuracy = "acc"
     disagreements = "disagree"
     reducedDisagreements = "red_disagree"

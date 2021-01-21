@@ -82,7 +82,7 @@ class TestNode(unittest.TestCase):
 		np.save(testing_input, test)
 
 		# call main and run the model
-		# obj = main.Main(algo, version, target, trainingInput, testingInput, modelDir, sf, maximisingMetric, dataset, numOutputs, self.args.source)
+		# obj = main.Main(algo, version, target, trainingInput, testingInput, modelDir, sf, metric, dataset, numOutputs, self.args.source)
 		config.tempdir = "temp"
 		if os.path.exists(config.tempdir):
 			import shutil

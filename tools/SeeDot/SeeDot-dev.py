@@ -69,9 +69,9 @@ class MainDriver:
         parser.add_argument("-d", "--dataset", choices=Dataset.all,
                             default=Dataset.default, metavar='', help="Dataset to use\
                             (Default: ['cifar-binary'])")
-        parser.add_argument("-m", "--metric", choices=config.MaximisingMetric.all, metavar='',
+        parser.add_argument("-m", "--metric", choices=config.Metric.all, metavar='',
                             help="What metric to maximise during exploration (valid only for Classification) \
-                                ['acc', 'disagree', 'red_diagree'] (Default: 'acc')",default=config.MaximisingMetric.default)
+                                ['acc', 'disagree', 'red_diagree'] (Default: 'acc')",default=config.Metric.default)
         parser.add_argument("-n", "--numOutputs", type=int, metavar='',
                             help="Number of outputs (e.g., classification problems have only 1 output, i.e., the class label)\
                            (Default: 1)",default=1)
@@ -110,8 +110,8 @@ class MainDriver:
             self.args.datasetType = [self.args.datasetType]
         if not isinstance(self.args.target, list):
             self.args.target = [self.args.target]
-        if not isinstance(self.args.maximisingMetric, list):
-            self.args.maximisingMetric = [self.args.maximisingMetric]
+        if not isinstance(self.args.metric, list):
+            self.args.metric = [self.args.metric]
 
         if self.args.tempdir is not None:
             assert os.path.isdir(
@@ -165,8 +165,8 @@ class MainDriver:
     def runMainDriver(self):
         legacy_scales = self.loadScalesFile()
 
-        for iter in product(self.args.algo, self.args.encoding, self.args.dataset, self.args.target, self.args.maximisingMetric, [16]):
-            algo, encoding, dataset, target, maximisingMetric, wordLength = iter
+        for iter in product(self.args.algo, self.args.encoding, self.args.dataset, self.args.target, self.args.metric, [16]):
+            algo, encoding, dataset, target, metric, wordLength = iter
 
             print("\n========================================")
             print("Executing on %s %s %s %s" %
@@ -220,7 +220,7 @@ class MainDriver:
             numOutputs = self.args.numOutputs
 
             obj = main.Main(algo, encoding, target, trainingInput,
-                            testingInput, modelDir, sf, maximisingMetric, dataset, numOutputs, self.args.source)
+                            testingInput, modelDir, sf, metric, dataset, numOutputs, self.args.source)
             obj.run()
 
             acc = obj.testingAccuracy
