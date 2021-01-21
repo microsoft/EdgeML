@@ -29,8 +29,8 @@ detailed explanation of how the various modules interact with each other.
 
 class Main:
 
-    def __init__(self, algo, version, target, trainingFile, testingFile, modelDir, sf, metric, dataset, numOutputs, source):
-        self.algo, self.version, self.target = algo, version, target
+    def __init__(self, algo, encoding, target, trainingFile, testingFile, modelDir, sf, metric, dataset, numOutputs, source):
+        self.algo, self.encoding, self.target = algo, encoding, target
         self.trainingFile, self.testingFile, self.modelDir = trainingFile, testingFile, modelDir
         self.sf = sf
             # MaxScale factor. Used in the original version of SeeDot.
@@ -125,7 +125,7 @@ class Main:
 
     # Generates one particular fixed-point or floating-point code.
     # Arguments:
-    #   version:                float or fixed
+    #   encoding:                float or fixed
     #   target:                 target device (x86, arduino or m3)
     #   sf:                     maxScale factor (check description above)
     #   The next three parameters are used to control how many candidate codes are built at once. Generating
@@ -143,7 +143,7 @@ class Main:
     #   demotedVarsOffsets:     map from variables to scale offsets for particular fixed-point code.
     #   paramInNativeBitwidth:  if False, it means model parameters are stored as 8-bit/16-bit integers mixed.
     #                           If True, it means model parameters are stored as 16-bit integers only (16 is native bit-width).
-    def compile(self, version, target, sf, generateAllFiles=True, id=None, printSwitch=-1, scaleForX=None, variableToBitwidthMap=None, demotedVarsList=[], demotedVarsOffsets={}, paramInNativeBitwidth=True):
+    def compile(self, encoding, target, sf, generateAllFiles=True, id=None, printSwitch=-1, scaleForX=None, variableToBitwidthMap=None, demotedVarsList=[], demotedVarsOffsets={}, paramInNativeBitwidth=True):
         Util.getLogger().debug("Generating code...")
 
         if variableToBitwidthMap is None:
@@ -156,7 +156,7 @@ class Main:
 
         logDir = os.path.join(config.outdir, "output")
         os.makedirs(logDir, exist_ok=True)
-        if version == config.Encoding.floatt:
+        if encoding == config.Encoding.floatt:
             outputLogFile = os.path.join(logDir, "log-float.txt")
         else:
             if config.ddsEnabled:
@@ -175,7 +175,7 @@ class Main:
         elif target == config.Target.x86:
             outputDir = os.path.join(config.tempdir, "Predictor")
 
-        obj = Compiler(self.algo, version, target, inputFile, outputDir,
+        obj = Compiler(self.algo, encoding, target, inputFile, outputDir,
                         profileLogFile, sf, self.source, outputLogFile,
                         generateAllFiles, id, printSwitch, self.variableSubstitutions,
                         scaleForX,
@@ -184,7 +184,7 @@ class Main:
         obj.run()
         self.biasShifts = obj.biasShifts
         self.allScales = dict(obj.varScales)
-        if version == config.Encoding.floatt:
+        if encoding == config.Encoding.floatt:
             self.variableSubstitutions = obj.substitutions
             self.variableToBitwidthMap = dict.fromkeys(obj.independentVars, config.wordLength)
             self.varSizes = obj.varSizes
@@ -208,9 +208,9 @@ class Main:
     #   varsForBitwidth:        bitwidth assignments used to generate model files. If none,
     #                           default bitwidth 16 used for all variables.
     #   demotedVarsOffsets:     Keys are list of variables which use 8 bits.
-    def convert(self, version, datasetType, target, varsForBitwidth={}, demotedVarsOffsets={}):
+    def convert(self, encoding, datasetType, target, varsForBitwidth={}, demotedVarsOffsets={}):
         Util.getLogger().debug("Generating input files for %s %s dataset..." %
-              (version, datasetType))
+              (encoding, datasetType))
 
         # Create output dirs.
         if target == config.Target.arduino:
@@ -234,12 +234,12 @@ class Main:
             varsForBitwidth = dict(varsForBitwidth)
             for var in demotedVarsOffsets:
                 varsForBitwidth[var] = config.wordLength // 2
-            obj = Converter(self.algo, version, datasetType, target, self.source,
+            obj = Converter(self.algo, encoding, datasetType, target, self.source,
                             datasetOutputDir, outputDir, varsForBitwidth, self.allScales, self.numOutputs, self.biasShifts, self.scaleForY if hasattr(self, "scaleForY") else None)
             obj.setInput(inputFile, self.modelDir,
                          self.trainingFile, self.testingFile)
             obj.run()
-            if version == config.Encoding.floatt:
+            if encoding == config.Encoding.floatt:
                 self.sparseMatrixSizes = obj.sparseMatrixSizes
         except Exception as e:
             traceback.print_exc()
@@ -249,13 +249,13 @@ class Main:
         return True
 
     # Build and run the Predictor project.
-    def predict(self, version, datasetType):
-        outputDir = os.path.join("output", version)
+    def predict(self, encoding, datasetType):
+        outputDir = os.path.join("output", encoding)
 
         curDir = os.getcwd()
         os.chdir(os.path.join(config.tempdir, "Predictor"))
 
-        obj = Predictor(self.algo, version, datasetType,
+        obj = Predictor(self.algo, encoding, datasetType,
                         outputDir, self.scaleForX, self.scalesForX, self.scaleForY, self.scalesForY, self.problemType, self.numOutputs)
         execMap = obj.run()
 
@@ -266,11 +266,11 @@ class Main:
     # The arguments are explain in the description of self.compile().
     # The function is named partial compile as in one C++ output file multiple inference codes are generated.
     # One invocation of partialCompile generates only one of the multiple inference codes.
-    def partialCompile(self, version, target, scale, generateAllFiles, id, printSwitch, variableToBitwidthMap=None, demotedVarsList=[], demotedVarsOffsets={}, paramInNativeBitwidth=True):
+    def partialCompile(self, encoding, target, scale, generateAllFiles, id, printSwitch, variableToBitwidthMap=None, demotedVarsList=[], demotedVarsOffsets={}, paramInNativeBitwidth=True):
         if config.ddsEnabled:
-            res = self.compile(version, target, None, generateAllFiles, id, printSwitch, scale, variableToBitwidthMap, demotedVarsList, demotedVarsOffsets, paramInNativeBitwidth)
+            res = self.compile(encoding, target, None, generateAllFiles, id, printSwitch, scale, variableToBitwidthMap, demotedVarsList, demotedVarsOffsets, paramInNativeBitwidth)
         else:
-            res = self.compile(version, target, scale, generateAllFiles, id, printSwitch, None, variableToBitwidthMap, demotedVarsList, demotedVarsOffsets, paramInNativeBitwidth)
+            res = self.compile(encoding, target, scale, generateAllFiles, id, printSwitch, None, variableToBitwidthMap, demotedVarsList, demotedVarsOffsets, paramInNativeBitwidth)
         if res == False:
             return False
         else:
@@ -278,8 +278,8 @@ class Main:
 
     # Runs the C++ file which contains multiple inference codes. Reads the output of all inference codes,
     # arranges them and returns a map of inference code descriptor to performance.
-    def runAll(self, version, datasetType, codeIdToScaleFactorMap, demotedVarsToOffsetToCodeId=None, doNotSort=False, printAlso=False):
-        execMap = self.predict(version, datasetType)
+    def runAll(self, encoding, datasetType, codeIdToScaleFactorMap, demotedVarsToOffsetToCodeId=None, doNotSort=False, printAlso=False):
+        execMap = self.predict(encoding, datasetType)
         if execMap == None:
             return False, True
 
@@ -835,7 +835,7 @@ class Main:
         sys.setrecursionlimit(10000)
         self.setup()
 
-        if self.version == config.Encoding.fixed:
+        if self.encoding == config.Encoding.fixed:
             return self.runForFixed()
         else:
             return self.runForFloat()

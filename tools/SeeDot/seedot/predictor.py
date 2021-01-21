@@ -20,8 +20,8 @@ The accuracy and other statistics are written to the output file specified.
 
 class Predictor:
 
-    def __init__(self, algo, version, datasetType, outputDir, scaleForX, scalesForX, scaleForY, scalesForY, problemType, numOutputs):
-        self.algo, self.version, self.datasetType = algo, version, datasetType
+    def __init__(self, algo, encoding, datasetType, outputDir, scaleForX, scalesForX, scaleForY, scalesForY, problemType, numOutputs):
+        self.algo, self.encoding, self.datasetType = algo, encoding, datasetType
 
         self.outputDir = outputDir
         os.makedirs(self.outputDir, exist_ok=True)
@@ -142,7 +142,7 @@ class Predictor:
         Util.getLogger().debug("Execution...")
 
         exeFile = os.path.join("x64", "Release", "Predictor.exe")
-        args = [exeFile, self.version, self.datasetType, self.problemType, str(self.numOutputs)]
+        args = [exeFile, self.encoding, self.datasetType, self.problemType, str(self.numOutputs)]
 
         logFile = os.path.join(self.outputDir, "exec.txt")
         with open(logFile, 'w') as file:
@@ -160,7 +160,7 @@ class Predictor:
         Util.getLogger().debug("Execution...")
 
         exeFile = os.path.join("./Predictor")
-        args = [exeFile, self.version, self.datasetType, self.problemType, str(self.numOutputs)]
+        args = [exeFile, self.encoding, self.datasetType, self.problemType, str(self.numOutputs)]
 
         logFile = os.path.join(self.outputDir, "exec.txt")
         with open(logFile, 'w') as file:
@@ -183,7 +183,7 @@ class Predictor:
     # Read statistics of execution. Accuracy, Disagreement Count and Reduced Disagreement Count are all read.
     def readStatsFile(self):
         statsFile = os.path.join(
-            "output", self.version, "stats-" + self.datasetType + ".txt")
+            "output", self.encoding, "stats-" + self.datasetType + ".txt")
 
         with open(statsFile, 'r') as file:
             content = file.readlines()

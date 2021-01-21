@@ -68,17 +68,17 @@ def getAlgo():
 def setAlgo(algo: str):
     Config.algo = algo
 
-def getVersion():
-    return Config.version
+def getEncoding():
+    return Config.encoding
 
-def setVersion(version: str):
-    Config.version = version
+def setEncoding(encoding: str):
+    Config.encoding = encoding
 
 def forFixed():
-    return Config.version == config.Encoding.fixed
+    return Config.encoding == config.Encoding.fixed
 
 def forFloat():
-    return Config.version == config.Encoding.floatt
+    return Config.encoding == config.Encoding.floatt
 
 def getTarget():
     return Config.target
