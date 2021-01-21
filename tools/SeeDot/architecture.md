@@ -19,8 +19,6 @@ In this text, we will discuss the execution of SeeDot for the `FastGRNN` algorit
 We'll discuss the execution for both Floating-point and Fixed-point encoding with `reduced disagreements` as the 
 correctness metric. 
 
-The execution explained is for `x86` target devices.
-
 ### Model and Datasets
 
 For the run to take place, the model should be placed in the `model/fastgrnn/usps10/` directory, and the datasets 
