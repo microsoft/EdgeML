@@ -769,7 +769,7 @@ class Main:
         if self.target != config.Target.x86:
             self.compileFixedForTarget()
 
-            print("\%s sketch dumped in the folder %s\n" % (self.target, config.outdir))
+            print("%s sketch dumped in the folder %s\n" % (self.target, config.outdir))
 
         return True
 

@@ -8,7 +8,7 @@ ML models are usually expressed in floating-point, and IoT devices typically lac
 
 To know more about SeeDot, please refer to our publications [here](https://www.microsoft.com/en-us/research/publication/compiling-kb-sized-machine-learning-models-to-constrained-hardware/) and [here](https://www.microsoft.com/en-us/research/publication/shiftry-rnn-inference-in-2kb-of-ram/).
 
-This document describes the tool usage with an example.
+This document describes the tool's usage with an example.
 
 ### **Software requirements**
 
@@ -39,7 +39,7 @@ optional arguments:
   -d,   --dataset          Dataset to use 
                            (Default: 'cifar-binary')
 
-  -m,   --maximisingMetric What metric to maximise during exploration (valid only for Classification) 
+  -m,   --metric           What metric to maximise during exploration (valid only for Classification) 
                               1) Accuracy ('acc'):                The accuracy of prediction will be used as a metric for 
                                                                   correctness. (A maximising metric).
 
@@ -67,8 +67,6 @@ optional arguments:
   -l,   --log              Logging level (in increasing order) ['error', 'critical', 'warning', 'info', 'debug']
                            (Default: 'error')
 
-  -lsf, --load-sf          Use a pre-determined value for max scale factor
-
   -tdr, --tempdir          Scratch directory for intermediate files
                            (Default: 'temp/')
 
@@ -86,7 +84,7 @@ The data files must be present in the directory `datasets/<algo>/<dataset>`.
 
 After training, the learned parameters are stored in this directory in a specific format. For FastGRNN, the learned parameters are `W`, `U`, `Bg`, `Bh`, `FC`, `FCBias`, `zeta` and `nu`. These parameters are numpy arrays (.npy). The model files must be present in the directory `model/<algo>/<dataset>`.
 
-The compiler output is present in `temp` directory for x86, `arduinodump` directory for arduino, and `m3dump` directory for m3.
+The compiler output is present in the `temp` directory for x86, the `arduinodump` directory for arduino, and the `m3dump` directory for m3.
 
 ## Getting started: Quantizing FastGRNN on usps10
 
@@ -117,7 +115,7 @@ This process consists of four steps: 1) installing EdgeML TensorFlow library, 2)
      cd ../examples/tf/FastCells
      ```
      
-2. Fetch and process usps10 data and create output directory.
+2. Fetch and process usps10 data and create an output directory.
      ```
      python fetch_usps.py
      python process_usps.py

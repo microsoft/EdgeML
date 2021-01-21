@@ -69,7 +69,7 @@ class MainDriver:
         parser.add_argument("-d", "--dataset", choices=Dataset.all,
                             default=Dataset.default, metavar='', help="Dataset to use\
                             (Default: ['cifar-binary'])")
-        parser.add_argument("-m", "--maximisingMetric", choices=config.MaximisingMetric.all, metavar='',
+        parser.add_argument("-m", "--metric", choices=config.MaximisingMetric.all, metavar='',
                             help="What metric to maximise during exploration (valid only for Classification) \
                                 ['acc', 'disagree', 'red_diagree'] (Default: 'acc')",default=config.MaximisingMetric.default)
         parser.add_argument("-n", "--numOutputs", type=int, metavar='',
@@ -90,7 +90,7 @@ class MainDriver:
                             default=config.Log.default, metavar='', help="Logging level (in increasing order)\
                              ['error', 'critical', 'warning', 'info', 'debug'] (Default: 'error')")
         parser.add_argument("-lsf", "--load-sf", action="store_true",
-                            help="use a user-provided max scale in the mechanish of SeeDot's PLDI' 19 paper. (Default: 'False')")
+                            help=argparse.SUPPRESS)
         parser.add_argument("-tdr", "--tempdir", metavar='',
                             help="Scratch directory for intermediate files\
                            (Default: 'temp/')")
