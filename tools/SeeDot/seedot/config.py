@@ -64,7 +64,7 @@ class Metric:
     accuracy = "acc"
     disagreements = "disagree"
     reducedDisagreements = "red_disagree"
-    default = [accuracy]
+    default = [reducedDisagreements]
     all = [accuracy, disagreements, reducedDisagreements]
 
 
@@ -76,7 +76,7 @@ class Algo:
     rnnpool = "rnnpool"
     mbconv = "mbconv"
     test = "test"
-    default = [protonn]
+    default = [fastgrnn]
     all = [bonsai, lenet, protonn, fastgrnn, rnnpool, mbconv, test]
 
 
@@ -84,7 +84,7 @@ class Encoding:
     fixed = "fixed"
     floatt = "float"
     default = [fixed]
-    all = default
+    all = [floatt, fixed]
 
 
 class DatasetType:

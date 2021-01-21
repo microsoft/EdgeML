@@ -823,7 +823,7 @@ class Main:
         else:
             self.testingAccuracy = execMap["default"][0]
 
-        Util.getLogger().info("Accuracy is %.3f%%\n" % (self.testingAccuracy))
+        print("Accuracy is %.3f%%\n" % (self.testingAccuracy))
 
         if self.target == config.Target.arduino:
             self.compileFloatForTarget()

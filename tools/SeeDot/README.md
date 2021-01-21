@@ -31,15 +31,16 @@ usage: SeeDot-dev.py [-h] [-a] [-e] [-d] [-m] [-n] [-dt] [-t] [-s] [-sf] [-l] [-
 optional arguments:
   -h,   --help             Show this help message and exit
   -a,   --algo             Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn'] 
-                           (Default: 'protonn')
+                           (Default: 'fastgrnn')
 
   -e,   --encoding         Floating-point ['float'] or Fixed-point ['fixed'] 
                            (Default: 'fixed')
 
   -d,   --dataset          Dataset to use 
-                           (Default: 'cifar-binary')
+                           (Default: 'usps10')
 
-  -m,   --metric           What metric to maximise during exploration (valid only for Classification) 
+  -m,   --metric           Select the metric that will be used to measure the correctness of an inference, to obtain the 
+                           best quantization of variables. (valid only for Classification) 
                               1) Accuracy ('acc'):                The accuracy of prediction will be used as a metric for 
                                                                   correctness. (A maximising metric).
 
@@ -48,7 +49,7 @@ optional arguments:
                               3) Reduced Disagreement Count 
                                                 ('red_disagree'): The correctness will be measured against the
                                                                   floating-point code's output only when the output matches the correct label. (A minimising metric).
-                           (Default: 'acc')
+                           (Default: 'red_disagree')
 
   -n,   --numOutputs       Number of outputs (e.g., classification problems have only 1 output, i.e., the class label)
                            (Default: 1)

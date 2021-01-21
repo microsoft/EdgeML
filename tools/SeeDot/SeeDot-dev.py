@@ -43,7 +43,7 @@ class Dataset:
              "wider-regression", "wider-mbconv", "face-1", "face-2", "face-2-rewrite", 
              "face-3", "face-4", "test"]
     # Datasets for ProtoNN and Bonsai.
-    default = ["cifar-binary"]
+    default = ["usps10"]
     # Datasets for FastGRNN.
     # default = ["spectakoms", "usps10", "HAR-2", "HAR-6", "dsa", "MNIST-10", "Google-12", "Google-30", "Wakeword-2"]
     all = common + extra
@@ -62,16 +62,17 @@ class MainDriver:
 
         parser.add_argument("-a", "--algo", choices=config.Algo.all,
                             default=config.Algo.default, metavar='', help="Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn'] \
-                           (Default: ['protonn'])")
+                           (Default: 'fastgrnn')")
         parser.add_argument("-e", "--encoding", choices=config.Encoding.all,
                             default=config.Encoding.default, metavar='', help="Floating-point ['float'] or Fixed-point ['fixed'] \
-                           (Default: ['fixed'])")
+                           (Default: 'fixed')")
         parser.add_argument("-d", "--dataset", choices=Dataset.all,
                             default=Dataset.default, metavar='', help="Dataset to use\
-                            (Default: ['cifar-binary'])")
+                            (Default: 'usps10')")
         parser.add_argument("-m", "--metric", choices=config.Metric.all, metavar='',
-                            help="What metric to maximise during exploration (valid only for Classification) \
-                                ['acc', 'disagree', 'red_diagree'] (Default: 'acc')",default=config.Metric.default)
+                            help="Select the metric that will be used to measure the correctness of an inference, to obtain the \
+                            best quantization of variables. (valid only for Classification) \
+                                ['acc', 'disagree', 'red_diagree'] (Default: 'red_disagree')",default=config.Metric.default)
         parser.add_argument("-n", "--numOutputs", type=int, metavar='',
                             help="Number of outputs (e.g., classification problems have only 1 output, i.e., the class label)\
                            (Default: 1)",default=1)
