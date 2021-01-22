@@ -41,17 +41,17 @@ On running this command,
 
 3. In `runForFloat`, first the `Converter` class in `seedot/compiler/converter/converter.py` is instantiated with the arguments `(encoding=float, datasetType=Testing, target=x86)`. 
 
-    (The arguments here are for representation purposes and to explain the differences between the multiple Converter instances). 
+    (The arguments here are for representation purposes and to explain the differences between the multiple `Converter` instances). 
 
 4. In the `Converter` class, the SeeDot input files (all the model weights and, the train and test datasets) are processed to a format that is required by the SeeDot compiler. 
 
-5. In `seedot/compiler/converter/coverter.py`, the quantization code is called that produces files used by the SeeDot compiler. 
+5. In `seedot/compiler/converter/coverter.py`, the quantization code is called, which produces files used by the SeeDot compiler. 
     Depending on the encoding, `QuantizerFloat` or `QuantizerFixed` classes are instantiated for `float` or `fixed` encoding respectively. 
     These classes are defined in `seedot/compiler/converter/quantizer.py`. (In our case `QuantizerFloat`).
 
 6. The `QuantizerFloat` class uses the `ParamsBuilder` class from `seedot/compiler/converter/paramsBuilder.py` to quantize the parameters. 
 
-7. After the `Converter` class finishes execution, the control return to `seedot/main.py:runForFloat`. 
+7. After the `Converter` class finishes execution, the control returns to `seedot/main.py:runForFloat`. 
 
 8. Now, the `Compiler` class in `seedot/compiler/compiler.py` is instantiated. 
 
@@ -87,8 +87,8 @@ On running this command,
 2. In `seedot/main.py`, depending on the encoding, the `funForFloat` or `runForFixed` function is called. (In this case, `runForFixed` will be called). 
 3. In `runForFixed`, first the `collectProfileData` function is called. This collects the data that helps determines the most efficient scale and bitwidth of variables.
 
-4. In `collectProfileData` the `Converter` class in `seedot/compiler/converter/converter.py` is instantiated with the arguments `(encoding=float, datasetType=Training, target=x86)`. (The arguments here are for representation purposes and to explain the differences between the multiple Converter instances). 
-5. In `Converter`, the quantization code is called that produces files used by the SeeDot compiler. Depending on the encoding, `QuantizerFloat` or `QuantizerFixed` classes are instantiated for `float` and `fixed` encoding respectively. These classes are defined in `seedot/compiler/converter/quantizer.py`. (In our case `QuantizerFoat`).
+4. In `collectProfileData` the `Converter` class in `seedot/compiler/converter/converter.py` is instantiated with the arguments `(encoding=float, datasetType=Training, target=x86)`. (The arguments here are for representation purposes and to explain the differences between the multiple `Converter` instances). 
+5. In `Converter`, the quantization code is called, which produces files used by the SeeDot compiler. Depending on the encoding, `QuantizerFloat` or `QuantizerFixed` classes are instantiated for `float` and `fixed` encoding respectively. These classes are defined in `seedot/compiler/converter/quantizer.py`. (In our case `QuantizerFoat`).
 6. The `QuantizerFloat` class uses the `ParamsBuilder` class from `seedot/compiler/converter/paramsBuilder.py` to quantize the parameters. 
 7. After the `Converter` class finished execution, the control return to `seedot/main.py:collectProfileData`.
 8. Now, the `Compiler` class in `seedot/compiler/compiler.py` is instantiated. 

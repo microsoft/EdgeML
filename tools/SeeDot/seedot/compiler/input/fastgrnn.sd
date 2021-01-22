@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 
-//FastGRNN SeeDot code for usps10 dataset	
+// FastGRNN SeeDot code for usps10 dataset.
 
 
 let W = (16, 32) in [-1.24, 1.44] in

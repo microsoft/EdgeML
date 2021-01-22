@@ -18,7 +18,7 @@ from seedot.util import *
 
 '''
 IRBuilder class converts the input AST into IR, which is a sequence of function calls.
-Each node in the input grammar is handled with it's own function in this class.
+Each node in the input grammar is handled with its own function in this class.
 '''
 
 

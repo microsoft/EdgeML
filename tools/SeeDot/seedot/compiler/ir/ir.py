@@ -10,7 +10,7 @@ from seedot.util import *
 
 '''
 Primitives used by the Intermediate Representation (IR).
-For most primitives, there would be in __init__() function and one subst() function.
+For most primitives, there would be an __init__() function and one subst() function.
 __init__() initialises all the metadata required by the IR primitive.
 subst() is used for substitutions, for example:
   In the input code, suppose we have a + b.
