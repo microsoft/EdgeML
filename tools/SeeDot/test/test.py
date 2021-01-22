@@ -82,7 +82,7 @@ class TestNode(unittest.TestCase):
 		np.save(testing_input, test)
 
 		# call main and run the model
-		# obj = main.Main(algo, version, target, trainingInput, testingInput, modelDir, sf, maximisingMetric, dataset, numOutputs, self.args.source)
+		# obj = main.Main(algo, encoding, target, trainingInput, testingInput, modelDir, sf, metric, dataset, numOutputs, self.args.source)
 		config.tempdir = "temp"
 		if os.path.exists(config.tempdir):
 			import shutil
@@ -94,7 +94,7 @@ class TestNode(unittest.TestCase):
 		config.ddsEnabled = False
 		config.vbwEnabled = False
 
-		obj = main.Main(config.Algo.test, config.Version.fixed, config.Target.x86, training_input, testing_input,
+		obj = main.Main(config.Algo.test, config.Encoding.fixed, config.Target.x86, training_input, testing_input,
 			'model', None, None, None, self.get_list_prod(output_shape), config.Source.onnx)
 		obj.run()
 

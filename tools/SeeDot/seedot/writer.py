@@ -1,6 +1,11 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+'''
+This file contains the Writer class that is used by 
+code generator module to output the target-device code.  
+'''
+
 
 class Writer:
 

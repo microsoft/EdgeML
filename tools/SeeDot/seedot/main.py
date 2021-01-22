@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+
 import argparse
 import datetime
 from distutils.dir_util import copy_tree
@@ -20,14 +21,16 @@ from seedot.compiler.compiler import Compiler
 from seedot.predictor import Predictor
 import seedot.util as Util
 
-# Overall compiler logic is maintained in this file. Please refer to architecture.md for a 
-# detailed explanation of how the various modules interact with each other.
+'''
+Overall compiler logic is maintained in this file. Please refer to architecture.md for a 
+detailed explanation of how the various modules interact with each other.
+'''
 
 
 class Main:
 
-    def __init__(self, algo, version, target, trainingFile, testingFile, modelDir, sf, maximisingMetric, dataset, numOutputs, source):
-        self.algo, self.version, self.target = algo, version, target
+    def __init__(self, algo, encoding, target, trainingFile, testingFile, modelDir, sf, metric, dataset, numOutputs, source):
+        self.algo, self.encoding, self.target = algo, encoding, target
         self.trainingFile, self.testingFile, self.modelDir = trainingFile, testingFile, modelDir
         self.sf = sf
             # MaxScale factor. Used in the original version of SeeDot.
@@ -37,7 +40,7 @@ class Main:
         self.accuracy = {}
             # SeeDot examines accuracy of multiple codes.
             # This variable contains a map from code ID -> corresponding accuracy.
-        self.maximisingMetric = maximisingMetric
+        self.metric = metric
             # This can be accuracy, disagreements (see OOPSLA'20 paper: disagreement ratio) or
             # reduced disagreement (disagreement ratio for only those parameters where float model prediction is correct).
         self.numOutputs = numOutputs
@@ -122,7 +125,7 @@ class Main:
 
     # Generates one particular fixed-point or floating-point code.
     # Arguments:
-    #   version:                float or fixed
+    #   encoding:                float or fixed
     #   target:                 target device (x86, arduino or m3)
     #   sf:                     maxScale factor (check description above)
     #   The next three parameters are used to control how many candidate codes are built at once. Generating
@@ -140,7 +143,7 @@ class Main:
     #   demotedVarsOffsets:     map from variables to scale offsets for particular fixed-point code.
     #   paramInNativeBitwidth:  if False, it means model parameters are stored as 8-bit/16-bit integers mixed.
     #                           If True, it means model parameters are stored as 16-bit integers only (16 is native bit-width).
-    def compile(self, version, target, sf, generateAllFiles=True, id=None, printSwitch=-1, scaleForX=None, variableToBitwidthMap=None, demotedVarsList=[], demotedVarsOffsets={}, paramInNativeBitwidth=True):
+    def compile(self, encoding, target, sf, generateAllFiles=True, id=None, printSwitch=-1, scaleForX=None, variableToBitwidthMap=None, demotedVarsList=[], demotedVarsOffsets={}, paramInNativeBitwidth=True):
         Util.getLogger().debug("Generating code...")
 
         if variableToBitwidthMap is None:
@@ -153,7 +156,7 @@ class Main:
 
         logDir = os.path.join(config.outdir, "output")
         os.makedirs(logDir, exist_ok=True)
-        if version == config.Version.floatt:
+        if encoding == config.Encoding.floatt:
             outputLogFile = os.path.join(logDir, "log-float.txt")
         else:
             if config.ddsEnabled:
@@ -172,7 +175,7 @@ class Main:
         elif target == config.Target.x86:
             outputDir = os.path.join(config.tempdir, "Predictor")
 
-        obj = Compiler(self.algo, version, target, inputFile, outputDir,
+        obj = Compiler(self.algo, encoding, target, inputFile, outputDir,
                         profileLogFile, sf, self.source, outputLogFile,
                         generateAllFiles, id, printSwitch, self.variableSubstitutions,
                         scaleForX,
@@ -181,7 +184,7 @@ class Main:
         obj.run()
         self.biasShifts = obj.biasShifts
         self.allScales = dict(obj.varScales)
-        if version == config.Version.floatt:
+        if encoding == config.Encoding.floatt:
             self.variableSubstitutions = obj.substitutions
             self.variableToBitwidthMap = dict.fromkeys(obj.independentVars, config.wordLength)
             self.varSizes = obj.varSizes
@@ -205,9 +208,9 @@ class Main:
     #   varsForBitwidth:        bitwidth assignments used to generate model files. If none,
     #                           default bitwidth 16 used for all variables.
     #   demotedVarsOffsets:     Keys are list of variables which use 8 bits.
-    def convert(self, version, datasetType, target, varsForBitwidth={}, demotedVarsOffsets={}):
+    def convert(self, encoding, datasetType, target, varsForBitwidth={}, demotedVarsOffsets={}):
         Util.getLogger().debug("Generating input files for %s %s dataset..." %
-              (version, datasetType))
+              (encoding, datasetType))
 
         # Create output dirs.
         if target == config.Target.arduino:
@@ -231,12 +234,12 @@ class Main:
             varsForBitwidth = dict(varsForBitwidth)
             for var in demotedVarsOffsets:
                 varsForBitwidth[var] = config.wordLength // 2
-            obj = Converter(self.algo, version, datasetType, target, self.source,
+            obj = Converter(self.algo, encoding, datasetType, target, self.source,
                             datasetOutputDir, outputDir, varsForBitwidth, self.allScales, self.numOutputs, self.biasShifts, self.scaleForY if hasattr(self, "scaleForY") else None)
             obj.setInput(inputFile, self.modelDir,
                          self.trainingFile, self.testingFile)
             obj.run()
-            if version == config.Version.floatt:
+            if encoding == config.Encoding.floatt:
                 self.sparseMatrixSizes = obj.sparseMatrixSizes
         except Exception as e:
             traceback.print_exc()
@@ -246,13 +249,13 @@ class Main:
         return True
 
     # Build and run the Predictor project.
-    def predict(self, version, datasetType):
-        outputDir = os.path.join("output", version)
+    def predict(self, encoding, datasetType):
+        outputDir = os.path.join("output", encoding)
 
         curDir = os.getcwd()
         os.chdir(os.path.join(config.tempdir, "Predictor"))
 
-        obj = Predictor(self.algo, version, datasetType,
+        obj = Predictor(self.algo, encoding, datasetType,
                         outputDir, self.scaleForX, self.scalesForX, self.scaleForY, self.scalesForY, self.problemType, self.numOutputs)
         execMap = obj.run()
 
@@ -263,11 +266,11 @@ class Main:
     # The arguments are explain in the description of self.compile().
     # The function is named partial compile as in one C++ output file multiple inference codes are generated.
     # One invocation of partialCompile generates only one of the multiple inference codes.
-    def partialCompile(self, version, target, scale, generateAllFiles, id, printSwitch, variableToBitwidthMap=None, demotedVarsList=[], demotedVarsOffsets={}, paramInNativeBitwidth=True):
+    def partialCompile(self, encoding, target, scale, generateAllFiles, id, printSwitch, variableToBitwidthMap=None, demotedVarsList=[], demotedVarsOffsets={}, paramInNativeBitwidth=True):
         if config.ddsEnabled:
-            res = self.compile(version, target, None, generateAllFiles, id, printSwitch, scale, variableToBitwidthMap, demotedVarsList, demotedVarsOffsets, paramInNativeBitwidth)
+            res = self.compile(encoding, target, None, generateAllFiles, id, printSwitch, scale, variableToBitwidthMap, demotedVarsList, demotedVarsOffsets, paramInNativeBitwidth)
         else:
-            res = self.compile(version, target, scale, generateAllFiles, id, printSwitch, None, variableToBitwidthMap, demotedVarsList, demotedVarsOffsets, paramInNativeBitwidth)
+            res = self.compile(encoding, target, scale, generateAllFiles, id, printSwitch, None, variableToBitwidthMap, demotedVarsList, demotedVarsOffsets, paramInNativeBitwidth)
         if res == False:
             return False
         else:
@@ -275,8 +278,8 @@ class Main:
 
     # Runs the C++ file which contains multiple inference codes. Reads the output of all inference codes,
     # arranges them and returns a map of inference code descriptor to performance.
-    def runAll(self, version, datasetType, codeIdToScaleFactorMap, demotedVarsToOffsetToCodeId=None, doNotSort=False, printAlso=False):
-        execMap = self.predict(version, datasetType)
+    def runAll(self, encoding, datasetType, codeIdToScaleFactorMap, demotedVarsToOffsetToCodeId=None, doNotSort=False, printAlso=False):
+        execMap = self.predict(encoding, datasetType)
         if execMap == None:
             return False, True
 
@@ -311,12 +314,12 @@ class Main:
         else:
             # During fourth exploration phase, when the accuracy drops of every variable is known, the variables are cumulatively demoted
             # in order of better accuracy/disagreement count which is handled in this block.
-            def getMaximisingMetricValue(a):
-                if self.maximisingMetric == config.MaximisingMetric.accuracy:
+            def getMetricValue(a):
+                if self.metric == config.Metric.accuracy:
                     return (a[1][0], -a[1][1], -a[1][2])
-                elif self.maximisingMetric == config.MaximisingMetric.disagreements:
+                elif self.metric == config.Metric.disagreements:
                     return (-a[1][1], -a[1][2], a[1][0])
-                elif self.maximisingMetric == config.MaximisingMetric.reducedDisagreements:
+                elif self.metric == config.Metric.reducedDisagreements:
                     return (-a[1][2], -a[1][1], a[1][0])
             allVars = []
             for demotedVars in demotedVarsToOffsetToCodeId:
@@ -324,7 +327,7 @@ class Main:
                 Util.getLogger().debug("Demoted vars: %s\n" % str(demotedVars))
 
                 x = [(i, execMap[str(offsetToCodeId[i])]) for i in offsetToCodeId]
-                x.sort(key=getMaximisingMetricValue, reverse=True)
+                x.sort(key=getMetricValue, reverse=True)
                 allVars.append(((demotedVars, x[0][0]), x[0][1]))
 
                 for offset in offsetToCodeId:
@@ -333,7 +336,7 @@ class Main:
             self.varDemoteDetails += allVars
             # For the sec
             if not doNotSort:
-                self.varDemoteDetails.sort(key=getMaximisingMetricValue, reverse=True)
+                self.varDemoteDetails.sort(key=getMetricValue, reverse=True)
         return True, False
 
     # This function performs an exploration and determines the scales and bit-widths of all variables. Described in OOPSLA'20 Paper Section 6.2.
@@ -369,7 +372,7 @@ class Main:
 
                 # Refactor and remove this try/catch block in the future.
                 try:
-                    firstCompileSuccess = self.partialCompile(config.Version.fixed, config.Target.x86, highestValidScale, True, None, 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
+                    firstCompileSuccess = self.partialCompile(config.Encoding.fixed, config.Target.x86, highestValidScale, True, None, 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
                 except:
                     firstCompileSuccess = False
 
@@ -383,7 +386,7 @@ class Main:
             firstCompileSuccess = False
             while firstCompileSuccess == False:
                 try:
-                    firstCompileSuccess = self.partialCompile(config.Version.fixed, config.Target.x86, lowestValidScale, True, None, 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
+                    firstCompileSuccess = self.partialCompile(config.Encoding.fixed, config.Target.x86, lowestValidScale, True, None, 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
                 except:
                     firstCompileSuccess = False
                 if firstCompileSuccess:
@@ -394,7 +397,7 @@ class Main:
             stage_1_bar.close()
 
             # Ignored.
-            self.partialCompile(config.Version.fixed, config.Target.x86, lowestValidScale, True, None, -1, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
+            self.partialCompile(config.Encoding.fixed, config.Target.x86, lowestValidScale, True, None, -1, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
 
             print("Stage II Exploration: Determining scale for all non-\'X\' variables...")
             # The iterator logic is as follows:
@@ -414,7 +417,7 @@ class Main:
                 codeId += 1
                 try:
                     compiled = self.partialCompile(
-                        config.Version.fixed, config.Target.x86, i, False, codeId, -1 if codeId != numCodes else codeId, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
+                        config.Encoding.fixed, config.Target.x86, i, False, codeId, -1 if codeId != numCodes else codeId, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
                 except: # If some code in the middle fails to compile.
                     codeId -=1
                     continue
@@ -423,7 +426,7 @@ class Main:
                 codeIdToScaleFactorMap[codeId] = i
 
             print("Stage II Code Run Started...")
-            res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, codeIdToScaleFactorMap)
+            res, exit = self.runAll(config.Encoding.fixed, config.DatasetType.training, codeIdToScaleFactorMap)
             print("Stage II Code Run Completed!\n")
             if exit == True or res == False:
                 return False
@@ -475,7 +478,7 @@ class Main:
                     numCodes = config.offsetsPerDemotedVariable * len(demoteBatch) + ((9 - config.offsetsPerDemotedVariable) if 'X' in demoteBatch else 0)
                     # 9 offsets tried for X while 'config.offsetsPerDemotedVariable' tried for other variables.
 
-                    self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, True, None, -1 if len(demoteBatch) > 0 else 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
+                    self.partialCompile(config.Encoding.fixed, config.Target.x86, self.sf, True, None, -1 if len(demoteBatch) > 0 else 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
                     codeId = 0
                     contentToCodeIdMap = {}
 
@@ -500,12 +503,12 @@ class Main:
                                 if k not in self.demotedVarsList:
                                     demotedVarsOffsets[k] = demOffset
                             contentToCodeIdMap[tuple(demotedVarsList)][demOffset] = codeId
-                            compiled = self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, False, codeId, -1 if codeId != numCodes else codeId, dict(newbitwidths), list(demotedVarsList), dict(demotedVarsOffsets))
+                            compiled = self.partialCompile(config.Encoding.fixed, config.Target.x86, self.sf, False, codeId, -1 if codeId != numCodes else codeId, dict(newbitwidths), list(demotedVarsList), dict(demotedVarsOffsets))
                             if compiled == False:
                                 Util.getLogger().error("Variable bitwidth exploration resulted in a compilation error\n")
                                 return False
 
-                    res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, None, contentToCodeIdMap)
+                    res, exit = self.runAll(config.Encoding.fixed, config.DatasetType.training, None, contentToCodeIdMap)
                 
                 print("Stage IV Exploration: Cumulatively demoting variables...")
                 # Stage IV exploration.
@@ -547,7 +550,7 @@ class Main:
                     lastVarIndex = (totalSize * (i+1)) // numBatches
                     demoteBatch = [sortedVars[i] for i in range(firstVarIndex, lastVarIndex)]
 
-                    self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, True, None, -1 if len(attemptToDemote) > 0 else 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
+                    self.partialCompile(config.Encoding.fixed, config.Target.x86, self.sf, True, None, -1 if len(attemptToDemote) > 0 else 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
                     contentToCodeIdMap = {}
                     codeId = 0
                     numCodes = len(demoteBatch)
@@ -563,12 +566,12 @@ class Main:
                         contentToCodeIdMap[tuple(demotedVarsList)] = {}
                         contentToCodeIdMap[tuple(demotedVarsList)][offset] = codeId
                         demotedVarsListToOffsets[tuple(demotedVarsList)] = dict(demotedVarsOffsets)
-                        compiled = self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, False, codeId, -1 if codeId != numCodes else codeId, dict(newbitwidths), list(demotedVarsList), dict(demotedVarsOffsets))
+                        compiled = self.partialCompile(config.Encoding.fixed, config.Target.x86, self.sf, False, codeId, -1 if codeId != numCodes else codeId, dict(newbitwidths), list(demotedVarsList), dict(demotedVarsOffsets))
                         if compiled == False:
                             Util.getLogger().error("Variable bitwidth exploration resulted in another compilation error\n")
                             return False
 
-                    res, exit = self.runAll(config.Version.fixed, config.DatasetType.training, None, contentToCodeIdMap, True)
+                    res, exit = self.runAll(config.Encoding.fixed, config.DatasetType.training, None, contentToCodeIdMap, True)
 
                 if exit == True or res == False:
                     return False
@@ -605,11 +608,11 @@ class Main:
     # best scaling factor.
     def getBestScale(self):
         def getMaximisingMetricValue(a):
-            if self.maximisingMetric == config.MaximisingMetric.accuracy:
+            if self.metric == config.Metric.accuracy:
                 return (a[1][0], -a[1][1], -a[1][2]) if not config.higherOffsetBias else (a[1][0], -a[0])
-            elif self.maximisingMetric == config.MaximisingMetric.disagreements:
+            elif self.metric == config.Metric.disagreements:
                 return (-a[1][1], -a[1][2], a[1][0]) if not config.higherOffsetBias else (-max(5, a[1][1]), -a[0])
-            elif self.maximisingMetric == config.MaximisingMetric.reducedDisagreements:
+            elif self.metric == config.Metric.reducedDisagreements:
                 return (-a[1][2], -a[1][1], a[1][0]) if not config.higherOffsetBias else (-max(5, a[1][2]), -a[0])
             elif self.algo == config.Algo.test:
                 # Minimize regression error.
@@ -629,7 +632,7 @@ class Main:
         print("-------------------------\n")
 
         # Generate input files for training dataset.
-        res = self.convert(config.Version.fixed,
+        res = self.convert(config.Encoding.fixed,
                            config.DatasetType.training, config.Target.x86)
         if res == False:
             return False
@@ -655,20 +658,20 @@ class Main:
             Util.getLogger().debug("Demoted Vars with Offsets: %s\n" % (str(self.demotedVarsOffsets)))
 
         # Generate files for the testing dataset.
-        res = self.convert(config.Version.fixed,
+        res = self.convert(config.Encoding.fixed,
                            config.DatasetType.testing, config.Target.x86)
         if res == False:
             return False
 
         # Compile and run code using the best scaling factor.
         if config.vbwEnabled:
-            compiled = self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, True, None, 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
+            compiled = self.partialCompile(config.Encoding.fixed, config.Target.x86, self.sf, True, None, 0, dict(self.variableToBitwidthMap), list(self.demotedVarsList), dict(self.demotedVarsOffsets))
         else:
-            compiled = self.partialCompile(config.Version.fixed, config.Target.x86, self.sf, True, None, 0)
+            compiled = self.partialCompile(config.Encoding.fixed, config.Target.x86, self.sf, True, None, 0)
         if compiled == False:
             return False
 
-        res, exit = self.runAll(config.Version.fixed, config.DatasetType.testing, {"default" : self.sf}, printAlso=True)
+        res, exit = self.runAll(config.Encoding.fixed, config.DatasetType.testing, {"default" : self.sf}, printAlso=True)
         if res == False:
             return False
 
@@ -681,16 +684,16 @@ class Main:
         Util.getLogger().info("Collecting profile data\n")
         Util.getLogger().info("-----------------------\n")
 
-        res = self.convert(config.Version.floatt,
+        res = self.convert(config.Encoding.floatt,
                            config.DatasetType.training, config.Target.x86)
         if res == False:
             return False
 
-        res = self.compile(config.Version.floatt, config.Target.x86, self.sf)
+        res = self.compile(config.Encoding.floatt, config.Target.x86, self.sf)
         if res == False:
             return False
 
-        execMap = self.predict(config.Version.floatt, config.DatasetType.training)
+        execMap = self.predict(config.Encoding.floatt, config.DatasetType.training)
         if execMap == None:
             return False
 
@@ -707,7 +710,7 @@ class Main:
 
         demotedVarsOffsets = dict(self.demotedVarsOffsets) if hasattr(self, 'demotedVarsOffsets') else {}
         variableToBitwidthMap = dict(self.variableToBitwidthMap) if hasattr(self, 'variableToBitwidthMap') else {}
-        res = self.convert(config.Version.fixed,
+        res = self.convert(config.Encoding.fixed,
                            config.DatasetType.testing, self.target, variableToBitwidthMap, demotedVarsOffsets)
         if res == False:
             return False
@@ -738,7 +741,7 @@ class Main:
         if hasattr(self, 'demotedVarsList'):
             for i in self.demotedVarsList:
                 modifiedBitwidths[i] = config.wordLength // 2
-        res = self.partialCompile(config.Version.fixed, self.target, self.sf, True, None, 0, dict(modifiedBitwidths), list(self.demotedVarsList) if hasattr(self, 'demotedVarsList') else [], dict(demotedVarsOffsets))
+        res = self.partialCompile(config.Encoding.fixed, self.target, self.sf, True, None, 0, dict(modifiedBitwidths), list(self.demotedVarsList) if hasattr(self, 'demotedVarsList') else [], dict(demotedVarsOffsets))
         if res == False:
             return False
 
@@ -766,7 +769,7 @@ class Main:
         if self.target != config.Target.x86:
             self.compileFixedForTarget()
 
-            print("\%s sketch dumped in the folder %s\n" % (self.target, config.outdir))
+            print("%s sketch dumped in the folder %s\n" % (self.target, config.outdir))
 
         return True
 
@@ -778,12 +781,12 @@ class Main:
         print("Generating code for %s..." % (self.target))
         print("------------------------------\n")
 
-        res = self.convert(config.Version.floatt,
+        res = self.convert(config.Encoding.floatt,
                            config.DatasetType.testing, self.target)
         if res == False:
             return False
 
-        res = self.compile(config.Version.floatt, self.target, self.sf)
+        res = self.compile(config.Encoding.floatt, self.target, self.sf)
         if res == False:
             return False
 
@@ -805,22 +808,22 @@ class Main:
         Util.getLogger().info("Executing for X86 target...")
         Util.getLogger().info("---------------------------\n")
 
-        res = self.convert(config.Version.floatt,
+        res = self.convert(config.Encoding.floatt,
                            config.DatasetType.testing, config.Target.x86)
         if res == False:
             return False
 
-        res = self.compile(config.Version.floatt, config.Target.x86, self.sf)
+        res = self.compile(config.Encoding.floatt, config.Target.x86, self.sf)
         if res == False:
             return False
 
-        execMap = self.predict(config.Version.floatt, config.DatasetType.testing)
+        execMap = self.predict(config.Encoding.floatt, config.DatasetType.testing)
         if execMap == None:
             return False
         else:
             self.testingAccuracy = execMap["default"][0]
 
-        Util.getLogger().info("Accuracy is %.3f%%\n" % (self.testingAccuracy))
+        print("Accuracy is %.3f%%\n" % (self.testingAccuracy))
 
         if self.target == config.Target.arduino:
             self.compileFloatForTarget()
@@ -832,7 +835,7 @@ class Main:
         sys.setrecursionlimit(10000)
         self.setup()
 
-        if self.version == config.Version.fixed:
+        if self.encoding == config.Encoding.fixed:
             return self.runForFixed()
         else:
             return self.runForFloat()

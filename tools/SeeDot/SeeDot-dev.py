@@ -18,17 +18,20 @@ import seedot.util as util
 import logging
 import seedot.compiler.converter.converter as converter
 
-# This is the file which is invoked to run the compiler (Refer to README.md).
-#
-# Sanity checks are carried out and the main compiler arguments are taken from the user
-# which is then used to invoke the main compiler code, 'main.py'.
-#
-# Note there are 3 different ways to change compiler arguments:
-#   1) the arguments used by the user to invoke the compiler
-#   2) seedot/config.py
-#   3) seedot/util.py
-# Different parameters are controlled in different files, refer to each one of them to
-# find out how to change one parameter.
+'''
+This is the file which is invoked to run the compiler (Refer to README.md).
+
+Sanity checks are carried out and the main compiler arguments are taken from the user
+which is then used to invoke the main compiler code, 'main.py'.
+
+Note there are 3 different ways to change compiler arguments:
+  1) the arguments used by the user to invoke the compiler
+  2) seedot/config.py
+  3) seedot/util.py
+Different parameters are controlled in different files, refer to each one of them to
+find out how to change one parameter.
+'''
+
 
 class Dataset:
     common = ["cifar-binary", "cr-binary", "cr-multiclass", "curet-multiclass",
@@ -40,7 +43,7 @@ class Dataset:
              "wider-regression", "wider-mbconv", "face-1", "face-2", "face-2-rewrite", 
              "face-3", "face-4", "test"]
     # Datasets for ProtoNN and Bonsai.
-    default = common
+    default = ["usps10"]
     # Datasets for FastGRNN.
     # default = ["spectakoms", "usps10", "HAR-2", "HAR-6", "dsa", "MNIST-10", "Google-12", "Google-30", "Wakeword-2"]
     all = common + extra
@@ -58,46 +61,58 @@ class MainDriver:
         parser = argparse.ArgumentParser()
 
         parser.add_argument("-a", "--algo", choices=config.Algo.all,
-                            default=config.Algo.default, metavar='', help="Algorithm to run")
-        parser.add_argument("-v", "--version", choices=config.Version.all,
-                            default=config.Version.default, metavar='', help="Floating-point or fixed-point")
+                            default=config.Algo.default, metavar='', help="Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn'] \
+                           (Default: 'fastgrnn')")
+        parser.add_argument("-e", "--encoding", choices=config.Encoding.all,
+                            default=config.Encoding.default, metavar='', help="Floating-point ['float'] or Fixed-point ['fixed'] \
+                           (Default: 'fixed')")
         parser.add_argument("-d", "--dataset", choices=Dataset.all,
-                            default=Dataset.default, metavar='', help="Dataset to use")
-        parser.add_argument("-m", "--maximisingMetric", choices=config.MaximisingMetric.all, metavar='',
-                            help="What metric to maximise during exploration",default=config.MaximisingMetric.default)
+                            default=Dataset.default, metavar='', help="Dataset to use\
+                            (Default: 'usps10')")
+        parser.add_argument("-m", "--metric", choices=config.Metric.all, metavar='',
+                            help="Select the metric that will be used to measure the correctness of an inference, to obtain the \
+                            best quantization of variables. (valid only for classification) \
+                                ['acc', 'disagree', 'red_diagree'] (Default: 'red_disagree')",default=config.Metric.default)
         parser.add_argument("-n", "--numOutputs", type=int, metavar='',
-                            help="Number of simultaneous outputs of the inference procedure",default=1)
+                            help="Number of outputs (e.g., classification problems have only 1 output, i.e., the class label)\
+                           (Default: 1)",default=1)
         parser.add_argument("-dt", "--datasetType", choices=config.DatasetType.all,
-                            default=config.DatasetType.default, metavar='', help="Training dataset or testing dataset")
+                            default=config.DatasetType.default, metavar='', help="Dataset type being used ['training', 'testing']\
+                           (Default: 'testing')")
         parser.add_argument("-t", "--target", choices=config.Target.all,
-                            default=config.Target.default, metavar='', help="X86 code or Arduino sketch")
+                            default=config.Target.default, metavar='', help="Target device ['x86', 'arduino', 'm3'] \
+                            (Default: 'x86')")
         parser.add_argument("-s", "--source", metavar='', choices=config.Source.all,
-                            default=config.Source.default, help="model source type seedot/onnx/tf")
+                            default=config.Source.default, help="Model source type ['seedot', 'onnx', 'tf']\
+                           (Default: 'seedot')")
         parser.add_argument("-sf", "--max-scale-factor", type=int,
-                            metavar='', help="Max scaling factor for code generation")
+                            metavar='', help="Use the old max-scale mechanism of SeeDot's PLDI’19 paper to determine the scales (If not specified then it will be inferred from data)")
         parser.add_argument("-l", "--log", choices=config.Log.all,
-                            default=config.Log.default, metavar='', help="Log Level to use")
+                            default=config.Log.default, metavar='', help="Logging level (in increasing order)\
+                             ['error', 'critical', 'warning', 'info', 'debug'] (Default: 'error')")
         parser.add_argument("-lsf", "--load-sf", action="store_true",
-                            help="Use a pre-determined value for max scale factor")
+                            help=argparse.SUPPRESS)
         parser.add_argument("-tdr", "--tempdir", metavar='',
-                            help="Scratch directory for intermediate files")
+                            help="Scratch directory for intermediate files\
+                           (Default: 'temp/')")
         parser.add_argument("-o", "--outdir", metavar='',
-                            help="Directory to output the generated Arduino sketch")
-
+                            help="Directory to output the generated targetdevice sketch\
+                           (Default: 'arduinodump/' for Arduino, 'temp/' for x86 and, 'm3dump/' for M3)")
+        
         self.args = parser.parse_args()
 
         if not isinstance(self.args.algo, list):
             self.args.algo = [self.args.algo]
-        if not isinstance(self.args.version, list):
-            self.args.version = [self.args.version]
+        if not isinstance(self.args.encoding, list):
+            self.args.encoding = [self.args.encoding]
         if not isinstance(self.args.dataset, list):
             self.args.dataset = [self.args.dataset]
         if not isinstance(self.args.datasetType, list):
             self.args.datasetType = [self.args.datasetType]
         if not isinstance(self.args.target, list):
             self.args.target = [self.args.target]
-        if not isinstance(self.args.maximisingMetric, list):
-            self.args.maximisingMetric = [self.args.maximisingMetric]
+        if not isinstance(self.args.metric, list):
+            self.args.metric = [self.args.metric]
 
         if self.args.tempdir is not None:
             assert os.path.isdir(
@@ -149,14 +164,14 @@ class MainDriver:
         self.runMainDriver()
 
     def runMainDriver(self):
-        results = self.loadResultsFile()
+        legacy_scales = self.loadScalesFile()
 
-        for iter in product(self.args.algo, self.args.version, self.args.dataset, self.args.target, self.args.maximisingMetric, [16]):
-            algo, version, dataset, target, maximisingMetric, wordLength = iter
+        for iter in product(self.args.algo, self.args.encoding, self.args.dataset, self.args.target, self.args.metric, [16]):
+            algo, encoding, dataset, target, metric, wordLength = iter
 
             print("\n========================================")
             print("Executing on %s %s %s %s" %
-                  (algo, version, dataset, target))
+                  (algo, encoding, dataset, target))
             print("========================================\n")
 
             datasetDir = os.path.join(
@@ -175,7 +190,7 @@ class MainDriver:
                 # The following is particularly for old SeeDot (PLDI '19).
                 # In the new version of SeeDot (named Shiftry, OOPSLA '20), config.wordLength is ALWAYS expected to be 16, which is the base bit-width.
                 # Some variables are demoted to 8 bits, and intermediate variables for multiplication may use 32 bits.
-                if version == config.Version.floatt:
+                if encoding == config.Encoding.floatt:
                     bitwidth = 'float'
                 elif config.wordLength == 8:
                     bitwidth = 'int8'
@@ -186,13 +201,13 @@ class MainDriver:
                 else:
                     assert False
 
-                curr = results[algo][bitwidth][dataset]
+                curr = legacy_scales[algo][bitwidth][dataset]
 
                 expectedAcc = curr['accuracy']
-                if version == config.Version.fixed:
+                if encoding == config.Encoding.fixed:
                     bestScale = curr['scaleFactor']
                 else:
-                    bestScale = results[algo]['int16'][dataset]['scaleFactor']
+                    bestScale = legacy_scales[algo]['int16'][dataset]['scaleFactor']
 
             except Exception as _:
                 assert self.args.load_sf == False
@@ -205,36 +220,36 @@ class MainDriver:
 
             numOutputs = self.args.numOutputs
 
-            obj = main.Main(algo, version, target, trainingInput,
-                            testingInput, modelDir, sf, maximisingMetric, dataset, numOutputs, self.args.source)
+            obj = main.Main(algo, encoding, target, trainingInput,
+                            testingInput, modelDir, sf, metric, dataset, numOutputs, self.args.source)
             obj.run()
 
             acc = obj.testingAccuracy
 
             if acc != expectedAcc:
                 print("FAIL: Expected accuracy %f%%" % (expectedAcc))
-            elif version == config.Version.fixed and obj.sf != bestScale:
+            elif encoding == config.Encoding.fixed and obj.sf != bestScale:
                 print("FAIL: Expected best scale %d" % (bestScale))
             else:
                 print("PASS")
 
-    def loadResultsFile(self):
-        results = {}
-        # Results.csv contains some benchmark results for old SeeDot (PLDI '19).
+    def loadScalesFile(self):
+        scales = {}
+        # legacy_scales.csv contains some benchmark results for old SeeDot (PLDI '19).
         # The CSV file can be updated with better accuracy numbers if a better model is obtained.
-        with open(os.path.join("Results.csv")) as csvFile:
+        with open(os.path.join("legacy_scales.csv")) as csvFile:
             reader = csv.reader(csvFile)
             for row in reader:
                 algo, bitwidth, dataset = row[0], row[1], row[2]
 
-                if algo not in results:
-                    results[algo] = {}
+                if algo not in scales:
+                    scales[algo] = {}
 
-                if bitwidth not in results[algo]:
-                    results[algo][bitwidth] = {}
+                if bitwidth not in scales[algo]:
+                    scales[algo][bitwidth] = {}
 
-                if dataset not in results[algo][bitwidth]:
-                    results[algo][bitwidth][dataset] = {}
+                if dataset not in scales[algo][bitwidth]:
+                    scales[algo][bitwidth][dataset] = {}
 
                 accuracy, scaleFactor = row[3], row[4]
 
@@ -243,10 +258,9 @@ class MainDriver:
                 if not scaleFactor:
                     scaleFactor = 9999
 
-                results[algo][bitwidth][dataset] = {"accuracy": float(accuracy), "scaleFactor": int(scaleFactor)}
+                scales[algo][bitwidth][dataset] = {"accuracy": float(accuracy), "scaleFactor": int(scaleFactor)}
 
-        return results
-
+        return scales
 
 if __name__ == "__main__":
     obj = MainDriver()

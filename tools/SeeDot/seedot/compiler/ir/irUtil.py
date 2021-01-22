@@ -7,7 +7,9 @@ from seedot.compiler.ir.ir import *
 
 from seedot.util import *
 
-# Util functions used by IR.py and IRBuilder.py
+'''
+Util functions used by IR.py and IRBuilder.py.
+'''
 
 def init():
     global zero, one, negone, negmax
