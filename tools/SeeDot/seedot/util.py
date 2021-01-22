@@ -1,11 +1,19 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+
 import numpy as np
 import platform
 
 import seedot.config as config
 import logging
+
+'''
+This code contains the Configuration information to control
+the exploration of SeeDot.
+Additionally it contains the helper utility functions that are used by 
+the entire program. 
+'''
 
 
 class Config:
@@ -60,17 +68,17 @@ def getAlgo():
 def setAlgo(algo: str):
     Config.algo = algo
 
-def getVersion():
-    return Config.version
+def getEncoding():
+    return Config.encoding
 
-def setVersion(version: str):
-    Config.version = version
+def setEncoding(encoding: str):
+    Config.encoding = encoding
 
 def forFixed():
-    return Config.version == config.Version.fixed
+    return Config.encoding == config.Encoding.fixed
 
 def forFloat():
-    return Config.version == config.Version.floatt
+    return Config.encoding == config.Encoding.floatt
 
 def getTarget():
     return Config.target

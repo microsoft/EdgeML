@@ -17,6 +17,11 @@ from seedot.compiler.converter.util import *
 import seedot.compiler.ONNX.process_onnx as process_onnx
 import seedot.compiler.ONNX.paramsBuilderOnnx as paramsBuilderOnnx
 
+'''
+The Quantizer class contains the code for running the converter that creates the 
+main AST and morphs the dataset accroding to the scale and bitwidth of SeeDot. 
+'''
+
 
 class Quantizer:
 
@@ -174,7 +179,7 @@ class Quantizer:
             elif forM3():
                 file.write("")
             else:
-                file.write("namespace seedot_%s {\n\n" % (getVersion()))
+                file.write("namespace seedot_%s {\n\n" % (getEncoding()))
 
     def writeFooter(self):
         with open(self.headerFile, 'a') as file:
@@ -196,7 +201,7 @@ class Quantizer:
     # Float model is generated for for training dataset to profile the prediction.
     # Hence, X is trimmed down to remove outliers. Prediction profiling is performed on the trimmed X to generate more precise profile data.
     def transformDataset(self):
-        if getVersion() == config.Version.fixed:
+        if getEncoding() == config.Encoding.fixed:
             # If X itself is X_train, reuse it. Otherwise, read it from file.
             if usingTrainingDataset():
                 self.X_train = list(self.X)
@@ -207,7 +212,7 @@ class Quantizer:
             self.X_train, _ = trimMatrix(self.X_train)
 
             self.trainDatasetRange = matRange(self.X_train)
-        elif getVersion() == config.Version.floatt:
+        elif getEncoding() == config.Encoding.floatt:
             if usingTrainingDataset():
                 self.X, self.Y = trimMatrix(self.X, self.Y)
 
@@ -230,7 +235,7 @@ class Quantizer:
 
     def run(self, source):
         self.headerFile = os.path.join(
-            getOutputDir(), "model_%s.h" % (getVersion()))
+            getOutputDir(), "model_%s.h" % (getEncoding()))
         if forM3():
             self.scalesFile = os.path.join(getOutputDir(), "scales.h")
             open(self.scalesFile, 'w').close()

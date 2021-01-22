@@ -33,21 +33,22 @@ import seedot.config as config
 
 import numpy as np
 
-
-# The Compiler class reads in the input code, converts it first into an AST, and subsequently into an IR which
-# contains a sequence of function calls (which are implemented by hand in a library). The IR is fed into the 
-# desired target codegen, which outputs the C/C++ code which can be run on the target device.
+'''
+The Compiler class reads in the input code, converts it first into an AST, and subsequently into an IR which
+contains a sequence of function calls (which are implemented by hand in a library). The IR is fed into the 
+desired target codegen, which outputs the C/C++ code which can be run on the target device.
+'''
 
 
 class Compiler:
 
-    def __init__(self, algo, version, target, inputFile, outputDir, profileLogFile, maxScale, source, outputLogFile, generateAllFiles=True, id=None, printSwitch=-1, substitutions={}, scaleForX=None, variableToBitwidthMap={}, sparseMatrixSizes={}, demotedVarsList=[], demotedVarsOffsets={}, paramInNativeBitwidth=True):
+    def __init__(self, algo, encoding, target, inputFile, outputDir, profileLogFile, maxScale, source, outputLogFile, generateAllFiles=True, id=None, printSwitch=-1, substitutions={}, scaleForX=None, variableToBitwidthMap={}, sparseMatrixSizes={}, demotedVarsList=[], demotedVarsOffsets={}, paramInNativeBitwidth=True):
         if os.path.isfile(inputFile) == False:
             print(inputFile)
             raise Exception("Input file doesn't exist")
 
         util.setAlgo(algo)
-        util.setVersion(version)
+        util.setEncoding(encoding)
         util.setTarget(target)
         self.input = inputFile
         self.outputDir = outputDir
@@ -134,7 +135,7 @@ class Compiler:
     def genCodeWithFuncCalls(self, ast):
         outputLog = writer.Writer(self.outputLogFile)
 
-        if util.getVersion() == config.Version.fixed and config.ddsEnabled:
+        if util.getEncoding() == config.Encoding.fixed and config.ddsEnabled:
             self.intermediateScales = self.readDataDrivenScales()
 
         compiler = irBuilder.IRBuilder(outputLog, self.intermediateScales, self.substitutions, self.scaleForX, self.variableToBitwidthMap, self.sparseMatrixSizes, self.demotedVarsList, self.demotedVarsOffsets)
@@ -166,7 +167,7 @@ class Compiler:
             state[13].append(i)
 
         # In floating-point code used for profiling, the set of variables which are profiled using training data are collected.
-        if util.getVersion() == config.Version.floatt:
+        if util.getEncoding() == config.Encoding.floatt:
             self.independentVars = list(compiler.independentVars)
             self.independentVars += compiler.globalVars
 
