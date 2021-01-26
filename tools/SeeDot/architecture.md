@@ -123,4 +123,5 @@ On running this command,
 22. Finally, if the target is non-x86, then `seedot/main.py:runForFixed` calls the `Compiler` class which generates the code for the target device using the code-generators mentioned in point 11 above.
 23. The target codes are stored in `arduinodump/` for Arduino and `m3dump/` for M3 by default. 
 
+
 Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
