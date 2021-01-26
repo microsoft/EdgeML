@@ -1,8 +1,17 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
+
+
 import os
 import requests
 import subprocess
 from tqdm import tqdm
 import numpy as np
+
+'''
+The python file to obtain the dataset for face Detection.
+'''
+
 
 class FetchFaceDetectionDataset:
     def __init__(self):
