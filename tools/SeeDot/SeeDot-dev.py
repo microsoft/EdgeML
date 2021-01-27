@@ -61,7 +61,7 @@ class MainDriver:
         parser = argparse.ArgumentParser()
 
         parser.add_argument("-a", "--algo", choices=config.Algo.all,
-                            default=config.Algo.default, metavar='', help="Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn'] \
+                            default=config.Algo.default, metavar='', help="Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn' or 'rnnpool'] \
                            (Default: 'fastgrnn')")
         parser.add_argument("-e", "--encoding", choices=config.Encoding.all,
                             default=config.Encoding.default, metavar='', help="Floating-point ['float'] or Fixed-point ['fixed'] \
