@@ -30,7 +30,7 @@ usage: SeeDot-dev.py [-h] [-a] [-e] [-d] [-m] [-n] [-dt] [-t] [-s] [-sf] [-l] [-
 
 optional arguments:
   -h,   --help             Show this help message and exit
-  -a,   --algo             Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn'] 
+  -a,   --algo             Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn' or 'rnnpool'] 
                            (Default: 'fastgrnn')
 
   -e,   --encoding         Floating-point ['float'] or Fixed-point ['fixed'] 
