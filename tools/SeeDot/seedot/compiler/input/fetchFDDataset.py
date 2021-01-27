@@ -156,11 +156,12 @@ class FetchFaceDetectionDataset:
             f = np.reshape(f, shape)
             np.save(filename, f)
 
-            proc = subprocess.Popen("rm -f *.csv", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            _ = proc.communicate()
+        #Cleanup
+        proc = subprocess.Popen("rm -f *.csv", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        _ = proc.communicate()
 
-            os.chdir(self.curdir)
-            print("Done")
+        os.chdir(self.curdir)
+        print("Done")
 
     def copySeeDotfile(self):
         os.popen("cp rnnpool-%s.sd %s/input.sd"%(self.dataset, self.modelDir))
