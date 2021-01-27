@@ -9,7 +9,7 @@ from tqdm import tqdm
 import numpy as np
 
 '''
-The python file to obtain the dataset for face Detection.
+The python file to obtain the dataset for Face Detection.
 '''
 
 
@@ -173,6 +173,7 @@ class FetchFaceDetectionDataset:
         if not ("rnnpool-%s.sd"%(self.dataset) in os.listdir(os.getcwd())):
             assert False, errormessage
 
+
 def run(obj):
     obj.checkCorrectDir()
 
@@ -181,11 +182,10 @@ def run(obj):
     obj.fetchDatasetFiles()
     obj.copySeeDotfile()
 
+
 if __name__ == '__main__':
     obj = FetchFaceDetectionDataset("face-4")
     run(obj)
 
     obj = FetchFaceDetectionDataset("face-2")
     run(obj)
-
-
