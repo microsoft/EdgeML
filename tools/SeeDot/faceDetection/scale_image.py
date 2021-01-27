@@ -11,10 +11,16 @@ import os
 
 cfg = cfg.cfg
 
-img_list = [os.path.join("images/", x)
-                for x in os.listdir("images/")]
+parser = argparse.ArgumentParser(description='Generating input to quantized face detection code')
+parser.add_argument('--image_dir', default="images", type=str, help='Folder containing image(s)')
+parser.add_argument('--out_dir', default="input", type=str, help='Folder containing image(s)')
+args = parser.parse_args()
 
-xoutfile = open("input/X.csv", "w")
+
+img_list = [os.path.join(args.image_dir, x)
+                for x in os.listdir(args.image_dir)]
+
+xoutfile = open(os.path.join(args.out_dir, "X.csv"), "w")
 
 for image_path in sorted(img_list): 
     img = Image.open(image_path)
@@ -48,7 +54,7 @@ for image_path in sorted(img_list):
             else:
                 xoutfile.write(str(x[i, j]) + ', ')
 
-youtfile = open("input/Y.csv", "w")
+youtfile = open(os.path.join(args.out_dir, "Y.csv"), "w")
 for _ in range(len(img_list)):
     for i in range(18000):
         if i == 17999:
