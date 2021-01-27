@@ -71,7 +71,7 @@ class MainDriver:
                             (Default: 'usps10')")
         parser.add_argument("-m", "--metric", choices=config.Metric.all, metavar='',
                             help="Select the metric that will be used to measure the correctness of an inference, to obtain the \
-                            best quantization of variables. (valid only for classification) \
+                            best quantization of variables. \
                                 ['acc', 'disagree', 'red_diagree'] (Default: 'red_disagree')",default=config.Metric.default)
         parser.add_argument("-n", "--numOutputs", type=int, metavar='',
                             help="Number of outputs (e.g., classification problems have only 1 output, i.e., the class label)\

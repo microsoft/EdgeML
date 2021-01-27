@@ -20,11 +20,11 @@ The datasets are placed in `datasets/rnnpool/face-2/` for the `face-2` dataset a
 To run face detection using the SeeDot quantizer for x86 devices, run the command: 
 
 ```
-    python SeeDot-dev.py -a rnnpool -e fixed -d face-2 -dt testing -t x86 -n 18000 
+    python SeeDot-dev.py -a rnnpool -e fixed -m disagree -d face-2 -dt testing -t x86 -n 18000 
 ```
 for the `face-2` dataset, and:
 ```
-    python SeeDot-dev.py -a rnnpool -e fixed -d face-4 -dt testing -t x86 -n 18000 
+    python SeeDot-dev.py -a rnnpool -e fixed -m disagree -d face-4 -dt testing -t x86 -n 18000 
 ```
 for the `face-4` dataset.
 
@@ -37,6 +37,9 @@ The non-optional arguments used in the above commands are:
 
     -e, --encoding      fixed/      The encoding to use for face detection. 
                         float       The options are 'float' and 'fixed'.
+
+    -m, --metric        disagree    The metric used to measure correctness of prediction.
+                                    This is used for quantization. 
 
     -d, --dataset       face-2/     The dataset to use for face detection. 
                         face-4      The options are 'face-2' and 'face-4'.
@@ -58,11 +61,11 @@ The output will be stored in the `temp/` directory by default. Use the `-o <dest
 To run face detection using the SeeDot quantizer for M3 device, run the command: 
 
 ```
-    python SeeDot-dev.py -a rnnpool -e fixed -d face-2 -dt testing -t m3 -n 18000 
+    python SeeDot-dev.py -a rnnpool -e fixed -m disagree -d face-2 -dt testing -t m3 -n 18000 
 ```
 for the `face-2` dataset, and:
 ```
-    python SeeDot-dev.py -a rnnpool -e fixed -d face-4 -dt testing -t m3 -n 18000 
+    python SeeDot-dev.py -a rnnpool -e fixed -m disagree -d face-4 -dt testing -t m3 -n 18000 
 ```
 for the `face-4` dataset.
 
