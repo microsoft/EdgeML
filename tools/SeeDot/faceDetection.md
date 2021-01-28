@@ -105,7 +105,8 @@ For that, we follow the below steps:
     cd ..
 ```
 
-This will download `fdTestImg.jpg` to the `images/` directory.
+This will download `fdTestImg.jpg` to the `images/` directory. Users can use their own images as well instead of wget.
+Multiple images can be added to the `images/` directory, which will be processed in a single execution.  
 
 Note that we run all of the following python scripts in the `SeeDot/faceDetection` directory. 
 
@@ -123,7 +124,7 @@ Now, we copy the executable to this directory and run it using the below command
     cp ../temp/Predictor/Predictor .
     mkdir -p input/
     mkdir -p output/
-    ./Predictor fixed testing regression 18000
+    ./Predictor fixed testing regression 18000 False
 ```
 
 For running the executable, specifying all arguments is necessary. The arguments' descriptions are:

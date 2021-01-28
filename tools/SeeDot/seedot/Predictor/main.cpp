@@ -490,11 +490,14 @@ int main(int argc, char* argv[]) {
 
 	float accuracy = (float)correct / total * 100.0f;
 
-	cout.precision(3);
-	cout << fixed;
-	cout << "\n\n#test points = " << total << endl;
-	cout << "Correct predictions = " << correct << endl;
-	cout << "Accuracy = " << accuracy << "\n\n";
+	if ((argc == 6) && (argv[5] == "False"))
+	{
+		cout.precision(3);
+		cout << fixed;
+		cout << "\n\n#test points = " << total << endl;
+		cout << "Correct predictions = " << correct << endl;
+		cout << "Accuracy = " << accuracy << "\n\n";
+	}
 
 	output.precision(3);
 	output << fixed;
