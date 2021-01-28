@@ -226,12 +226,13 @@ class MainDriver:
 
             acc = obj.testingAccuracy
 
-            if acc != expectedAcc:
-                print("FAIL: Expected accuracy %f%%" % (expectedAcc))
-            elif encoding == config.Encoding.fixed and obj.sf != bestScale:
-                print("FAIL: Expected best scale %d" % (bestScale))
-            else:
-                print("PASS")
+            if self.args.load_sf:
+                if acc != expectedAcc:
+                    print("FAIL: Expected accuracy %f%%" % (expectedAcc))
+                elif encoding == config.Encoding.fixed and obj.sf != bestScale:
+                    print("FAIL: Expected best scale %d" % (bestScale))
+                else:
+                    print("PASS")
 
     def loadScalesFile(self):
         scales = {}
