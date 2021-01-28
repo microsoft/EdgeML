@@ -11,13 +11,14 @@ Or simply run the following commands from SeeDot's home directory (`EdgeML/tools
 ```
     cd seedot/compiler/input/
     python fetchFDDataset.py
+    cd ../../..
 ```
 
 This python script will place the model weights in `model/rnnpool/face-2/` for the `face-2` dataset and in `model/rnnpool/face-4/` for the `face-4` dataset.
 The datasets are placed in `datasets/rnnpool/face-2/` for the `face-2` dataset and in `datasets/rnnpool/face-4/` for the `face-4` dataset.
 
 ### Run Face Detection for x86
-To run face detection using the SeeDot quantizer on x86 devices, run the command: 
+To run face detection using the SeeDot quantizer on x86 devices, run the following command: 
 
 ```
     python SeeDot-dev.py -a rnnpool -e fixed -m disagree -d face-2 -dt testing -t x86 -n 18000 
@@ -132,9 +133,12 @@ For that we run the below commands:
 ```
     python eval_fromquant.py --save_dir results/ --image_dir images/ --trace_file trace.txt
 ```
-These are optional arguments and the values shown here are default. 
-The `image_dir` argument must be the same for both `scale_image.py` and `eval_fromquant.py`.
 
+The images on which the prediction was carried out are read from the `images/` directory (which is the default for the `image_dir` field). The `image_dir` argument must be the same for both `scale_image.py` and `eval_fromquant.py`.
+
+The images with bounding boxes drawn are stored in the `results/` directory (which is the default for the `save_dir` field).
+
+`trace_file` field takes the location of `trace.txt` as the argument (which is `./trace.txt` by default).
 
 
 Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.
