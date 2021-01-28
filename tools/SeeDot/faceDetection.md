@@ -83,13 +83,24 @@ By default, the quantized `x86` codes are stored in the `temp/` directory.
 
 To run the model, we use the `Predictor` executable in the `temp/Predictor`directory.
 
-First, we need to generate the input required by the above executable from image files. 
+First, we need to download an image to test the quantized `Predictor`.
 
-For that, we run the python scripts in the `SeeDot/faceDetection` directory. 
-
-The steps are:
+For that, we follow the below steps:
 ```
     cd faceDetection/
+    mkdir -p images/
+    cd images/
+    wget https://github.com/krantikiran68/EdgeML/raw/newer-seedot/tools/SeeDot/fdTestImg.jpg
+    cd ..
+```
+
+This will download `fdTestImg.jpg` to the `images/` directory.
+
+Note that we run all of the following python scripts in the `SeeDot/faceDetection` directory. 
+
+To create the files used by `Predictor` from the set of images, we run the following command:
+
+```
     python scale_image.py --image_dir images/ --out_dir input/
 ```
 
@@ -99,8 +110,11 @@ And outputs the files `X.csv` and `Y.csv` in the `input/` directory (which is th
 Now, we copy the executable to this directory and run it using the below commands:
 ```
     cp ../temp/Predictor/Predictor
+    mkdir -p input/
+    mkdir -p output/
     ./Predictor fixed testing regression 18000
 ```
+
 For running the executable, specifying all arguments is necessary. The arguments' descriptions are:
 ```
     Argument        Description
@@ -117,7 +131,9 @@ For running the executable, specifying all arguments is necessary. The arguments
                     the 'numOutputs' field.
 ```
 
-This code takes its input from the `input` directory (hence the use of `input` as the default for `out_dir` argument of `scale_image.py`). 
+The executable is copied from `temp/Predictor` because that is the default output directory of SeeDot for target **x86**.
+
+This executable takes its input from the `input/` directory (hence the use of `input` as the default for `out_dir` argument of `scale_image.py`). 
 
 `X.csv` contains the floating-point input values; and `Y.csv`, consists of the correct integer labels (floating-point outputs) in case of classification (regression). However, since we are only concerned with the predicted output here, 
 the contents of `Y.csv` are irrelevant. 
@@ -126,6 +142,10 @@ In the case of `face-2` and `face-4`, the input layer size is *76800* and the ou
 has *18000* values (the number of columns in `X.csv` and `Y.csv` respectively). 
 
 The output of `Predictor` is stored to `trace.txt`.
+
+The executable dumps the execution stats and accuracy results in the `output/` directory. While it must exist, this directory is irrelevant to our discussion.
+
+
 
 Now we construct the bounding boxes from `trace.txt`.
 

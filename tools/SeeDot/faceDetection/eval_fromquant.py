@@ -21,7 +21,7 @@ from utils.augmentations import to_chw_bgr
 from layers import *
 
 
-parser = argparse.ArgumentParser(description='Face Detection Demo')
+parser = argparse.ArgumentParser(description='Face Detection from quantized model\'s output.')
 parser.add_argument('--save_dir', type=str, default='results/',
                     help='Directory for detect result')
 

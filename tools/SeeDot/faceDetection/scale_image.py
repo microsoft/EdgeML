@@ -13,8 +13,11 @@ cfg = cfg.cfg
 
 parser = argparse.ArgumentParser(description='Generating input to quantized face detection code')
 parser.add_argument('--image_dir', default="images", type=str, help='Folder containing image(s)')
-parser.add_argument('--out_dir', default="input", type=str, help='Folder containing image(s)')
+parser.add_argument('--out_dir', default="input", type=str, help='Folder containing the CSV files')
 args = parser.parse_args()
+
+if not os.path.exists(args.out_dir):
+    os.makedirs(args.out_dir)
 
 
 img_list = [os.path.join(args.image_dir, x)
