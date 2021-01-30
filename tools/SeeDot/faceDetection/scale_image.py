@@ -6,8 +6,11 @@ import argparse
 import cv2
 import numpy as np
 from PIL import Image
-from data.choose_config import cfg
 import os 
+
+os.environ['IS_QVGA_MONO'] = '1'
+from data.choose_config import cfg
+
 
 cfg = cfg.cfg
 

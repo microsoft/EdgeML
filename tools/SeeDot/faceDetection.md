@@ -5,7 +5,7 @@ Face detection using SeeDot can be performed on the `face-2` and `face-4` datase
 Face detection is a regression problem that involves an image input with (or without) faces and bounding boxes around the faces as output. 
 Face detection is supported for x86 and ARM Cortex-M3 target devices.  
 
-### Obtaining the datasets
+### Obtaining the Datasets
 To obtain the model weights and datasets for the face detection problem, run `fetchFDDataset.py` in `seedot/compiler/input/` folder.
 Or simply run the following commands from SeeDot's home directory (`EdgeML/tools/SeeDot/`):
 ```
@@ -103,7 +103,14 @@ For that, we follow the below steps:
     cd images/
     wget https://github.com/krantikiran68/EdgeML/raw/newer-seedot/tools/SeeDot/fdTestImg.jpg
     cd ..
+    cp -r ../../../examples/pytorch/vision/Face_Detection/layers/ .
+    cp -r ../../../examples/pytorch/vision/Face_Detection/utils/ .
+    mkdir -p data/
+    cp -r ../../../examples/pytorch/vision/Face_Detection/data/choose_config.py data/
+    cp -r ../../../examples/pytorch/vision/Face_Detection/data/config_qvga.py data/
 ```
+
+Note: The last 5 commands copy scripts from another location of this repository, to help in the conversion of images to text files and vice-versa. 
 
 This will download `fdTestImg.jpg` to the `images/` directory. Users can use their own images as well instead of wget.
 Multiple images can be added to the `images/` directory, which will be processed in a single execution.  

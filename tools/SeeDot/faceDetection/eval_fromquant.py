@@ -14,6 +14,7 @@ import numpy as np
 from PIL import Image
 import cv2
 
+os.environ['IS_QVGA_MONO'] = '1'
 from data.choose_config import cfg
 cfg = cfg.cfg
 
