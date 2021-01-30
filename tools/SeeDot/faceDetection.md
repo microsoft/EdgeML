@@ -99,8 +99,7 @@ First, we need to download an image to test the quantized `Predictor`.
 For that, we follow the below steps:
 ```
     cd faceDetection/
-    mkdir -p images/
-    cd images/
+    mkdir -p images/ && cd images/
     wget https://github.com/krantikiran68/EdgeML/raw/newer-seedot/tools/SeeDot/fdTestImg.jpg
     cd ..
     cp -r ../../../examples/pytorch/vision/Face_Detection/layers/ .
