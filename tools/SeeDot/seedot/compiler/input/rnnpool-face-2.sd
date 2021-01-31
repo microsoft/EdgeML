@@ -1,0 +1,355 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
+// RNNPool SeeDot code for face-2 dataset
+
+let CBR1F = (1, 3, 3, 1, 4) in [-1.180179, 1.836163] in
+let CBR1W = (4, 1, 1, 1, 1) in [0.009606, 0.019596] in
+let CBR1B = (4) in [-3.004026, 87.901337] in
+
+let W1 = (16, 4) in [-1.385438, 1.573620] in 	//transposed
+let U1 = (16, 16) in [-1.225092, 1.229886] in 	//transposed
+let Bg1 = (16, 1) in [-0.304547, 1.061445] in 	//transposed
+let Bh1 = (16, 1) in [-0.146701, 0.826689] in 	//transposed
+
+let zeta1 = 1.0 in
+let nu1 = 0.00000000000000001 in
+
+let W2 = (16, 16) in [-0.681732, 0.927346] in 	//transposed
+let U2 = (16, 16) in [-0.872669, 1.113812] in 	//transposed
+let Bg2 = (16, 1) in [-0.030916, 0.890056] in 	//transposed
+let Bh2 = (16, 1) in [0.016176, 0.807759] in 	//transposed
+
+let zeta2 = 1.0 in
+let nu2 = 0.00000000000000001 in
+
+let X = (76800, 1) in [-117.0, 137.0] in
+
+let Xt = reshape(X, (1, 240, 320, 1), (1,2)) in
+
+let cf = conv2d(Xt, CBR1F, {s 2 2}, {p 1 1 1 1}, {d 1 1}, {g 1}) in
+let Xprocessed = relu6(conv2d(cf <+> CBR1B, CBR1W, {s 1 1}, {p 0 0 0 0}, {d 1 1}, {g 4})) in
+
+
+let rnnOutput = init([1, 30, 40, 64], 0.0) in
+
+let accumulator4 = init([1, 1], 0.0) in
+let accumulator5 = init([1, 1], 0.0) in
+
+let dummy4 = loop(patchX = [0:29], accumulator4) (
+	let dummy5 = loop(patchY = [0:39], accumulator5) (
+		let XX = reshape(Xprocessed[0:+1][4*patchX:+8][4*patchY:+8][0:+4], (8, 8, 4), (1,2,3,4)) in
+
+
+		let accumulator1 = init([16, 8], 0.0) in
+		let accumulator2 = init([16, 8], 0.0) in
+
+		let dummy1 = loop(j1 = [0:8], accumulator1) (
+
+			let H1 = init([16, 1], 0.0) in
+			let accumulator1[0:+16][j1:+1] = loop(iter1 = [0:8], H1)(
+				let Xslice = reshape(XX[j1:+1][iter1:+1][0:+4], (4,1), (1,2,3)) in
+				let a1 = W1 * Xslice in
+				let b1 = U1 * H1 in
+				let c1 = a1 + b1 in
+				let g1 = sigmoid(c1 + Bg1) in
+				let h1 = tanh(c1 + Bh1) in
+				let H1 = (g1 <*> H1) + (zeta1 * (1.0 - g1) + nu1) <*> h1 in 
+					H1
+			) in
+			accumulator1
+		) in
+
+		let dummy2 = loop(j2 = [0:8], accumulator2) (
+
+			let H2 = init([16, 1], 0.0) in
+			let accumulator2[0:+16][j2:+1] = loop(iter2 = [0:8], H2)(
+				let Xslice1 = reshape(XX[iter2:+1][j2:+1][0:+4], (4,1), (1,2,3)) in
+				let a2 = W1 * Xslice1 in
+				let b2 = U1 * H2 in
+				let c2 = a2 + b2 in
+				let g2 = sigmoid(c2 + Bg1) in
+				let h2 = tanh(c2 + Bh1) in
+				let H2 = (g2 <*> H2) + (zeta1 * (1.0 - g2) + nu1) <*> h2 in 
+					H2
+			) in
+			accumulator2
+		) in
+
+		//one direction done
+
+		let bidirinput = init([4, 16, 8], 0.0) in
+
+		let bidirinput[0:+1][0:+16][0:+8] = reshape(accumulator1, (1, 16, 8), (1, 2)) in
+		let bidirinput[1:+1][0:+16][0:+8] = reshape(reverse(accumulator1, 1), (1, 16, 8), (1, 2)) in
+		let bidirinput[2:+1][0:+16][0:+8] = reshape(accumulator2, (1, 16, 8), (1, 2)) in
+		let bidirinput[3:+1][0:+16][0:+8] = reshape(reverse(accumulator2, 1), (1, 16, 8), (1, 2)) in
+
+		let accumulator3 = init([16, 4], 0.0) in
+
+		let dummy3 = loop(i = [0:4], accumulator3) (
+			let input = bidirinput[i] in
+			let H3 = init([16, 1], 0.0) in
+			let accumulator3[0:+16][i:+1] = loop(iter3 = [0:8], H3)(
+				let a3 = W2 * input[0:+16][iter3:+1] in
+				let b3 = U2 * H3 in
+				let c3 = a3 + b3 in
+				let g3 = sigmoid(c3 + Bg2) in
+				let h3 = tanh(c3 + Bh2) in
+				let H3 = (g3 <*> H3) + (zeta2 * (1.0 - g3) + nu2) <*> h3 in 
+					H3
+			) in
+			accumulator3
+		) in
+		let rnnOutput[0:+1][patchX:+1][patchY:+1][0:+64] = reshape(accumulator3, (1, 1, 1, 64), (2, 1)) in
+		let accumulator5[0:+1][0:+1] = dummy3[0:+1][0:+1] in //dummy operation
+		accumulator5
+	) in
+	let accumulator4[0:+1][0:+1] = dummy5[0:+1][0:+1] in //dummy operation
+	accumulator4 
+) in
+let rnnOutput[0:+1][29:+1][0:+39][0:+64] = rnnOutput[0:+1][28:+1][0:+39][0:+64] in
+let rnnOutput[0:+1][0:+30][39:+1][0:+64] = rnnOutput[0:+1][0:+30][38:+1][0:+64] in
+
+let L0F1 = (1, 1, 1, 64, 128) in [-0.436906, 0.509350] in
+let L0F2 = (128, 3, 3, 1, 1) in [-0.464600, 0.501795] in
+let L0F3 = (1, 1, 1, 128, 32) in [-0.304524, 0.372088] in
+let L0W1 = (128) in [0.908718, 8.530643] in
+let L0B1 = (128) in [-0.482255, 0.509620] in
+let L0W2 = (128) in [1.479002, 17.745686] in
+let L0B2 = (128) in [-0.100138, 0.237104] in
+let L0W3 = (32) in [0.517233, 1.161236] in
+let L0B3 = (32) in [-0.501259, 0.568703] in
+
+let M0 = mbconv(rnnOutput, [L0F1, L0W1, L0B1], [L0F2, L0W2, L0B2], [L0F3, L0W3, L0B3], {s 1 1}, {p 1 1 1 1}) in
+
+let L1F1 = (1, 1, 1, 32, 64) in [-0.341381, 0.360309] in
+let L1F2 = (64, 3, 3, 1, 1) in [-0.251428, 0.384423] in
+let L1F3 = (1, 1, 1, 64, 32) in [-0.320457, 0.268084] in
+let L1W1 = (64) in [1.068342, 4.794313] in
+let L1B1 = (64) in [-0.135991, 0.127013] in
+let L1W2 = (64) in [1.931244, 22.599623] in
+let L1B2 = (64) in [-0.097512, 0.175311] in
+let L1W3 = (32) in [0.738189, 1.508841] in
+let L1B3 = (32) in [-0.325120, 0.302485] in
+
+let M1 = M0 + mbconv(M0, [L1F1, L1W1, L1B1], [L1F2, L1W2, L1B2], [L1F3, L1W3, L1B3], {s 1 1}, {p 1 1 1 1}) in
+
+let L2F1 = (1, 1, 1, 32, 64) in [-0.327564, 0.380084] in
+let L2F2 = (64, 3, 3, 1, 1) in [-0.438368, 0.427090] in
+let L2F3 = (1, 1, 1, 64, 32) in [-0.335807, 0.267247] in
+let L2W1 = (64) in [1.010339, 3.438370] in
+let L2B1 = (64) in [-0.159965, 0.170374] in
+let L2W2 = (64) in [1.697381, 20.279604] in
+let L2B2 = (64) in [-0.128100, 0.112084] in
+let L2W3 = (32) in [0.917771, 2.144205] in
+let L2B3 = (32) in [-0.259834, 0.217390] in
+
+let M2 = M1 + mbconv(M1, [L2F1, L2W1, L2B1], [L2F2, L2W2, L2B2], [L2F3, L2W3, L2B3], {s 1 1}, {p 1 1 1 1}) in
+
+let L3F1 = (1, 1, 1, 32, 64) in [-0.335509, 0.327157] in
+let L3F2 = (64, 3, 3, 1, 1) in [-0.396651, 0.413301] in
+let L3F3 = (1, 1, 1, 64, 32) in [-0.287551, 0.356097] in
+let L3W1 = (64) in [0.655896, 2.656120] in
+let L3B1 = (64) in [-0.421847, 0.448605] in
+let L3W2 = (64) in [1.524038, 11.284565] in
+let L3B2 = (64) in [-0.148629, 0.223769] in
+let L3W3 = (32) in [1.330470, 3.027581] in
+let L3B3 = (32) in [-0.200442, 0.223674] in
+
+let M3 = M2 + mbconv(M2, [L3F1, L3W1, L3B1], [L3F2, L3W2, L3B2], [L3F3, L3W3, L3B3], {s 1 1}, {p 1 1 1 1}) in
+
+let normW1 = (32, 1, 1, 1, 1) in [3.104483, 3.671047] in
+
+let M3a = conv2d(normaliseL2(M3), normW1, {s 1 1}, {p 0 0 0 0}, {d 1 1}, {g 32}) in
+
+let conf0w = (1, 3, 3, 32, 4) in [-0.181494, 0.219536] in
+let loc0w = (1, 3, 3, 32, 4) in [-0.535354, 0.651281] in
+let conf0b = (4) in [-0.949287, 0.503902] in
+let loc0b = (4) in [-1.252793, -0.028713] in
+
+let CNraw = conv2d(M3a, conf0w, {s 1 1}, {p 1 1 1 1}, {d 1 1}, {g 1}) <+> conf0b in
+let LC0 = conv2d(M3a, loc0w, {s 1 1}, {p 1 1 1 1}, {d 1 1}, {g 1}) <+> loc0b in
+
+let CN0 = init([1, 30, 40, 2], 0.0) in
+
+let accumulator6 = init([1, 1], 0.0) in
+let accumulator7 = init([1, 1], 0.0) in
+
+let dummy6 = loop(i1 = [0:30], accumulator6) (
+	let dummy7 = loop(i2 = [0:40], accumulator7) (
+		let index = argmax(reshape(CNraw[0:+1][i1:+1][i2:+1][0:+3], (3, 1), (1, 2, 3, 4))) in
+		let CN0[0:+1][i1:+1][i2:+1][0:+1] = CNraw[0:+1][i1:+1][i2:+1][index:+1] in
+		let CN0[0:+1][i1:+1][i2:+1][1:+1] = CNraw[0:+1][i1:+1][i2:+1][3:+1] in
+		let accumulator7[0:+1][0:+1] = reshape(CN0[0:+1][0:+1][0:+1][0:+1], (1, 1), (1,2,3,4)) in //dummy op
+		CN0[0][0][0][0] 
+	) in
+	let accumulator6[0:+1][0:+1] = accumulator7[0:+1][0:+1] in //dummy op
+	CN0[0][0][0][0]
+) in
+
+let L4F1 = (1, 1, 1, 32, 64) in [-0.220402, 0.219775] in
+let L4F2 = (64, 3, 3, 1, 1) in [-0.218493, 0.251384] in
+let L4F3 = (1, 1, 1, 64, 32) in [-0.199211, 0.235229] in
+let L4W1 = (64) in [0.845933, 2.368932] in
+let L4B1 = (64) in [-0.244505, 0.322722] in
+let L4W2 = (64) in [3.455426, 26.387125] in
+let L4B2 = (64) in [-0.105507, 0.110181] in
+let L4W3 = (32) in [2.230353, 4.411854] in
+let L4B3 = (32) in [-0.131228, 0.157818] in
+
+let M4 = M3 + mbconv(M3, [L4F1, L4W1, L4B1], [L4F2, L4W2, L4B2], [L4F3, L4W3, L4B3], {s 1 1}, {p 1 1 1 1}) in
+
+let L5F1 = (1, 1, 1, 32, 64) in [-0.179660, 0.215821] in
+let L5F2 = (64, 3, 3, 1, 1) in [-0.257676, 0.232362] in
+let L5F3 = (1, 1, 1, 64, 32) in [-0.179094, 0.220163] in
+let L5W1 = (64) in [0.606364, 2.206583] in
+let L5B1 = (64) in [-0.419673, 0.325481] in
+let L5W2 = (64) in [2.979398, 14.355249] in
+let L5B2 = (64) in [-0.072193, 0.174717] in
+let L5W3 = (32) in [2.246422, 6.183416] in
+let L5B3 = (32) in [-0.142929, 0.136949] in
+
+let M5 = M4 + mbconv(M4, [L5F1, L5W1, L5B1], [L5F2, L5W2, L5B2], [L5F3, L5W3, L5B3], {s 1 1}, {p 1 1 1 1}) in
+
+let L6F1 = (1, 1, 1, 32, 64) in [-0.179302, 0.215371] in
+let L6F2 = (64, 3, 3, 1, 1) in [-0.203614, 0.274868] in
+let L6F3 = (1, 1, 1, 64, 32) in [-0.195632, 0.166481] in
+let L6W1 = (64) in [0.495761, 1.670556] in
+let L6B1 = (64) in [-0.351384, 0.386469] in
+let L6W2 = (64) in [3.394833, 15.307519] in
+let L6B2 = (64) in [-0.066605, 0.123321] in
+let L6W3 = (32) in [3.539970, 7.095649] in
+let L6B3 = (32) in [-0.098376, 0.102363] in
+
+let M6 = M5 + mbconv(M5, [L6F1, L6W1, L6B1], [L6F2, L6W2, L6B2], [L6F3, L6W3, L6B3], {s 1 1}, {p 1 1 1 1}) in
+
+let L7F1 = (1, 1, 1, 32, 64) in [-0.240733, 0.247215] in
+let L7F2 = (64, 3, 3, 1, 1) in [-0.204052, 0.322785] in
+let L7F3 = (1, 1, 1, 64, 32) in [-0.229586, 0.256599] in
+let L7W1 = (64) in [0.218023, 1.501631] in
+let L7B1 = (64) in [-0.621725, 0.604778] in
+let L7W2 = (64) in [2.081551, 26.127630] in
+let L7B2 = (64) in [-0.099884, 0.113198] in
+let L7W3 = (32) in [4.359217, 10.474654] in
+let L7B3 = (32) in [-0.128586, 0.114869] in
+
+let M7 = M6 + mbconv(M6, [L7F1, L7W1, L7B1], [L7F2, L7W2, L7B2], [L7F3, L7W3, L7B3], {s 1 1}, {p 1 1 1 1}) in
+
+let normW2 = (32, 1, 1, 1, 1) in [2.853639, 3.011247] in
+
+let M7a = conv2d(normaliseL2(M7), normW2, {s 1 1}, {p 0 0 0 0}, {d 1 1}, {g 32}) in
+
+let conf1w = (1, 3, 3, 32, 2) in [-0.464026, 0.460434] in
+let loc1w = (1, 3, 3, 32, 4) in [-0.418883, 0.363873] in
+let conf1b = (2) in [-0.910078, 0.911636] in
+let loc1b = (4) in [-0.491367, 0.118346] in
+
+let CN1 = conv2d(M7a, conf1w, {s 1 1}, {p 1 1 1 1}, {d 1 1}, {g 1}) <+> conf1b in
+let LC1 = conv2d(M7a, loc1w, {s 1 1}, {p 1 1 1 1}, {d 1 1}, {g 1}) <+> loc1b in
+
+let L8F1 = (1, 1, 1, 32, 64) in [-0.161258, 0.176048] in
+let L8F2 = (64, 3, 3, 1, 1) in [-0.160731, 0.201951] in
+let L8F3 = (1, 1, 1, 64, 96) in [-0.128954, 0.123759] in
+let L8W1 = (64) in [0.425683, 1.428419] in
+let L8B1 = (64) in [-0.380451, 0.482876] in
+let L8W2 = (64) in [0.919191, 8.914138] in
+let L8B2 = (64) in [-0.171215, 0.151055] in
+let L8W3 = (96) in [2.482285, 4.291615] in
+let L8B3 = (96) in [-0.152039, 0.116059] in
+
+let M8 = mbconv(M7, [L8F1, L8W1, L8B1], [L8F2, L8W2, L8B2], [L8F3, L8W3, L8B3], {s 2 2}, {p 1 1 1 1}) in
+
+let L9F1 = (1, 1, 1, 96, 192) in [-0.100445, 0.126809] in
+let L9F2 = (192, 3, 3, 1, 1) in [-0.168582, 0.178059] in
+let L9F3 = (1, 1, 1, 192, 96) in [-0.097957, 0.094670] in
+let L9W1 = (192) in [1.562635, 5.033991] in
+let L9B1 = (192) in [-0.043294, 0.047008] in
+let L9W2 = (192) in [3.635097, 20.010172] in
+let L9B2 = (192) in [-0.100797, 0.079313] in
+let L9W3 = (96) in [3.066220, 4.861489] in
+let L9B3 = (96) in [-0.191661, 0.139039] in
+
+let M9 = M8 + mbconv(M8, [L9F1, L9W1, L9B1], [L9F2, L9W2, L9B2], [L9F3, L9W3, L9B3], {s 1 1}, {p 1 1 1 1}) in
+
+let L10F1 = (1, 1, 1, 96, 192) in [-0.121615, 0.108901] in
+let L10F2 = (192, 3, 3, 1, 1) in [-0.167224, 0.216091] in
+let L10F3 = (1, 1, 1, 192, 96) in [-0.092721, 0.103533] in
+let L10W1 = (192) in [1.251285, 3.928022] in
+let L10B1 = (192) in [-0.093633, 0.111204] in
+let L10W2 = (192) in [3.928370, 22.141224] in
+let L10B2 = (192) in [-0.080400, 0.091916] in
+let L10W3 = (96) in [4.795549, 8.299602] in
+let L10B3 = (96) in [-0.091860, 0.070132] in
+
+let M10 = M9 + mbconv(M9, [L10F1, L10W1, L10B1], [L10F2, L10W2, L10B2], [L10F3, L10W3, L10B3], {s 1 1}, {p 1 1 1 1}) in
+
+let normW3 = (96, 1, 1, 1, 1) in [1.856834, 1.956941] in
+
+let M10a = conv2d(normaliseL2(M10), normW3, {s 1 1}, {p 0 0 0 0}, {d 1 1}, {g 96}) in
+
+let conf2w = (1, 3, 3, 96, 2) in [-0.230817, 0.236858] in
+let loc2w = (1, 3, 3, 96, 4) in [-0.460027, 0.382041] in
+let conf2b = (2) in [-0.894159, 0.895271] in
+let loc2b = (4) in [-0.185632, 0.245199] in
+
+let CN2 = conv2d(M10a, conf2w, {s 1 1}, {p 1 1 1 1}, {d 1 1}, {g 1}) <+> conf2b in
+let LC2 = conv2d(M10a, loc2w, {s 1 1}, {p 1 1 1 1}, {d 1 1}, {g 1}) <+> loc2b in
+
+let L11F1 = (1, 1, 1, 96, 192) in [-0.079502, 0.088557] in
+let L11F2 = (192, 3, 3, 1, 1) in [-0.151115, 0.169033] in
+let L11F3 = (1, 1, 1, 192, 128) in [-0.062968, 0.067531] in
+let L11W1 = (192) in [1.009467, 3.499392] in
+let L11B1 = (192) in [-0.093641, 0.114779] in
+let L11W2 = (192) in [3.016208, 14.984944] in
+let L11B2 = (192) in [-0.073217, 0.123781] in
+let L11W3 = (128) in [2.366442, 4.528827] in
+let L11B3 = (128) in [-0.182888, 0.147574] in
+
+let M11 = mbconv(M10, [L11F1, L11W1, L11B1], [L11F2, L11W2, L11B2], [L11F3, L11W3, L11B3], {s 1 1}, {p 1 1 1 1}) in
+
+let L12F1 = (1, 1, 1, 128, 256) in [-0.071876, 0.065319] in
+let L12F2 = (256, 3, 3, 1, 1) in [-0.158520, 0.149546] in
+let L12F3 = (1, 1, 1, 256, 128) in [-0.056450, 0.058097] in
+let L12W1 = (256) in [2.104504, 6.393031] in
+let L12B1 = (256) in [-0.039943, 0.025428] in
+let L12W2 = (256) in [3.448494, 25.975399] in
+let L12B2 = (256) in [-0.083770, 0.078474] in
+let L12W3 = (128) in [2.276433, 7.893555] in
+let L12B3 = (128) in [-0.147044, 0.142898] in
+
+let M12 = M11 + mbconv(M11, [L12F1, L12W1, L12B1], [L12F2, L12W2, L12B2], [L12F3, L12W3, L12B3], {s 1 1}, {p 1 1 1 1}) in
+
+let L13F1 = (1, 1, 1, 128, 256) in [-0.076401, 0.083288] in
+let L13F2 = (256, 3, 3, 1, 1) in [-0.188142, 0.152365] in
+let L13F3 = (1, 1, 1, 256, 128) in [-0.078100, 0.069800] in
+let L13W1 = (256) in [1.019376, 4.881045] in
+let L13B1 = (256) in [-0.065278, 0.059934] in
+let L13W2 = (256) in [3.052040, 22.284050] in
+let L13B2 = (256) in [-0.105421, 0.107563] in
+let L13W3 = (128) in [2.037299, 9.895325] in
+let L13B3 = (128) in [-0.098034, 0.074412] in
+
+let M13 = M12 + mbconv(M12, [L13F1, L13W1, L13B1], [L13F2, L13W2, L13B2], [L13F3, L13W3, L13B3], {s 1 1}, {p 1 1 1 1}) in
+
+let conf3w = (1, 3, 3, 128, 2) in [-0.089776, 0.083453] in
+let loc3w = (1, 3, 3, 128, 4) in [-0.081263, 0.103469] in
+let conf3b = (2) in [-0.601422, 0.598605] in
+let loc3b = (4) in [-0.340282, 0.014975] in
+
+let CN3 = conv2d(M13, conf3w, {s 1 1}, {p 1 1 1 1}, {d 1 1}, {g 1}) <+> conf3b in
+let LC3 = conv2d(M13, loc3w, {s 1 1}, {p 1 1 1 1}, {d 1 1}, {g 1}) <+> loc3b in
+
+let answer = init([1, 18000], 0.0) in
+
+let answer[0:+1][0:+2400] = reshape(CN0, (1, 2400), (1, 2, 3, 4)) in
+let answer[0:+1][2400:+2400] = reshape(CN1, (1, 2400), (1, 2, 3, 4)) in
+let answer[0:+1][4800:+600] = reshape(CN2, (1, 600), (1, 2, 3, 4)) in
+let answer[0:+1][5400:+600] = reshape(CN3, (1, 600), (1, 2, 3, 4)) in
+
+let answer[0:+1][6000:+4800] = reshape(LC0, (1, 4800), (1, 2, 3, 4)) in
+let answer[0:+1][10800:+4800] = reshape(LC1, (1, 4800), (1, 2, 3, 4)) in
+let answer[0:+1][15600:+1200] = reshape(LC2, (1, 1200), (1, 2, 3, 4)) in
+let answer[0:+1][16800:+1200] = reshape(LC3, (1, 1200), (1, 2, 3, 4)) in
+
+answer

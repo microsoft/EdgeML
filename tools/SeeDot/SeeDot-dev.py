@@ -61,7 +61,7 @@ class MainDriver:
         parser = argparse.ArgumentParser()
 
         parser.add_argument("-a", "--algo", choices=config.Algo.all,
-                            default=config.Algo.default, metavar='', help="Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn'] \
+                            default=config.Algo.default, metavar='', help="Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn' or 'rnnpool'] \
                            (Default: 'fastgrnn')")
         parser.add_argument("-e", "--encoding", choices=config.Encoding.all,
                             default=config.Encoding.default, metavar='', help="Floating-point ['float'] or Fixed-point ['fixed'] \
@@ -71,7 +71,7 @@ class MainDriver:
                             (Default: 'usps10')")
         parser.add_argument("-m", "--metric", choices=config.Metric.all, metavar='',
                             help="Select the metric that will be used to measure the correctness of an inference, to obtain the \
-                            best quantization of variables. (valid only for classification) \
+                            best quantization of variables. \
                                 ['acc', 'disagree', 'red_diagree'] (Default: 'red_disagree')",default=config.Metric.default)
         parser.add_argument("-n", "--numOutputs", type=int, metavar='',
                             help="Number of outputs (e.g., classification problems have only 1 output, i.e., the class label)\
@@ -226,12 +226,13 @@ class MainDriver:
 
             acc = obj.testingAccuracy
 
-            if acc != expectedAcc:
-                print("FAIL: Expected accuracy %f%%" % (expectedAcc))
-            elif encoding == config.Encoding.fixed and obj.sf != bestScale:
-                print("FAIL: Expected best scale %d" % (bestScale))
-            else:
-                print("PASS")
+            if self.args.load_sf:
+                if acc != expectedAcc:
+                    print("FAIL: Expected accuracy %f%%" % (expectedAcc))
+                elif encoding == config.Encoding.fixed and obj.sf != bestScale:
+                    print("FAIL: Expected best scale %d" % (bestScale))
+                else:
+                    print("PASS")
 
     def loadScalesFile(self):
         scales = {}
