@@ -19,6 +19,9 @@ In this text, we will discuss the execution of SeeDot for the `FastGRNN` algorit
 We'll discuss the execution for both Floating-point and Fixed-point encoding with `reduced disagreements` as the 
 correctness metric. 
 
+A diagrammatic representation of SeeDot's architecture:
+![SeeDot's Architecture](https://github.com/microsoft/EdgeML/blob/master/tools/SeeDot/architecture.svg)
+
 ### Model and Datasets
 
 For the run to take place, the model should be placed in the `model/fastgrnn/usps10/` directory, and the datasets 
@@ -119,3 +122,6 @@ On running this command,
 21. Once the `Converter` returns, `seedot/main.py:runForFixed` calls the `Compiler` and then the `Predictor` to obtain the final inference accuracy (correctness). 
 22. Finally, if the target is non-x86, then `seedot/main.py:runForFixed` calls the `Compiler` class which generates the code for the target device using the code-generators mentioned in point 11 above.
 23. The target codes are stored in `arduinodump/` for Arduino and `m3dump/` for M3 by default. 
+
+
+Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT license.

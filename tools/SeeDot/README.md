@@ -30,7 +30,7 @@ usage: SeeDot-dev.py [-h] [-a] [-e] [-d] [-m] [-n] [-dt] [-t] [-s] [-sf] [-l] [-
 
 optional arguments:
   -h,   --help             Show this help message and exit
-  -a,   --algo             Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn'] 
+  -a,   --algo             Algorithm to run ['bonsai' or 'protonn' or 'fastgrnn' or 'rnnpool'] 
                            (Default: 'fastgrnn')
 
   -e,   --encoding         Floating-point ['float'] or Fixed-point ['fixed'] 
@@ -40,7 +40,7 @@ optional arguments:
                            (Default: 'usps10')
 
   -m,   --metric           Select the metric that will be used to measure the correctness of an inference, to obtain the 
-                           best quantization of variables. (valid only for classification) 
+                           best quantization of variables.
                               1) Accuracy ('acc'):                The accuracy of prediction will be used as a metric for 
                                                                   correctness. (A maximising metric).
 
