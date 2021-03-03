@@ -29,7 +29,7 @@ net.eval()
 
 a = np.load('trace_inputs.npy')
 a = np.squeeze(a, axis=1)
-a = np.squeeze(a, axis=1)
+# a = np.squeeze(a, axis=1)
 a = a[0].flatten()
 
 b = np.load('trace_outputs.npy')
