@@ -5,7 +5,7 @@ Face detection using SeeDot can be performed on the `face-2` and `face-4` datase
 Face detection is a regression problem that involves an image input with (or without) faces and bounding boxes around the faces as output. 
 Face detection is supported for x86 and ARM Cortex-M3 target devices.  
 
-Note: This readme has been tested with **Python 3.7.9**.
+Note: This readme has been tested with **Python 3.7.9**. **GCC** version 8 or higher is required to run quantization.
 
 ## Training Face Detection 
 
@@ -15,8 +15,20 @@ Run the following commands to download the training data for face-detection and 
 
 Assuming that the current directory is `EdgeML/tools/seedot`, please run the following commands. 
 
-Create directories for SeeDot's input (which will be generated at the end of this section):
+Create directories for SeeDot's input and install python libraries used by SeeDot (which will be generated at the end of this section):
 ```
+    cd ../../tf/
+    
+    # For system with CPU only
+    pip install -r requirements-cpu.txt
+
+    # For systems with CPU+GPU
+    pip install -r requirements-gpu.txt
+
+    # For both
+    pip install -e .
+    cd ../tools/SeeDot/
+
     mkdir -p model/rnnpool/face-2/
     mkdir -p model/rnnpool/face-4/
 
@@ -166,7 +178,11 @@ To finish setting up SeeDot, run the following commands:
 
 ```
     cd ../../../../tools/SeeDot
+
+    # For face-2
     cp seedot/compiler/input/rnnpool-face-2.sd model/rnnpool/face-2/input.sd
+    
+    # For face-4
     cp seedot/compiler/input/rnnpool-face-4.sd model/rnnpool/face-4/input.sd
 ```
  
