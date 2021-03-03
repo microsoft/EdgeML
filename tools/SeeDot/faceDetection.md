@@ -5,6 +5,8 @@ Face detection using SeeDot can be performed on the `face-2` and `face-4` datase
 Face detection is a regression problem that involves an image input with (or without) faces and bounding boxes around the faces as output. 
 Face detection is supported for x86 and ARM Cortex-M3 target devices.  
 
+Note: This readme has been tested with **Python 3.7.9**.
+
 ## Training Face Detection 
 
 Run the following commands to download the training data for face-detection and train the model. This trained model would be used for quantized face detection. 
@@ -38,6 +40,14 @@ Install the python libraries:
     
     cd ../examples/pytorch/vision/Face_Detection/
     pip install -r requirements.txt
+```
+
+Next, please visit the [PyTorch website](https://pytorch.org/get-started/locally/) and install PyTorch version 1.7.1 as per your system requirements. 
+Here, we are using pytorch version 1.7.1 with CUDA 11. 
+
+```
+    pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio===0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
+
 ```
 
 Steps to download the dataset: 
@@ -219,7 +229,6 @@ random images from the `SCUT Head Part B` dataset.
 ### Library Installation
 This section requires installing `pytorch`, `cv2`, `easydict`, and `six` python libraries. Run the following commands for installing them:
 ```
-    pip install torch==1.5.1+cpu torchvision==0.6.1+cpu -f https://download.pytorch.org/whl/torch_stable.html
     pip install opencv-python
     pip install easydict
     pip install six
