@@ -33,13 +33,9 @@ Install the python libraries:
 
     # For a CPU+GPU system
     pip install -r requirements-gpu.txt
-    pip install -e edgeml_pytorch/cuda/
 
-    # For both
+    #For Both
     pip install -e .
-    
-    cd ../examples/pytorch/vision/Face_Detection/
-    pip install -r requirements.txt
 ```
 
 Next, please visit the [PyTorch website](https://pytorch.org/get-started/locally/) and install PyTorch version 1.7.1 as per your system requirements. 
@@ -49,18 +45,34 @@ Here, we are using pytorch version 1.7.1 with CUDA 11.
     pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio===0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
 
 ```
+Then, continue running the following commands:
+```
+    # For a CPU+GPU system
+    pip install -e edgeml_pytorch/cuda/
+
+    
+    # For both
+    cd ../examples/pytorch/vision/Face_Detection/
+    pip install -r requirements.txt
+```
+
 
 Steps to download the dataset: 
 
+Note: The datasets can be stored in any location outside the repository as well. 
+Here, let's assume that the dataset will be downloaded to `/mnt/` and the current directory be represented by the environment variable *CUR_DIR*. 
+
 ```
+    export CUR_DIR=$(pwd)
+    cd /mnt/
     mkdir -p WIDER_FACE/
 ```
 
 Download WIDER face dataset images and annotations from [http://shuoyang1213.me/WIDERFACE/](http://shuoyang1213.me/WIDERFACE/) and place it in the `WIDER_FACE` folder created above. Now the `WIDER_FACE` folder must contain `WIDER_train.zip`, `WIDER_test.zip`, `WIDER_val.zip`, `wider_face_split.zip`.
 
-Download the `SCUT Head Part B` dataset from the [drive link](https://drive.google.com/file/d/1LZ_KlTPStDEcqycfqUkDkqQ-aNMMC3cl/view) and place it in `Face_Detection` folder (the current working directory). So the current directory should contain `SCUT_HEAD_Part_B.zip`.
+Download the `SCUT Head Part B` dataset from the [drive link](https://drive.google.com/file/d/1LZ_KlTPStDEcqycfqUkDkqQ-aNMMC3cl/view) and place it in `/mnt` folder (the dataset directory). So the dataset directory should contain `SCUT_HEAD_Part_B.zip`.
 
-Now, decompress the datasets using the following commands: 
+Now, decompress the datasets and add the `DATA_HOME` environment variable (for the training script to find the dataset) using the following commands:
 ```
     cd WIDER_FACE/
     unzip WIDER_train.zip
@@ -70,6 +82,9 @@ Now, decompress the datasets using the following commands:
     cd ../
 
     unzip SCUT_HEAD_Part_B.zip
+    export DATA_HOME=$(pwd) # For the scripts to find the datasets
+
+    cd $CUR_DIR # To go back to Face_Detection directory
 ```
 
 ### Training
@@ -77,12 +92,6 @@ Now, decompress the datasets using the following commands:
 From here, we have two model options. For `face-2`, we use the model, **RPool_Face_QVGA_monochrome** and for `face-4`, we use the model **RPool_Face_M4**.
 
 Note: The training script has the arguments `--cuda` and `--multigpu` which have to be set `True` or `False` based on the system configuration. (In this README, both have been set to `True`). 
-
-Set the `DATA_HOME` environment variable:
-For example, If the `WIDER_FACE` and `SCUT_HEAD_Part_B` folders above are in `/mnt`, then the environment variable would be set as: 
-```
-    export DATA_HOME='/mnt'
-```
 
 To start training:
 1.  For `face-2`:
