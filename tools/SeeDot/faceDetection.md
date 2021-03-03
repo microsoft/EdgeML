@@ -110,10 +110,16 @@ To start training:
     ```
         IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_QVGA_monochrome --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000
 
+        # In case the training has to be stopped prematurely, then it can be resumed using the following command
+        # IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_QVGA_monochrome --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 --resume weights/RPool_Face_QVGA_monochrome_best_state.pth
+
     ```
 2. For `face-4`: 
     ```
         IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_M4 --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000
+
+        # In case the training has to be stopped prematurely, then it can be resumed using the following command
+        # IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_M4 --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 --resume weights/RPool_Face_M4_best_state.pth
     ```
 
 This will train the model on the **WIDER face** dataset. Now, to fine-tune the model on **SCUT Head Part B** dataset, run the following commands. 
@@ -192,14 +198,16 @@ To finish setting up SeeDot, run the following commands:
 ### Run Face Detection for x86
 To run face detection using the SeeDot quantizer on x86 devices, run the following command: 
 
-```
-    python SeeDot-dev.py -a rnnpool -e fixed -m disagree -d face-2 -dt testing -t x86 -n 18000 
-```
-for the `face-2` dataset, and:
-```
-    python SeeDot-dev.py -a rnnpool -e fixed -m disagree -d face-4 -dt testing -t x86 -n 18000 
-```
-for the `face-4` dataset.
+1. For `face-2`:
+    ```
+        python SeeDot-dev.py -a rnnpool -e fixed -m disagree -d face-2 -dt testing -t x86 -n 18000 
+    ```
+
+2. For `face-4`:
+    ```
+        python SeeDot-dev.py -a rnnpool -e fixed -m disagree -d face-4 -dt testing -t x86 -n 18000 
+    ```
+
 
 The non-optional arguments used in the above commands are:
 ```
