@@ -4,11 +4,27 @@
 import os
 import torch
 import numpy as np
+import argparse
 
-from models import RPool_Face_QVGA_monochrome as module
+parser = argparse.ArgumentParser(description='Converting RPool_Face_* model to SeeDot style')
+parser.add_argument('--model', type=str,
+                     help='path to trained model')
+parser.add_argument('--model_arch', type=str,
+                    choices=['RPool_Face_QVGA_monochrome', 'RPool_Face_M4'],
+                    help='choose architecture among RPool variants')
+args = parser.parse_args()
 
-save_dir_model = '../../../../tools/SeeDot/model/rnnpool/face-2/'
-save_dir_datasets = '../../../../tools/SeeDot/datasets/rnnpool/face-2/'
+if args.model_arch == 'RPool_Face_QVGA_monochrome':
+	from models import RPool_Face_QVGA_monochrome as module
+elif args.model_arch == 'RPool_Face_M4':
+	from models import RPool_Face_M4 as module
+
+if args.model_arch == 'RPool_Face_QVGA_monochrome':
+	save_dir_model = '../../../../tools/SeeDot/model/rnnpool/face-2/'
+	save_dir_datasets = '../../../../tools/SeeDot/datasets/rnnpool/face-2/'
+elif args.model_arch == 'RPool_Face_M4':
+	save_dir_model = '../../../../tools/SeeDot/model/rnnpool/face-4/'
+	save_dir_datasets = '../../../../tools/SeeDot/datasets/rnnpool/face-4/'
 
 if not os.path.exists(save_dir_model):
     os.makedirs(save_dir_model)
@@ -17,7 +33,7 @@ if not os.path.exists(save_dir_datasets):
 
 net = module.build_s3fd('test', num_classes = 2)
 
-checkpoint_dict = torch.load('./weights/RPool_Face_QVGA_monochrome_best_state.pth')
+checkpoint_dict = torch.load(args.model)
 
 model_dict = {}
 net = torch.nn.DataParallel(net)
@@ -88,7 +104,12 @@ np.save(save_dir_model + 'Bh2.npy', Bh2m.detach().numpy())
 np.save(save_dir_model + 'zeta2.npy', zeta2.detach().numpy().item())
 np.save(save_dir_model + 'nu2.npy', nu2.detach().numpy().item())
 
-for j in range(14):
+if args.model_arch == 'RPool_Face_QVGA_monochrome':
+	weight_idx = 14
+elif args.model_arch == 'RPool_Face_M4':
+	weight_idx = 14
+
+for j in range(weight_idx):
 	F1 = net.state_dict()['module.mob.%d.conv.0.0.weight' % j]
 	shaper = F1.shape
 	F1m = F1.reshape(1, shaper[0], shaper[1], 1, 1).permute(0, 3, 4, 2, 1)

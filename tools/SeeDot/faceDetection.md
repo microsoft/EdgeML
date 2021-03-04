@@ -5,7 +5,9 @@ Face detection using SeeDot can be performed on the `face-2` and `face-4` datase
 Face detection is a regression problem that involves an image input with (or without) faces and bounding boxes around the faces as output. 
 Face detection is supported for x86 and ARM Cortex-M3 target devices.  
 
-Note: This readme has been tested with **Python 3.7.9**. **GCC** version 8 or higher is required to run quantization.
+Note: 
+1. This readme has been tested with **Python 3.7.9**. **GCC** version 8 or higher is required to run quantization.
+2. The dataset `face-2` corresponds to the model **RPool_Face_QVGA_monochrome** and; `face-4` corresponds to the model **RPool_Face_M4**.
 
 ## Training Face Detection 
 
@@ -170,11 +172,11 @@ Run the following commands:
 3. Converting the traces to SeeDot format:
     1. For `face-2`:
         ```
-            IS_QVGA_MONO=1 python convert_to_seedot.py
+            IS_QVGA_MONO=1 python convert_RPool_Face_to_SeeDot.py --model_arch RPool_Face_QVGA_monochrome --model ./weights/RPool_Face_QVGA_monochrome_best_state.pth
         ```
     2. For `face-4`:
         ```
-            IS_QVGA_MONO=1 python convert_to_seedot_sparse.py
+            IS_QVGA_MONO=1 python convert_RPool_Face_to_SeeDot.py  --model_arch RPool_Face_M4 --model ./weights/RPool_Face_M4_best_state.pth
         ```
 This will store SeeDot's input to `EdgeML/tools/SeeDot/model/rnnpool/face-2/`, `EdgeML/tools/SeeDot/datasets/rnnpool/face-2/` or; `EdgeML/tools/SeeDot/model/rnnpool/face-4/`, `EdgeML/tools/SeeDot/datasets/rnnpool/face-4/` respectively.
 
