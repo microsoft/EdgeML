@@ -105,7 +105,7 @@ Now, decompress the datasets and add the `DATA_HOME` environment variable (for t
 
 From here, we have two model options. For `face-2`, we use the model, **RPool_Face_QVGA_monochrome** and for `face-4`, we use the model **RPool_Face_M4**.
 
-Note: The training script has the arguments `--cuda` and `--multigpu` which have to be set `True` or `False` based on the system configuration. (In this README, both have been set to `True`). 
+Note: The training script has the arguments `--cuda` and `--multigpu` which have to be set `True` or `False` based on the system configuration. (In this README, both have been set to `True` and; `cuda` and `multigpu` arguments always have to be set to `True` or `False` together). 
 
 To start training:
 1.  For `face-2`:
