@@ -107,7 +107,7 @@ np.save(save_dir_model + 'nu2.npy', nu2.detach().numpy().item())
 if args.model_arch == 'RPool_Face_QVGA_monochrome':
 	weight_idx = 14
 elif args.model_arch == 'RPool_Face_M4':
-	weight_idx = 14
+	weight_idx = 4
 
 for j in range(weight_idx):
 	F1 = net.state_dict()['module.mob.%d.conv.0.0.weight' % j]
