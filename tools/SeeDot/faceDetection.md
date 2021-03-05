@@ -2,16 +2,16 @@
 
 Face detection using SeeDot can be performed on the `face-2` and `face-4` datasets, which are subsets of the [SCUT Head Part B](https://github.com/HCIILAB/SCUT-HEAD-Dataset-Release) dataset.
 
-Face detection is a regression problem that involves an image input with (or without) faces and bounding boxes around the faces as output. 
+Face detection is a regression problem that involves an image input with (or without) faces and bounding boxes superimposed around the faces as output.
 Face detection is supported for x86 and ARM Cortex-M3 target devices.  
 
 Note: 
-1. This readme has been tested with **Python 3.7.9**. **GCC** version 8 or higher is required to run quantization.
+1. This README has been tested with **Python 3.7.9**. **GCC** version 8 or higher is required to run quantization.
 2. The dataset `face-2` corresponds to the model **RPool_Face_QVGA_monochrome** and; `face-4` corresponds to the model **RPool_Face_M4**.
 
 ## Training Face Detection 
 
-Run the following commands to download the training data for face-detection and train the model. This trained model would be used for quantized face detection. 
+Run the following commands to download the training data for face detection and train the model. This trained model would be used for quantized face detection.
 
 ### Setup and Downloading the Dataset
 
@@ -52,8 +52,8 @@ Install the python libraries:
     pip install -e .
 ```
 
-Next, please visit the [PyTorch website](https://pytorch.org/get-started/locally/) and install PyTorch version 1.7.1 as per your system requirements. 
-Here, we are using pytorch version 1.7.1 with CUDA 11. 
+Next, please visit the [PyTorch website](https://pytorch.org/get-started/locally/) and install PyTorch version 1.7.1 as per your system requirements.
+Here, we are using pytorch version 1.7.1 with CUDA 11.
 
 ```
     pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio===0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
@@ -64,7 +64,7 @@ Then, continue running the following commands:
     # For a CPU+GPU system
     pip install -e edgeml_pytorch/cuda/
 
-    
+
     # For both
     cd ../examples/pytorch/vision/Face_Detection/
     pip install -r requirements.txt
@@ -114,7 +114,6 @@ To start training:
 
         # In case the training has to be stopped prematurely, then it can be resumed using the following command
         # IS_QVGA_MONO=1 python train.py --batch_size 64 --model_arch RPool_Face_QVGA_monochrome --cuda True --multigpu True --save_folder weights/ --epochs 300 --save_frequency 5000 --resume weights/RPool_Face_QVGA_monochrome_best_state.pth
-
     ```
 2. For `face-4`: 
     ```
