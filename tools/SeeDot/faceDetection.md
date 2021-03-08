@@ -281,7 +281,7 @@ For that, we follow the below steps:
 ```
     cd faceDetection/
     mkdir -p images/ && cd images/
-    cp ../../../../examples/pytorch/vision/Face_Detection/SCUT_HEAD_Part_B/JPEGImages/PartB_00007.jpg ./
+    cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00007.jpg ./
     cd ..
     cp -r ../../../examples/pytorch/vision/Face_Detection/layers/ .
     cp -r ../../../examples/pytorch/vision/Face_Detection/utils/ .
