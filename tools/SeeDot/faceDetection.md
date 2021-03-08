@@ -144,21 +144,21 @@ Run the following commands:
 1. Creating a subset of `SCUT_HEAD_Part_B`:
     ```
         mkdir images/
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00009.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00052.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00082.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00101.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00112.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00170.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00195.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00376.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00398.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00601.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00675.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00735.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00973.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_02378.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_02396.jpg images/
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00009.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00052.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00082.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00101.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00112.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00170.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00195.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00376.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00398.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00601.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00675.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00735.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00973.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_02378.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_02396.jpg images/
     ```
 2. Obtaining traces:
     1. For `face-2`:
