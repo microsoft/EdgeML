@@ -53,7 +53,7 @@ Install the python libraries:
 ```
 
 Next, please visit the [PyTorch website](https://pytorch.org/get-started/locally/) and install PyTorch version 1.7.1 as per your system requirements.
-Here, we are using pytorch version 1.7.1 with CUDA 11.
+Here, we are using PyTorch version 1.7.1 with CUDA 11.
 
 ```
     pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio===0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
@@ -63,7 +63,6 @@ Then, continue running the following commands:
 ```
     # For a CPU+GPU system
     pip install -e edgeml_pytorch/cuda/
-
 
     # For both
     cd ../examples/pytorch/vision/Face_Detection/
@@ -143,21 +142,21 @@ Run the following commands:
 1. Creating a subset of `SCUT_HEAD_Part_B`:
     ```
         mkdir images/
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00009.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00052.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00082.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00101.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00112.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00170.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00195.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00376.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00398.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00601.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00675.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00735.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_00973.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_02378.jpg images/ && \
-        cp SCUT_HEAD_Part_B/JPEGImages/PartB_02396.jpg images/
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00009.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00052.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00082.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00101.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00112.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00170.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00195.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00376.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00398.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00601.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00675.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00735.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00973.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_02378.jpg images/ && \
+        cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_02396.jpg images/
     ```
 2. Obtaining traces:
     1. For `face-2`:
@@ -280,7 +279,7 @@ For that, we follow the below steps:
 ```
     cd faceDetection/
     mkdir -p images/ && cd images/
-    cp ../../../../examples/pytorch/vision/Face_Detection/SCUT_HEAD_Part_B/JPEGImages/PartB_00007.jpg ./
+    cp ${DATA_HOME}/SCUT_HEAD_Part_B/JPEGImages/PartB_00007.jpg ./
     cd ..
     cp -r ../../../examples/pytorch/vision/Face_Detection/layers/ .
     cp -r ../../../examples/pytorch/vision/Face_Detection/utils/ .
