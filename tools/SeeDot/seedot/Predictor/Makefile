@@ -1,6 +1,13 @@
 # Copyright (c) Microsoft Corporation. All rights reserved.
 # Licensed under the MIT license.
 
+CC_VER=$(g++ -dumpversion)
+MIN_CC_VER=8
+if [${CC_VER} -lt ${MIN_CC_VER}]
+@echo "GCC Version >=8 required"
+exit 0 
+fi
+
 CC=g++
 CFLAGS=-Wall -Wno-narrowing -p -g -fPIC -O3 -std=c++11 -pthread
 
