@@ -56,6 +56,9 @@ permittedClassificationAccuracyLoss = 2.0
 # For a regression algorithm, fixed point code can have this much more numerical loss compared to floating point code. Not used in classification algorithms.
 permittedRegressionNumericalLossMargin = 90.0
 
+# Minimum version of gcc required for compilation
+min_gcc_version = 8
+
 # Following classes are used sanity checks for arguments passed to the compiler, to prevent unexpected arguments being passed.
 # These lists should be updated as the compiler is expanded to multiple algorithms and datasets.
 
