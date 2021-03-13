@@ -2,7 +2,7 @@
 # Licensed under the MIT license.
 
 
-import os
+import os, sys
 import subprocess
 
 import seedot.config as config
@@ -115,6 +115,10 @@ class Predictor:
 
     def buildForLinux(self):
         Util.getLogger().debug("Build...")
+
+        gcc_version = os.popen('g++ -dumpversion')
+        gcc_version = int(gcc_version.read().split('\n')[0])
+        assert gcc_version >= config.min_gcc_version, "Minimum GCC Version >= %d required."%(config.min_gcc_version)
 
         args = ["make"]
 
