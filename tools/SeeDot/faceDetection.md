@@ -97,6 +97,9 @@ Now, decompress the datasets and add the `DATA_HOME` environment variable (for t
     export DATA_HOME=$(pwd) # For the scripts to find the datasets
 
     cd $CUR_DIR # To go back to Face_Detection directory
+    
+    # Data pre-processing
+    IS_QVGA_MONO=1 python prepare_wider_data.py 
 ```
 
 ### Training
