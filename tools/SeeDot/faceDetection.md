@@ -188,10 +188,10 @@ To finish setting up SeeDot, run the following commands:
     cd ../../../../tools/SeeDot
 
     # For face-2
-    cp seedot/compiler/input/rnnpool-face-2.sd model/rnnpool/face-2/input.sd
+    python fixSeeDotInput.py --seedot_file seedot/compiler/input/rnnpool-face-2.sd --model_dir model/rnnpool/face-2/ --dataset_dir datasets/rnnpool/face-2/ -n 18000
     
     # For face-4
-    cp seedot/compiler/input/rnnpool-face-4.sd model/rnnpool/face-4/input.sd
+    python fixSeeDotInput.py --seedot_file seedot/compiler/input/rnnpool-face-4.sd --model_dir model/rnnpool/face-4/ --dataset_dir datasets/rnnpool/face-4/ -n 18000
 ```
  
 
