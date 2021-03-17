@@ -91,11 +91,11 @@ def getVar(line, weights_dict):
             replace = True
             weights = weights_dict[var]
             if len(weights) == 1:
-                new_line = "let " + var + " = " + "%f"%(weights[0]) + " in"
+                new_line = "let " + var + " = " + "%.20f"%(weights[0]) + " in"
             else:
                 shape = line[line.find('('):line.find(')')+1]
                 new_line = "let " + var + " = " + shape + " in ["  +\
-                         "%f"%(weights[0]) + ", " + "%f"%(weights[1]) + "] in"
+                         "%.20f"%(weights[0]) + ", " + "%.20f"%(weights[1]) + "] in"
     return  replace, new_line
 
 
