@@ -174,6 +174,8 @@ class Main:
             outputDir = os.path.join(outdir)
         elif target == config.Target.x86:
             outputDir = os.path.join(config.tempdir, "Predictor")
+        elif target == config.Target.EzPC:
+            outputDir = config.outdir
 
         obj = Compiler(self.algo, encoding, target, inputFile, outputDir,
                         profileLogFile, sf, self.source, outputLogFile,
@@ -221,6 +223,9 @@ class Main:
             datasetOutputDir = outputDir
         elif target == config.Target.x86:
             outputDir = os.path.join(config.tempdir, "Predictor")
+            datasetOutputDir = os.path.join(config.tempdir, "Predictor", "input")
+        elif target == config.Target.EzPC:
+            outputDir = config.outdir
             datasetOutputDir = os.path.join(config.tempdir, "Predictor", "input")
         else:
             assert False
@@ -727,7 +732,12 @@ class Main:
             shutil.copyfile(srcFile, destFile)
             srcFile = os.path.join(config.outdir, "input", "scales.h")
             destFile = os.path.join(config.outdir, "scales.h")
-        shutil.copyfile(srcFile, destFile)
+        elif self.target == config.Target.EzPC:
+            Util.getLogger().debug("No files to copy for EzPC codegen.")
+            pass
+
+        if self.target != config.Target.EzPC:
+            shutil.copyfile(srcFile, destFile)
 
         # Copy library.h file.
         curr_dir = os.path.dirname(os.path.realpath(__file__))

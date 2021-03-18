@@ -18,11 +18,11 @@
                 "-e",
                 "fixed",
                 "-d",
-                "usps10",
+                "Google-30",
                 "-m",
                 "red_disagree",
                 "-t",
-                "x86",
+                "EzPC",
                 "-n",
                 "1"
             ]

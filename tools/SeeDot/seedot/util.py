@@ -101,6 +101,9 @@ def forVerilog():
 def forX86():
     return Config.target == config.Target.x86
 
+def forEzPC():
+    return Config.target == config.Target.EzPC
+
 def getProfileLogFile():
     return Config.profileLogFile
 

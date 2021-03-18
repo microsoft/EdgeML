@@ -108,8 +108,9 @@ class Target:
     arduino = "arduino"
     x86 = "x86"
     m3 = "m3"
+    EzPC = "EzPC"
     default = x86
-    all = [arduino, x86, m3]
+    all = [arduino, x86, m3, EzPC]
 
 
 class Source:

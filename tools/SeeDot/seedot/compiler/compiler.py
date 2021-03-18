@@ -18,6 +18,7 @@ import seedot.compiler.ast.printAST as printAST
 import seedot.compiler.codegen.arduino as arduino
 import seedot.compiler.codegen.x86 as x86
 import seedot.compiler.codegen.m3 as m3
+import seedot.compiler.codegen.EzPC as EzPC
 
 import seedot.compiler.ir.irBuilder as irBuilder
 import seedot.compiler.ir.irUtil as irUtil
@@ -123,6 +124,8 @@ class Compiler:
             codegen = m3.M3(self.outputDir, *state)
         elif util.forX86():
             codegen = x86.X86(self.outputDir, self.generateAllFiles, self.printSwitch, self.id, self.paramInNativeBitwidth, *state)
+        elif util.forEzPC():
+            codegen = EzPC.EzPC(self.outputDir, *state)
         else:
             assert False
 

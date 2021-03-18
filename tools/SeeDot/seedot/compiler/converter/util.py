@@ -64,6 +64,9 @@ def forM3():
 def forX86():
     return getTarget() == config.Target.x86
 
+def forEzPC():
+    return getTarget() == config.Target.EzPC
+
 def setInputFile(inputFile):
     Config.inputFile = inputFile
 
