@@ -72,14 +72,14 @@ class EzPC(CodegenBase):
                 bw = self.varsForBitwidth[var]
                 typ_str = "int64_al"
                 size = self.decls[var].shape
-                sizestr = ''.join(["*%dL" % (i) for i in size])
+                sizestr = ''.join(["*%d" % (i) for i in size])
                 if sizestr != "":
                     sizestr = '[' + sizestr[1:] + ']'
 
                 self.out.printf(typ_str + " " + sizestr + " " + var + ";\n", indent = True)
                 
                 for i in range(len(size)):
-                    self.out.printf("for i%d=[0L:%dL] {\n" % (i,size[i]), indent = True)
+                    self.out.printf("for i%d=[0:%d] {\n" % (i,size[i]), indent = True)
                     self.out.increaseIndent()
                 
                 indexstr = '['
@@ -107,7 +107,10 @@ class EzPC(CodegenBase):
 
 
     def printVarDecls(self):
-        for decl in self.decls:
+        decls_keys_list = list(self.decls.keys())
+        for decl_idx in range(len(decls_keys_list)):
+            decl = decls_keys_list[decl_idx]
+
             if decl in self.globalVars:
                 continue
 
@@ -121,14 +124,18 @@ class EzPC(CodegenBase):
             idf_str = decl
             shape_str = ""
             type = self.decls[decl]
-            if Type.isInt(type):
-                typ_str = "int64_pl"
-                shape_str = ''
-            elif Type.isTensor(type):
+            if (getAlgo() == 'fastgrnn') and (decl_idx == (len(self.decls)-1)):
                 typ_str = "int64_al"
-                shape_str = ''.join(['*' + str(n) + 'L' for n in type.shape])
-                if shape_str != "":
-                    shape_str = '[' + shape_str[1:] + ']'
+                shape_str = '[1]'
+            else:
+                if Type.isInt(type):
+                    typ_str = "int64_pl"
+                    shape_str = ''
+                elif Type.isTensor(type):
+                    typ_str = "int64_al"
+                    shape_str = ''.join(['*' + str(n) + '' for n in type.shape])
+                    if shape_str != "":
+                        shape_str = '[' + shape_str[1:] + ']'
             if idf_str in self.varsForBitwidth and idf_str[:3] == "tmp":
                 bw = self.varsForBitwidth.get(decl, config.wordLength)
                 idf_str = idf_str + "bw" + str(bw)
@@ -138,7 +145,7 @@ class EzPC(CodegenBase):
                 if shape_str == "":
                     self.out.printf("%s = 0L;\n", idf_str, indent=True)
                 else:
-                    self.out.printf("for init%s=[0L:(%s)]{\n", idf_str, shape_str[1:-1], indent=True)
+                    self.out.printf("for init%s=[0:(%s)]{\n", idf_str, shape_str[1:-1], indent=True)
                     self.out.increaseIndent()
                     self.out.printf("%s[init%s] = 0L;\n", idf_str, idf_str, indent=True)
                     self.out.decreaseIndent()
@@ -194,7 +201,7 @@ class EzPC(CodegenBase):
             typ_str = "int64_al"
             
             size = self.decls[var].shape
-            sizestr = ''.join(["*%dL" % (i) for i in size])
+            sizestr = ''.join(["*%d" % (i) for i in size])
             sizestr = '['  + sizestr[1:] + ']'
             inputPrefix = "input("
 
@@ -274,8 +281,8 @@ class EzPC(CodegenBase):
         assert isinstance(ir.cond, IR.BoolCop), "Can't declare EzPC for loop"
         self.out.printf('for ', indent=True) #Loop counter must be int16 else indices can overflow
         self.out.printf('%s', ir.var.idf)
-        self.out.printf('=[%dL:', ir.st)
-        self.out.printf('%dL] {\n',ir.cond.e2.n)
+        self.out.printf('=[%d:', ir.st)
+        self.out.printf('%d] {\n',ir.cond.e2.n)
         
     def printWhile(self, ir):
         self.out.printf('while (', indent=True)
@@ -295,7 +302,7 @@ class EzPC(CodegenBase):
             if Type.isInt(type):
                 shape_str = ''
             elif Type.isTensor(type):
-                shape_str = ''.join(['*' + str(n) + 'L' for n in type.shape])
+                shape_str = ''.join(['*' + str(n) + '' for n in type.shape])
                 shape_str = '[' + shape_str[1:] + ']'
             if var.find('_') != -1:
                 var.replace('_', 'bw') 
@@ -305,8 +312,8 @@ class EzPC(CodegenBase):
         self.out.printf('for ', indent=True) #Loop counter must be int16 else indices can overflow
         self.out.printf('msetVar')
         self.out.printf('%s', ir.e.idf)
-        self.out.printf('=[0L:')
-        self.out.printf('%dL] {\n',ir.len)
+        self.out.printf('=[0:')
+        self.out.printf('%d] {\n',ir.len)
         self.out.increaseIndent()
         vbwstr = ""
         if config.vbwEnabled and ir.e.idf in self.varsForBitwidth.keys():
@@ -407,7 +414,10 @@ class EzPC(CodegenBase):
         if keys != None:
             for i in range(len(keys)):
                 arg = keys[i]
-                self.print(arg)
+                if isinstance(arg, IR.Int):
+                    self.printInt(arg, long=False)
+                else:
+                    self.print(arg)
                 if i != len(keys) - 1:
                     self.out.printf(", ")
         
@@ -466,6 +476,8 @@ class EzPC(CodegenBase):
         else:
             funcname = self.getEzPCName(ir_name)
             revisedArgList = self.modifyArgList(funcname, argListOrig, [], 1)
+            if funcname[:-5] == "Sigmoid" or funcname[:-5] == "TanH":
+                funcname = funcname[:-5]
             return funcname, revisedArgList
 
         
@@ -490,28 +502,41 @@ class EzPC(CodegenBase):
             initList = initList[3:]
             return (initList, extendList, nameargs)
 
-        elif (name == "Sigmoid"):
+        elif (name == "Sigmoid" or name == "SigmoidNew16"):
             if mode == 1:
                 extendList = ["16L", "16L"]
             else:
                 extendList.extend(extendList)
             nameargs = initList[0:1]
-            nameargs.append(initList[8])
             initListPre = []
-            initListPre.extend(initList[1:3])
-            intiListPost = initList[6:8]
-            initListPre.extend(intiListPost)
+            if name  == "SigmoidNew16":
+                nameargs.append(initList[3])
+                initListPre.extend(initList[1:3])
+                # intiListPost = initList[6:8]
+                # initListPre.extend(intiListPost)
+            else:
+                nameargs.append(initList[8])
+                initListPre.extend(initList[1:3])
+                intiListPost = initList[6:8]
+                initListPre.extend(intiListPost)
             initList = initListPre
             return (initList, extendList, nameargs)
-        elif  (name == "TanH"):
+        elif  (name == "TanH" or name == "TanHNew16"):
             if mode == 1:
                 extendList = ["16L", "16L"]
             else:
                 extendList.extend(extendList)
             nameargs = initList[0:1]
-            nameargs.append(initList[5])
             initListPre = []
-            initListPre.extend(initList[1:5])
+            initListPre = []
+            if name  == "TanHNew16":
+                nameargs.append(initList[3])
+                initListPre.extend(initList[1:3])
+                # intiListPost = initList[6:8]
+                # initListPre.extend(intiListPost)
+            else:
+                nameargs.append(initList[5])
+                initListPre.extend(initList[1:5])
             initList = initListPre
             return (initList, extendList, nameargs)
         elif (name == "AdjustScaleShl"):
@@ -548,8 +573,11 @@ class EzPC(CodegenBase):
         self.out.printf('\n')
         self.out.printf('(* ' + ir.msg + ' *)\n', indent=True)
 
-    def printInt(self, ir):
-        self.out.printf('%dL', ir.n)
+    def printInt(self, ir, long=True):
+        if not long:
+            self.out.printf('%d', ir.n)
+        else:
+            self.out.printf('%dL', ir.n)
     
     def printMemcpy(self, ir):
         def printIdx(idf, index):
@@ -564,7 +592,7 @@ class EzPC(CodegenBase):
                     if j != len(var_shape) - 1:
                         dim_mul = dim_mul + "*"
                 self.out.printf("(")
-                self.print(index[i])
+                self.printInt(index[i], long=False)
                 if (i!= len(index) - 1) and (dim_mul != ""):
                     self.out.printf("*" + dim_mul)
                 self.out.printf(")")
@@ -596,8 +624,8 @@ class EzPC(CodegenBase):
         self.out.printf('for ', indent=True) #Loop counter must be int16 else indices can overflow
         self.out.printf('mcpyVar')
         self.out.printf('%s%s%s%s', ir.start.idf, vbwstrstart, ir.to.idf, vbwstrto)
-        self.out.printf('=[0L:')
-        self.out.printf('%dL] {\n',ir.length)
+        self.out.printf('=[0:')
+        self.out.printf('%d] {\n',ir.length)
         self.out.increaseIndent()
         self.out.printf('%s%s', ir.to.idf, vbwstrto, indent=True)
         self.out.printf('[')
