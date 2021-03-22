@@ -56,7 +56,7 @@ np.save(save_dir_datasets + 'train.npy', b.reshape(1, b.shape[0]))
 np.save(save_dir_datasets + 'test.npy', b.reshape(1, b.shape[0]))
 
 C1 = net.state_dict()['module.conv.0.weight']
-C1m = C1.permute(2, 3, 1, 0).detach().numpy().flatten()
+C1m = C1.permute(2, 3, 1, 0).detach().cpu().numpy().flatten()
 w = net.state_dict()['module.conv.1.weight']
 b = net.state_dict()['module.conv.1.bias']
 m = net.state_dict()['module.conv.1.running_mean']
@@ -65,8 +65,8 @@ BNW = torch.mul(torch.rsqrt(torch.add(v, 0.00001)), w)
 BNB = torch.sub(torch.mul(b, torch.reciprocal(BNW)), m)
 
 np.save(save_dir_model + 'CBR1F.npy', C1m.reshape(1, C1m.shape[0]))
-np.save(save_dir_model + 'CBR1W.npy', BNW.view(-1).unsqueeze(axis=0).detach().numpy())
-np.save(save_dir_model + 'CBR1B.npy', BNB.view(-1).unsqueeze(axis=0).detach().numpy())
+np.save(save_dir_model + 'CBR1W.npy', BNW.view(-1).unsqueeze(axis=0).detach().cpu().numpy())
+np.save(save_dir_model + 'CBR1B.npy', BNB.view(-1).unsqueeze(axis=0).detach().cpu().numpy())
 
 W1 = net.state_dict()['module.rnn_model.cell_rnn.cell.W']
 W1m = W1.permute(1, 0)
@@ -79,12 +79,12 @@ Bh1m = Bh1.permute(1, 0)
 zeta1 = net.state_dict()['module.rnn_model.cell_rnn.cell.zeta']
 nu1 = net.state_dict()['module.rnn_model.cell_rnn.cell.nu']
 
-np.save(save_dir_model + 'W1.npy', W1m.detach().numpy())
-np.save(save_dir_model + 'U1.npy', U1m.detach().numpy())
-np.save(save_dir_model + 'Bg1.npy', Bg1m.detach().numpy())
-np.save(save_dir_model + 'Bh1.npy', Bh1m.detach().numpy())
-np.save(save_dir_model + 'zeta1.npy', zeta1.detach().numpy().item())
-np.save(save_dir_model + 'nu1.npy', nu1.detach().numpy().item())
+np.save(save_dir_model + 'W1.npy', W1m.detach().cpu().numpy())
+np.save(save_dir_model + 'U1.npy', U1m.detach().cpu().numpy())
+np.save(save_dir_model + 'Bg1.npy', Bg1m.detach().cpu().numpy())
+np.save(save_dir_model + 'Bh1.npy', Bh1m.detach().cpu().numpy())
+np.save(save_dir_model + 'zeta1.npy', zeta1.detach().cpu().numpy().item())
+np.save(save_dir_model + 'nu1.npy', nu1.detach().cpu().numpy().item())
 
 W2 = net.state_dict()['module.rnn_model.cell_bidirrnn.cell.W']
 W2m = W2.permute(1, 0)
@@ -97,12 +97,12 @@ Bh2m = Bh2.permute(1, 0)
 zeta2 = net.state_dict()['module.rnn_model.cell_bidirrnn.cell.zeta']
 nu2 = net.state_dict()['module.rnn_model.cell_bidirrnn.cell.nu']
 
-np.save(save_dir_model + 'W2.npy', W2m.detach().numpy())
-np.save(save_dir_model + 'U2.npy', U2m.detach().numpy())
-np.save(save_dir_model + 'Bg2.npy', Bg2m.detach().numpy())
-np.save(save_dir_model + 'Bh2.npy', Bh2m.detach().numpy())
-np.save(save_dir_model + 'zeta2.npy', zeta2.detach().numpy().item())
-np.save(save_dir_model + 'nu2.npy', nu2.detach().numpy().item())
+np.save(save_dir_model + 'W2.npy', W2m.detach().cpu().numpy())
+np.save(save_dir_model + 'U2.npy', U2m.detach().cpu().numpy())
+np.save(save_dir_model + 'Bg2.npy', Bg2m.detach().cpu().numpy())
+np.save(save_dir_model + 'Bh2.npy', Bh2m.detach().cpu().numpy())
+np.save(save_dir_model + 'zeta2.npy', zeta2.detach().cpu().numpy().item())
+np.save(save_dir_model + 'nu2.npy', nu2.detach().cpu().numpy().item())
 
 if args.model_arch == 'RPool_Face_QVGA_monochrome':
 	weight_idx = 14
@@ -140,33 +140,33 @@ for j in range(weight_idx):
 	BN3W = torch.mul(torch.rsqrt(torch.add(v, 0.00001)), w)
 	BN3B = torch.sub(torch.mul(b, torch.reciprocal(BN3W)), m)
 
-	np.save(save_dir_model + 'L%dF1.npy' % j, F1m.detach().numpy().flatten())
-	np.save(save_dir_model + 'L%dF2.npy' % j, F2m.detach().numpy().flatten())
-	np.save(save_dir_model + 'L%dF3.npy' % j, F3m.detach().numpy().flatten())
+	np.save(save_dir_model + 'L%dF1.npy' % j, F1m.detach().cpu().numpy().flatten())
+	np.save(save_dir_model + 'L%dF2.npy' % j, F2m.detach().cpu().numpy().flatten())
+	np.save(save_dir_model + 'L%dF3.npy' % j, F3m.detach().cpu().numpy().flatten())
 
-	np.save(save_dir_model + 'L%dW1.npy' % j, BN1W.view(-1).unsqueeze(axis=0).detach().numpy())
-	np.save(save_dir_model + 'L%dW2.npy' % j, BN2W.view(-1).unsqueeze(axis=0).detach().numpy())
-	np.save(save_dir_model + 'L%dW3.npy' % j, BN3W.view(-1).unsqueeze(axis=0).detach().numpy())
+	np.save(save_dir_model + 'L%dW1.npy' % j, BN1W.view(-1).unsqueeze(axis=0).detach().cpu().numpy())
+	np.save(save_dir_model + 'L%dW2.npy' % j, BN2W.view(-1).unsqueeze(axis=0).detach().cpu().numpy())
+	np.save(save_dir_model + 'L%dW3.npy' % j, BN3W.view(-1).unsqueeze(axis=0).detach().cpu().numpy())
 
-	np.save(save_dir_model + 'L%dB1.npy' % j, BN1B.view(-1).unsqueeze(axis=0).detach().numpy())
-	np.save(save_dir_model + 'L%dB2.npy' % j, BN2B.view(-1).unsqueeze(axis=0).detach().numpy())
-	np.save(save_dir_model + 'L%dB3.npy' % j, BN3B.view(-1).unsqueeze(axis=0).detach().numpy())
+	np.save(save_dir_model + 'L%dB1.npy' % j, BN1B.view(-1).unsqueeze(axis=0).detach().cpu().numpy())
+	np.save(save_dir_model + 'L%dB2.npy' % j, BN2B.view(-1).unsqueeze(axis=0).detach().cpu().numpy())
+	np.save(save_dir_model + 'L%dB3.npy' % j, BN3B.view(-1).unsqueeze(axis=0).detach().cpu().numpy())
 
 k = 0
 for j in range(3, 6):
 	k += 1
 	N = net.state_dict()['module.L2Norm%d_3.weight' % j]
-	np.save(save_dir_model + 'normW%d.npy' % k, N.view(-1).unsqueeze(axis=0).detach().numpy())
+	np.save(save_dir_model + 'normW%d.npy' % k, N.view(-1).unsqueeze(axis=0).detach().cpu().numpy())
 
 for j in range(4):
 	locw = net.state_dict()['module.loc.%d.weight' % j]
-	locwm = locw.permute(2, 3, 1, 0).detach().numpy().flatten()
+	locwm = locw.permute(2, 3, 1, 0).detach().cpu().numpy().flatten()
 	locb = net.state_dict()['module.loc.%d.bias' % j]
 	confw = net.state_dict()['module.conf.%d.weight' % j]
-	confwm = confw.permute(2, 3, 1, 0).detach().numpy().flatten()
+	confwm = confw.permute(2, 3, 1, 0).detach().cpu().numpy().flatten()
 	confb = net.state_dict()['module.conf.%d.bias' % j]
 
 	np.save(save_dir_model + 'loc%dw.npy' % j, locwm.reshape(1, locwm.shape[0]))
-	np.save(save_dir_model + 'loc%db.npy' % j, locb.view(-1).unsqueeze(axis=0).detach().numpy())
+	np.save(save_dir_model + 'loc%db.npy' % j, locb.view(-1).unsqueeze(axis=0).detach().cpu().numpy())
 	np.save(save_dir_model + 'conf%dw.npy' % j, confwm.reshape(1, confwm.shape[0]))
-	np.save(save_dir_model + 'conf%db.npy' % j, confb.view(-1).unsqueeze(axis=0).detach().numpy())
+	np.save(save_dir_model + 'conf%db.npy' % j, confb.view(-1).unsqueeze(axis=0).detach().cpu().numpy())
