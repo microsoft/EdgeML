@@ -1,0 +1,36 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
+
+// FastGRNN SeeDot code for Google-30 dataset.
+
+let W1   = (32, 16)  in [-2.83, 2.71] in
+let W2   = (16, 100)  in [-5.77, 5.83] in
+let U1   = (100, 35)  in [-8.67, 7.99] in
+let U2   = (35, 100)  in [-8.32, 10.83] in
+let Bg    = (1, 100)  in [-9.26, 17.22] in
+let Bh    = (1, 100)  in [-8.37, 12.40] in
+let FC    = (100, 30) in [-26.64, 18.27] in
+let FCbias = (1, 30) in [-2.97, 3.99] in
+
+let X    = (3168, 1)   in [-10.55, 3.74] in
+
+let zeta = 0.14259209 in
+let nu = 0.00433435 in
+
+let H    = init([1, 100], 0.0) in
+
+let res = loop(i = [0:99], H)
+(
+	let XX = reshape(X[32*i:+32][0:+1], (1,32), (1,2)) in
+	let a = (XX * W1) * W2 in
+	let b = (H * U1) * U2 in
+	let c = a + b in
+	let g = sigmoid(c + Bg) in
+	let h = tanh(c + Bh) in
+	let H = (g <*> H) + (zeta * (1.0 - g) + nu) <*> h in 
+	H
+) in
+
+let score = (res * FC) + FCbias in
+argmax(score)
