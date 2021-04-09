@@ -17,6 +17,7 @@ This document describes the tool's usage with an example.
    - **[Numpy](http://www.numpy.org/)** (tested with version 1.16.4)
    - **[Scikit-learn](https://scikit-learn.org/)** (tested with version 0.21.2)
    - **[Bokeh](https://bokeh.org/)** (tested with version 2.1.1)
+   - **[ONNX](https://onnx.ai/)** (tested with version 1.8.0)
 2. Linux packages:
    - **[gcc](https://www.gnu.org/software/gcc/)** (tested with version 9.3.0)
    - **[make](https://www.gnu.org/software/make/)** (tested with version 4.2.1)
