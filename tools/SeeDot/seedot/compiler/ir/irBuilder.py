@@ -2296,7 +2296,10 @@ class IRBuilder(ASTVisitor):
         bitwidth_out, scale_out = bitwidth_in, scale_in
         
         # If input variable is demoted to 8 bits, demote the output variable to 8 bits too.
-        if expr_in.idf in self.demotedVarsList:
+        tmp_var = expr_in.idf
+        while tmp_var in self.substitutions.keys():
+            tmp_var = self.substitutions[tmp_var]
+        if tmp_var in self.demotedVarsList:
             self.demotedVarsList.append(expr_out.idf)
             self.demotedVarsOffsets[expr_out.idf] = 0
             self.varsForBitwidth[expr_out.idf] = config.wordLength // 2
@@ -2804,7 +2807,10 @@ class IRBuilder(ASTVisitor):
         intv_in = self.varIntervals[expr_in.idf]
 
         # If input is demoted to lower bit-width, demote the output to lower bit-width as well.
-        if expr_in.idf in self.demotedVarsList:
+        tmp_var = expr_in.idf
+        while tmp_var in self.substitutions.keys():
+            tmp_var = self.substitutions[tmp_var]
+        if tmp_var in self.demotedVarsList:
             self.demotedVarsList.append(expr_out.idf)
             self.demotedVarsOffsets[expr_out.idf] = 0
             self.varsForBitwidth[expr_out.idf] = config.wordLength // 2
@@ -2958,7 +2964,10 @@ class IRBuilder(ASTVisitor):
         intv_in = self.varIntervals[expr_in.idf]
 
         # If input is demoted to lower bit-width, demote the output variable to lower bit-width as well.
-        if expr_in.idf in self.demotedVarsList:
+        tmp_var = expr_in.idf
+        while tmp_var in self.substitutions.keys():
+            tmp_var = self.substitutions[tmp_var]
+        if tmp_var in self.demotedVarsList:
             self.demotedVarsList.append(expr_out.idf)
             self.demotedVarsOffsets[expr_out.idf] = 0
             self.varsForBitwidth[expr_out.idf] = config.wordLength // 2

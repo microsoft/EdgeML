@@ -13,14 +13,22 @@ This document describes the tool's usage with an example.
 ### **Software requirements**
 
 1. [**Python 3**](https://www.python.org/) with following packages:
-   - **[Antrl4](http://www.antlr.org/)** (antlr4-python3-runtime; tested with version 4.7.2)
-   - **[Numpy](http://www.numpy.org/)** (tested with version 1.16.4)
+   - **[Antrl4](https://www.antlr.org/)** (antlr4-python3-runtime; tested with version 4.7.2)
+   - **[Numpy](https://www.numpy.org/)** (tested with version 1.16.4)
    - **[Scikit-learn](https://scikit-learn.org/)** (tested with version 0.21.2)
+   - **[SciPy](https://www.scipy.org/)** (tested with version 1.1.0)
    - **[Bokeh](https://bokeh.org/)** (tested with version 2.1.1)
    - **[ONNX](https://onnx.ai/)** (tested with version 1.8.0)
+   - **[TQDM](https://tqdm.github.io/)** (tested with version 4.56.0)
+   All of the above packages can be installed using the following command in this directory:
+   `pip3 install -r requirements.txt`
 2. Linux packages:
    - **[gcc](https://www.gnu.org/software/gcc/)** (tested with version 9.3.0)
    - **[make](https://www.gnu.org/software/make/)** (tested with version 4.2.1)
+   - **[cmake](https://cmake.org/)** (tested with version 3.16.3)
+   - **[protobuf](https://developers.google.com/protocol-buffers)** (tested with version 3.6.1)
+   All of the above packages can be installed using the following command:
+   `sudo apt install gcc g++ build-essential cmake protobuf-compiler libprotobuf-dev`
 
 ### **Usage**
 
