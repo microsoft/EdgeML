@@ -60,3 +60,14 @@ c_reference/models/q_scut_head_b_face4_model/mbconv2.h filter=lfs diff=lfs merge
 c_reference/models/q_scut_head_b_face4_model/mbconv4.h filter=lfs diff=lfs merge=lfs -text
 c_reference/models/q_scut_head_b_face4_model/rnn2.h filter=lfs diff=lfs merge=lfs -text
 c_reference/models/q_scut_head_b_face4_model/detection2.h filter=lfs diff=lfs merge=lfs -text
+c_reference/tests/kws/keyword_spotting_io_1.h filter=lfs diff=lfs merge=lfs -text
+c_reference/tests/kws/keyword_spotting_io_2.h filter=lfs diff=lfs merge=lfs -text
+c_reference/tests/kws/keyword_spotting_io_3.h filter=lfs diff=lfs merge=lfs -text
+c_reference/tests/conv1d/conv1d_regular/conv_param.h filter=lfs diff=lfs merge=lfs -text
+c_reference/tests/conv1d/conv1d_lr/conv_param_lr.h filter=lfs diff=lfs merge=lfs -text
+c_reference/tests/conv1d/conv1d_depthwise/conv_param_depth.h filter=lfs diff=lfs merge=lfs -text
+c_reference/tests/kws/precnn_params.h filter=lfs diff=lfs merge=lfs -text
+c_reference/tests/kws/postcnn_params.h filter=lfs diff=lfs merge=lfs -text
+c_reference/tests/kws/rnn_params.h filter=lfs diff=lfs merge=lfs -text
+c_reference/tests/rnn_bricked/rnn_params.h filter=lfs diff=lfs merge=lfs -text
+c_reference/tests/rnn_bricked/rnn_bricked_io.h filter=lfs diff=lfs merge=lfs -text

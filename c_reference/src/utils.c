@@ -71,6 +71,128 @@ void matVec(const float* const mat, const float* const vec,
   }
 }
 
+void offset_matVec_conv1d(const float* mat, const float* vec,
+  unsigned nrows, unsigned ncols,
+  unsigned row_stride, unsigned vec_stride,
+  unsigned depthwise, float* ret) {
+
+  while (nrows--) {
+    // For depthwise, the vec(input) pointer is updated 
+    // Since each row of the mat corresponds to a separate channel index
+    float* vec_offset = depthwise ? (float*)vec++ : (float*)vec;
+    float* mat_offset = (float*)mat;
+    float sum = 0.0f;
+    unsigned cols = ncols;
+    
+    #ifdef LOOP_UNROLL
+      unsigned len_unroll = cols >> 2;
+      cols %= 4; // ncols % 4
+      while (len_unroll--) {
+        sum += (*mat_offset++) * (*vec_offset);
+        vec_offset += vec_stride;
+        sum += (*mat_offset++) * (*vec_offset);
+        vec_offset += vec_stride;
+        sum += (*mat_offset++) * (*vec_offset);
+        vec_offset += vec_stride;
+        sum += (*mat_offset++) * (*vec_offset);
+        vec_offset += vec_stride;
+      }
+    #endif
+    
+    while (cols--) {
+      sum += (*mat_offset++) * (*vec_offset);
+      vec_offset += vec_stride;
+    }
+    *ret++ = sum;
+    mat += row_stride;
+  }
+}
+
+void tiledMatMul_float(const float* const matA, const float* const matB,
+  unsigned nrows, unsigned ncommon, unsigned ncols,
+  unsigned total_comm_A, unsigned total_cols_B,
+  float* const ret, unsigned block_size) {
+  for (unsigned row = 0; row < nrows; row += block_size) {
+    unsigned row_block_size = (row + block_size < nrows) ? block_size : nrows - row;
+    for (unsigned col = 0; col < ncols; col += block_size) {
+      unsigned col_block_size = (col + block_size < ncols) ? block_size : ncols - col;
+      for (unsigned comm = 0; comm < ncommon; comm += block_size) {
+        unsigned comm_block_size = (comm + block_size < ncommon) ? block_size : ncommon - comm;
+        for (unsigned block_row = row; block_row < row + row_block_size; block_row++) {
+          float *ret_offset = (float *)ret + block_row * ncols + col;
+          for (unsigned block_col = col; block_col < col + col_block_size; block_col++) {
+            float sum = 0;
+            unsigned temp_block_size = comm_block_size;
+            const float *matA_offset = (const float*)matA + block_row * total_comm_A + comm;
+            const float *matB_offset = (const float*)matB + comm * total_cols_B + block_col;
+
+            #ifdef LOOP_UNROLL
+              unsigned len_unroll = temp_block_size >> 2;
+              temp_block_size %= 4; // comm_block_size % 4
+              while (len_unroll--) {
+                sum += (*matA_offset++) * (*matB_offset);
+                matB_offset += ncols;
+                sum += (*matA_offset++) * (*matB_offset);
+                matB_offset += ncols;
+                sum += (*matA_offset++) * (*matB_offset);
+                matB_offset += ncols;
+                sum += (*matA_offset++) * (*matB_offset);
+                matB_offset += ncols;
+              }
+            #endif
+
+            while (temp_block_size--) {
+              sum += (*matA_offset++) * (*matB_offset);
+              matB_offset += ncols;
+            }
+            *ret_offset++ += sum;
+          }
+        } 
+      }
+    }
+  }
+}
+
+void transposed_tiledMatMul(const float* const matA, const float* const matB,
+  unsigned nrows, unsigned ncommon, unsigned ncols,
+  unsigned total_comm_A, unsigned total_comm_B,
+  float* const ret, unsigned block_size) {
+  for (unsigned row = 0; row < nrows; row += block_size) {
+    unsigned row_block_size = (row + block_size < nrows) ? block_size : nrows - row;
+    for (unsigned col = 0; col < ncols; col += block_size) {
+      unsigned col_block_size = (col + block_size < ncols) ? block_size : ncols - col;
+      for (unsigned comm = 0; comm < ncommon; comm += block_size) {
+        unsigned comm_block_size = (comm + block_size < ncommon) ? block_size : ncommon - comm;
+        for (unsigned block_row = row; block_row < row + row_block_size; block_row++) {
+          float *ret_offset = (float *)ret + block_row * ncols + col;
+          for (unsigned block_col = col; block_col < col + col_block_size; block_col++) {
+            float sum = 0;
+            unsigned temp_block_size = comm_block_size;
+            const float *matA_offset = (const float*)matA + block_row * total_comm_A + comm;
+            const float *matB_offset = (const float*)matB + block_col * total_comm_B + comm;
+
+            #ifdef LOOP_UNROLL
+              unsigned len_unroll = temp_block_size >> 2;
+              temp_block_size %= 4; // comm_block_size % 4
+              while (len_unroll--) {
+                sum += (*matA_offset++) * (*matB_offset++);
+                sum += (*matA_offset++) * (*matB_offset++);
+                sum += (*matA_offset++) * (*matB_offset++);
+                sum += (*matA_offset++) * (*matB_offset++);
+              }
+            #endif
+
+            while (temp_block_size--) {
+              sum += (*matA_offset++) * (*matB_offset++);
+            }
+            *ret_offset++ += sum;
+          }
+        } 
+      }
+    }
+  }
+}
+
 void v_add(float scalar1, const float* const vec1,
   float scalar2, const float* const vec2,
   unsigned len, float* const ret) {
@@ -119,4 +241,35 @@ void softmax(const float* const input, unsigned len, float* const ret) {
   float offset = m + logf(sum);
   for (unsigned i = 0; i < len; i++)
     ret[i] = expf(input[i] - offset);
+}
+
+void semi_sigmoid_tanh(float* output_signal, const float* const input_signal, 
+  unsigned in_time, unsigned in_channels) {
+  unsigned time_step = 0; // used to avoid index multiplication
+  while (in_time--) {
+    unsigned pivot = in_channels >> 1;
+    float* input_sigmoid_offset = (float*)input_signal + time_step;
+    float* input_tanh_offset = (float*)input_signal + time_step + pivot;
+    
+    #ifdef LOOP_UNROLL
+      unsigned len_unroll = pivot >> 2;
+      pivot %= 4;
+      while (len_unroll--) {
+        *output_signal++ = sigmoid(*input_sigmoid_offset++) *
+                          tanh(*input_tanh_offset++);
+        *output_signal++ = sigmoid(*input_sigmoid_offset++) *
+                          tanh(*input_tanh_offset++);
+        *output_signal++ = sigmoid(*input_sigmoid_offset++) *
+                          tanh(*input_tanh_offset++);
+        *output_signal++ = sigmoid(*input_sigmoid_offset++) *
+                          tanh(*input_tanh_offset++);
+      }
+    #endif
+
+    while (pivot--) {
+      *output_signal++ = sigmoid(*input_sigmoid_offset++) *
+                        tanh(*input_tanh_offset++);
+    }
+    time_step += in_channels;
+  }
 }
