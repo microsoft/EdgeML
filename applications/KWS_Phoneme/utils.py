@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT license.
+
 """
 Some Torch Functions required for overwriting 
 Convolutions to Low Rank Convolutions
