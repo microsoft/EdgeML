@@ -20,15 +20,18 @@ This document describes the tool's usage with an example.
    - **[Bokeh](https://bokeh.org/)** (tested with version 2.1.1)
    - **[ONNX](https://onnx.ai/)** (tested with version 1.8.0)
    - **[TQDM](https://tqdm.github.io/)** (tested with version 4.56.0)
-   All of the above packages can be installed using the following command in this directory:
-   `pip3 install -r requirements.txt`
+
+All of the above packages can be installed using the following command in this directory:
+`pip3 install -r requirements.txt`
+
 2. Linux packages:
    - **[gcc](https://www.gnu.org/software/gcc/)** (tested with version 9.3.0)
    - **[make](https://www.gnu.org/software/make/)** (tested with version 4.2.1)
    - **[cmake](https://cmake.org/)** (tested with version 3.16.3)
    - **[protobuf](https://developers.google.com/protocol-buffers)** (tested with version 3.6.1)
-   All of the above packages can be installed using the following command:
-   `sudo apt install gcc g++ build-essential cmake protobuf-compiler libprotobuf-dev`
+
+All of the above packages can be installed using the following command:
+`sudo apt install gcc g++ build-essential cmake protobuf-compiler libprotobuf-dev`
 
 ### **Usage**
 
