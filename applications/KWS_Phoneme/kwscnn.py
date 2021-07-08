@@ -12,8 +12,10 @@ import numpy as np
 from edgeml_pytorch.graph.rnn import *
 
 class _IndexSelect(torch.nn.Module):
-    """Channel permutation module. The purpose of this is to allow mixing across the CNN groups."""
     def __init__(self, channels, direction, groups):
+        """
+        Channel permutation module. The purpose of this is to allow mixing across the CNN groups
+        """
         super(_IndexSelect, self).__init__()
 
         if channels % groups != 0:
@@ -45,6 +47,17 @@ class _TanhGate(torch.nn.Module):
         super(_TanhGate, self).__init__()
 
     def forward(self, value):
+        """
+        Applies a custom activation function
+        The first half of the channels are passed through sigmoid layer and the next hlaf though a tanh
+        The outputs are multiplied and returned
+        
+        Input
+            value: A tensor of shape (batch, channels, *)
+        
+        Output
+            activation output
+        """
         channels = value.shape[1]
         piv = int(channels/2)
 
@@ -61,22 +74,29 @@ class LR_conv(nn.Conv1d):
     def __init__(self, in_channels, out_channels, kernel_size,
                  stride=1, padding=0, dilation=1, groups=1,
                  bias=True, padding_mode='zeros', rank=50):
-        
         super().__init__(
             in_channels, out_channels, kernel_size, stride, padding, dilation,
             groups, bias, padding_mode)
+        """
+        A convolution layer with the weight matrix subjected to a low-rank decomposition. Currently for kernel size of 5
         
-        assert kernel_size == 5
-        rank =  rank
+        Input
+            rank            : The rank used for the low-rank decomposition on the weight/kernl tensor
+            All other parameters are similar to that of a convolution layer
+            Only change is the decomposition of the output channels into low-rank tensors
+        """
+        self.kernel_size = kernel_size
+        self.rank =  rank
         self.W1 = Parameter(torch.Tensor(self.out_channels, rank))
+        # As per PyTorch Standard
         nn.init.kaiming_uniform_(self.W1, a=math.sqrt(5))
-        self.W2 = Parameter(torch.Tensor(rank, self.in_channels * 5))
+        self.W2 = Parameter(torch.Tensor(rank, self.in_channels * self.kernel_size))
         nn.init.kaiming_uniform_(self.W2, a=math.sqrt(5))
         self.weight = None
 
     def forward(self, input):
         lr_weight = torch.matmul(self.W1, self.W2)
-        lr_weight = torch.reshape(lr_weight, (self.out_channels, self.in_channels, 5))
+        lr_weight = torch.reshape(lr_weight, (self.out_channels, self.in_channels, self.kernel_size))
         if self.padding_mode != 'zeros':
             return F.conv1d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
                             lr_weight, self.bias, self.stride,
@@ -84,17 +104,28 @@ class LR_conv(nn.Conv1d):
         return F.conv1d(input, lr_weight, self.bias, self.stride,
                         self.padding, self.dilation, self.groups)
 
-class DSCNNBlockLR_k5(torch.nn.Module):
-    """A depth-separate CNN block"""
-
+class PreRNNConvBlock(torch.nn.Module):
     def __init__(
             self, in_channels, out_channels, kernel,
             stride=1, groups=1, avg_pool=2, dropout=0.1,
-            batch_norm=0.1, do_depth=True, shuffle=0,
+            batch_norm=0.1, shuffle=0,
             activation='sigmoid', rank=50):
+        super(PreRNNConvBlock, self).__init__()
+        """
+        A low-rank convolution layer combination with pooling and activation layers. Currently for kernel size of 5
 
-        super(DSCNNBlockLR_k5, self).__init__()
-
+        Input
+            in_channels     : number of input channels for the conv layer
+            out_channels    : number of output channels for the conv layer
+            kernel          : conv kernel size
+            stride          : conv stride
+            groups          : number of groups for conv layer
+            avg_pool        : kernel size for avgerage pooling layer
+            dropout         : dropout layer probability
+            batch_norm      : momemtum for batch norm
+            activation      : activation layer
+            rank            : rank for low-rank decomposition for conv layer weights
+        """
         activators = {
             'sigmoid': torch.nn.Sigmoid(),
             'relu': torch.nn.ReLU(),
@@ -116,10 +147,7 @@ class DSCNNBlockLR_k5(torch.nn.Module):
         else:
             batch_block = None
 
-        #do_depth = False
-        # depth_cnn = torch.nn.Conv1d(in_channels, in_channels, kernel_size=kernel, stride=1, groups=in_channels)
         depth_cnn = None
-        # point_cnn = torch.nn.Conv1d(in_channels, out_channels, kernel_size=1, stride=stride, groups=groups)
         point_cnn = LR_conv(in_channels, out_channels, kernel_size=kernel, stride=stride, groups=groups, rank=rank, padding=2)
 
         if shuffle != 0 and groups > 1:
@@ -138,65 +166,38 @@ class DSCNNBlockLR_k5(torch.nn.Module):
             dropout_block = None
 
         seq1 = [nonlin, batch_block, depth_cnn, shuffler, point_cnn, dropout_block, pool]
-        # seq1 = [nonlin, batch_block, depth_cnn]#, shuffler, point_cnn, dropout_block, pool]
         seq_f1 = [item for item in seq1 if item is not None]
         if len(seq_f1) == 1:
             self._op1 = seq_f1[0]
         else:
             self._op1 = torch.nn.Sequential(*seq_f1)
 
-        seq2 = [shuffler, dropout_block, pool]
-        seq_f2 = [item for item in seq2 if item is not None]
-        if len(seq_f2) == 1:
-            print("Only 1 op in seq2")
-            self._op2 = seq_f2[0]
-        else:
-            self._op2 = torch.nn.Sequential(*seq_f2)
-
     def forward(self, x):
-        xb = self._op1[0](x)
-        x_cnn = self._op1[1](xb)
-        return x_cnn
+        x = self._op1(x)
+        return x
 
-
-class LR_pointcnn(nn.Conv1d):
-    def __init__(self, in_channels, out_channels, kernel_size,
-                 stride=1, padding=0, dilation=1, groups=1,
-                 bias=True, padding_mode='zeros', rank=50):
-        super().__init__(
-            in_channels, out_channels, kernel_size, stride,
-            padding, dilation, groups, bias, padding_mode)
-        
-        # assert stride == 3
-        assert kernel_size == 1
-        rank =  rank
-        self.W1 = Parameter(torch.Tensor(self.out_channels, rank))
-        nn.init.kaiming_uniform_(self.W1, a=math.sqrt(5))
-        self.W2 = Parameter(torch.Tensor(rank, self.in_channels))
-        nn.init.kaiming_uniform_(self.W2, a=math.sqrt(5))
-        self.weight = None
-
-    def forward(self, input):
-        lr_weight = torch.matmul(self.W1, self.W2)
-        lr_weight = torch.reshape(lr_weight, (self.out_channels, self.in_channels, 1))
-        if self.padding_mode != 'zeros':
-            return F.conv1d(F.pad(input, self._reversed_padding_repeated_twice, mode=self.padding_mode),
-                            lr_weight, self.bias, self.stride,
-                            _single(0), self.dilation, self.groups)
-        return F.conv1d(input, lr_weight, self.bias, self.stride,
-                        self.padding, self.dilation, self.groups)
-
-class DSCNNBlockLR_better(torch.nn.Module):
-    """A depth-separate CNN block"""
-
+class DSCNNBlockLR(torch.nn.Module):
     def __init__(
             self, in_channels, out_channels, kernel,
             stride=1, groups=1, avg_pool=2, dropout=0.1,
-            batch_norm=0.1, do_depth=True, shuffle=0,
+            batch_norm=0.1, shuffle=0,
             activation='sigmoid', rank=50):
+        super(DSCNNBlockLR, self).__init__()
+        """
+        A depthwise seeprable low-rank convolution layer combination with pooling and activation layers
 
-        super(DSCNNBlockLR_better, self).__init__()
-
+        Input
+            in_channels     : number of input channels for the pointwise conv layer
+            out_channels    : number of output channels for the pointwise conv layer
+            kernel          : conv kernel size for depthwise layer
+            stride          : conv stride
+            groups          : number of groups for conv layer
+            avg_pool        : kernel size for avgerage pooling layer
+            dropout         : dropout layer probability
+            batch_norm      : momemtum for batch norm
+            activation      : activation layer
+            rank            : rank for low-rank decomposition for conv layer weights
+        """
         activators = {
             'sigmoid': torch.nn.Sigmoid(),
             'relu': torch.nn.ReLU(),
@@ -219,7 +220,7 @@ class DSCNNBlockLR_better(torch.nn.Module):
             batch_block = None
 
         depth_cnn = torch.nn.Conv1d(in_channels, in_channels, kernel_size=kernel, stride=1, groups=in_channels, padding=2)
-        point_cnn = LR_pointcnn(in_channels, out_channels, kernel_size=1, stride=stride, groups=groups, rank=rank)
+        point_cnn = LR_conv(in_channels, out_channels, kernel_size=1, stride=stride, groups=groups, rank=rank)
 
         if shuffle != 0 and groups > 1:
             shuffler = _IndexSelect(in_channels, shuffle, groups)
@@ -237,7 +238,6 @@ class DSCNNBlockLR_better(torch.nn.Module):
             dropout_block = None
 
         seq = [nonlin, batch_block, depth_cnn, shuffler, point_cnn, dropout_block, pool]
-        # seq1 = [nonlin, batch_block, depth_cnn]#, shuffler, point_cnn, dropout_block, pool]
         seq_f = [item for item in seq if item is not None]
         if len(seq_f) == 1:
             self._op = seq_f[0]
@@ -249,8 +249,9 @@ class DSCNNBlockLR_better(torch.nn.Module):
         return x
 
 class BiFastGRNN(nn.Module):
-    "Bi Directional FastGRNN"
-
+    """
+    Bi Directional FastGRNN
+    """
     def __init__(self, inputDims, hiddenDims, gate_nonlinearity,
                  update_nonlinearity, rank):
         super(BiFastGRNN, self).__init__()
@@ -373,8 +374,8 @@ class DSCNN_RNN_Block(torch.nn.Module):
                         num_labels, rank):
 
         self.CNN1 = torch.nn.Sequential(
-            DSCNNBlockLR_k5(80, cnn_channels, 5, 1, 1,
-                           0, 0, do_depth=False, batch_norm=1e-2,
+            PreRNNConvBlock(80, cnn_channels, 5, 1, 1,
+                           0, 0, batch_norm=1e-2,
                            activation='none', rank=rank))
 
         #torch tanh layer directly in the forward pass 
@@ -383,28 +384,28 @@ class DSCNN_RNN_Block(torch.nn.Module):
                                self.gate_nonlinearity,
                                self.update_nonlinearity, rank)
         
-        self.CNN2 = DSCNNBlockLR_better(2 * rnn_hidden_size,
+        self.CNN2 = DSCNNBlockLR(2 * rnn_hidden_size,
                     2 * rnn_hidden_size,
                     batch_norm=1e-2,
                     dropout=0,
                     kernel=5,
                     activation='tanhgate', rank=rank)
         
-        self.CNN3 = DSCNNBlockLR_better(2 * rnn_hidden_size,
+        self.CNN3 = DSCNNBlockLR(2 * rnn_hidden_size,
                     2 * rnn_hidden_size,
                     batch_norm=1e-2,
                     dropout=0,
                     kernel=5,
                     activation='tanhgate', rank=rank)
         
-        self.CNN4 = DSCNNBlockLR_better(2 * rnn_hidden_size,
+        self.CNN4 = DSCNNBlockLR(2 * rnn_hidden_size,
                     2 * rnn_hidden_size,
                     batch_norm=1e-2,
                     dropout=0,
                     kernel=5,
                     activation='tanhgate', rank=rank)
         
-        self.CNN5 = DSCNNBlockLR_better(2 * rnn_hidden_size,
+        self.CNN5 = DSCNNBlockLR(2 * rnn_hidden_size,
                            num_labels,
                            batch_norm=1e-2,
                            dropout=0,
