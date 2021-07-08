@@ -8,6 +8,7 @@ Most of the routines in the base class CodegenBase are unchanged.
 '''
 
 import numpy as np
+import os
 
 from seedot.compiler.codegen.codegenBase import CodegenBase
 
@@ -16,25 +17,43 @@ import seedot.compiler.ir.irUtil as IRUtil
 
 import seedot.compiler.type as Type
 from seedot.util import *
+from seedot.writer import Writer
+
+import functools
+import operator
 
 
 class Arduino(CodegenBase):
 
-    def __init__(self, writer, decls, scales, intvs, cnsts, expTables, globalVars):
-        self.out = writer
-        self.decls = decls
-        self.scales = scales
-        self.intvs = intvs
-        self.cnsts = cnsts
-        self.expTables = expTables
-        self.globalVars = globalVars
+    def __init__(self, outputDir, decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables):
+        super().__init__(decls, localDecls, scales, intvs, cnsts, expTables, globalVars, internalVars, floatConstants, substitutions, demotedVarsOffsets, varsForBitwidth, varLiveIntervals, notScratch, coLocatedVariables)
+        outputFile = os.path.join(outputDir, "predict.cpp")
+        self.outputDir = outputDir
+        self.out = Writer(outputFile)
+
+    def printCompilerConfig(self):
+        configFile = os.path.join(self.outputDir, "compileConfig.h")
+        with open(configFile, "w") as file:
+            file.write("// The datatype of the fixed-point representation is specified below\n")
+            file.write("#define INT%d\n" % config.wordLength)
+            if forFloat():
+                file.write("#define XFLOAT\n")
+            else:
+                if config.vbwEnabled:
+                    file.write("#define XINT%d\n" % self.varsForBitwidth['X'])
+                else:
+                    file.write("#define XINT%d\n" % config.wordLength)
 
     def printPrefix(self):
+        self.printCompilerConfig()
+
         self.printArduinoIncludes()
 
         self.printExpTables()
 
         self.printArduinoHeader()
+
+        self.computeScratchLocationsFirstFitPriority() # computeScratchLocations computeScratchLocationsFirstFit computeScratchLocationsFirstFitPriority computeScratchLocationsDLX
 
         self.printVarDecls()
 
@@ -71,8 +90,8 @@ class Arduino(CodegenBase):
         self.out.printf('int predict() {\n', indent=True)
         self.out.increaseIndent()
 
-    # Generate the appropriate return experssion
-    # If integer, return the integer
+    # Generate the appropriate return expression.
+    # If integer, return the integer.
     # If tensor of size 0, convert the fixed-point integer to float and return the float value.
     # If tensor of size >0, convert the tensor to fixed-point integer, print
     # it to the serial port, and return void.
@@ -110,17 +129,22 @@ class Arduino(CodegenBase):
         self.out.decreaseIndent()
         self.out.printf('}\n', indent=True)
 
+        self.out.close()
+
     '''
     Below functions are overriding their corresponding definitions in codegenBase.py.
     These function have arduino-specific print functions.
     '''
 
-    # Print the variable with pragmas
+    # Print the variable with pragmas.
     def printVar(self, ir):
+        # Model parameters are read from RAM, hence they are read differently.
         if ir.inputVar:
-            if Common.wordLength == 16:
+            if config.wordLength == 8:
+                self.out.printf('((MYINT) pgm_read_byte_near(&')
+            if config.wordLength == 16:
                 self.out.printf('((MYINT) pgm_read_word_near(&')
-            elif Common.wordLength == 32:
+            elif config.wordLength == 32:
                 self.out.printf('((MYINT) pgm_read_dword_near(&')
             else:
                 assert False
@@ -132,6 +156,65 @@ class Arduino(CodegenBase):
         if ir.inputVar:
             self.out.printf('))')
 
+    def printFor(self, ir):
+        self.printForHeader(ir)
+        self.out.increaseIndent()
+        # The following is used for memory management within a for loop only.
+        # All the variables stored in ir.varDecls are those variables with scope limited to within the for loop.
+        # Currently, ir.varDecls is never populated as alternate memory management mechanism in codegen.py is used.
+        varToLiveRange = []
+        for var in ir.varDecls.keys():
+            size = np.prod(self.localDecls[var].shape)
+            varToLiveRange.append((self.varLiveIntervals[var], var, size, self.varsForBitwidth[var]))
+        varToLiveRange.sort()
+        usedSpaceMap = {}
+        totalScratchSize = -1
+        listOfDimensions = []
+        for ([_,_], var, size, atomSize) in varToLiveRange:
+            listOfDimensions.append(size)
+        mode = (lambda x: np.bincount(x).argmax())(listOfDimensions) if len(listOfDimensions) > 0 else None
+        for ([startIns, endIns], var, size, atomSize) in varToLiveRange:
+            if var in self.notScratch:
+                continue
+            spaceNeeded = size * atomSize // 8
+            varsToKill = []
+            for activeVar in usedSpaceMap.keys():
+                endingIns = usedSpaceMap[activeVar][0]
+                if endingIns < startIns:
+                    varsToKill.append(activeVar)
+            for tbk in varsToKill:
+                del usedSpaceMap[tbk]
+            i = 0
+            if spaceNeeded >= mode:
+                blockSize = int(2**np.ceil(np.log2(spaceNeeded / mode))) * mode
+            else:
+                blockSize = mode / int(2**np.floor(np.log2(mode // spaceNeeded)))
+            breakOutOfWhile = True
+            while True:
+                potentialStart = int(blockSize * i)
+                potentialEnd = int(blockSize * (i+1)) - 1
+                for activeVar in usedSpaceMap.keys():
+                    (locationOccupiedStart, locationOccupiedEnd) = usedSpaceMap[activeVar][1]
+                    if not (locationOccupiedStart > potentialEnd or locationOccupiedEnd < potentialStart):
+                        i += 1
+                        breakOutOfWhile = False
+                        break
+                    else:
+                        breakOutOfWhile = True
+                        continue
+                if breakOutOfWhile:
+                    break
+
+            usedSpaceMap[var] = (endIns, (potentialStart, potentialEnd))
+            totalScratchSize = max(totalScratchSize, potentialEnd)
+            self.scratchSubs[var] = potentialStart
+        self.out.printf("char scratch[%d];\n"%(totalScratchSize+1), indent=True)
+        self.printLocalVarDecls(ir)
+        for cmd in ir.cmd_l:
+            self.print(cmd)
+        self.out.decreaseIndent()
+        self.out.printf('}\n', indent=True)
+
     # The variable X is used to define the data point.
     # It is either read from the serial port or from the device's memory based on the operating mode.
     # The getIntFeature() function reads the appropriate value of X based on the mode.
@@ -139,11 +222,26 @@ class Arduino(CodegenBase):
         if isinstance(ir.e, IR.Var) and ir.e.idf == "X":
             self.out.printf("", indent=True)
             self.print(ir.var)
-            self.out.printf(" = getIntFeature(i0);\n")
+            indices = [index.idf for index in ir.e.idx]
+            sizes = self.localDecls[ir.e.idf].shape if ir.e.idf in self.localDecls else self.decls[ir.e.idf].shape
+            assert len(indices) == len(sizes), "Illegal state"
+            prod = functools.reduce(operator.mul, sizes)
+            dereferenceString = ""
+            for i in range(len(indices)):
+                prod = prod // sizes[i]
+                dereferenceString += ("%s * %d + " % (indices[i], prod))
+            dereferenceString = dereferenceString[:-3]
+            if forFixed():
+                self.out.printf(" = getIntFeature(%s);\n"%(dereferenceString))
+            else:
+                self.out.printf(" = getFloatFeature(%s);\n"%(dereferenceString))
         else:
             super().printAssn(ir)
 
     def printFuncCall(self, ir):
+        self.out.printf("{\n", indent=True)
+        self.out.increaseIndent()
+        self.printLocalVarDecls(ir)
         self.out.printf("%s(" % ir.name, indent=True)
         keys = list(ir.argList)
         for i in range(len(keys)):
@@ -156,10 +254,10 @@ class Arduino(CodegenBase):
             # The value of x in the below code is the number of special characters (& and []) around the variable in the function call.
             # This number depends on the shape of the variable.
             # Example: A[10][10] is written as &A[0][0]. The value of x in this case is 2.
-            # x is 0 for constants
-            # x is -1 for integer variables where only & is printed and not []
-            if isinstance(arg, IR.Var) and arg.idf in self.decls.keys() and not arg.idf == 'X':
-                type = self.decls[arg.idf]
+            # x is 0 for constants.
+            # x is -1 for integer variables where only & is printed and not [].
+            if isinstance(arg, IR.Var) and (arg.idf in self.decls.keys() or arg.idf in self.localDecls.keys()) and not arg.idf == 'X':
+                type = self.decls[arg.idf] if arg.idf in self.decls else self.localDecls[arg.idf]
                 if isinstance(type, Type.Tensor):
                     if type.dim == 0:
                         x = -1
@@ -169,18 +267,26 @@ class Arduino(CodegenBase):
                     x = -1
             else:
                 x = 0
-            
-            if x != 0:
-                self.out.printf("&")
 
-            self.print(arg)
-            
-            if x != 0 and x != -1:
-                self.out.printf("[0]" * x)
+            if forFixed():
+                typeCast = "(int%d_t*)" % self.varsForBitwidth[arg.idf] if x > 0 else ""
+                self.out.printf(typeCast)
+
+            if not (isinstance(arg, IR.Var) and arg.idf in self.scratchSubs):
+                if x != 0:
+                    self.out.printf("&")
+                self.print(arg)
+
+                if x != 0 and x != -1:
+                    self.out.printf("[0]" * x)
+            else:
+                self.out.printf("(scratch + %d)"%(self.scratchSubs[arg.idf]))
             if i != len(keys) - 1:
                 self.out.printf(", ")
-        
-        self.out.printf(");\n\n")
+
+        self.out.printf(");\n")
+        self.out.decreaseIndent()
+        self.out.printf("}\n", indent=True)
 
     def printPrint(self, ir):
         self.out.printf('Serial.println(', indent=True)

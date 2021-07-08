@@ -10,7 +10,7 @@
 #include "quantized_datatypes.h"
 #include "quantized_face_detection_sparse.h"
 
-#define MEM_BUF_SIZE 188160
+#define MEM_BUF_SIZE 184576
 #define INPUT_IMG_HEIGHT 240
 #define INPUT_IMG_WIDTH 320
 #define OUTPUT_SIZE 18000
@@ -23,9 +23,9 @@
 #endif
 
 // Comparator function for sorting doubles.
-int compare_doubles(const void *a, const void *b) {
-  const double *da = (const double *) a;
-  const double *db = (const double *) b;
+int compare_doubles(const void* a, const void* b) {
+  const double* da = (const double*) a;
+  const double* db = (const double*) b;
 
   return (*da > *db) - (*da < *db);
 }
@@ -57,7 +57,7 @@ double aggregate_error(double* errors, unsigned len) {
 /**
  *  By default, all tests run without using bit-shifting operations.
  */
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
   unsigned patches;
   SCALE_T XScale = -1, YScale = 12;
   FILE *xFile, *yFile, *floatResFile, *outputLog;
@@ -152,11 +152,11 @@ int main(int argc, char **argv) {
   char* mem_buf = malloc(MEM_BUF_SIZE * sizeof(char));
   double* xLine = malloc(INPUT_IMG_HEIGHT * INPUT_IMG_WIDTH * sizeof(double));
   double* yLine = malloc(OUTPUT_SIZE * sizeof(double));
-  double* allErrors = malloc(patches * OUTPUT_SIZE * (sizeof(double)));
+  double* allErrors = malloc(patches * OUTPUT_SIZE * sizeof(double));
 
   float time_spent = 0.0;
-  Q7_T* mem_buf_input_offset = (Q7_T *)mem_buf;
-  Q15_T* mem_buf_output_offset = (Q15_T *)mem_buf;
+  Q7_T* mem_buf_input_offset = (Q7_T*)(mem_buf + INPUT_IMG_HEIGHT * INPUT_IMG_WIDTH);
+  Q15_T* mem_buf_output_offset = (Q15_T*)mem_buf;
   for (unsigned i = 0; i < patches; i++) {
     fread(&yLine[0], sizeof(double), OUTPUT_SIZE, floatResFile);
     fread(&xLine[0], sizeof(double), INPUT_IMG_HEIGHT * INPUT_IMG_WIDTH, xFile);
