@@ -4,7 +4,7 @@ numpy==1.16.4
 pandas==0.23.4
 scikit-learn==0.19.2
 scipy==1.1.0
-tensorflow-gpu==1.15.4
+tensorflow-gpu==2.4.2
 requests
 bokeh==2.1.1
 onnx==1.8.0
