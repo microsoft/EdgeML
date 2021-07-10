@@ -20,7 +20,7 @@ from numpy import random
 def synthesize_wave(sigx, snr, wgn_snr, gain, do_rir, args):
     """
     Synth Block - Used to process the input audio.
-    The input is convolved with room reverbration recording
+    The input is convolved with room reverberation recording
     Adds noise in the form of white gaussian noise and regular audio clips (eg:piano, people talking, car engine etc)
     
     Input
@@ -95,7 +95,7 @@ def get_add_noise(args):
         args: args object (contains info about model and training)
     
     Output
-        add_sample: addtive noise audio
+        add_sample: additive noise audio
     """
     additive_base_path = args.additive_base_path
     add_fname = random.choice(os.listdir(additive_base_path))
@@ -124,7 +124,7 @@ def get_ASR_datasets(args):
                         for path in train_textgrid_paths]
 
     if args.pre_phone_list:
-        # If there is a list of phons in the dataset, use this flag
+        # If there is a list of phonemes in the dataset, use this flag
         Sy_phoneme = []
         with open(args.phoneme_text_file, "r") as f:
             for line in f.readlines():
@@ -139,7 +139,7 @@ def get_ASR_datasets(args):
         print(len(Sy_phoneme), flush=True)
         print("**********************", flush=True)
     else:
-        # No list of phons specified. Count from the input dataset
+        # No list of phonemes specified. Count from the input dataset
         phoneme_counter = Counter()
         for path in train_textgrid_paths:
             tg = textgrid.TextGrid()
@@ -148,7 +148,7 @@ def get_ASR_datasets(args):
                                     for phone in tg.getList("phones")[0] 
                                     if phone.mark not in ['', 'sp', 'spn']])
 
-        # Display and store the phons extracted
+        # Display and store the phonemes extracted
         Sy_phoneme = list(phoneme_counter)
         args.num_phonemes = len(Sy_phoneme)
         print("**************", flush=True)
@@ -201,7 +201,7 @@ class ASRDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         """
         Gives one sample from the dataset. Data is read in this snippet. 
-        (refer to the coalate function for pre-procesing)
+        (refer to the collate function for pre-processing)
 
         Input:
             idx: index for the sample
@@ -365,7 +365,7 @@ class ClassificationDataset(torch.utils.data.Dataset):
 
         Input
             wav_paths   : list of strings (wav file paths)
-            labels      : list of classification labels for the corresponding audio wav filess
+            labels      : list of classification labels for the corresponding audio wav files
             is_train    : boolean flag, if the dataset loader is for the train or test pipeline
             args        : args object (contains info about model and training)
         """
@@ -399,16 +399,16 @@ class ClassificationDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         """
-        Gives one sample from the dataset. Data is read in this snippet. (refer to the coalate function for pre-procesing)
+        Gives one sample from the dataset. Data is read in this snippet. (refer to the collate function for pre-processing)
 
         Input:
             idx: index for the sample
         
         Output:
             x               : audio sample obtained from the synth block (if used, else input audio) after time-domain clipping
-            one_hot_label   : one hot encoded label
+            one_hot_label   : one-hot encoded label
             seqlen          : length of the audio file. 
-                              This value will be dropped and seqlen after feature extraction will be used. Refer to the coallate func
+                              This value will be dropped and seqlen after feature extraction will be used. Refer to the collate func
         """
         x, fs = sf.read(self.wav_paths[idx])
 
@@ -455,7 +455,7 @@ class CollateWavsClassifier:
             x_pad_length = (T - len(x[index]))
             x[index] = np.pad(x[index], (x_pad_length,0), 'constant', constant_values=(0, 0))
             
-            # Extract MFCC from padded audio
+            # Extract Mel-Spectogram from padded audio
             feature = librosa.feature.melspectrogram(y=x[index],sr=16000,n_mels=80,win_length=25*16,hop_length=10*16, n_fft=512)
             feature = librosa.core.power_to_db(feature)
             # Normalize the features
@@ -487,12 +487,12 @@ class CollateWavsClassifier:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--base_path', type=str, default="/mnt/kws_data/data/")
-    parser.add_argument('--train_data_folders', type=str, default="google30_train")
-    parser.add_argument('--test_data_folders', type=str, default="google30_test")
-    parser.add_argument('--rir_base_path', type=str, default="/mnt/kws_data/data/noises_sachin/iir/")
-    parser.add_argument('--additive_base_path', type=str, default="/mnt/kws_data/data/noises_sachin/additive/")
-    parser.add_argument('--phoneme_text_file', type=str, default="/mnt/kws_data/data/LibriSpeech/text/phonemes.txt")
+    parser.add_argument('--base_path', type=str, required=True, help="Path of the speech data folder. The data in this folder should be in accordance to the dataloader code written here.")
+    parser.add_argument('--train_data_folders', type=str, default="google30_train", help="List of training folders in base path. Each folder is a dataset in the prescribed format")
+    parser.add_argument('--test_data_folders', type=str, default="google30_test", help="List of testing folders in base path. Each folder is a dataset in the prescribed format")
+    parser.add_argument('--rir_base_path', type=str, required=True, help="Folder with the reverbration files")
+    parser.add_argument('--additive_base_path', type=str, required=True, help="Folder with additive noise files")
+    parser.add_argument('--phoneme_text_file', type=str, required=True, help="Text files with pre-fixed phons")
     parser.add_argument('--workers', type=int, default=-1, help="Number of workers. Give -1 for all workers")
     parser.add_argument("--word_model_name", default='google30', help="Name of the word list chosen. Will be used in conjunction with the data loader")
     parser.add_argument('--words', type=str, default="all")

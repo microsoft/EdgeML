@@ -25,7 +25,7 @@ def parseArgs():
     parser.add_argument('--epochs', type=int, default=200, help="Number of epochs for training")
     parser.add_argument('--save_tick', type=int, default=1, help="Number of epochs to wait to save")
     parser.add_argument('--workers', type=int, default=-1, help="Number of workers. Give -1 for all workers")
-    parser.add_argument("--gpu", type=str, default='0', help="GPU indicies Eg: --gpu=0,1,2,3 for 4 gpus. -1 for CPU")
+    parser.add_argument("--gpu", type=str, default='0', help="GPU indices Eg: --gpu=0,1,2,3 for 4 gpus. -1 for CPU")
 
     # Args for DataLoader
     parser.add_argument('--base_path', type=str, required=True, help="Path of the speech data folder. The data in this folder should be in accordance to the dataloader code written here.")
@@ -34,12 +34,12 @@ def parseArgs():
     parser.add_argument('--phoneme_text_file', type=str, required=True, help="Text files with pre-fixed phons")
     parser.add_argument('--pretraining_length_mean', type=int, default=6, help="Mean of the audio clips lengths")
     parser.add_argument('--pretraining_length_var', type=int, default=1, help="variance of the audio clip lengths")
-    parser.add_argument('--pretraining_batch_size', type=int, default=256, help="Batch size for the pirpeline")
+    parser.add_argument('--pretraining_batch_size', type=int, default=256, help="Batch size for the pipeline")
     parser.add_argument('--snr_samples', type=str, default="0,5,10,25,100,100", help="SNR values for additive noise files")
     parser.add_argument('--wgn_snr_samples', type=str, default="5,10,15,100,100", help="SNR values for white gaussian noise")
     parser.add_argument('--gain_samples', type=str, default="1.0,0.25,0.5,0.75", help="Gain values for the processed signal")
     parser.add_argument('--rir_chance', type=float, default=0.25, help="Probability of performing reverbration")
-    parser.add_argument('--synth_chance', type=float, default=0.5, help="Probablity of pre-processing the signal with noise and reverb")
+    parser.add_argument('--synth_chance', type=float, default=0.5, help="Probability of pre-processing the signal with noise and reverb")
     parser.add_argument('--pre_phone_list', action='store_true', help="Use pre-fixed list of phonemes")
     # Args for Phoneme
     parser.add_argument('--phoneme_cnn_channels', type=int, default=400, help="Number od channels for the CNN layers")
@@ -102,14 +102,14 @@ def train_phoneme_model(args):
     if args.optim == "sgd":
         model['opt'] = torch.optim.SGD(model['phoneme'].parameters(), lr=args.lr)
 
-    # Load the sepcified checkpoint. 'phoneme_model_load_ckpt' must point to a chcekpoint and not folder
+    # Load the specified checkpoint. 'phoneme_model_load_ckpt' must point to a checkpoint and not folder
     if args.phoneme_model_load_ckpt is not None:
         if os.path.exists(args.phoneme_model_load_ckpt):
             # Get the number from the phoneme checkpoint path
-            start_epoch = args.phoneme_model_load_ckpt                # Temporarlity store the full ckpt path
+            start_epoch = args.phoneme_model_load_ckpt                # Temporarily store the full ckpt path
             start_epoch = start_epoch.split('/')[-1]            # retain only the *.pt from the path (Linux)
             start_epoch = start_epoch.split('\\')[-1]           # retain only the *.pt from the path (Windows)
-            start_epoch = int(start_epoch.split('.')[0])        # reatin the integers
+            start_epoch = int(start_epoch.split('.')[0])        # retain the integers
             # Load Checkpoint
             latest_ckpt = torch.load(args.phoneme_model_load_ckpt, map_location=device)
             # Load specific state_dicts() and print the latest stats

@@ -3,16 +3,16 @@
 # Project Description
 There are two major issues in the existing KWS systems (a) they are not robust to heavy background noise and random utterances, and (b) they require collecting a lot of data, hampering the ease of adding a new keyword. Tackling these issues from a different perspective, we propose a new two staged scheme with a model for predicting phonemes which are in turn used for phoneme based keyword classification. 
 
-First we train a phoneme classification model which gives the phoneme transcription of the input speech snippet. For training this phoneme classifier, we use a large public speech dataset like LibreSpeech. The public dataset can be aligned (meaning get the phoneme labels for each speech snippet in the data) using Montreal Forced Aligner. We also add reverberations and additive noise to the speech samples from the public dataset to make the phoneme classifier training robust to various accents, background noise and varied environment. In this project, we predict phonemes at every 10ms which is the standard way. You can find the aligned LibreSpeech dataset we used for training here.
+First we train a phoneme classification model which gives the phoneme transcription of the input speech snippet. For training this phoneme classifier, we use a large public speech dataset like LibriSpeech. The public dataset can be aligned (meaning get the phoneme labels for each speech snippet in the data) using Montreal Forced Aligner. We also add reverberations and additive noise to the speech samples from the public dataset to make the phoneme classifier training robust to various accents, background noise and varied environment. In this project, we predict phonemes at every 10ms which is the standard way. You can find the aligned LibriSpeech dataset we used for training here.
 
 In the second part, we use the predicted phoneme outputs from the phoneme classifier for predicting the input keyword. We train a 1 layer FastGRNN classifier to predict the keyword based on the phoneme transcription as input. Since the phoneme classifier training has been done to account for diverse accent, background noise and environments, the keyword classifier can be trained using a small number of Text-To-Speech(TTS) samples generated using any standard TTS api from cloud services like Azure, Google Cloud or AWS.
 
-This gives two advantages: (a) The phoneme model is trained to account for diverse accents and background noise settings, thus the flexible keyword classifier training requires only a small number of keyword samples, and (b) Empirically this method was able to detect keywords from as far as 9ft of distance. Further, the phoneme model has a small size of around 250k parameters and can fit on a Cortex M7 microcontroller.
+This gives two advantages: (a) The phoneme model is trained to account for diverse accents and background noise settings, thus the flexible keyword classifier training requires only a small number of keyword samples, and (b) Empirically this method was able to detect keywords from as far as 9ft of distance. Further, the phoneme model has a small size of around 250k parameters and can fit on a Cortex M7 micro-controller.
 
 # Training the Phoneme Classifier
-1) Train a phoneme classification model on some public speech dataset like Librespeech
+1) Train a phoneme classification model on some public speech dataset like LibriSpeech
 2) Training speech dataset can be labelled using Montreal Force Aligner
-3) Speech snippets are convolved with reverberation files, and additive noises from youtube or other open source are added
+3) Speech snippets are convolved with reverberation files, and additive noises from YouTube or other open source are added
 4) We also add white gaussian noise of various SNRs
 
 # Training the KWS Model
@@ -26,7 +26,7 @@ This gives two advantages: (a) The phoneme model is trained to account for diver
 ## Phoneme Model Training
 The following command can be used to instantiate and train the phoneme model.
 ```
-python train_phoneme.py --base_path=/path/to/librespeech_data/ --rir_base_path=/path/to/reverb_files/ --additive_base_path=/path/to/additive_noises/ --snr_samples="0,5,10,25,100,100" --rir_chance=0.5 
+python train_phoneme.py --base_path=/path/to/librispeech_data/ --rir_base_path=/path/to/reverb_files/ --additive_base_path=/path/to/additive_noises/ --snr_samples="0,5,10,25,100,100" --rir_chance=0.5 
 ```
 Some important command line arguments:
 1) base_path : Path of the speech data folder. The data in this folder should be in accordance to the dataloader code written here. 
@@ -46,3 +46,6 @@ Some important command line arguments:
 3) phoneme_model_load_ckpt : The full path of the checkpoint file that would be used to load the weights to the instantiated phoneme model
 4) rir_base_path, additive_base_path : Path to the reverb and additive noise files
 5) synth : Boolean flag for specifying if reverberations and noise addition has to be done
+
+Copyright (c) Microsoft Corporation. All rights reserved.
+Licensed under the MIT license.

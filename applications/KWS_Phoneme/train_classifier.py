@@ -26,21 +26,21 @@ def parseArgs():
     parser.add_argument('--epochs', type=int, default=200, help="Number of epochs for training")
     parser.add_argument('--save_tick', type=int, default=1, help="Number of epochs to wait to save")
     parser.add_argument('--workers', type=int, default=-1, help="Number of workers. Give -1 for all workers")
-    parser.add_argument("--gpu", type=str, default='0', help="GPU indicies Eg: --gpu=0,1,2,3 for 4 gpus. -1 for CPU")
+    parser.add_argument("--gpu", type=str, default='0', help="GPU indices Eg: --gpu=0,1,2,3 for 4 gpus. -1 for CPU")
     parser.add_argument("--word_model_name", default='google30', help="Name of the list of words used")
     parser.add_argument('--words', type=str, help="List of words to be used. This will be assigned in the code. User input will not affect the result")
     parser.add_argument("--is_training", action='store_true', help="True for training")
     parser.add_argument("--synth", action='store_true', help="Use Synth block or not")
     # Args for DataLoader
     parser.add_argument('--base_path', type=str, required=True, help="path to train and test data folders")
-    parser.add_argument('--train_data_folders', type=str, default="google30_train", help="List of training folders in base path. Each folder is a dataset in the precribed format")
-    parser.add_argument('--test_data_folders', type=str, default="google30_test", help="List of testing folders in base path. Each folder is a dataset in the precribed format")
+    parser.add_argument('--train_data_folders', type=str, default="google30_train", help="List of training folders in base path. Each folder is a dataset in the prescribed format")
+    parser.add_argument('--test_data_folders', type=str, default="google30_test", help="List of testing folders in base path. Each folder is a dataset in the prescribed format")
     parser.add_argument('--rir_base_path', type=str, required=True, help="Folder with the reverbration files")
     parser.add_argument('--additive_base_path', type=str, required=True, help="Folder with additive noise files")
     parser.add_argument('--phoneme_text_file', type=str, help="Text files with pre-fixed phons")
     parser.add_argument('--pretraining_length_mean', type=int, default=6, help="Mean of the audio clips lengths")
     parser.add_argument('--pretraining_length_var', type=int, default=1, help="variance of the audio clip lengths")
-    parser.add_argument('--pretraining_batch_size', type=int, default=256, help="Batch size for the pirpeline")
+    parser.add_argument('--pretraining_batch_size', type=int, default=256, help="Batch size for the pipeline")
     parser.add_argument('--snr_samples', type=str, default="-5,0,0,5,10,15,40,100,100", help="SNR values for additive noise files")
     parser.add_argument('--wgn_snr_samples', type=str, default="5,10,20,40,60", help="SNR values for white gaussian noise")
     parser.add_argument('--gain_samples', type=str, default="1.0,0.25,0.5,0.75", help="Gain values for processed signal")
@@ -57,7 +57,7 @@ def parseArgs():
     parser.add_argument('--phoneme_phoneme_isBi', action='store_true', help="Use Bi-Directional RNN")
     parser.add_argument('--phoneme_num_labels', type=int, default=41, help="Number og phoneme labels")
     # Args for Classifier
-    parser.add_argument('--classifier_rnn_hidden_size', type=int, default=100, help="Calssifier RNN hidden dimensions")
+    parser.add_argument('--classifier_rnn_hidden_size', type=int, default=100, help="Classifier RNN hidden dimensions")
     parser.add_argument('--classifier_rnn_num_layers', type=int, default=1, help="Classifier RNN number of layers")
     parser.add_argument('--classifier_dropout', type=float, default=0.2, help="Classifier dropout layer probability")
     parser.add_argument('--classifier_islstm', action='store_true', help="Use LSTM in the classifier")
@@ -145,7 +145,7 @@ def train_classifier_model(args):
     if args.optim == "sgd":
         model['opt'] = torch.optim.SGD(model['classifier'].parameters(), lr=args.lr)
 
-    # Load the sepcified phoneme checkpoint. 'phoneme_model_load_ckpt' must point to a chcekpoint and not folder
+    # Load the specified phoneme checkpoint. 'phoneme_model_load_ckpt' must point to a checkpoint and not folder
     if args.phoneme_model_load_ckpt is not None:
         if os.path.exists(args.phoneme_model_load_ckpt):
             # Load Checkpoint
@@ -159,14 +159,14 @@ def train_classifier_model(args):
     else:
         print("No Phoneme Checkpoint Given", flush=True)
 
-    # Load the sepcified classifier checkpoint. 'classifier_model_load_ckpt' must point to a chcekpoint and not folder
+    # Load the specified classifier checkpoint. 'classifier_model_load_ckpt' must point to a checkpoint and not folder
     if args.classifier_model_load_ckpt is not None:
         if os.path.exists(args.classifier_model_load_ckpt):
             # Get the number from the classifier checkpoint path
-            start_epoch = args.classifier_model_load_ckpt             # Temporarlity store the full ckpt path
+            start_epoch = args.classifier_model_load_ckpt             # Temporarily store the full ckpt path
             start_epoch = start_epoch.split('/')[-1]            # retain only the *.pt from the path (Linux)
             start_epoch = start_epoch.split('\\')[-1]           # retain only the *.pt from the path (Windows)
-            start_epoch = int(start_epoch.split('.')[0])        # reatin the integers
+            start_epoch = int(start_epoch.split('.')[0])        # retain the integers
             # Load Checkpoint
             latest_classifier_ckpt = torch.load(args.classifier_model_load_ckpt, map_location=device)
             # Load specific state_dicts() and print the latest stats
@@ -186,7 +186,7 @@ def train_classifier_model(args):
     output_frame_rate = 3
     save_path = args.classifier_model_save_folder
     os.makedirs(args.classifier_model_save_folder, exist_ok=True)
-    # Print for cros-checking
+    # Print for cross-checking
     print(f"Pre Phone List {args.pre_phone_list}", flush=True)
     print(f"Start Epoch : {start_epoch}", flush=True)
     print(f"Device : {device}", flush=True)
