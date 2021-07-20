@@ -14,7 +14,7 @@ from edgeml_pytorch.graph.rnn import *
 class _IndexSelect(torch.nn.Module):
     def __init__(self, channels, direction, groups):
         """
-        Channel permutation module. The purpose of this is to allow mixing across the CNN groups
+        Channel permutation module. The purpose of this is to allow mixing across the CNN groups.
         """
         super(_IndexSelect, self).__init__()
 
@@ -48,15 +48,15 @@ class _TanhGate(torch.nn.Module):
 
     def forward(self, value):
         """
-        Applies a custom activation function
-        The first half of the channels are passed through sigmoid layer and the next half though a tanh
-        The outputs are multiplied and returned
+        Applies a custom activation function.
+        The first half of the channels are passed through sigmoid layer and the next half though a tanh.
+        The outputs are multiplied and returned.
         
-        Input
-            value: A tensor of shape (batch, channels, *)
+        Input:
+            value: A tensor of shape (batch, channels, *).
         
-        Output
-            activation output of shape (batch, channels/2, *)
+        Output:
+            activation output of shape (batch, channels/2, *).
         """
         channels = value.shape[1]
         piv = int(channels/2)
@@ -78,12 +78,12 @@ class LR_conv(nn.Conv1d):
             in_channels, out_channels, kernel_size, stride, padding, dilation,
             groups, bias, padding_mode)
         """
-        A convolution layer with the weight matrix subjected to a low-rank decomposition. Currently for kernel size of 5
+        A convolution layer with the weight matrix subjected to a low-rank decomposition. Currently for kernel size of 5.
         
-        Input
-            rank            : The rank used for the low-rank decomposition on the weight/kernel tensor
-            All other parameters are similar to that of a convolution layer
-            Only change is the decomposition of the output channels into low-rank tensors
+        Input:
+            rank  : The rank used for the low-rank decomposition on the weight/kernel tensor.
+            All other parameters are similar to that of a convolution layer.
+            Only change is the decomposition of the output channels into low-rank tensors.
         """
         self.kernel_size = kernel_size
         self.rank =  rank
@@ -96,14 +96,14 @@ class LR_conv(nn.Conv1d):
 
     def forward(self, input):
         """
-        The decomposed weights are multiplied to enforce the low-rank constraint
-        The conv1d is performed as usual post multiplication
+        The decomposed weights are multiplied to enforce the low-rank constraint.
+        The conv1d is performed as usual post multiplication.
         
-        Input
-            input: Input of shape similar to that of which is fed to a conv layer
+        Input:
+            input: Input of shape similar to that of which is fed to a conv layer.
         
-        Output
-            convolution output
+        Output:
+            convolution output.
         """
         lr_weight = torch.matmul(self.W1, self.W2)
         lr_weight = torch.reshape(lr_weight, (self.out_channels, self.in_channels, self.kernel_size))
@@ -122,19 +122,19 @@ class PreRNNConvBlock(torch.nn.Module):
             activation='sigmoid', rank=50):
         super(PreRNNConvBlock, self).__init__()
         """
-        A low-rank convolution layer combination with pooling and activation layers. Currently for kernel size of 5
+        A low-rank convolution layer combination with pooling and activation layers. Currently for kernel size of 5.
 
-        Input
-            in_channels     : number of input channels for the conv layer
-            out_channels    : number of output channels for the conv layer
-            kernel          : conv kernel size
-            stride          : conv stride
-            groups          : number of groups for conv layer
-            avg_pool        : kernel size for average pooling layer
-            dropout         : dropout layer probability
-            batch_norm      : momentum for batch norm
-            activation      : activation layer
-            rank            : rank for low-rank decomposition for conv layer weights
+        Input:
+            in_channels     : number of input channels for the conv layer.
+            out_channels    : number of output channels for the conv layer.
+            kernel          : conv kernel size.
+            stride          : conv stride.
+            groups          : number of groups for conv layer.
+            avg_pool        : kernel size for average pooling layer.
+            dropout         : dropout layer probability.
+            batch_norm      : momentum for batch norm.
+            activation      : activation layer.
+            rank            : rank for low-rank decomposition for conv layer weights.
         """
         activators = {
             'sigmoid': torch.nn.Sigmoid(),
@@ -184,13 +184,13 @@ class PreRNNConvBlock(torch.nn.Module):
 
     def forward(self, x):
         """
-        Apply the set of layers initialized in __init__
+        Apply the set of layers initialized in __init__.
         
-        Input
-            x: A tensor of shape (batch, channels, length)
+        Input:
+            x: A tensor of shape (batch, channels, length).
         
-        Output
-            network block output of shape (batch, channels, length)
+        Output:
+            network block output of shape (batch, channels, length).
         """
         x = self._op1(x)
         return x
@@ -203,19 +203,19 @@ class DSCNNBlockLR(torch.nn.Module):
             activation='sigmoid', rank=50):
         super(DSCNNBlockLR, self).__init__()
         """
-        A depthwise separable low-rank convolution layer combination with pooling and activation layers
+        A depthwise separable low-rank convolution layer combination with pooling and activation layers.
 
-        Input
-            in_channels     : number of input channels for the pointwise conv layer
-            out_channels    : number of output channels for the pointwise conv layer
-            kernel          : conv kernel size for depthwise layer
-            stride          : conv stride
-            groups          : number of groups for conv layer
-            avg_pool        : kernel size for average pooling layer
-            dropout         : dropout layer probability
-            batch_norm      : momentum for batch norm
-            activation      : activation layer
-            rank            : rank for low-rank decomposition for conv layer weights
+        Input:
+            in_channels     : number of input channels for the pointwise conv layer.
+            out_channels    : number of output channels for the pointwise conv layer.
+            kernel          : conv kernel size for depthwise layer.
+            stride          : conv stride.
+            groups          : number of groups for conv layer.
+            avg_pool        : kernel size for average pooling layer.
+            dropout         : dropout layer probability.
+            batch_norm      : momentum for batch norm.
+            activation      : activation layer.
+            rank            : rank for low-rank decomposition for conv layer weights.
         """
         activators = {
             'sigmoid': torch.nn.Sigmoid(),
@@ -265,22 +265,22 @@ class DSCNNBlockLR(torch.nn.Module):
 
     def forward(self, x):
         """
-        Apply the set of layers initialized in __init__
+        Apply the set of layers initialized in __init__.
         
-        Input
-            x: A tensor of shape (batch, channels, length)
+        Input:
+            x: A tensor of shape (batch, channels, length).
         
-        Output
-            network block output of shape (batch, channels, length)
+        Output:
+            network block output of shape (batch, channels, length).
         """
         x = self._op(x)
         return x
 
 class BiFastGRNN(nn.Module):
     """
-    Bi Directional FastGRNN
+    Bi Directional FastGRNN.
 
-    Parameters and arguments are similar to the torch RNN counterparts
+    Parameters and arguments are similar to the torch RNN counterparts.
     """
     def __init__(self, inputDims, hiddenDims, gate_nonlinearity,
                  update_nonlinearity, rank):
@@ -304,112 +304,108 @@ class BiFastGRNN(nn.Module):
 
     def forward(self, input_f, input_b):
         """
-        Pass the inputs to forward and backward layers
-        Please note the backward layer is similar to the forward layer and the input needs to be fed reversed accordingly
-        Tensors are of the shape (batch, length, channels)
+        Pass the inputs to forward and backward layers.
+        Please note the backward layer is similar to the forward layer and the input needs to be fed reversed accordingly.
+        Tensors are of the shape (batch, length, channels).
 
-        Input
-            input_f : input to the forward layer
-            input_b : input to the backward layer. Input needs to be reversed before passing through this forward method
+        Input:
+            input_f : input to the forward layer.
+            input_b : input to the backward layer. Input needs to be reversed before passing through this forward method.
         
-        Output
-            output1 : output of the forward layer
-            output2 : output of the backward layer
+        Output:
+            output1 : output of the forward layer.
+            output2 : output of the backward layer.
         """
-        # Bidirectional FastGRNN
+        # Bidirectional FastGRNN.
         output1 = self.cell_fwd(input_f)
         output2 = self.cell_bwd(input_b)
-        #Returning the flipped output only for the bwd pass
-        #Will align it in the post processing
+        #Returning the flipped output only for the bwd pass.
+        #Will align it in the post processing.
         return output1, output2
 
 
 def X_preRNN_process(X, fwd_context, bwd_context):
     """
-    A depthwise separable low-rank convolution layer combination with pooling and activation layers
+    A depthwise separable low-rank convolution layer combination with pooling and activation layers.
 
-    Input
-        in_channels     : number of input channels for the pointwise conv layer
-        out_channels    : number of output channels for the pointwise conv layer
-        kernel          : conv kernel size for depthwise layer
-        stride          : conv stride
-        groups          : number of groups for conv layer
-        avg_pool        : kernel size for average pooling layer
-        dropout         : dropout layer probability
-        batch_norm      : momentum for batch norm
-        activation      : activation layer
-        rank            : rank for low-rank decomposition for conv layer weights
+    Input:
+        in_channels     : number of input channels for the pointwise conv layer.
+        out_channels    : number of output channels for the pointwise conv layer.
+        kernel          : conv kernel size for depthwise layer.
+        stride          : conv stride.
+        groups          : number of groups for conv layer.
+        avg_pool        : kernel size for average pooling layer.
+        dropout         : dropout layer probability.
+        batch_norm      : momentum for batch norm.
+        activation      : activation layer.
+        rank            : rank for low-rank decomposition for conv layer weights.
     """
-    #FWD bricking
+    # Forward bricking.
     brickLength = fwd_context
     hopLength = 3
     X_bricked_f1 = X.unfold(1, brickLength, hopLength)
     X_bricked_f2 = X_bricked_f1.permute(0, 1, 3, 2)
-    #X_bricked_f [batch, num_bricks, brickLen, inpDim]
+    # X_bricked_f [batch, num_bricks, brickLen, inpDim].
     oldShape_f = X_bricked_f2.shape
     X_bricked_f = torch.reshape(
         X_bricked_f2, [oldShape_f[0] * oldShape_f[1], oldShape_f[2], -1])
-    # X_bricked_f [batch*num_bricks, brickLen, inpDim]
+    # X_bricked_f [batch*num_bricks, brickLen, inpDim].
 
-    #BWD bricking
+    # Backward bricking.
     brickLength = bwd_context
     hopLength = 3
     X_bricked_b = X.unfold(1, brickLength, hopLength)
     X_bricked_b = X_bricked_b.permute(0, 1, 3, 2)
-    #X_bricked_f [batch, num_bricks, brickLen, inpDim]
+    # X_bricked_b [batch, num_bricks, brickLen, inpDim].
     oldShape_b = X_bricked_b.shape
     X_bricked_b = torch.reshape(
         X_bricked_b, [oldShape_b[0] * oldShape_b[1], oldShape_b[2], -1])
-    # X_bricked_f [batch*num_bricks, brickLen, inpDim]
+    # X_bricked_b [batch*num_bricks, brickLen, inpDim].
     return X_bricked_f, oldShape_f, X_bricked_b, oldShape_b
 
 
 def X_postRNN_process(X_f, oldShape_f, X_b, oldShape_b):
     """
-    A depthwise separable low-rank convolution layer combination with pooling and activation layers
+    A depthwise separable low-rank convolution layer combination with pooling and activation layers.
 
-    Input
-        in_channels     : number of input channels for the pointwise conv layer
-        out_channels    : number of output channels for the pointwise conv layer
-        kernel          : conv kernel size for depthwise layer
-        stride          : conv stride
-        groups          : number of groups for conv layer
-        avg_pool        : kernel size for average pooling layer
-        dropout         : dropout layer probability
-        batch_norm      : momentum for batch norm
-        activation      : activation layer
-        rank            : rank for low-rank decomposition for conv layer weights
+    Input:
+        in_channels     : number of input channels for the pointwise conv layer.
+        out_channels    : number of output channels for the pointwise conv layer.
+        kernel          : conv kernel size for depthwise layer.
+        stride          : conv stride.
+        groups          : number of groups for conv layer.
+        avg_pool        : kernel size for average pooling layer.
+        dropout         : dropout layer probability.
+        batch_norm      : momentum for batch norm.
+        activation      : activation layer.
+        rank            : rank for low-rank decomposition for conv layer weights.
     """
-    #Forward bricks folding
+    # Forward bricks folding.
     X_f = torch.reshape(X_f, [oldShape_f[0], oldShape_f[1], oldShape_f[2], -1])
-    #X_f [batch, num_bricks, brickLen, hiddenDim]
+    # batch, num_bricks, brickLen, hiddenDim.
     X_new_f = X_f[:, 0, ::3, :]  
-    #batch,brickLen,hiddenDim
+    # batch, brickLen, hiddenDim.
     X_new_f_rest = X_f[:, :, -1, :].squeeze(2)  
-    #batch, numBricks-1,hiddenDim
+    # batch, numBricks - 1, hiddenDim.
     shape = X_new_f_rest.shape
     X_new_f = torch.cat((X_new_f, X_new_f_rest), dim=1)  
-    #batch,seqLen,hiddenDim
-    #X_new_f [batch, seqLen, hiddenDim]
+    # batch, seqLen, hiddenDim.
 
-    #Backward Bricks folding
+    # Backward Bricks folding.
     X_b = torch.reshape(X_b, [oldShape_b[0], oldShape_b[1], oldShape_b[2], -1])
-    #X_b [batch, num_bricks, brickLen, hiddenDim]
+    # batch, num_bricks, brickLen, hiddenDim.
     X_b = torch.flip(X_b, [1])  
-    #Reverse the ordering of the bricks (bring last brick to start)
-
+    # Reverse the ordering of the bricks (bring last brick to start).
     X_new_b = X_b[:, 0, ::3, :]  
-    #batch,brickLen,inpDim
+    # batch, brickLen, inpDim.
     X_new_b_rest = X_b[:, :, -1, :].squeeze(2)  
-    #batch,(seqlen-brickLen),hiddenDim
+    # batch, seqlen - brickLen, hiddenDim.
     X_new_b = torch.cat((X_new_b, X_new_b_rest), dim=1)  
-    #batch,seqLen,hiddenDim
+    # batch, seqLen, hiddenDim.
     X_new_b = torch.flip(X_new_b, [1])  
-    #inverting the flip operation
-
+    # inverting the flip operation.
     X_new = torch.cat((X_new_f, X_new_b), dim=2)  
-    #batch,seqLen,2*hiddenDim
-    
+    # batch, seqLen, 2 * hiddenDim.
     return X_new
 
 
@@ -419,18 +415,18 @@ class DSCNN_RNN_Block(torch.nn.Module):
                  isBi=True, num_labels=41, rank=None, fwd_context=15, bwd_context=9):
         super(DSCNN_RNN_Block, self).__init__()
         """
-        A depthwise separable low-rank convolution layer combination with pooling and activation layers
+        A depthwise separable low-rank convolution layer combination with pooling and activation layers.
 
-        Input
-            cnn_channels        : number of the output channels for the first CNN block
-            rnn_hidden_size     : hidden dimensions of the FastGRNN
-            rnn_num_layers      : number of FastGRNN layers
-            device              : device on which the tensors would placed
-            gate_nonlinearity   : activation function for the gating in the FastGRNN
-            update_nonlinearity : activation function for the update function in the FastGRNN
-            isBi                : boolean flag to use bi-directional FastGRNN
-            fwd_context         : window for the forward pass
-            bwd_context         : window for the backward pass
+        Input:
+            cnn_channels        : number of the output channels for the first CNN block.
+            rnn_hidden_size     : hidden dimensions of the FastGRNN.
+            rnn_num_layers      : number of FastGRNN layers.
+            device              : device on which the tensors would placed.
+            gate_nonlinearity   : activation function for the gating in the FastGRNN.
+            update_nonlinearity : activation function for the update function in the FastGRNN.
+            isBi                : boolean flag to use bi-directional FastGRNN.
+            fwd_context         : window for the forward pass.
+            bwd_context         : window for the backward pass.
         """
         self.cnn_channels = cnn_channels
         self.rnn_hidden_size = rnn_hidden_size
@@ -455,8 +451,8 @@ class DSCNN_RNN_Block(torch.nn.Module):
     def declare_network(self, cnn_channels, rnn_hidden_size, rnn_num_layers,
                         num_labels, rank):
         """
-        Declare the netwok layers
-        Arguments can be inferred from the __init__
+        Declare the netwok layers.
+        Arguments can be inferred from the __init__.
         """
         self.CNN1 = torch.nn.Sequential(
             PreRNNConvBlock(80, cnn_channels, 5, 1, 1,
@@ -499,13 +495,13 @@ class DSCNN_RNN_Block(torch.nn.Module):
 
     def forward(self, features):
         """
-        Apply the set of layers initialized in __init__
+        Apply the set of layers initialized in __init__.
         
-        Input
-            features: A tensor of shape (batch, channels, length)
+        Input:
+            features: a tensor of shape (batch, channels, length).
         
-        Output
-            network block output in the form (batch, channels, length)
+        Output:
+            network block output in the form (batch, channels, length).
         """
         batch, _, max_seq_len = features.shape
         X = self.CNN1(features)  # Down to 30ms inference / 250ms window
@@ -538,18 +534,18 @@ class Binary_Classification_Block(torch.nn.Module):
                  num_labels=2, dropout=0, batch_assertion=False):
         super(Binary_Classification_Block, self).__init__()
         """
-        A depthwise separable low-rank convolution layer combination with pooling and activation layers
+        A depthwise separable low-rank convolution layer combination with pooling and activation layers.
 
-        Input
-            in_size         : number of input channels to the layer
-            rnn_hidden_size : hidden dimensions of the RNN layer
-            rnn_num_layers  : number of layers for the RNN layer
-            device          : device on which the tensors would placed
-            islstm          : boolean flag to use the LSTM. False would use GRU
-            isBi            : boolean flag to use the bi-directional variant of the RNN
-            momentum        : momentum for the batch-norm layer
-            num_labels      : number of output labels
-            dropout         : probability for the dropout layer
+        Input:
+            in_size         : number of input channels to the layer.
+            rnn_hidden_size : hidden dimensions of the RNN layer.
+            rnn_num_layers  : number of layers for the RNN layer.
+            device          : device on which the tensors would placed.
+            islstm          : boolean flag to use the LSTM. False would use GRU.
+            isBi            : boolean flag to use the bi-directional variant of the RNN.
+            momentum        : momentum for the batch-norm layer.
+            num_labels      : number of output labels.
+            dropout         : probability for the dropout layer.
         """
         self.in_size = in_size
         self.rnn_hidden_size = rnn_hidden_size
@@ -573,8 +569,8 @@ class Binary_Classification_Block(torch.nn.Module):
 
     def declare_network(self, in_size, rnn_hidden_size, rnn_num_layers, num_labels):
         """
-        Declare the netwok layers
-        Arguments can be inferred from the __init__
+        Declare the netwok layers.
+        Arguments can be inferred from the __init__.
         """
         self.CNN1 = torch.nn.Sequential(
             torch.nn.LeakyReLU(negative_slope=0.01),
@@ -603,13 +599,13 @@ class Binary_Classification_Block(torch.nn.Module):
 
     def forward(self, features, seqlen):
         """
-        Apply the set of layers initialized in __init__
+        Apply the set of layers initialized in __init__.
         
-        Input
-            features: A tensor of shape (batch, channels, length)
+        Input:
+            features: A tensor of shape (batch, channels, length).
         
-        Output
-            network block output in the form (batch, length, channels). length will be 1
+        Output:
+            network block output in the form (batch, length, channels). length will be 1.
         """
         batch, _, _ = features.shape
 
@@ -622,18 +618,18 @@ class Binary_Classification_Block(torch.nn.Module):
             hidden = self.init_hidden(batch, self.rnn_hidden_size,
                                       self.rnn_num_layers)
 
-        X = self.CNN1(features)  # Down to 30ms inference / 250ms window
+        X = self.CNN1(features)  # Down to 30ms inference / 250ms window.
 
-        X = X.permute((0, 2, 1))  #  NCL to NLC
+        X = X.permute((0, 2, 1))  #  NCL to NLC.
 
         max_seq_len = X.shape[1]
 
-        # modify seqlen
+        # modify seqlen.
         max_seq_len = min(torch.max(seqlen).item(), max_seq_len)
         seqlen = torch.clamp(seqlen, max=max_seq_len)
         self.seqlen = seqlen
 
-        # pad according to seqlen
+        # pad according to seqlen.
         X = torch.nn.utils.rnn.pack_padded_sequence(X,
                                                     seqlen,
                                                     batch_first=True,
@@ -660,9 +656,9 @@ class Binary_Classification_Block(torch.nn.Module):
 
     def init_hidden(self, batch, rnn_hidden_size, rnn_num_layers):
         """
-        Used to initialize the first hidden state of the RNN. It is currently zero. THe user is free to edit this function for additional analysis
+        Used to initialize the first hidden state of the RNN. It is currently zero. The user is free to edit this function for additional analysis.
         """
-        # the weights are of the form (batch, num_layers * num_directions , hidden_size)
+        # the weights are of the form (batch, num_layers * num_directions , hidden_size).
         if self.batch_assertion:
             hidden = torch.zeros(rnn_num_layers * self.direction_param, batch,
                                  rnn_hidden_size)

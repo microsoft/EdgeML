@@ -20,25 +20,25 @@ from numpy import random
 def synthesize_wave(sigx, snr, wgn_snr, gain, do_rir, args):
     """
     Synth Block - Used to process the input audio.
-    The input is convolved with room reverberation recording
-    Adds noise in the form of white gaussian noise and regular audio clips (eg:piano, people talking, car engine etc)
+    The input is convolved with room reverberation recording.
+    Adds noise in the form of white gaussian noise and regular audio clips (eg:piano, people talking, car engine etc).
     
-    Input
-        sigx    : input signal to the block
-        snr     : signal-to-noise ratio of the input and additive noise (regular audio)
-        wg_snr  : signal-to-noise ratio of the input and additive noise (white gaussian noise)
-        gain    : gain of the output signal
-        do_rir  : boolean flag, if reverbration needs to be incorporated
-        args    : args object (contains info about model and training)
+    Input:
+        sigx    : input signal to the block.
+        snr     : signal-to-noise ratio of the input and additive noise (regular audio).
+        wg_snr  : signal-to-noise ratio of the input and additive noise (white gaussian noise).
+        gain    : gain of the output signal.
+        do_rir  : boolean flag, if reverbration needs to be incorporated.
+        args    : args object (contains info about model and training).
     
-    Output
-        clipped version of the audio post-processing
+    Output:
+        clipped version of the audio post-processing.
     """
     beta = np.random.choice([0.1, 0.25, 0.5, 0.75, 1])
     sigx = beta * sigx
     x_power = np.sum(sigx * sigx)
     
-    # Do RIR and normalize back to original power
+    # Do RIR and normalize back to original power.
     if do_rir:
         rir_base_path = args.rir_base_path
         rir_fname = random.choice(os.listdir(rir_base_path))
@@ -46,7 +46,7 @@ def synthesize_wave(sigx, snr, wgn_snr, gain, do_rir, args):
         rir_sample, fs = sf.read(rir_full_fname)
         if rir_sample.ndim > 1:
             rir_sample = rir_sample[:,0]
-        # We cut the tail of the RIR signal at 99% energy
+        # We cut the tail of the RIR signal at 99% energy.
         cum_en = np.cumsum(np.power(rir_sample, 2))
         cum_en = cum_en / cum_en[-1]
         rir_sample = rir_sample[cum_en <= 0.99]
@@ -56,46 +56,42 @@ def synthesize_wave(sigx, snr, wgn_snr, gain, do_rir, args):
         sigy = sigy[0:len(sigx)]
 
         y_power = np.sum(sigy * sigy)
-        sigy *= math.sqrt(x_power / y_power)  # normalize so y has same total power
-
+        sigy *= math.sqrt(x_power / y_power)  # normalize so y has same total power.
     else:
         sigy = sigx
-
     y_rmse = math.sqrt(x_power / len(sigy))
 
-    # Only bother with noise addition if the SNR is low enough
+    # Only bother with noise addition if the SNR is low enough.
     if snr < 50:
         add_sample = get_add_noise(args)
         noise_rmse = math.sqrt(np.sum(add_sample * add_sample) / len(add_sample)) #+ 0.000000000000000001
-
         if len(add_sample) < len(sigy):
             padded = np.zeros(len(sigy), dtype=np.float32)
             padded[0:len(add_sample)] = add_sample
         else:
             padded = add_sample[0:len(sigy)] 
-
         add_sample = padded        
-        
         noise_scale = y_rmse / noise_rmse * math.pow(10, -snr / 20)
         sigy = sigy + add_sample * noise_scale
 
+    # Only bother with white gasussian noise addition if the WG_SNR is low enough.
     if wgn_snr < 50:
         wgn_samps = np.random.normal(size=(len(sigy))).astype(np.float32)
         noise_scale = y_rmse * math.pow(10, -wgn_snr / 20)
         sigy = sigy + wgn_samps * noise_scale
 
-    # Apply gain & clipping
+    # Apply gain & clipping.
     return np.clip(sigy * gain, -1.0, 1.0)
 
 def get_add_noise(args):
     """
-    Extracts the additive noise file from the defined path
+    Extracts the additive noise file from the defined path.
     
-    Input
-        args: args object (contains info about model and training)
+    Input:
+        args: args object (contains info about model and training).
     
-    Output
-        add_sample: additive noise audio
+    Output:
+        add_sample: additive noise audio.
     """
     additive_base_path = args.additive_base_path
     add_fname = random.choice(os.listdir(additive_base_path))
@@ -106,17 +102,17 @@ def get_add_noise(args):
 
 def get_ASR_datasets(args):
     """
-    Function for preparing the data samples for the phoneme pipeline
+    Function for preparing the data samples for the phoneme pipeline.
 
-    Input
-        args: args object (contains info about model and training)
+    Input:
+        args: args object (contains info about model and training).
     
-    Output
-        train_dataset: dataset class used for loading the samples into the training pipeline
+    Output:
+        train_dataset: dataset class used for loading the samples into the training pipeline.
     """
     base_path = args.base_path
 
-    # Load the speech data. This code snippet (till line 121) depends on the data format in base_path
+    # Load the speech data. This code snippet (till line 121) depends on the data format in base_path.
     train_textgrid_paths = glob.glob(base_path + 
                                     "/text/train-clean*/*/*/*.TextGrid")
     
@@ -124,7 +120,7 @@ def get_ASR_datasets(args):
                         for path in train_textgrid_paths]
 
     if args.pre_phone_list:
-        # If there is a list of phonemes in the dataset, use this flag
+        # If there is a list of phonemes in the dataset, use this flag.
         Sy_phoneme = []
         with open(args.phoneme_text_file, "r") as f:
             for line in f.readlines():
@@ -139,7 +135,7 @@ def get_ASR_datasets(args):
         print(len(Sy_phoneme), flush=True)
         print("**********************", flush=True)
     else:
-        # No list of phonemes specified. Count from the input dataset
+        # No list of phonemes specified. Count from the input dataset.
         phoneme_counter = Counter()
         for path in train_textgrid_paths:
             tg = textgrid.TextGrid()
@@ -148,7 +144,7 @@ def get_ASR_datasets(args):
                                     for phone in tg.getList("phones")[0] 
                                     if phone.mark not in ['', 'sp', 'spn']])
 
-        # Display and store the phonemes extracted
+        # Display and store the phonemes extracted.
         Sy_phoneme = list(phoneme_counter)
         args.num_phonemes = len(Sy_phoneme)
         print("**************", flush=True)
@@ -165,7 +161,7 @@ def get_ASR_datasets(args):
 
     print("Data Path Prep Done.", flush=True)
 
-    # Create dataset objects
+    # Create dataset objects.
     train_dataset = ASRDataset(train_wav_paths, train_textgrid_paths, Sy_phoneme, args)
 
     return train_dataset
@@ -173,13 +169,13 @@ def get_ASR_datasets(args):
 class ASRDataset(torch.utils.data.Dataset):
     def __init__(self, wav_paths, textgrid_paths, Sy_phoneme, args):
         """
-        Dataset iterator for the phoneme detection model
+        Dataset iterator for the phoneme detection model.
 
-        Input
-            wav_paths       : list of strings (wav file paths)
-            textgrid_paths  : list of strings (textgrid for each wav file)
-            Sy_phoneme      : list of strings (all possible phonemes)
-            args            : args object (contains info about model and training)
+        Input:
+            wav_paths       : list of strings (wav file paths).
+            textgrid_paths  : list of strings (textgrid for each wav file).
+            Sy_phoneme      : list of strings (all possible phonemes).
+            args            : args object (contains info about model and training).
         """
         self.wav_paths = wav_paths
         self.textgrid_paths = textgrid_paths
@@ -187,28 +183,28 @@ class ASRDataset(torch.utils.data.Dataset):
         self.length_var = args.pretraining_length_var
         self.Sy_phoneme = Sy_phoneme
         self.args = args
-        # Dataset Loader for the iterator
+        # Dataset Loader for the iterator.
         self.loader = torch.utils.data.DataLoader(self, batch_size=args.pretraining_batch_size, 
                                                   num_workers=args.workers, shuffle=True, 
                                                   collate_fn=CollateWavsASR())
 
     def __len__(self):
         """ 
-        Number of audio samples available
+        Number of audio samples available.
         """
         return len(self.wav_paths)
 
     def __getitem__(self, idx):
         """
         Gives one sample from the dataset. Data is read in this snippet. 
-        (refer to the collate function for pre-processing)
+        (refer to the collate function for pre-processing).
 
         Input:
-            idx: index for the sample
+            idx: index for the sample.
         
         Output:
-            x           : audio sample obtained from the synth block (if used, else input audio) after time-domain clipping
-            y_phoneme   : the output phonemes sampled at 30ms
+            x           : audio sample obtained from the synth block (if used, else input audio) after time-domain clipping.
+            y_phoneme   : the output phonemes sampled at 30ms.
         """
         x, fs = sf.read(self.wav_paths[idx])
 
@@ -222,7 +218,7 @@ class ASRDataset(torch.utils.data.Dataset):
             if phoneme.mark == '': phoneme_index = -1
             y_phoneme += [phoneme_index] * round(duration * fs)
 
-        # Cut a snippet of length random_length from the audio
+        # Cut a snippet of length random_length from the audio.
         random_length = round(fs * (self.length_mean + self.length_var * torch.randn(1).item()))
         if len(x) <= random_length:
             start = 0
@@ -247,10 +243,10 @@ class ASRDataset(torch.utils.data.Dataset):
 class CollateWavsASR:
     def __call__(self, batch):
         """
-        Pre-processing and padding, followed by batching the set of inputs
+        Pre-processing and padding, followed by batching the set of inputs.
 
         Input:
-            batch: list of tuples (input wav, phoneme labels)
+            batch: list of tuples (input wav, phoneme labels).
         
         Output:
             feature_tensor      : the melspectogram features of the input audio. The features are padded for batching.
@@ -264,27 +260,27 @@ class CollateWavsASR:
             x.append(x_)
             y_phoneme.append(y_phoneme_)
             
-        # pad all sequences to have same length and get features
+        # pad all sequences to have same length and get features.
         features=[]
         T = max([len(x_) for x_ in x])
         U_phoneme = max([len(y_phoneme_) for y_phoneme_ in y_phoneme])
         for index in range(batch_size):
-            # pad audio to same length for all the audio samples in the batch
+            # pad audio to same length for all the audio samples in the batch.
             x_pad_length = (T - len(x[index]))
             x[index] = np.pad(x[index], (x_pad_length,0), 'constant', constant_values=(0, 0))
 
-            # Extract Mel-Spectogram from padded audio
+            # Extract Mel-Spectogram from padded audio.
             feature = librosa.feature.melspectrogram(y=x[index],sr=16000,n_mels=80,
                                                     win_length=25*16,hop_length=10*16, n_fft=512)
             
             feature = librosa.core.power_to_db(feature)
-            # Normalize the features
+            # Normalize the features.
             max_value = np.max(feature)
             min_value = np.min(feature)
             feature = (feature - min_value) / (max_value - min_value)
             features.append(feature)
 
-            # Pad the labels to same length for all samples in the batch
+            # Pad the labels to same length for all samples in the batch.
             y_pad_length = (U_phoneme - len(y_phoneme[index]))
             y_phoneme[index] = np.pad(y_phoneme[index], (y_pad_length,0), 'constant', constant_values=(-1, -1))
 
@@ -305,25 +301,25 @@ class CollateWavsASR:
 
 def get_classification_dataset(args):
     """
-    Function for preparing the data samples for the classification pipeline
+    Function for preparing the data samples for the classification pipeline.
 
-    Input
-        args: args object (contains info about model and training)
+    Input:
+        args: args object (contains info about model and training).
     
-    Output
-        train_dataset   : dataset class used for loading the samples into the training pipeline
-        test_dataset    : dataset class used for loading the samples into the testing pipeline
+    Output:
+        train_dataset   : dataset class used for loading the samples into the training pipeline.
+        test_dataset    : dataset class used for loading the samples into the testing pipeline.
     """
     base_path = args.base_path
 
-    # Train Data
+    # Train Data.
     train_wav_paths = []
     train_labels = []
 
-    # data_folder_list = ["google30_train"] or ["google30_azure_tts", "google30_google_tts"]
+    # We assign data_folder_list = ["google30_train"] or ["google30_azure_tts", "google30_google_tts"].
     data_folder_list = args.train_data_folders
     for data_folder in data_folder_list:
-        # For each of the folder, iterate through the words and get the files and the labels
+        # For each of the folder, iterate through the words and get the files and the labels.
         for (label, word) in enumerate(args.words):
             curr_word_files = glob.glob(base_path + f"/{data_folder}/" + word + "/*.wav")
             train_wav_paths += curr_word_files
@@ -333,17 +329,17 @@ def get_classification_dataset(args):
     random.shuffle(temp)
     train_wav_paths, train_labels = zip(*temp)
     print(f"Train Data Folders Used {data_folder_list}", flush=True)
-    # Create dataset objects
+    # Create dataset objects.
     train_dataset = ClassificationDataset(wav_paths=train_wav_paths, labels=train_labels, args=args, is_train=True)
 
-    # Test Data
+    # Test Data.
     test_wav_paths = []
     test_labels = []
 
-    # data_folder_list = ["google30_test"]
+    # We assign data_folder_list = ["google30_test"].
     data_folder_list = args.test_data_folders
     for data_folder in data_folder_list:
-        # For each of the folder, iterate through the words and get the files and the labels
+        # For each of the folder, iterate through the words and get the files and the labels.
         for (label, word) in enumerate(args.words):
             curr_word_files = glob.glob(base_path + f"/{data_folder}/" + word + "/*.wav")
             test_wav_paths += curr_word_files
@@ -353,7 +349,7 @@ def get_classification_dataset(args):
     random.shuffle(temp)
     test_wav_paths, test_labels = zip(*temp)
     print(f"Test Data Folders Used {data_folder_list}", flush=True)
-    # Create dataset objects
+    # Create dataset objects.
     test_dataset = ClassificationDataset(wav_paths=test_wav_paths, labels=test_labels, args=args, is_train=False)
 
     return train_dataset, test_dataset
@@ -361,13 +357,13 @@ def get_classification_dataset(args):
 class ClassificationDataset(torch.utils.data.Dataset):
     def __init__(self, wav_paths, labels, args, is_train=True):
         """
-        Dataset iterator for the classifier model
+        Dataset iterator for the classifier model.
 
-        Input
-            wav_paths   : list of strings (wav file paths)
-            labels      : list of classification labels for the corresponding audio wav files
-            is_train    : boolean flag, if the dataset loader is for the train or test pipeline
-            args        : args object (contains info about model and training)
+        Input:
+            wav_paths   : list of strings (wav file paths).
+            labels      : list of classification labels for the corresponding audio wav files.
+            is_train    : boolean flag, if the dataset loader is for the train or test pipeline.
+            args        : args object (contains info about model and training).
         """
         self.wav_paths = wav_paths
         self.labels = labels
@@ -379,19 +375,19 @@ class ClassificationDataset(torch.utils.data.Dataset):
 
     def __len__(self):
         """ 
-        Number of audio samples available
+        Number of audio samples available.
         """
         return len(self.wav_paths)
 
     def one_hot_encoder(self, lab):
         """
-        Label index to one-hot encoder
+        Label index to one-hot encoder.
 
         Input:
-            lab: label index
+            lab: label index.
         
         Output:
-            one_hot: label in the one-hot format
+            one_hot: label in the one-hot format.
         """
         one_hot = np.zeros(len(self.args.words))
         one_hot[lab]=1
@@ -399,16 +395,16 @@ class ClassificationDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         """
-        Gives one sample from the dataset. Data is read in this snippet. (refer to the collate function for pre-processing)
+        Gives one sample from the dataset. Data is read in this snippet. (refer to the collate function for pre-processing).
 
         Input:
-            idx: index for the sample
+            idx: index for the sample.
         
         Output:
-            x               : audio sample obtained from the synth block (if used, else input audio) after time-domain clipping
-            one_hot_label   : one-hot encoded label
+            x               : audio sample obtained from the synth block (if used, else input audio) after time-domain clipping.
+            one_hot_label   : one-hot encoded label.
             seqlen          : length of the audio file. 
-                              This value will be dropped and seqlen after feature extraction will be used. Refer to the collate func
+                              This value will be dropped and seqlen after feature extraction will be used. Refer to the collate function.
         """
         x, fs = sf.read(self.wav_paths[idx])
 
@@ -429,15 +425,15 @@ class ClassificationDataset(torch.utils.data.Dataset):
 class CollateWavsClassifier:
     def __call__(self, batch):
         """
-        Pre-processing and padding, followed by batching the set of inputs
+        Pre-processing and padding, followed by batching the set of inputs.
 
         Input:
-            batch: list of tuples (input wav, one hot classification label, sequence length)
+            batch: list of tuples (input wav, one hot classification label, sequence length).
         
         Output:
             feature_tensor          : the melspectogram features of the input audio. The features are padded for batching.
-            one_hot_label_tensor    : the on-hot label in a tensor format
-            seqlen_tensor           : the sequence length of the features in a minibatch
+            one_hot_label_tensor    : the on-hot label in a tensor format.
+            seqlen_tensor           : the sequence length of the features in a minibatch.
         """
         x = []; one_hot_label = []; seqlen = []
         batch_size = len(batch)
@@ -446,19 +442,19 @@ class CollateWavsClassifier:
             x.append(x_)
             one_hot_label.append(one_hot_label_)
             
-        # pad all sequences to have same length and get features
+        # pad all sequences to have same length and get features.
         features=[]
         T = max([len(x_) for x_ in x])
         T = max([T, 48000])
         for index in range(batch_size):
-            # pad audio to same length for all the audio samples in the batch
+            # pad audio to same length for all the audio samples in the batch.
             x_pad_length = (T - len(x[index]))
             x[index] = np.pad(x[index], (x_pad_length,0), 'constant', constant_values=(0, 0))
             
-            # Extract Mel-Spectogram from padded audio
+            # Extract Mel-Spectogram from padded audio.
             feature = librosa.feature.melspectrogram(y=x[index],sr=16000,n_mels=80,win_length=25*16,hop_length=10*16, n_fft=512)
             feature = librosa.core.power_to_db(feature)
-            # Normalize the features
+            # Normalize the features.
             max_value = np.max(feature)
             min_value = np.min(feature)
             if min_value == max_value:
@@ -508,16 +504,16 @@ if __name__ == '__main__':
     parser.add_argument('--pre_phone_list', action='store_true')
     args = parser.parse_args()
 
-    # SNRs
+    # SNRs.
     args.snr_samples = [int(samp) for samp in args.snr_samples.split(',')]
     args.wgn_snr_samples = [int(samp) for samp in args.wgn_snr_samples.split(',')]
     args.gain_samples = [float(samp) for samp in args.gain_samples.split(',')]
 
-    # Workers
+    # Workers.
     if args.workers == -1:
         args.workers = multiprocessing.cpu_count()
 
-    # Words
+    # Words.
     if args.word_model_name == 'google30':
         args.words = ["bed", "bird", "cat", "dog", "down", "eight", "five", "four", "go", 
             "happy", "house", "left", "marvin", "nine", "no", "off", "on", "one", "right", 
@@ -529,7 +525,7 @@ if __name__ == '__main__':
     else:
         raise ValueError('Incorrect Word Model Name')
 
-    # Data Folders
+    # Data Folders.
     args.train_data_folders = [folder_idx for folder_idx in args.train_data_folders.split(',')]
     args.test_data_folders  = [folder_idx for folder_idx in args.test_data_folders.split(',')]
 

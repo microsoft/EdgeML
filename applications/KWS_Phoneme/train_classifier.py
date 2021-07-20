@@ -6,7 +6,7 @@ import os
 import re
 import numpy as np
 import torch
-# Aux scripts
+# Aux scripts.
 import kwscnn
 import multiprocessing
 from data_pipe import get_ASR_datasets, get_classification_dataset
@@ -17,7 +17,7 @@ def parseArgs():
     Describes the architecture and the hyper-parameters
     """
     parser = argparse.ArgumentParser()
-    # Args for Model Traning
+    # Args for Model Traning.
     parser.add_argument('--phoneme_model_load_ckpt', type=str, required=True, help="Phoneme checkpoint file to be loaded")
     parser.add_argument('--classifier_model_save_folder', type=str, default='./classifier_model', help="Folder to save the classifier checkpoint")
     parser.add_argument('--classifier_model_load_ckpt', type=str, default=None, help="Classifier checkpoint to be loaded")
@@ -31,7 +31,7 @@ def parseArgs():
     parser.add_argument('--words', type=str, help="List of words to be used. This will be assigned in the code. User input will not affect the result")
     parser.add_argument("--is_training", action='store_true', help="True for training")
     parser.add_argument("--synth", action='store_true', help="Use Synth block or not")
-    # Args for DataLoader
+    # Args for DataLoader.
     parser.add_argument('--base_path', type=str, required=True, help="path to train and test data folders")
     parser.add_argument('--train_data_folders', type=str, default="google30_train", help="List of training folders in base path. Each folder is a dataset in the prescribed format")
     parser.add_argument('--test_data_folders', type=str, default="google30_test", help="List of testing folders in base path. Each folder is a dataset in the prescribed format")
@@ -47,7 +47,7 @@ def parseArgs():
     parser.add_argument('--rir_chance', type=float, default=0.9, help="Probability of performing reverbration")
     parser.add_argument('--synth_chance', type=float, default=0.9, help="Probability of pre-processing the input with reverb and noise")
     parser.add_argument('--pre_phone_list', action='store_true', help="use pre-fixed set of phonemes")
-    # Args for Phoneme
+    # Args for Phoneme.
     parser.add_argument('--phoneme_cnn_channels', type=int, default=400, help="Number od channels for the CNN layers")
     parser.add_argument('--phoneme_rnn_hidden_size', type=int, default=200, help="Number of RNN hidden states")
     parser.add_argument('--phoneme_rnn_layers', type=int, default=1, help="Number of RNN layers")
@@ -56,7 +56,7 @@ def parseArgs():
     parser.add_argument('--phoneme_bwd_context', type=int, default=9, help="RNN backward window context")
     parser.add_argument('--phoneme_phoneme_isBi', action='store_true', help="Use Bi-Directional RNN")
     parser.add_argument('--phoneme_num_labels', type=int, default=41, help="Number og phoneme labels")
-    # Args for Classifier
+    # Args for Classifier.
     parser.add_argument('--classifier_rnn_hidden_size', type=int, default=100, help="Classifier RNN hidden dimensions")
     parser.add_argument('--classifier_rnn_num_layers', type=int, default=1, help="Classifier RNN number of layers")
     parser.add_argument('--classifier_dropout', type=float, default=0.2, help="Classifier dropout layer probability")
@@ -65,16 +65,16 @@ def parseArgs():
 
     args = parser.parse_args()
     
-    # Parse the gain and SNR values to a float format
+    # Parse the gain and SNR values to a float format.
     args.snr_samples = [int(samp) for samp in args.snr_samples.split(',')]
     args.wgn_snr_samples = [int(samp) for samp in args.wgn_snr_samples.split(',')]
     args.gain_samples = [float(samp) for samp in args.gain_samples.split(',')]
 
-    # Fix the number of workers for the data Loader. If == -1 then use all possible workers
+    # Fix the number of workers for the data Loader. If == -1 then use all possible workers.
     if args.workers == -1:
         args.workers = multiprocessing.cpu_count()
     
-    # Choose the word list to be used. For custom word lists, please add an elif condition
+    # Choose the word list to be used. For custom word lists, please add an elif condition.
     if args.word_model_name == 'google30':
         args.words = ["bed", "bird", "cat", "dog", "down", "eight", "five", "four", "go", 
             "happy", "house", "left", "marvin", "nine", "no", "off", "on", "one", "right", 
@@ -85,8 +85,8 @@ def parseArgs():
     else:
         raise ValueError('Incorrect Word Model Name')
 
-    # The data-folder in args.base_path that contain the data
-    # Refer to data_pipe.py for loading format
+    # The data-folder in args.base_path that contain the data.
+    # Refer to data_pipe.py for loading format.
     args.train_data_folders = [folder_idx for folder_idx in args.train_data_folders.split(',')]
     args.test_data_folders  = [folder_idx for folder_idx in args.test_data_folders.split(',')]
     
@@ -95,13 +95,13 @@ def parseArgs():
 
 def train_classifier_model(args):
     """
-    Train the Classifier Model on the designated dataset
-    The Dataset loader is defined in data_pipe.py
-    Default dataset used is Google30. Change the paths and file reader to change datasets
+    Train the Classifier Model on the designated dataset.
+    The Dataset loader is defined in data_pipe.py.
+    Default dataset used is Google30. Change the paths and file reader to change datasets.
 
-    args: args object (contains info about model and training)
+    args: args object (contains info about model and training).
     """
-    # GPU Settings
+    # GPU Settings.
     gpu_str = str()
     for gpu in args.gpu.split(','):
         gpu_str = gpu_str + str(gpu) + ","
@@ -109,7 +109,7 @@ def train_classifier_model(args):
     use_cuda = torch.cuda.is_available() and (args.gpu != -1)
     device = torch.device("cuda" if use_cuda else "cpu")
 
-    # Instantiate Phoneme Model
+    # Instantiate Phoneme Model.
     phoneme_model = kwscnn.DSCNN_RNN_Block(cnn_channels=args.phoneme_cnn_channels,
                                            rnn_hidden_size=args.phoneme_rnn_hidden_size,
                                            rnn_num_layers=args.phoneme_rnn_layers,
@@ -118,12 +118,12 @@ def train_classifier_model(args):
                                            bwd_context=args.phoneme_bwd_context,
                                            num_labels=args.phoneme_num_labels)
     
-    # Freeze Phoneme Model and Deactivate BatchNorm and Dropout Layers
+    # Freeze Phoneme Model and Deactivate BatchNorm and Dropout Layers.
     for param in phoneme_model.parameters():
         param.requires_grad = False
     phoneme_model.train(False)
     
-    # Instantiate Classifier Model
+    # Instantiate Classifier Model.
     classifier_model = kwscnn.Binary_Classification_Block(in_size=args.phoneme_num_labels,
                                                           rnn_hidden_size=args.classifier_rnn_hidden_size, 
                                                           rnn_num_layers=args.classifier_rnn_num_layers,
@@ -131,7 +131,7 @@ def train_classifier_model(args):
                                                           isBi=args.classifier_isBi, dropout=args.classifier_dropout, 
                                                           num_labels=len(args.words))
 
-    # Transfer to specified device
+    # Transfer to specified device.
     phoneme_model.to(device)
     phoneme_model = torch.nn.DataParallel(phoneme_model)
     classifier_model.to(device)
@@ -139,18 +139,18 @@ def train_classifier_model(args):
     model = {'name': phoneme_model.module.__name__, 'phoneme': phoneme_model,
              'classifier_name': classifier_model.module.__name__, 'classifier': classifier_model}
 
-    # Optimizer
+    # Optimizer.
     if args.optim == "adam":
         model['opt'] = torch.optim.Adam(model['classifier'].parameters(), lr=args.lr)
     if args.optim == "sgd":
         model['opt'] = torch.optim.SGD(model['classifier'].parameters(), lr=args.lr)
 
-    # Load the specified phoneme checkpoint. 'phoneme_model_load_ckpt' must point to a checkpoint and not folder
+    # Load the specified phoneme checkpoint. 'phoneme_model_load_ckpt' must point to a checkpoint and not folder.
     if args.phoneme_model_load_ckpt is not None:
         if os.path.exists(args.phoneme_model_load_ckpt):
-            # Load Checkpoint
+            # Load Checkpoint.
             latest_phoneme_ckpt = torch.load(args.phoneme_model_load_ckpt, map_location=device)
-            # Load specific state_dicts() and print the latest stats
+            # Load specific state_dicts() and print the latest stats.
             print(f"Model Phoneme Location : {args.phoneme_model_load_ckpt}", flush=True)
             model['phoneme'].load_state_dict(latest_phoneme_ckpt['phoneme_state_dict'])
             print(f"Checkpoint Stats : {latest_phoneme_ckpt['train_stats']}", flush=True)
@@ -159,17 +159,17 @@ def train_classifier_model(args):
     else:
         print("No Phoneme Checkpoint Given", flush=True)
 
-    # Load the specified classifier checkpoint. 'classifier_model_load_ckpt' must point to a checkpoint and not folder
+    # Load the specified classifier checkpoint. 'classifier_model_load_ckpt' must point to a checkpoint and not folder.
     if args.classifier_model_load_ckpt is not None:
         if os.path.exists(args.classifier_model_load_ckpt):
-            # Get the number from the classifier checkpoint path
-            start_epoch = args.classifier_model_load_ckpt             # Temporarily store the full ckpt path
-            start_epoch = start_epoch.split('/')[-1]            # retain only the *.pt from the path (Linux)
-            start_epoch = start_epoch.split('\\')[-1]           # retain only the *.pt from the path (Windows)
-            start_epoch = int(start_epoch.split('.')[0])        # retain the integers
-            # Load Checkpoint
+            # Get the number from the classifier checkpoint path.
+            start_epoch = args.classifier_model_load_ckpt       # Temporarily store the full ckpt path.
+            start_epoch = start_epoch.split('/')[-1]            # retain only the *.pt from the path (Linux).
+            start_epoch = start_epoch.split('\\')[-1]           # retain only the *.pt from the path (Windows).
+            start_epoch = int(start_epoch.split('.')[0])        # retain the integers.
+            # Load Checkpoint.
             latest_classifier_ckpt = torch.load(args.classifier_model_load_ckpt, map_location=device)
-            # Load specific state_dicts() and print the latest stats
+            # Load specific state_dicts() and print the latest stats.
             model['classifier'].load_state_dict(latest_classifier_ckpt['classifier_state_dict'])
             model['opt'].load_state_dict(latest_classifier_ckpt['opt_state_dict'])
             print(f"Checkpoint Stats : {latest_classifier_ckpt['train_stats']}", flush=True)
@@ -178,7 +178,7 @@ def train_classifier_model(args):
     else:
         start_epoch = 0
 
-    # Instantiate all Essential Variables and utils
+    # Instantiate all Essential Variables and utils.
     train_dataset, test_dataset = get_classification_dataset(args)
     train_loader = train_dataset.loader
     test_loader  = test_dataset.loader
@@ -186,7 +186,7 @@ def train_classifier_model(args):
     output_frame_rate = 3
     save_path = args.classifier_model_save_folder
     os.makedirs(args.classifier_model_save_folder, exist_ok=True)
-    # Print for cross-checking
+    # Print for cross-checking.
     print(f"Pre Phone List {args.pre_phone_list}", flush=True)
     print(f"Start Epoch : {start_epoch}", flush=True)
     print(f"Device : {device}", flush=True)
@@ -207,8 +207,8 @@ def train_classifier_model(args):
             train_seqlen_classifier = train_seqlen_classifier.to(device)
             model['opt'].zero_grad()
 
-            # Data-padding for bricking
-            train_features = train_features.permute((0, 2, 1))  # NCL to NLC
+            # Data-padding for bricking.
+            train_features = train_features.permute((0, 2, 1))  # NCL to NLC.
             mod_len = train_features.shape[1]
             pad_len_mod = (output_frame_rate - mod_len % output_frame_rate) % output_frame_rate
             pad_len_feature = pad_len_mod
@@ -218,23 +218,23 @@ def train_classifier_model(args):
 
             assert (train_features.shape[1]) % output_frame_rate == 0
 
-            # Get the posterior predictions and trim the labels to the same length as the predictions
-            train_features = train_features.permute((0, 2, 1))  # NLC to NCL
+            # Get the posterior predictions and trim the labels to the same length as the predictions.
+            train_features = train_features.permute((0, 2, 1))  # NLC to NCL.
             train_posteriors = model['phoneme'](train_features)
             train_posteriors = model['classifier'](train_posteriors, train_seqlen_classifier)
             N, L, C = train_posteriors.shape
 
-            # Permute and ready the final and pred labels values
-            train_flat_posteriors = train_posteriors.reshape((-1, C))  # to [NL] x C
+            # Permute and ready the final and pred labels values.
+            train_flat_posteriors = train_posteriors.reshape((-1, C))  # to [NL] x C.
 
-            # Loss and backward step
+            # Loss and backward step.
             train_label = train_label.type(torch.float32)
             loss_classifier_model = torch.nn.functional.binary_cross_entropy_with_logits(train_flat_posteriors, train_label)
             loss_classifier_model.backward()
             torch.nn.utils.clip_grad_norm_(model['classifier'].parameters(), 10.0)
             model['opt'].step()
 
-            # Stats
+            # Stats.
             model['train_stats']['loss'] += loss_classifier_model.detach()
             _, train_idx_pred = torch.max(train_flat_posteriors, dim=1)
             _, train_idx_label = torch.max(train_label, dim=1)
@@ -242,7 +242,7 @@ def train_classifier_model(args):
             model['train_stats']['total'] += train_idx_label.shape[0]
 
         if epoch % args.save_tick == 0:
-            # Save the model
+            # Save the model.
             torch.save({'classifier_state_dict': model['classifier'].state_dict(),
                         'opt_state_dict': model['opt'].state_dict(), 'train_stats' : model['train_stats']}, 
                         os.path.join(save_path, f'{epoch}.pt'))
@@ -261,8 +261,8 @@ def train_classifier_model(args):
                 test_label = test_label.to(device)
                 test_seqlen_classifier = test_seqlen_classifier.to(device)
 
-                # Data-padding for bricking
-                test_features = test_features.permute((0, 2, 1))  # NCL to NLC
+                # Data-padding for bricking.
+                test_features = test_features.permute((0, 2, 1))  # NCL to NLC.
                 mod_len = test_features.shape[1]
                 pad_len_mod = (output_frame_rate - mod_len % output_frame_rate) % output_frame_rate
                 pad_len_feature = pad_len_mod
@@ -272,16 +272,16 @@ def train_classifier_model(args):
 
                 assert (test_features.shape[1]) % output_frame_rate == 0
 
-                # Get the posterior predictions and trim the labels to the same length as the predictions
-                test_features = test_features.permute((0, 2, 1))  # NLC to NCL
+                # Get the posterior predictions and trim the labels to the same length as the predictions.
+                test_features = test_features.permute((0, 2, 1))  # NLC to NCL.
                 test_posteriors = model['phoneme'](test_features)
                 test_posteriors = model['classifier'](test_posteriors, test_seqlen_classifier)
                 N, L, C = test_posteriors.shape
 
-                # Permute and ready the final and pred labels values
-                test_flat_posteriors = test_posteriors.reshape((-1, C))  # to [NL] x C
+                # Permute and ready the final and pred labels values.
+                test_flat_posteriors = test_posteriors.reshape((-1, C))  # to [NL] x C.
 
-                # Stats
+                # Stats.
                 _, test_idx_pred = torch.max(test_flat_posteriors, dim=1)
                 _, test_idx_label = torch.max(test_label, dim=1)
                 model['test_stats']['correct'] += float(np.sum((test_idx_pred == test_idx_label).detach().cpu().numpy()))
