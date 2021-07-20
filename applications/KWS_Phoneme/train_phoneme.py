@@ -209,4 +209,4 @@ def train_phoneme_model(args):
 
 if __name__ == '__main__':
     args = parseArgs()
-    train_phoneme_model(args)    
+    train_phoneme_model(args)

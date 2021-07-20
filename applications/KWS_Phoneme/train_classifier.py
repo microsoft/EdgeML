@@ -293,4 +293,4 @@ def train_classifier_model(args):
 
 if __name__ == '__main__':
     args = parseArgs()
-    train_classifier_model(args)    
+    train_classifier_model(args)

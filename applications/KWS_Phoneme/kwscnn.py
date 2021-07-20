@@ -675,4 +675,3 @@ class Binary_Classification_Block(torch.nn.Module):
         hidden = Variable(hidden)
 
         return hidden
-
