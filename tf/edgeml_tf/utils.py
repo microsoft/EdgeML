@@ -96,6 +96,11 @@ def mean_absolute_error(logits, label):
     '''
     return tf.reduce_mean(tf.abs(tf.subtract(logits, label)))
 
+def mean_squared_error(logits, label):
+    '''
+    Function to compute the mean squared error.
+    '''
+    return tf.reduce_mean(tf.square(tf.subtract(logits, label)))
 
 def hardThreshold(A, s):
     '''
