@@ -77,8 +77,8 @@ void offset_matVec_conv1d(const float* mat, const float* vec,
   unsigned depthwise, float* ret) {
 
   while (nrows--) {
-    // For depthwise, the vec(input) pointer is updated 
-    // Since each row of the mat corresponds to a separate channel index
+    // For depthwise, the vec(input) pointer is updated.
+    // Since each row of the mat corresponds to a separate channel index.
     float* vec_offset = depthwise ? (float*)vec++ : (float*)vec;
     float* mat_offset = (float*)mat;
     float sum = 0.0f;
@@ -128,7 +128,7 @@ void tiledMatMul_float(const float* const matA, const float* const matB,
 
             #ifdef LOOP_UNROLL
               unsigned len_unroll = temp_block_size >> 2;
-              temp_block_size %= 4; // comm_block_size % 4
+              temp_block_size %= 4; // comm_block_size % 4.
               while (len_unroll--) {
                 sum += (*matA_offset++) * (*matB_offset);
                 matB_offset += ncols;
@@ -173,7 +173,7 @@ void transposed_tiledMatMul(const float* const matA, const float* const matB,
 
             #ifdef LOOP_UNROLL
               unsigned len_unroll = temp_block_size >> 2;
-              temp_block_size %= 4; // comm_block_size % 4
+              temp_block_size %= 4; // comm_block_size % 4.
               while (len_unroll--) {
                 sum += (*matA_offset++) * (*matB_offset++);
                 sum += (*matA_offset++) * (*matB_offset++);
@@ -245,7 +245,7 @@ void softmax(const float* const input, unsigned len, float* const ret) {
 
 void semi_sigmoid_tanh(float* output_signal, const float* const input_signal, 
   unsigned in_time, unsigned in_channels) {
-  unsigned time_step = 0; // used to avoid index multiplication
+  unsigned time_step = 0; // used to avoid index multiplication.
   while (in_time--) {
     unsigned pivot = in_channels >> 1;
     float* input_sigmoid_offset = (float*)input_signal + time_step;

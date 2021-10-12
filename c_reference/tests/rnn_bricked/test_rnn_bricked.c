@@ -64,6 +64,8 @@ int main() {
       denom += OUTPUT[t * RNN_OUT_FEATURES + d] * OUTPUT[t * RNN_OUT_FEATURES + d];
     }
   }
+  // RMSE - Relative Mean Squared Error.
+  // The ratio of the Squared Error to the Squared Summation of the Signal.
   float avg_error = error / (RNN_OUT_TIME * RNN_OUT_FEATURES);
   float rmse = error / denom;
   

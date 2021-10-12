@@ -4,30 +4,30 @@
 #ifndef __RNN_BRICKED_H__
 #define __RNN_BRICKED_H__
 
-/*  All the matrices are stored in the row major format
+/*  All the matrices are stored in the row major format.
     
-    NOTES for using the layers
-->  Single-directional Computation
-    While using the bricked fastgrnn layers, the user needs to adhered to the two following constraints
-    1) in_time % hop = 0
-    2) fwd_window % hop = 0 and bwd_window % hop = 0
+    NOTES for using the layers.
+->  Single-directional Computation.
+    While using the bricked fastgrnn layers, the user needs to adhered to the two following constraints.
+    1) in_time % hop = 0.
+    2) fwd_window % hop = 0 and bwd_window % hop = 0.
 
-    Violation of the above two constraints (1 & 2), will cause segmentation faults
-    The layers first compute all the Wx steps and then compute Uh for all the windows parallelly
-    Hence, the user needs to adhered to the constraints 1 & 2
+    Violation of the above two constraints (1 & 2), will cause segmentation faults.
+    The layers first compute all the Wx steps and then compute Uh for all the windows parallelly.
+    Hence, the user needs to adhered to the constraints 1 & 2.
 
-->  Bi-directional Computation
-    For bi-directional cases, there are 2 additionally constraints that would need to be followed
-    A) sample_first_brick and sample_last_brick = 1
-    B) An offset of rnn_hidden would need to be given to the output_signal pointer during the backward function call
+->  Bi-directional Computation.
+    For bi-directional cases, there are 2 additionally constraints that would need to be followed.
+    A) sample_first_brick and sample_last_brick = 1.
+    B) An offset of rnn_hidden would need to be given to the output_signal pointer during the backward function call.
         Each function will only process its given context(forward/backward). The other context will need to be called separately.
-        E.g : 1st step -> forward(output, ..., input, ..., bi-direction=1, ...)
-              2nd step -> backward(output + rnn_hidden, ..., input, ..., bi-direction=1, ...)
+        E.g : 1st step -> forward(output, ..., input, ..., bi-direction=1, ...).
+              2nd step -> backward(output + rnn_hidden, ..., input, ..., bi-direction=1, ...).
 
-    The two extra constraints (A & B) are only for bi-directional cases and can be ignored if only forward (or only backward) is used
-    Violating the conditions would cause index mis-matches or data corruption
-    If the first (last) brick is not sampled, the first few (last few) time steps would be missing in the forward (backward) result 
-    If the offset is not passed during the backward function call, the backward pass will overwrite the forward result (bi-directional case only)
+    The two extra constraints (A & B) are only for bi-directional cases and can be ignored if only forward (or only backward) is used.
+    Violating the conditions would cause index mis-matches or data corruption.
+    If the first (last) brick is not sampled, the first few (last few) time steps would be missing in the forward (backward) result .
+    If the offset is not passed during the backward function call, the backward pass will overwrite the forward result (bi-directional case only).
 */
 
 /**

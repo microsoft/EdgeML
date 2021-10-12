@@ -20,6 +20,8 @@ void errorCheck(float* pred, float* label, unsigned out_time, int out_features) 
       denom += label[t * out_features + d] * label[t * out_features + d];
     }
   }
+  // RMSE - Relative Mean Squared Error.
+  // The ratio of the Squared Error to the Squared Summation of the Signal.
   float avg_error = error / (out_time * out_features), rmse = error / denom;
   printf("Agg Squared Error: %f ; MSE: %f ; RMSE: %f\n", error, avg_error, rmse);
 }
