@@ -191,7 +191,7 @@ int backward_bricked_fastgrnn_lr(float* output_signal, unsigned rnn_hidden,
     transposed_tiledMatMul(hiddenState, tparams->U1, num_bricks, rnn_hidden,
       tparams->uRank, rnn_hidden, rnn_hidden,
       tempLR, tparams->block_size_u_to_lr);
-        // From lower dims to higher dims.
+    // From lower dims to higher dims.
     // Add Wx with Uh.
     // The tiled MatMuls are codes such that they yield result += matA * matB.
     // Hence we use calloc and memset to equate the result to 0.

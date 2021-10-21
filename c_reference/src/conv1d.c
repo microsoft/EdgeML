@@ -118,9 +118,9 @@ int conv1d_lr_parallel(float* output_signal, unsigned out_time, unsigned out_cha
   unsigned buffer_steps = ((in_time / num_steps_one_row) > 1) ? 
                             in_time / num_steps_one_row : 1;
   unsigned rank = tparams->rank;
-  // Buffer for W2 out
+  // Buffer for W2 out.
   float* temp_rank_out = (float*)malloc(buffer_steps * rank * sizeof(float));
-  // Buffer for W1 out
+  // Buffer for W1 out.
   float* temp_out = (float*)malloc(buffer_steps * out_channels * sizeof(float));
 
   unsigned t_in_start, t_in_end, t_out; // Values are needed outside the loops. Hence declared here.
