@@ -39,7 +39,7 @@ int conv1d_lr(float* output_signal, unsigned out_time, unsigned out_channels,
       // Filter partially entered the input.
       // As a part of the filter is outside the input, we need less than "kernel_size" time-steps. 
       // We will only be using a part of the weight matrix(assuming shape = out_channels, kernel_size * in_channels).
-      // Hence we provide a separate row_stride paramemter to discard/skip certain columns in the weight matrix.
+      // Hence we provide a separate row_stride parameter to discard/skip certain columns in the weight matrix.
       offset_matVec_conv1d(tparams->W2 + (padding - t_in_start) * in_channels, 
         input_signal, rank,
         (t_in_end - padding + 1) * in_channels, 
@@ -53,7 +53,7 @@ int conv1d_lr(float* output_signal, unsigned out_time, unsigned out_channels,
       // Filter partially exited the input.
       // As a part of the filter is outside the input, we need less than "kernel_size" time-steps. 
       // We will only be using a part of the weight matrix(assuming shape = out_channels, kernel_size * in_channels).
-      // Hence we provide a separate row_stride paramemter to discard/skip certain columns in the weight matrix.
+      // Hence we provide a separate row_stride parameter to discard/skip certain columns in the weight matrix.
       offset_matVec_conv1d(tparams->W2,
         input_signal  + (t_in_start - padding) * in_channels, 
         rank, (in_time + padding - t_in_start) * in_channels, 
@@ -112,7 +112,7 @@ int conv1d_lr_parallel(float* output_signal, unsigned out_time, unsigned out_cha
   
   const ConvLayers_LR_Parallel_Params* tparams = (ConvLayers_LR_Parallel_Params*) params;
   // Perform the convolution. Zero-pad is from 0 to padding and in_time + padding to in_time + 2 * padding.
-  // Buffer to hold the output. For corner cases, this will be realtively big. 
+  // Buffer to hold the output. For corner cases, this will be relatively big. 
   // But will be needed for the central condition (filter inside input).
   // If there are not enough time steps to linearise into one row, then allocate only 1 time step.
   unsigned buffer_steps = ((in_time / num_steps_one_row) > 1) ? 
@@ -136,7 +136,7 @@ int conv1d_lr_parallel(float* output_signal, unsigned out_time, unsigned out_cha
       // Filter partially entered the input.
       // As a part of the filter is outside the input, we need less than "kernel_size" time-steps.
       // We will only be using a part of the weight matrix(assuming shape = out_channels, kernel_size * in_channels).
-      // Hence we provide a separate row_stride paramemter to discard/skip certain columns in the weight matrix.
+      // Hence we provide a separate row_stride parameter to discard/skip certain columns in the weight matrix.
       offset_matVec_conv1d(tparams->W2 + (padding - t_in_start) * in_channels, 
         input_signal, rank, (t_in_end - padding + 1) * in_channels, 
         kernel_size * in_channels, 1, 0, temp_rank_out);
@@ -208,7 +208,7 @@ int conv1d_lr_parallel(float* output_signal, unsigned out_time, unsigned out_cha
       // Filter partially exited the input.
       // As a part of the filter is outside the input, we need less than "kernel_size" time-steps. 
       // We will only be using a part of the weight matrix(assuming shape = out_channels, kernel_size * in_channels).
-      // Hence we provide a separate row_stride paramemter to discard/skip certain columns in the weight matrix.
+      // Hence we provide a separate row_stride parameter to discard/skip certain columns in the weight matrix.
       offset_matVec_conv1d(tparams->W2,
         input_signal  + (t_in_start - padding) * in_channels, 
         rank, (in_time + padding - t_in_start) * in_channels, 
@@ -225,7 +225,7 @@ int conv1d_lr_parallel(float* output_signal, unsigned out_time, unsigned out_cha
         0, out_channels * sizeof(float));
     }
   }
-  // Bias and activation
+  // Bias and activation.
   for (t_out = 0; t_out < out_time; t_out++) {
     unsigned t_index = t_out * out_channels;
     for (unsigned co = 0; co < out_channels; co++) {
@@ -287,7 +287,7 @@ int conv1d(float* output_signal, unsigned out_time, unsigned out_channels,
       // Filter partially entered the input.
       // As a part of the filter is outside the input, we need less than "kernel_size" time-steps. 
       // We will only be using a part of the weight matrix(assuming shape = out_channels, kernel_size * in_channels).
-      // Hence we provide a separate row_stride paramemter to discard/skip certain columns in the weight matrix.
+      // Hence we provide a separate row_stride parameter to discard/skip certain columns in the weight matrix.
       offset_matVec_conv1d(tparams->W + (padding - t_in_start) * cols_scale, 
         input_signal, out_channels, (t_in_end - padding + 1) * cols_scale,
         kernel_size * cols_scale, vec_stride, tparams->depthwise, temp_out);
@@ -297,7 +297,7 @@ int conv1d(float* output_signal, unsigned out_time, unsigned out_channels,
       // Filter partially exited the input.
       // As a part of the filter is outside the input, we need less than "kernel_size" time-steps. 
       // We will only be using a part of the weight matrix(assuming shape = out_channels, kernel_size * in_channels).
-      // Hence we provide a separate row_stride paramemter to discard/skip certain columns in the weight matrix.
+      // Hence we provide a separate row_stride parameter to discard/skip certain columns in the weight matrix.
       offset_matVec_conv1d(tparams->W,
         input_signal  + (t_in_start - padding) * in_channels, 
         out_channels, (in_time + padding - t_in_start) * cols_scale,
@@ -352,7 +352,7 @@ int conv1d_parallel(float* output_signal, unsigned out_time, unsigned out_channe
 
   const ConvLayers_Parallel_Params* tparams = (ConvLayers_Parallel_Params*) params;
   // Perform the Convolution. Pad is from 0 to padding and in_time + padding to in_time + 2 * padding.
-  // Buffer to hold the output. For corner cases, this will be realtively big. 
+  // Buffer to hold the output. For corner cases, this will be relatively big. 
   // But will be needed for the central condition (filter inside input).
   // If there are not enough time steps to linearise into one row, then allocate only 1 time step.
   unsigned buffer_steps = ((in_time / num_steps_one_row) > 1) ? 
@@ -371,7 +371,7 @@ int conv1d_parallel(float* output_signal, unsigned out_time, unsigned out_channe
       // Filter partially entered the input.
       // As a part of the filter is outside the input, we need less than "kernel_size" time-steps. 
       // We will only be using a part of the weight matrix(assuming shape = out_channels, kernel_size * in_channels).
-      // Hence we provide a separate row_stride paramemter to discard/skip certain columns in the weight matrix.
+      // Hence we provide a separate row_stride parameter to discard/skip certain columns in the weight matrix.
       offset_matVec_conv1d(tparams->W + (padding - t_in_start) * in_channels,
         input_signal, out_channels, (t_in_end - padding + 1) * in_channels,
         ncols, 1, 0, temp_out);
@@ -433,7 +433,7 @@ int conv1d_parallel(float* output_signal, unsigned out_time, unsigned out_channe
       // Filter partially exited the input.
       // As a part of the filter is outside the input, we need less than "kernel_size" time-steps. 
       // We will only be using a part of the weight matrix(assuming shape = out_channels, kernel_size * in_channels).
-      // Hence we provide a separate row_stride paramemter to discard/skip certain columns in the weight matrix.
+      // Hence we provide a separate row_stride parameter to discard/skip certain columns in the weight matrix.
       offset_matVec_conv1d(tparams->W,
         input_signal  + (t_in_start - padding) * in_channels, 
         out_channels, (in_time + padding - t_in_start) * in_channels, 
@@ -447,7 +447,7 @@ int conv1d_parallel(float* output_signal, unsigned out_time, unsigned out_channe
         0, out_channels * sizeof(float));
     }
   }
-  // Bias and activation
+  // Bias and activation.
   for (t_out = 0; t_out < out_time; t_out++) {
     unsigned t_index = t_out * out_channels;
     for (unsigned co = 0; co < out_channels; co++) {

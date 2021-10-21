@@ -164,7 +164,7 @@ int backward_bricked_fastgrnn_lr(float* output_signal, unsigned rnn_hidden,
 
   unsigned rnn_assign_offset = rnn_hidden;
   unsigned num_bricks = (in_time - window) / hop + 1;
-  unsigned out_index = in_time / hop; // = out_time - 1;
+  unsigned out_index = in_time / hop;
   // If bi-directional is True(non-zero) then the actual output hidden state(allocated space) is twice rnn_hidden.
   // This function only processes the forward context.
   if (bi_direction) {

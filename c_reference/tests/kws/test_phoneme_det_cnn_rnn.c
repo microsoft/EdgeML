@@ -23,7 +23,8 @@ int checkTime(unsigned out_time) {
   }
   return 0;
 }
-// Error Check
+
+// Error Check.
 void checkError(float* pred, float* label) {
   float error = 0, denom = 0;
   for (unsigned t = 0; t < KWS_OUT_TIME; t++) {
@@ -51,7 +52,7 @@ void checkError(float* pred, float* label) {
   2nd block is an RNN, which has a specified forward and a backward context running at a stride/hop of 3.
   Hence it reduces the sequence length by a factor of 3.
   Rest of the blocks(3rd, 4th, 5th and 6th) are a combination of CNNs.
-  Each of the final 4 blocks consist of a depth cnn (kernel size of 5) and a point cnn (kernel size of 1).
+  Each of the final 4 blocks consist of a depth-CNN (kernel size of 5) and a point-CNN (kernel size of 1).
 
   Input to the architecture is of the form (seq_len, feature_dim) where feature dim refers to n_mels (number of mel features/number of features from the featurizer).
   Output is of the form (seq_len/3, 41) where 41 is the number of phonemes over which the classification is performed. 
@@ -166,7 +167,7 @@ void phoneme_prediction(float* mem_buf) {
 
   unsigned in_time, out_time;
 
-  /* Pre-CNN */
+  /* Pre-CNN. */
   in_time = KWS_IN_TIME;
   out_time = in_time - PRE_CNN_FILT + (PRE_CNN_FILT_PAD << 1) + 1;
   float* cnn1_out = (float*)malloc(out_time * PRE_CNN_OUT_FEATURES * sizeof(float));
@@ -176,12 +177,12 @@ void phoneme_prediction(float* mem_buf) {
     conv1d_lr_parallel, in_time, PRE_CNN_IN_FEATURES,
     0, 0, PRE_CNN_BNORM_AFFINE, CNN1_SCALE, CNN1_OFFSET, PRE_CNN_BNORM_INPLACE,
     PRE_CNN_OUT_FEATURES, PRE_CNN_FILT_PAD, PRE_CNN_FILT,
-    &conv_params, PRE_CNN_STRIDE, PRE_CNN_FILT_ACT); // regular tanh activation.
+    &conv_params, PRE_CNN_STRIDE, PRE_CNN_FILT_ACT); // Regular tanh activation.
 
   batchnorm1d(0, cnn1_out, in_time, RNN_IN_FEATURES, 
     0, 0, RNN_BNORM_AFFINE, RNN_SCALE, RNN_OFFSET, 1, 0.00001);
 
-  /* Bricked Bi-FastGRNN Block */
+  /* Bricked Bi-FastGRNN Block. */
   out_time = in_time/RNN_HOP + 1;
   float* rnn_out = (float*)malloc(out_time * RNN_OUT_FEATURES * sizeof(float));
   forward_bricked_fastgrnn_lr(rnn_out, RNN_OUT_FEATURES >> 1, cnn1_out,
@@ -194,7 +195,7 @@ void phoneme_prediction(float* mem_buf) {
     &bwd_RNN_params, RNN_BI_DIR, RNN_SAMPLE_LAST_BRICK);
   free(cnn1_out);
 
-  /* Post-CNN */
+  /* Post-CNN. */
   // Since all inputs to the subsequent layers are temporary, in-place batchnorm1d can be used without any input(initial buffer)/output(final layer) data alteration/corruption.
   // CNN2.
   in_time = out_time;
@@ -256,7 +257,7 @@ void phoneme_prediction(float* mem_buf) {
     POST_CNN_POOL_PAD, POST_CNN_POOL, POST_CNN_POOL_STRIDE, POST_CNN_POOL_ACT);
   free(cnn4_out);
 
-  /* Output Time and Prediction Check. Created for Debugging */
+  /* Output Time and Prediction Check. Created for Debugging. */
   if (checkTime(out_time))
     return;
   else

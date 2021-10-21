@@ -86,7 +86,7 @@ void offset_matVec_conv1d(const float* mat, const float* vec,
     
     #ifdef LOOP_UNROLL
       unsigned len_unroll = cols >> 2;
-      cols %= 4; // ncols % 4
+      cols %= 4; // ncols % 4.
       while (len_unroll--) {
         sum += (*mat_offset++) * (*vec_offset);
         vec_offset += vec_stride;
@@ -245,7 +245,7 @@ void softmax(const float* const input, unsigned len, float* const ret) {
 
 void semi_sigmoid_tanh(float* output_signal, const float* const input_signal, 
   unsigned in_time, unsigned in_channels) {
-  unsigned time_step = 0; // used to avoid index multiplication.
+  unsigned time_step = 0; // Used to avoid index multiplication.
   while (in_time--) {
     unsigned pivot = in_channels >> 1;
     float* input_sigmoid_offset = (float*)input_signal + time_step;

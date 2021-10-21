@@ -10,7 +10,7 @@
 #include "./conv1d_depthwise/conv_param_depth.h"
 #include "./conv1d_lr/conv_param_lr.h"
 
-// Error Check
+// Error Check.
 void errorCheck(float* pred, float* label, unsigned out_time, int out_features) {
   float error = 0, denom = 0;
   for (unsigned t = 0; t < out_time; t++) {
