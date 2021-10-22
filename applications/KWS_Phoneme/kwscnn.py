@@ -49,7 +49,7 @@ class _TanhGate(torch.nn.Module):
     def forward(self, value):
         """
         Applies a custom activation function.
-        The first half of the channels are passed through sigmoid layer and the next half though a tanh.
+        The first half of the channels are passed through sigmoid layer and the next half through a tanh.
         The outputs are multiplied and returned.
         
         Input:

@@ -21,12 +21,12 @@ def synthesize_wave(sigx, snr, wgn_snr, gain, do_rir, args):
     """
     Synth Block - Used to process the input audio.
     The input is convolved with room reverberation recording.
-    Adds noise in the form of white gaussian noise and regular audio clips (eg:piano, people talking, car engine etc).
+    Adds noise in the form of white Gaussian noise and regular audio clips (eg:piano, people talking, car engine etc).
     
     Input:
         sigx    : input signal to the block.
         snr     : signal-to-noise ratio of the input and additive noise (regular audio).
-        wg_snr  : signal-to-noise ratio of the input and additive noise (white gaussian noise).
+        wg_snr  : signal-to-noise ratio of the input and additive noise (white Gaussian noise).
         gain    : gain of the output signal.
         do_rir  : boolean flag, if reverbration needs to be incorporated.
         args    : args object (contains info about model and training).
@@ -74,7 +74,7 @@ def synthesize_wave(sigx, snr, wgn_snr, gain, do_rir, args):
         noise_scale = y_rmse / noise_rmse * math.pow(10, -snr / 20)
         sigy = sigy + add_sample * noise_scale
 
-    # Only bother with white gasussian noise addition if the WG_SNR is low enough.
+    # Only bother with white Gaussian noise addition if the WG_SNR is low enough.
     if wgn_snr < 50:
         wgn_samps = np.random.normal(size=(len(sigy))).astype(np.float32)
         noise_scale = y_rmse * math.pow(10, -wgn_snr / 20)
