@@ -132,7 +132,9 @@ def getMaxInt():
     return (2 ** (config.wordLength - 1)) - 1
 
 # Format specifiers for various datatypes.
-def getDataType(num):
+def getDataType(num, name=None):
+    if name != None and name[-3:] == 'idx':
+        return 'MYITE', '%d'
     if isinstance(num, int):
         return 'MYINT', '%d'
     elif isinstance(num, float):
@@ -312,7 +314,7 @@ def writeMatToFile(mat, fileName: str, delimiter):
 def writeMatAsArray(mat, name: str, fileName: str, shapeStr=None, bw=None):
     m, n = matShape(mat)
 
-    dataType, formatSpecifier = getDataType(mat[0][0])
+    dataType, formatSpecifier = getDataType(mat[0][0], name)
 
     # Add the 'f' specifier for each float to supress compiler warnings.
     if dataType == "float":
@@ -347,7 +349,7 @@ def writeMatAsArray(mat, name: str, fileName: str, shapeStr=None, bw=None):
 def writeListAsArray(list, name: str, fileName: str, shapeStr=None, bw=None):
     n = len(list)
 
-    dataType, formatSpecifier = getDataType(list[0])
+    dataType, formatSpecifier = getDataType(list[0], name)
 
     # Add the 'f' specifier for each float to supress compiler warnings.
     if dataType == "float":

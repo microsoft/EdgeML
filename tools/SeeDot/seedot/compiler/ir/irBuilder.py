@@ -3494,13 +3494,30 @@ class IRBuilder(ASTVisitor):
             # Profile the LHS as the value would have been updated, hence the scale required for LHS in the floating-point code may be different.
             profile = IR.Prog([])
             if forFloat():
-                profile = IR.Prog([IR.FuncCall("Profile2", {
-                    expr_decl: "Var",
-                    IR.Int(node.decl.type.shape[0]): "I",
-                    IR.Int(node.decl.type.shape[1]): "J",
-                    IR.String(expr_splice): "VarName"
-                })])
-            if forFloat():
+                if node.decl.type.dim == 2:
+                    profile = IR.Prog([IR.FuncCall("Profile2", {
+                        expr_decl: "Var",
+                        IR.Int(node.decl.type.shape[0]): "I",
+                        IR.Int(node.decl.type.shape[1]): "J",
+                        IR.String(expr_splice): "VarName"
+                    })])
+                elif node.decl.type.dim == 3:
+                    profile = IR.Prog([IR.FuncCall("Profile3", {
+                        expr_decl: "Var",
+                        IR.Int(node.decl.type.shape[0]): "I",
+                        IR.Int(node.decl.type.shape[1]): "J",
+                        IR.Int(node.decl.type.shape[2]): "K",
+                        IR.String(expr_splice): "VarName"
+                    })])
+                elif node.decl.type.dim == 4:
+                    profile = IR.Prog([IR.FuncCall("Profile4", {
+                        expr_decl: "Var",
+                        IR.Int(node.decl.type.shape[0]): "I",
+                        IR.Int(node.decl.type.shape[1]): "J",
+                        IR.Int(node.decl.type.shape[2]): "K",
+                        IR.Int(node.decl.type.shape[3]): "L",
+                        IR.String(expr_splice): "VarName"
+                    })])
                 self.independentVars.append(expr_splice.idf)
 
             prog_out = IRUtil.concatPrograms(prog_decl, prog_splice, profile, prog_in)
