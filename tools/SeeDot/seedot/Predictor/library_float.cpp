@@ -11,7 +11,7 @@
 // This file contains floating point implementations of operations supported by SeeDot.
 
 // C = A + B
-void MatAddNN(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+void MatAddNN(float* A, float* B, float* C, MYITE I, MYITE J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -26,7 +26,7 @@ void MatAddNN(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT 
 }
 
 // C = A + B
-void MatAddCN(const float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+void MatAddCN(const float* A, float* B, float* C, MYITE I, MYITE J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -41,7 +41,7 @@ void MatAddCN(const float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, 
 }
 
 // C = A + B
-void MatAddNC(float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+void MatAddNC(float* A, const float* B, float* C, MYITE I, MYITE J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -56,7 +56,7 @@ void MatAddNC(float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, 
 }
 
 // C = A + B
-void MatAddCC(const float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+void MatAddCC(const float* A, const float* B, float* C, MYITE I, MYITE J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -71,7 +71,7 @@ void MatAddCC(const float* A, const float* B, float* C, MYINT I, MYINT J, MYINT 
 }
 
 // C = a + B
-void MatAddBroadCastA(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+void MatAddBroadCastA(float* A, float* B, float* C, MYITE I, MYITE J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = *A;
@@ -86,7 +86,7 @@ void MatAddBroadCastA(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA
 }
 
 // C = A + b
-void MatAddBroadCastB(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+void MatAddBroadCastB(float* A, float* B, float* C, MYITE I, MYITE J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -101,7 +101,7 @@ void MatAddBroadCastB(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA
 }
 
 // C = A + B
-void MatAdd4(float* A, float* B, float* X, MYINT N, MYINT H, MYINT W, MYINT C, MYINT shrA, MYINT shrB, MYINT shrC) {
+void MatAdd4(float* A, float* B, float* X, MYITE N, MYITE H, MYITE W, MYITE C, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
@@ -120,7 +120,7 @@ void MatAdd4(float* A, float* B, float* X, MYINT N, MYINT H, MYINT W, MYINT C, M
 }
 
 // C = A - B
-void MatSub(float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+void MatSub(float* A, const float* B, float* C, MYITE I, MYITE J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -135,7 +135,7 @@ void MatSub(float* A, const float* B, float* C, MYINT I, MYINT J, MYINT shrA, MY
 }
 
 // C = a - B
-void MatSubBroadCastA(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+void MatSubBroadCastA(float* A, float* B, float* C, MYITE I, MYITE J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = *A;
@@ -150,7 +150,7 @@ void MatSubBroadCastA(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA
 }
 
 // C = A - b
-void MatSubBroadCastB(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB, MYINT shrC) {
+void MatSubBroadCastB(float* A, float* B, float* C, MYITE I, MYITE J, MYINT shrA, MYINT shrB, MYINT shrC) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -165,7 +165,7 @@ void MatSubBroadCastB(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA
 }
 
 // C = A * B
-void MatMulNN(float* A, float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+void MatMulNN(float* A, float* B, float* C, float* tmp, MYITE I, MYITE K, MYITE J, MYINT shrA, MYINT shrB, MYITE H1, MYITE H2) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
@@ -211,7 +211,7 @@ void MatMulNN(float* A, float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT 
 }
 
 // C = A * B
-void MatMulCN(const float* A, float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+void MatMulCN(const float* A, float* B, float* C, float* tmp, MYITE I, MYITE K, MYITE J, MYINT shrA, MYINT shrB, MYITE H1, MYITE H2) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
@@ -257,7 +257,7 @@ void MatMulCN(const float* A, float* B, float* C, float* tmp, MYINT I, MYINT K, 
 }
 
 // C = A * B
-void MatMulNC(float* A, const float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+void MatMulNC(float* A, const float* B, float* C, float* tmp, MYITE I, MYITE K, MYITE J, MYINT shrA, MYINT shrB, MYITE H1, MYITE H2) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
@@ -303,7 +303,7 @@ void MatMulNC(float* A, const float* B, float* C, float* tmp, MYINT I, MYINT K, 
 }
 
 // C = A * B
-void MatMulCC(const float* A, const float* B, float* C, float* tmp, MYINT I, MYINT K, MYINT J, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+void MatMulCC(const float* A, const float* B, float* C, float* tmp, MYITE I, MYITE K, MYITE J, MYINT shrA, MYINT shrB, MYITE H1, MYITE H2) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			for (MYITE k = 0; k < K; k++) {
@@ -349,12 +349,12 @@ void MatMulCC(const float* A, const float* B, float* C, float* tmp, MYINT I, MYI
 }
 
 // C = A |*| B
-void SparseMatMulX(const MYINT* Aidx, const float* Aval, float** B, float* C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC) {
+void SparseMatMulX(const MYITE* Aidx, const float* Aval, float** B, float* C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC) {
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
 		float b = B[k * 1][0];
 
-		MYINT idx = Aidx[ite_idx];
+		MYITE idx = Aidx[ite_idx];
 		while (idx != 0) {
 			float a = Aval[ite_val];
 
@@ -373,12 +373,12 @@ void SparseMatMulX(const MYINT* Aidx, const float* Aval, float** B, float* C, in
 }
 
 // C = A |*| B
-void SparseMatMul(const MYINT* Aidx, const float* Aval, float* B, float* C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC) {
+void SparseMatMul(const MYITE* Aidx, const float* Aval, float* B, float* C, int16_t K, MYINT shrA, MYINT shrB, MYINT shrC) {
 	MYITE ite_idx = 0, ite_val = 0;
 	for (MYITE k = 0; k < K; k++) {
 		float b = B[k];
 
-		MYINT idx = Aidx[ite_idx];
+		MYITE idx = Aidx[ite_idx];
 		while (idx != 0) {
 			float a = Aval[ite_val];
 
@@ -398,7 +398,7 @@ void SparseMatMul(const MYINT* Aidx, const float* Aval, float* B, float* C, int1
 }
 
 // C = A <*> B
-void MulCir(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
+void MulCir(float* A, float* B, float* C, MYITE I, MYITE J, MYINT shrA, MYINT shrB) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float a = A[i * J + j];
@@ -411,7 +411,7 @@ void MulCir(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT sh
 }
 
 // A = tanh(A)
-void TanH(float* A, MYINT I, MYINT J, float scale_in, float scale_out, float* B) {
+void TanH(float* A, MYITE I, MYITE J, float scale_in, float scale_out, float* B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float x = A[i * J + j], y;
@@ -430,11 +430,11 @@ void TanH(float* A, MYINT I, MYINT J, float scale_in, float scale_out, float* B)
 }
 
 // B = reverse(A, axis)
-void Reverse2(float* A, MYINT axis, MYINT I, MYINT J, float* B) {
+void Reverse2(float* A, MYITE axis, MYITE I, MYITE J, float* B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
-			MYINT i_prime = (axis == 0 ? (I - 1 - i) : i);
-			MYINT j_prime = (axis == 1 ? (J - 1 - j) : j);
+			MYITE i_prime = (axis == 0 ? (I - 1 - i) : i);
+			MYITE j_prime = (axis == 1 ? (J - 1 - j) : j);
 
 			B[i * J + j] = A[i_prime*J + j_prime];
 		}
@@ -443,7 +443,7 @@ void Reverse2(float* A, MYINT axis, MYINT I, MYINT J, float* B) {
 }
 
 // index = argmax(A)
-void ArgMax(float* A, MYINT I, MYINT J, int* index) {
+void ArgMax(float* A, MYITE I, MYITE J, int* index) {
 	float max = A[0];
 	MYITE maxIndex = 0, counter = 0;
 	for (MYITE i = 0; i < I; i++) {
@@ -462,7 +462,7 @@ void ArgMax(float* A, MYINT I, MYINT J, int* index) {
 }
 
 // A = A^T
-void Transpose(float* A, float* B, MYINT I, MYINT J) {
+void Transpose(float* A, float* B, MYITE I, MYITE J) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			B[i * J + j] = A[j * I + i];
@@ -472,7 +472,7 @@ void Transpose(float* A, float* B, MYINT I, MYINT J) {
 }
 
 // C = a * B
-void ScalarMul(float* A, float* B, float* C, MYINT I, MYINT J, MYINT shrA, MYINT shrB) {
+void ScalarMul(float* A, float* B, float* C, MYITE I, MYITE J, MYINT shrA, MYINT shrB) {
 	float a = *A;
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
@@ -642,7 +642,7 @@ void MBConv(float* A, const float* F1, const float* BN1W, const float* BN1B, con
 
 // C = conv(A, B, <params>)
 // A[N][H][W][CIN], B[G][HF][WF][CINF][COUTF], C[N][HOUT][WOUT][COUTF*G]
-void Convolution(float* A, const float* B, float* C, float* tmp, MYINT N, MYINT H, MYINT W, MYINT CIN, MYINT HF, MYINT WF, MYINT CINF, MYINT COUTF, MYINT HOUT, MYINT WOUT, MYINT HPADL, MYINT HPADR, MYINT WPADL, MYINT WPADR, MYINT HSTR, MYINT WSTR, MYINT HDL, MYINT WDL, MYINT G, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+void Convolution(float* A, const float* B, float* C, float* tmp, MYITE N, MYITE H, MYITE W, MYITE CIN, MYITE HF, MYITE WF, MYITE CINF, MYITE COUTF, MYITE HOUT, MYITE WOUT, MYITE HPADL, MYITE HPADR, MYITE WPADL, MYITE WPADR, MYITE HSTR, MYITE WSTR, MYITE HDL, MYITE WDL, MYITE G, MYINT shrA, MYINT shrB, MYITE H1, MYITE H2) {
 	MYITE HOffsetL = HDL * (HF / 2) - HPADL;
 	MYITE WOffsetL = WDL * (WF / 2) - WPADL;
 	MYITE HOffsetR = HDL * (HF / 2) - HPADR;
@@ -707,7 +707,7 @@ void Convolution(float* A, const float* B, float* C, float* tmp, MYINT N, MYINT 
 
 // C = A # B
 // A[N][H][W][CI], B[HF][WF][CI][CO], C[N][H][W][CO]
-void Conv(float* A, const float* B, float* C, float* tmp, MYINT N, MYINT H, MYINT W, MYINT CI, MYINT HF, MYINT WF, MYINT CO, MYINT shrA, MYINT shrB, MYINT H1, MYINT H2) {
+void Conv(float* A, const float* B, float* C, float* tmp, MYITE N, MYITE H, MYITE W, MYITE CI, MYITE HF, MYITE WF, MYITE CO, MYINT shrA, MYINT shrB, MYITE H1, MYITE H2) {
 	MYITE padH = (HF - 1) / 2;
 	MYITE padW = (WF - 1) / 2;
 
@@ -770,7 +770,7 @@ void Conv(float* A, const float* B, float* C, float* tmp, MYINT N, MYINT H, MYIN
 
 // A = A <+> B
 // A[N][H][W][C], B[C]
-void AddOrSubCir4D(float* A, const float* B, float* X, MYINT N, MYINT H, MYINT W, MYINT C, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
+void AddOrSubCir4D(float* A, const float* B, float* X, MYITE N, MYITE H, MYITE W, MYITE C, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
@@ -795,7 +795,7 @@ void AddOrSubCir4D(float* A, const float* B, float* X, MYINT N, MYINT H, MYINT W
 
 // A = A <+> B
 // A[N][H][W][C], B[C]
-void AddOrSubCir2D(float* A, const float* B, float* X, MYINT H, MYINT W, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
+void AddOrSubCir2D(float* A, const float* B, float* X, MYITE H, MYITE W, MYINT shrA, MYINT shrB, MYINT shrC, bool add) {
 	for (MYITE h = 0; h < H; h++) {
 		for (MYITE w = 0; w < W; w++) {
 			float a = A[h * W + w];
@@ -816,7 +816,7 @@ void AddOrSubCir2D(float* A, const float* B, float* X, MYINT H, MYINT W, MYINT s
 
 // A = relu(A)
 // A[N][H][W][C]
-void Relu4D(float* A, MYINT N, MYINT H, MYINT W, MYINT C) {
+void Relu4D(float* A, MYITE N, MYITE H, MYITE W, MYITE C) {
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
@@ -836,7 +836,7 @@ void Relu4D(float* A, MYINT N, MYINT H, MYINT W, MYINT C) {
 
 // B = relu6(A)
 // A[N][H][W][C]
-void Relu6(float* A, float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT six, MYINT div) {
+void Relu6(float* A, float* B, MYITE N, MYITE H, MYITE W, MYITE C, MYINT six, MYINT div) {
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
@@ -859,7 +859,7 @@ void Relu6(float* A, float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT six, MY
 
 // A = relu(A)
 // A[N][H][W][C]
-void Relu2D(float* A, MYINT H, MYINT W) {
+void Relu2D(float* A, MYITE H, MYITE W) {
 	for (MYITE h = 0; h < H; h++) {
 		for (MYITE w = 0; w < W; w++) {
 			float a = A[h * W + w];
@@ -875,7 +875,7 @@ void Relu2D(float* A, MYINT H, MYINT W) {
 
 // B = maxpool(A)
 // A[N][H][W][C], B[N][H][W][C]
-void Maxpool(float* A, float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT FH, MYINT FW, MYINT strideH, MYINT strideW, MYINT HPADL, MYINT HPADR, MYINT WPADL, MYINT WPADR) {
+void Maxpool(float* A, float* B, MYITE N, MYITE H, MYITE W, MYITE C, MYITE FH, MYITE FW, MYITE strideH, MYITE strideW, MYITE HPADL, MYITE HPADR, MYITE WPADL, MYITE WPADR) {
 	MYITE HO = H / strideH;
 	MYITE WO = W / strideW;
 
@@ -902,7 +902,7 @@ void Maxpool(float* A, float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT FH, M
 	return;
 }
 
-void NormaliseL2(float* A, float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT scaleA, MYINT shrA) {
+void NormaliseL2(float* A, float* B, MYITE N, MYITE H, MYITE W, MYITE C, MYINT scaleA, MYINT shrA) {
 	for (MYITE n = 0; n < N; n++) {
 		for (MYITE h = 0; h < H; h++) {
 			for (MYITE w = 0; w < W; w++) {
@@ -932,7 +932,7 @@ void NormaliseL2(float* A, float* B, MYINT N, MYINT H, MYINT W, MYINT C, MYINT s
 }
 
 // B = exp(A)
-void Exp(float* A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, float* B) {
+void Exp(float* A, MYITE I, MYITE J, MYINT shrA, MYINT shrB, float* B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float x = A[i * J + j];
@@ -946,7 +946,7 @@ void Exp(float* A, MYINT I, MYINT J, MYINT shrA, MYINT shrB, float* B) {
 }
 
 // A = sigmoid(A)
-void Sigmoid(float* A, MYINT I, MYINT J, float div, float add, float sigmoid_limit, MYINT scale_in, MYINT scale_out, float* B) {
+void Sigmoid(float* A, MYITE I, MYITE J, float div, float add, float sigmoid_limit, MYINT scale_in, MYINT scale_out, float* B) {
 	for (MYITE i = 0; i < I; i++) {
 		for (MYITE j = 0; j < J; j++) {
 			float x = A[i * J + j], y;
@@ -965,11 +965,11 @@ void Sigmoid(float* A, MYINT I, MYINT J, float div, float add, float sigmoid_lim
 }
 
 // A = AdjustScaleShr(A)
-void AdjustScaleShr(float* A, MYINT I, MYINT J, MYINT scale) {
+void AdjustScaleShr(float* A, MYITE I, MYITE J, MYINT scale) {
 	return;
 }
 
 // A = AdjustScaleShl(A)
-void AdjustScaleShl(float* A, MYINT I, MYINT J, MYINT scale) {
+void AdjustScaleShl(float* A, MYITE I, MYITE J, MYINT scale) {
 	return;
 }
