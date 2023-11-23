@@ -4,12 +4,13 @@
 import torch
 import torch.nn as nn
 import numpy as np
+import warnings
 
 
 class Bonsai(nn.Module):
 
     def __init__(self, numClasses, dataDimension, projectionDimension,
-                 treeDepth, sigma, W=None, T=None, V=None, Z=None):
+                 treeDepth, sigma, isRegression=False, W=None, T=None, V=None, Z=None):
         super(Bonsai, self).__init__()
         '''
         Expected Dimensions:
@@ -32,6 +33,11 @@ class Bonsai(nn.Module):
 
         self.dataDimension = dataDimension
         self.projectionDimension = projectionDimension
+        self.isRegression = isRegression
+
+        if ((self.isRegression == True) & (numClasses != 1)):
+            warnings.warn("Number of classes cannot be greater than 1 for regression")
+            self.numClasses = 1
 
         if numClasses == 2:
             self.numClasses = 1
@@ -126,6 +132,9 @@ class Bonsai(nn.Module):
         return torch.t(self.score), self.X_
 
     def assertInit(self):
+        errmsg = "Number of Classes for regression can only be 1."
+        if (self.isRegression == True):
+            assert (self.numClasses == 1), errmsg
         errRank = "All Parameters must has only two dimensions shape = [a, b]"
         assert len(self.W.shape) == len(self.Z.shape), errRank
         assert len(self.W.shape) == len(self.T.shape), errRank

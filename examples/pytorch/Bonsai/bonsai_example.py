@@ -19,6 +19,9 @@ def main():
     # Hyper Param pre-processing
     args = helpermethods.getArgs()
 
+    # Set 'isRegression' to be True, for regression. Default is 'False'.
+    isRegression = args.regression
+
     sigma = args.sigma
     depth = args.depth
 
@@ -37,7 +40,7 @@ def main():
     outFile = args.output_file
 
     (dataDimension, numClasses, Xtrain, Ytrain, Xtest, Ytest,
-     mean, std) = helpermethods.preProcessData(dataDir)
+     mean, std) = helpermethods.preProcessData(dataDir, isRegression)
 
     sparZ = args.sZ
 
@@ -74,7 +77,7 @@ def main():
 
     # numClasses = 1 for binary case
     bonsaiObj = Bonsai(numClasses, dataDimension,
-                       projectionDimension, depth, sigma).to(device)
+                       projectionDimension, depth, sigma, isRegression).to(device)
 
     bonsaiTrainer = BonsaiTrainer(bonsaiObj,
                                   regW, regT, regV, regZ,
