@@ -36,6 +36,36 @@ def findCUDA():
                 cuda_home = None
     return cuda_home
 
+
+def huberLoss(logits, labels, delta=1.0, reduction='mean'):
+    '''
+    Huber Loss for Regression
+    '''
+    loss = torch.where(torch.abs(logits - labels) < delta,
+                       0.5 * torch.square(logits - labels),
+                       delta * (torch.abs(logits - labels) - 0.5 * delta))
+    
+    if reduction == 'mean':
+        return torch.mean(loss)
+    elif reduction == 'sum':
+        return torch.sum(loss)
+    else:
+        return loss
+
+
+def l2Loss(logits, labels, reduction='mean'):
+    '''
+    L2 Loss for Regression
+    '''
+    loss = torch.pow(logits - labels, 2)
+    if reduction == 'mean':
+        return torch.mean(loss)
+    elif reduction == 'sum':
+        return torch.sum(loss)
+    else:
+        return loss
+
+
 def multiClassHingeLoss(logits, labels):
     '''
     MultiClassHingeLoss to match C++ Version - No pytorch internal version
@@ -69,6 +99,12 @@ def binaryHingeLoss(logits, labels):
     '''
     return torch.mean(F.relu(1.0 - (2 * labels - 1) * logits))
 
+
+def mean_absolute_error(logits, labels):
+    '''
+    Mean Absolute Error
+    '''
+    return torch.mean(torch.abs(logits - labels))
 
 def hardThreshold(A: torch.Tensor, s):
     '''

@@ -113,6 +113,11 @@ def getArgs():
                         help='Output file for dumping the program output, ' +
                         '(default: stdout)')
 
+    parser.add_argument('-regression', type=str2bool, default=False,
+                        help='boolean argument which controls whether to perform ' +
+                        'regression or classification.' +
+                        'default : False (Classification) values: [True, False]')
+
     return parser.parse_args()
 
 
@@ -159,7 +164,7 @@ def createTimeStampDir(dataDir):
     return None
 
 
-def preProcessData(dataDir):
+def preProcessData(dataDir, isRegression=False):
     '''
     Function to pre-process input data
     Expects a .npy file of form [lbl feats] for each datapoint
@@ -186,29 +191,35 @@ def preProcessData(dataDir):
     # End Mean Var normalisation
 
     # Classification.
+    if (isRegression == False):
+        numClasses = max(Ytrain_) - min(Ytrain_) + 1
+        numClasses = int(max(numClasses, max(Ytest_) - min(Ytest_) + 1))
 
-    numClasses = max(Ytrain_) - min(Ytrain_) + 1
-    numClasses = int(max(numClasses, max(Ytest_) - min(Ytest_) + 1))
+        lab = Ytrain_.astype('uint8')
+        lab = np.array(lab) - min(lab)
 
-    lab = Ytrain_.astype('uint8')
-    lab = np.array(lab) - min(lab)
+        lab_ = np.zeros((Xtrain.shape[0], numClasses))
+        lab_[np.arange(Xtrain.shape[0]), lab] = 1
+        if (numClasses == 2):
+            Ytrain = np.reshape(lab, [-1, 1])
+        else:
+            Ytrain = lab_
 
-    lab_ = np.zeros((Xtrain.shape[0], numClasses))
-    lab_[np.arange(Xtrain.shape[0]), lab] = 1
-    if (numClasses == 2):
-        Ytrain = np.reshape(lab, [-1, 1])
-    else:
-        Ytrain = lab_
+        lab = Ytest_.astype('uint8')
+        lab = np.array(lab) - min(lab)
 
-    lab = Ytest_.astype('uint8')
-    lab = np.array(lab) - min(lab)
+        lab_ = np.zeros((Xtest.shape[0], numClasses))
+        lab_[np.arange(Xtest.shape[0]), lab] = 1
+        if (numClasses == 2):
+            Ytest = np.reshape(lab, [-1, 1])
+        else:
+            Ytest = lab_
 
-    lab_ = np.zeros((Xtest.shape[0], numClasses))
-    lab_[np.arange(Xtest.shape[0]), lab] = 1
-    if (numClasses == 2):
-        Ytest = np.reshape(lab, [-1, 1])
-    else:
-        Ytest = lab_
+    elif (isRegression == True):
+        # The number of classes is always 1, for regression.
+        numClasses = 1
+        Ytrain = Ytrain_
+        Ytest = Ytest_
 
     trainBias = np.ones([Xtrain.shape[0], 1])
     Xtrain = np.append(Xtrain, trainBias, axis=1)
@@ -218,7 +229,10 @@ def preProcessData(dataDir):
     mean = np.append(mean, np.array([0]))
     std = np.append(std, np.array([1]))
 
-    return dataDimension + 1, numClasses, Xtrain, Ytrain, Xtest, Ytest, mean, std
+    if (isRegression == False):
+        return dataDimension + 1, numClasses, Xtrain, Ytrain, Xtest, Ytest, mean, std
+    elif (isRegression == True):
+        return dataDimension + 1, numClasses, Xtrain, Ytrain.reshape((-1, 1)), Xtest, Ytest.reshape((-1, 1)), mean, std
 
 
 def dumpCommand(list, currDir):
